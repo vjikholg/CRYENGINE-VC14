@@ -1,0 +1,117 @@
+<html>
+<body>
+<pre>
+<h1>Build Log</h1>
+<h3>
+--------------------Configuration: Voice2BuddyMFC - Win32 Debug--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\DOCUME~1\shorwath\LOCALS~1\Temp\RSP1947.tmp" with contents
+[
+/nologo /MDd /W3 /Gm /GX /ZI /Od /I "..\speex-1.0.5\include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_AFXDLL" /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
+"C:\Gamespy\GOA\natneg\NATify.c"
+]
+Creating command line "snCl.exe @C:\DOCUME~1\shorwath\LOCALS~1\Temp\RSP1947.tmp" 
+Creating temporary file "C:\DOCUME~1\shorwath\LOCALS~1\Temp\RSP1948.tmp" with contents
+[
+dsound.lib dxguid.lib /nologo /subsystem:windows /incremental:yes /pdb:"Debug/Voice2BuddyMFC.pdb" /debug /machine:I386 /out:"Debug/Voice2BuddyMFC.exe" /pdbtype:sept 
+.\Debug\LoginDlg.obj
+.\Debug\SetupDlg.obj
+.\Debug\StdAfx.obj
+.\Debug\Voice2BuddyMFC.obj
+.\Debug\Voice2BuddyMFCDlg.obj
+.\Debug\VoiceSessionDlg.obj
+.\Debug\bits.obj
+.\Debug\cb_search.obj
+.\Debug\exc_10_16_table.obj
+.\Debug\exc_10_32_table.obj
+.\Debug\exc_20_32_table.obj
+.\Debug\exc_5_256_table.obj
+.\Debug\exc_5_64_table.obj
+.\Debug\exc_8_128_table.obj
+.\Debug\filters.obj
+.\Debug\gain_table.obj
+.\Debug\gain_table_lbr.obj
+.\Debug\hexc_10_32_table.obj
+.\Debug\hexc_table.obj
+.\Debug\high_lsp_tables.obj
+.\Debug\lpc.obj
+.\Debug\lsp.obj
+.\Debug\lsp_tables_nb.obj
+.\Debug\ltp.obj
+.\Debug\math_approx.obj
+.\Debug\misc.obj
+.\Debug\modes.obj
+.\Debug\nb_celp.obj
+.\Debug\quant_lsp.obj
+.\Debug\sb_celp.obj
+.\Debug\speex_callbacks.obj
+.\Debug\speex_header.obj
+.\Debug\stereo.obj
+.\Debug\vbr.obj
+.\Debug\vq.obj
+.\Debug\gvCodec.obj
+.\Debug\gvCustomDevice.obj
+.\Debug\gvDevice.obj
+.\Debug\gvDirectSound.obj
+.\Debug\gvFrame.obj
+.\Debug\gvMain.obj
+.\Debug\gvSource.obj
+.\Debug\gvSpeex.obj
+.\Debug\gvUtil.obj
+.\Debug\gp.obj
+.\Debug\gpi.obj
+.\Debug\gpiBuddy.obj
+.\Debug\gpiBuffer.obj
+.\Debug\gpiCallback.obj
+.\Debug\gpiConnect.obj
+.\Debug\gpiInfo.obj
+.\Debug\gpiOperation.obj
+.\Debug\gpiPeer.obj
+.\Debug\gpiProfile.obj
+.\Debug\gpiSearch.obj
+.\Debug\gpiTransfer.obj
+.\Debug\gpiUnique.obj
+.\Debug\gpiUtility.obj
+.\Debug\darray.obj
+.\Debug\gsAssert.obj
+.\Debug\gsAvailable.obj
+.\Debug\gsDebug.obj
+.\Debug\gsMemory.obj
+.\Debug\gsPlatform.obj
+.\Debug\gsPlatformSocket.obj
+.\Debug\gsPlatformThread.obj
+.\Debug\gsPlatformUtil.obj
+.\Debug\gsStringUtil.obj
+.\Debug\hashtable.obj
+.\Debug\md5c.obj
+.\Debug\gt2Auth.obj
+.\Debug\gt2Buffer.obj
+.\Debug\gt2Callback.obj
+.\Debug\gt2Connection.obj
+.\Debug\gt2Encode.obj
+.\Debug\gt2Filter.obj
+.\Debug\gt2Main.obj
+.\Debug\gt2Message.obj
+.\Debug\gt2Socket.obj
+.\Debug\gt2Utility.obj
+.\Debug\natneg.obj
+.\Debug\Voice2BuddyMFC.res
+.\Debug\NATify.obj
+]
+Creating command line "snLink.exe @C:\DOCUME~1\shorwath\LOCALS~1\Temp\RSP1948.tmp"
+<h3>Output Window</h3>
+Compiling...
+snCL -- Detected win32 build...passing to cl.exe
+NATify.c
+Linking...
+snCL -- Detected win32 build...passing to link.exe
+snMonitor already running.
+
+
+
+<h3>Results</h3>
+Voice2BuddyMFC.exe - 0 error(s), 0 warning(s)
+</pre>
+</body>
+</html>

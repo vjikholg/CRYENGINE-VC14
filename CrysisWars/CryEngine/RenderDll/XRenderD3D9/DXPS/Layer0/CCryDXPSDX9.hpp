@@ -1,0 +1,145 @@
+#ifndef __CRYDXPSDX9__
+#define __CRYDXPSDX9__
+
+#include <d3d9.h>
+#include <d3dx9.h>
+
+
+
+static D3DFORMAT DXGI_FORMAT2D3DFORMAT[]	=
+{
+	D3DFMT_UNKNOWN,
+	D3DFMT_FORCE_DWORD,
+	D3DFMT_A32B32G32R32F,
+	D3DFMT_FORCE_DWORD,
+	D3DFMT_FORCE_DWORD,
+	D3DFMT_A32B32G32R32F,
+	D3DFMT_A32B32G32R32F						,
+	D3DFMT_FORCE_DWORD						,
+	D3DFMT_FORCE_DWORD						,
+	D3DFMT_FORCE_DWORD			,
+//10
+	D3DFMT_A16B16G16R16F				,
+	D3DFMT_A16B16G16R16				,
+	D3DFMT_A16B16G16R16					,
+	D3DFMT_FORCE_DWORD				,
+	D3DFMT_FORCE_DWORD					,
+	D3DFMT_FORCE_DWORD						,
+	D3DFMT_G32R32F							,
+	D3DFMT_FORCE_DWORD								,
+	D3DFMT_FORCE_DWORD								,
+	D3DFMT_FORCE_DWORD					,
+//20
+	D3DFMT_D24FS8			,
+	D3DFMT_FORCE_DWORD	,
+	D3DFMT_D24S8		,
+	D3DFMT_FORCE_DWORD			,
+	D3DFMT_A2R10G10B10					,
+	D3DFMT_A2R10G10B10					,
+	D3DFMT_FORCE_DWORD						,
+	D3DFMT_FORCE_DWORD					,
+	D3DFMT_A8R8G8B8						,
+	D3DFMT_FORCE_DWORD				,
+//30
+	D3DFMT_A8R8G8B8							,
+	D3DFMT_FORCE_DWORD						,
+	D3DFMT_FORCE_DWORD							,
+	D3DFMT_FORCE_DWORD						,
+	D3DFMT_G16R16F							,
+	D3DFMT_V16U16							,
+	D3DFMT_V16U16								,
+	D3DFMT_FORCE_DWORD							,
+	D3DFMT_FORCE_DWORD								,
+	D3DFMT_FORCE_DWORD							,
+//40
+	D3DFMT_R32F									,
+	D3DFMT_R32F									,
+	D3DFMT_D32									,
+	D3DFMT_FORCE_DWORD									,
+	D3DFMT_FORCE_DWORD						,
+	D3DFMT_D24S8					,
+	D3DFMT_FORCE_DWORD			,
+	D3DFMT_D24S8			,
+	D3DFMT_FORCE_DWORD							,
+	D3DFMT_V8U8								,
+//50
+	D3DFMT_V8U8									,
+	D3DFMT_FORCE_DWORD								,
+	D3DFMT_FORCE_DWORD									,
+	D3DFMT_FORCE_DWORD							,
+	D3DFMT_R16F									,
+	D3DFMT_L16									,
+	D3DFMT_L16									,
+	D3DFMT_L16									,
+	D3DFMT_FORCE_DWORD									,
+	D3DFMT_FORCE_DWORD									,
+//60
+	D3DFMT_FORCE_DWORD								,
+	D3DFMT_L8									,
+	D3DFMT_L8										,
+	D3DFMT_FORCE_DWORD									,
+	D3DFMT_FORCE_DWORD										,
+	D3DFMT_L8									,
+	D3DFMT_FORCE_DWORD									,
+	D3DFMT_FORCE_DWORD				,
+	D3DFMT_R8G8_B8G8						,
+	D3DFMT_G8R8_G8B8						,
+//70
+	D3DFMT_FORCE_DWORD							,
+	D3DFMT_FORCE_DWORD									,
+	D3DFMT_FORCE_DWORD						,
+	D3DFMT_FORCE_DWORD							,
+	D3DFMT_FORCE_DWORD									,
+	D3DFMT_FORCE_DWORD						,
+	D3DFMT_FORCE_DWORD							,
+	D3DFMT_FORCE_DWORD									,
+	D3DFMT_FORCE_DWORD						,
+	D3DFMT_FORCE_DWORD							,
+//80
+	D3DFMT_FORCE_DWORD									,
+	D3DFMT_FORCE_DWORD									,
+	D3DFMT_FORCE_DWORD							,
+	D3DFMT_FORCE_DWORD									,
+	D3DFMT_FORCE_DWORD									,
+	D3DFMT_R5G6B5							,
+	D3DFMT_A1R5G5B5						,
+	D3DFMT_A8R8G8B8						,
+	D3DFMT_X8R8G8B8						,
+	D3DFMT_FORCE_DWORD
+};
+
+
+
+
+class CCryLayer0DX9
+{
+	IDirect3D9*								m_pD3D9;
+
+	CCryLayer0DX9();
+	~CCryLayer0DX9();
+public:
+	static CCryLayer0DX9& Instance();
+
+	inline IDirect3D9* D3D(){return m_pD3D9;}
+
+	//memory tracking
+	template<class T>
+	T* New(uint32 Size)
+	{
+		return new T[Size];
+	}
+	template<class T>
+	void DeleteArray(T* pData)
+	{
+		delete[]	pData;
+	}
+	template<class T>
+	void Delete(T* pData)
+	{
+		delete	pData;
+	}
+};
+
+typedef CCryLayer0DX9				tdLayer0;
+#endif
+

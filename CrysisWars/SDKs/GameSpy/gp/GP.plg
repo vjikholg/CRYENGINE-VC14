@@ -1,0 +1,1139 @@
+<html>
+<body>
+<pre>
+<h1>Build Log</h1>
+<h3>
+--------------------Configuration: GP - Win32 Release--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\DOCUME~1\shorwath\LOCALS~1\Temp\RSP783.tmp" with contents
+[
+/nologo /MT /W3 /GX /Zi /Ot /Og /Oi /Ob1 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /Fp"Release/GP.pch" /YX /Fo"Release/" /Fd"Release/" /FD /c 
+"C:\Gamespy\GOA\GP\gp.c"
+"C:\Gamespy\GOA\GP\gpi.c"
+"C:\Gamespy\GOA\GP\gpiBuddy.c"
+"C:\Gamespy\GOA\GP\gpiBuffer.c"
+"C:\Gamespy\GOA\GP\gpiCallback.c"
+"C:\Gamespy\GOA\GP\gpiConnect.c"
+"C:\Gamespy\GOA\GP\gpiInfo.c"
+"C:\Gamespy\GOA\GP\gpiOperation.c"
+"C:\Gamespy\GOA\GP\gpiPeer.c"
+"C:\Gamespy\GOA\GP\gpiProfile.c"
+"C:\Gamespy\GOA\GP\gpiSearch.c"
+"C:\Gamespy\GOA\GP\gpiTransfer.c"
+"C:\Gamespy\GOA\GP\gpiUnique.c"
+"C:\Gamespy\GOA\GP\gpiUtility.c"
+"C:\Gamespy\GOA\darray.c"
+"C:\Gamespy\GOA\common\gsAssert.c"
+"C:\Gamespy\GOA\common\gsAvailable.c"
+"C:\Gamespy\GOA\common\gsDebug.c"
+"C:\Gamespy\GOA\common\gsMemory.c"
+"C:\Gamespy\GOA\common\gsPlatform.c"
+"C:\Gamespy\GOA\common\gsPlatformSocket.c"
+"C:\Gamespy\GOA\common\gsPlatformThread.c"
+"C:\Gamespy\GOA\common\gsPlatformUtil.c"
+"C:\Gamespy\GOA\common\gsStringUtil.c"
+"C:\Gamespy\GOA\common\gsXML.c"
+"C:\Gamespy\GOA\hashtable.c"
+"C:\Gamespy\GOA\md5c.c"
+]
+Creating command line "snCl.exe @C:\DOCUME~1\shorwath\LOCALS~1\Temp\RSP783.tmp" 
+Creating temporary file "C:\DOCUME~1\shorwath\LOCALS~1\Temp\RSP784.tmp" with contents
+[
+/nologo /out:"Release\GP.lib" 
+.\Release\gp.obj
+.\Release\gpi.obj
+.\Release\gpiBuddy.obj
+.\Release\gpiBuffer.obj
+.\Release\gpiCallback.obj
+.\Release\gpiConnect.obj
+.\Release\gpiInfo.obj
+.\Release\gpiOperation.obj
+.\Release\gpiPeer.obj
+.\Release\gpiProfile.obj
+.\Release\gpiSearch.obj
+.\Release\gpiTransfer.obj
+.\Release\gpiUnique.obj
+.\Release\gpiUtility.obj
+.\Release\darray.obj
+.\Release\gsAssert.obj
+.\Release\gsAvailable.obj
+.\Release\gsDebug.obj
+.\Release\gsMemory.obj
+.\Release\gsPlatform.obj
+.\Release\gsPlatformSocket.obj
+.\Release\gsPlatformThread.obj
+.\Release\gsPlatformUtil.obj
+.\Release\gsStringUtil.obj
+.\Release\gsXML.obj
+.\Release\hashtable.obj
+.\Release\md5c.obj
+]
+Creating command line "snLib.exe @C:\DOCUME~1\shorwath\LOCALS~1\Temp\RSP784.tmp"
+<h3>Output Window</h3>
+Compiling...
+snCL -- Detected win32 build...passing to cl.exe
+gp.c
+gpi.c
+gpiBuddy.c
+gpiBuffer.c
+gpiCallback.c
+gpiConnect.c
+gpiInfo.c
+gpiOperation.c
+gpiPeer.c
+gpiProfile.c
+gpiSearch.c
+gpiTransfer.c
+gpiUnique.c
+gpiUtility.c
+darray.c
+gsAssert.c
+gsAvailable.c
+gsDebug.c
+gsMemory.c
+gsPlatform.c
+gsPlatformSocket.c
+gsPlatformThread.c
+gsPlatformUtil.c
+gsStringUtil.c
+gsXML.c
+hashtable.c
+md5c.c
+Creating library...
+snCL -- Detected win32 build...passing to link.exe
+snMonitor already running.
+
+
+
+<h3>Results</h3>
+GP.lib - 0 error(s), 0 warning(s)
+<h3>
+--------------------Configuration: GP - Win32 Debug--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\DOCUME~1\shorwath\LOCALS~1\Temp\RSP785.tmp" with contents
+[
+/nologo /MTd /W3 /Gm /GX /ZI /Od /D "_WIN32" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /Fp"Debug/GP.pch" /YX /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
+"C:\Gamespy\GOA\GP\gp.c"
+"C:\Gamespy\GOA\GP\gpi.c"
+"C:\Gamespy\GOA\GP\gpiBuddy.c"
+"C:\Gamespy\GOA\GP\gpiBuffer.c"
+"C:\Gamespy\GOA\GP\gpiCallback.c"
+"C:\Gamespy\GOA\GP\gpiConnect.c"
+"C:\Gamespy\GOA\GP\gpiInfo.c"
+"C:\Gamespy\GOA\GP\gpiOperation.c"
+"C:\Gamespy\GOA\GP\gpiPeer.c"
+"C:\Gamespy\GOA\GP\gpiProfile.c"
+"C:\Gamespy\GOA\GP\gpiSearch.c"
+"C:\Gamespy\GOA\GP\gpiTransfer.c"
+"C:\Gamespy\GOA\GP\gpiUnique.c"
+"C:\Gamespy\GOA\GP\gpiUtility.c"
+"C:\Gamespy\GOA\darray.c"
+"C:\Gamespy\GOA\common\gsAssert.c"
+"C:\Gamespy\GOA\common\gsAvailable.c"
+"C:\Gamespy\GOA\common\gsDebug.c"
+"C:\Gamespy\GOA\common\gsMemory.c"
+"C:\Gamespy\GOA\common\gsPlatform.c"
+"C:\Gamespy\GOA\common\gsPlatformSocket.c"
+"C:\Gamespy\GOA\common\gsPlatformThread.c"
+"C:\Gamespy\GOA\common\gsPlatformUtil.c"
+"C:\Gamespy\GOA\common\gsStringUtil.c"
+"C:\Gamespy\GOA\common\gsXML.c"
+"C:\Gamespy\GOA\hashtable.c"
+"C:\Gamespy\GOA\md5c.c"
+]
+Creating command line "snCl.exe @C:\DOCUME~1\shorwath\LOCALS~1\Temp\RSP785.tmp" 
+Creating temporary file "C:\DOCUME~1\shorwath\LOCALS~1\Temp\RSP786.tmp" with contents
+[
+/nologo /out:"Debug\GP.lib" 
+.\Debug\gp.obj
+.\Debug\gpi.obj
+.\Debug\gpiBuddy.obj
+.\Debug\gpiBuffer.obj
+.\Debug\gpiCallback.obj
+.\Debug\gpiConnect.obj
+.\Debug\gpiInfo.obj
+.\Debug\gpiOperation.obj
+.\Debug\gpiPeer.obj
+.\Debug\gpiProfile.obj
+.\Debug\gpiSearch.obj
+.\Debug\gpiTransfer.obj
+.\Debug\gpiUnique.obj
+.\Debug\gpiUtility.obj
+.\Debug\darray.obj
+.\Debug\gsAssert.obj
+.\Debug\gsAvailable.obj
+.\Debug\gsDebug.obj
+.\Debug\gsMemory.obj
+.\Debug\gsPlatform.obj
+.\Debug\gsPlatformSocket.obj
+.\Debug\gsPlatformThread.obj
+.\Debug\gsPlatformUtil.obj
+.\Debug\gsStringUtil.obj
+.\Debug\gsXML.obj
+.\Debug\hashtable.obj
+.\Debug\md5c.obj
+]
+Creating command line "snLib.exe @C:\DOCUME~1\shorwath\LOCALS~1\Temp\RSP786.tmp"
+<h3>Output Window</h3>
+Compiling...
+snCL -- Detected win32 build...passing to cl.exe
+gp.c
+gpi.c
+gpiBuddy.c
+gpiBuffer.c
+gpiCallback.c
+gpiConnect.c
+gpiInfo.c
+gpiOperation.c
+gpiPeer.c
+gpiProfile.c
+gpiSearch.c
+gpiTransfer.c
+gpiUnique.c
+gpiUtility.c
+darray.c
+gsAssert.c
+gsAvailable.c
+gsDebug.c
+gsMemory.c
+gsPlatform.c
+gsPlatformSocket.c
+gsPlatformThread.c
+gsPlatformUtil.c
+gsStringUtil.c
+gsXML.c
+hashtable.c
+md5c.c
+Creating library...
+snCL -- Detected win32 build...passing to link.exe
+snMonitor already running.
+
+
+
+<h3>Results</h3>
+GP.lib - 0 error(s), 0 warning(s)
+<h3>
+--------------------Configuration: gpstress - Win32 Release--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\DOCUME~1\shorwath\LOCALS~1\Temp\RSP787.tmp" with contents
+[
+/nologo /ML /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /Fp"Release/gpstress.pch" /YX /Fo"Release/" /Fd"Release/" /FD /c 
+"C:\Gamespy\GOA\GP\gpstress\gpstress.c"
+"C:\Gamespy\GOA\GP\gp.c"
+"C:\Gamespy\GOA\GP\gpi.c"
+"C:\Gamespy\GOA\GP\gpiBuddy.c"
+"C:\Gamespy\GOA\GP\gpiBuffer.c"
+"C:\Gamespy\GOA\GP\gpiCallback.c"
+"C:\Gamespy\GOA\GP\gpiConnect.c"
+"C:\Gamespy\GOA\GP\gpiInfo.c"
+"C:\Gamespy\GOA\GP\gpiOperation.c"
+"C:\Gamespy\GOA\GP\gpiPeer.c"
+"C:\Gamespy\GOA\GP\gpiProfile.c"
+"C:\Gamespy\GOA\GP\gpiSearch.c"
+"C:\Gamespy\GOA\GP\gpiTransfer.c"
+"C:\Gamespy\GOA\GP\gpiUnique.c"
+"C:\Gamespy\GOA\GP\gpiUtility.c"
+"C:\Gamespy\GOA\darray.c"
+"C:\Gamespy\GOA\common\gsAssert.c"
+"C:\Gamespy\GOA\common\gsAvailable.c"
+"C:\Gamespy\GOA\common\gsDebug.c"
+"C:\Gamespy\GOA\common\gsMemory.c"
+"C:\Gamespy\GOA\common\gsPlatform.c"
+"C:\Gamespy\GOA\common\gsPlatformSocket.c"
+"C:\Gamespy\GOA\common\gsPlatformThread.c"
+"C:\Gamespy\GOA\common\gsPlatformUtil.c"
+"C:\Gamespy\GOA\common\gsStringUtil.c"
+"C:\Gamespy\GOA\hashtable.c"
+"C:\Gamespy\GOA\md5c.c"
+]
+Creating command line "snCl.exe @C:\DOCUME~1\shorwath\LOCALS~1\Temp\RSP787.tmp" 
+Creating temporary file "C:\DOCUME~1\shorwath\LOCALS~1\Temp\RSP788.tmp" with contents
+[
+wsock32.lib /nologo /subsystem:console /incremental:no /pdb:"Release/gpstress.pdb" /machine:I386 /out:"Release/gpstress.exe" 
+.\Release\gpstress.obj
+.\Release\gp.obj
+.\Release\gpi.obj
+.\Release\gpiBuddy.obj
+.\Release\gpiBuffer.obj
+.\Release\gpiCallback.obj
+.\Release\gpiConnect.obj
+.\Release\gpiInfo.obj
+.\Release\gpiOperation.obj
+.\Release\gpiPeer.obj
+.\Release\gpiProfile.obj
+.\Release\gpiSearch.obj
+.\Release\gpiTransfer.obj
+.\Release\gpiUnique.obj
+.\Release\gpiUtility.obj
+.\Release\darray.obj
+.\Release\gsAssert.obj
+.\Release\gsAvailable.obj
+.\Release\gsDebug.obj
+.\Release\gsMemory.obj
+.\Release\gsPlatform.obj
+.\Release\gsPlatformSocket.obj
+.\Release\gsPlatformThread.obj
+.\Release\gsPlatformUtil.obj
+.\Release\gsStringUtil.obj
+.\Release\hashtable.obj
+.\Release\md5c.obj
+]
+Creating command line "snLink.exe @C:\DOCUME~1\shorwath\LOCALS~1\Temp\RSP788.tmp"
+<h3>Output Window</h3>
+Compiling...
+snCL -- Detected win32 build...passing to cl.exe
+gpstress.c
+gp.c
+gpi.c
+gpiBuddy.c
+gpiBuffer.c
+gpiCallback.c
+gpiConnect.c
+gpiInfo.c
+gpiOperation.c
+gpiPeer.c
+gpiProfile.c
+gpiSearch.c
+gpiTransfer.c
+gpiUnique.c
+gpiUtility.c
+darray.c
+gsAssert.c
+gsAvailable.c
+gsDebug.c
+gsMemory.c
+gsPlatform.c
+gsPlatformSocket.c
+gsPlatformThread.c
+gsPlatformUtil.c
+gsStringUtil.c
+hashtable.c
+md5c.c
+Linking...
+snCL -- Detected win32 build...passing to link.exe
+snMonitor already running.
+
+
+
+<h3>Results</h3>
+gpstress.exe - 0 error(s), 0 warning(s)
+<h3>
+--------------------Configuration: gpstress - Win32 Debug--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\DOCUME~1\shorwath\LOCALS~1\Temp\RSP78A.tmp" with contents
+[
+/nologo /MLd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /FR"Debug/" /Fp"Debug/gpstress.pch" /YX /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
+"C:\Gamespy\GOA\GP\gpstress\gpstress.c"
+"C:\Gamespy\GOA\GP\gp.c"
+"C:\Gamespy\GOA\GP\gpi.c"
+"C:\Gamespy\GOA\GP\gpiBuddy.c"
+"C:\Gamespy\GOA\GP\gpiBuffer.c"
+"C:\Gamespy\GOA\GP\gpiCallback.c"
+"C:\Gamespy\GOA\GP\gpiConnect.c"
+"C:\Gamespy\GOA\GP\gpiInfo.c"
+"C:\Gamespy\GOA\GP\gpiOperation.c"
+"C:\Gamespy\GOA\GP\gpiPeer.c"
+"C:\Gamespy\GOA\GP\gpiProfile.c"
+"C:\Gamespy\GOA\GP\gpiSearch.c"
+"C:\Gamespy\GOA\GP\gpiTransfer.c"
+"C:\Gamespy\GOA\GP\gpiUnique.c"
+"C:\Gamespy\GOA\GP\gpiUtility.c"
+"C:\Gamespy\GOA\darray.c"
+"C:\Gamespy\GOA\common\gsAssert.c"
+"C:\Gamespy\GOA\common\gsAvailable.c"
+"C:\Gamespy\GOA\common\gsDebug.c"
+"C:\Gamespy\GOA\common\gsMemory.c"
+"C:\Gamespy\GOA\common\gsPlatform.c"
+"C:\Gamespy\GOA\common\gsPlatformSocket.c"
+"C:\Gamespy\GOA\common\gsPlatformThread.c"
+"C:\Gamespy\GOA\common\gsPlatformUtil.c"
+"C:\Gamespy\GOA\common\gsStringUtil.c"
+"C:\Gamespy\GOA\hashtable.c"
+"C:\Gamespy\GOA\md5c.c"
+]
+Creating command line "snCl.exe @C:\DOCUME~1\shorwath\LOCALS~1\Temp\RSP78A.tmp" 
+Creating temporary file "C:\DOCUME~1\shorwath\LOCALS~1\Temp\RSP78B.tmp" with contents
+[
+wsock32.lib advapi32.lib /nologo /subsystem:console /incremental:yes /pdb:"Debug/gpstress.pdb" /debug /machine:I386 /out:"Debug/gpstress.exe" /pdbtype:sept 
+.\Debug\gpstress.obj
+.\Debug\gp.obj
+.\Debug\gpi.obj
+.\Debug\gpiBuddy.obj
+.\Debug\gpiBuffer.obj
+.\Debug\gpiCallback.obj
+.\Debug\gpiConnect.obj
+.\Debug\gpiInfo.obj
+.\Debug\gpiOperation.obj
+.\Debug\gpiPeer.obj
+.\Debug\gpiProfile.obj
+.\Debug\gpiSearch.obj
+.\Debug\gpiTransfer.obj
+.\Debug\gpiUnique.obj
+.\Debug\gpiUtility.obj
+.\Debug\darray.obj
+.\Debug\gsAssert.obj
+.\Debug\gsAvailable.obj
+.\Debug\gsDebug.obj
+.\Debug\gsMemory.obj
+.\Debug\gsPlatform.obj
+.\Debug\gsPlatformSocket.obj
+.\Debug\gsPlatformThread.obj
+.\Debug\gsPlatformUtil.obj
+.\Debug\gsStringUtil.obj
+.\Debug\hashtable.obj
+.\Debug\md5c.obj
+]
+Creating command line "snLink.exe @C:\DOCUME~1\shorwath\LOCALS~1\Temp\RSP78B.tmp"
+<h3>Output Window</h3>
+Compiling...
+snCL -- Detected win32 build...passing to cl.exe
+gpstress.c
+gp.c
+gpi.c
+gpiBuddy.c
+gpiBuffer.c
+gpiCallback.c
+gpiConnect.c
+gpiInfo.c
+gpiOperation.c
+gpiPeer.c
+gpiProfile.c
+gpiSearch.c
+gpiTransfer.c
+gpiUnique.c
+gpiUtility.c
+darray.c
+gsAssert.c
+gsAvailable.c
+gsDebug.c
+gsMemory.c
+gsPlatform.c
+gsPlatformSocket.c
+gsPlatformThread.c
+gsPlatformUtil.c
+gsStringUtil.c
+hashtable.c
+md5c.c
+Linking...
+snCL -- Detected win32 build...passing to link.exe
+snMonitor already running.
+
+
+
+<h3>Results</h3>
+gpstress.exe - 0 error(s), 0 warning(s)
+<h3>
+--------------------Configuration: gptest - Win32 Release--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating command line "rc.exe /l 0x409 /fo"Release/gptest.res" /d "NDEBUG" "C:\Gamespy\GOA\GP\gptest\gptest.rc"" 
+Creating temporary file "C:\DOCUME~1\shorwath\LOCALS~1\Temp\RSP78D.tmp" with contents
+[
+/nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /Fo"Release/" /Fd"Release/" /FD /c 
+"C:\Gamespy\GOA\GP\gptest\gptest.cpp"
+"C:\Gamespy\GOA\GP\gptest\gptestDlg.cpp"
+"C:\Gamespy\GOA\GP\gptest\StdAfx.cpp"
+"C:\Gamespy\GOA\GP\gp.c"
+"C:\Gamespy\GOA\GP\gpi.c"
+"C:\Gamespy\GOA\GP\gpiBuddy.c"
+"C:\Gamespy\GOA\GP\gpiBuffer.c"
+"C:\Gamespy\GOA\GP\gpiCallback.c"
+"C:\Gamespy\GOA\GP\gpiConnect.c"
+"C:\Gamespy\GOA\GP\gpiInfo.c"
+"C:\Gamespy\GOA\GP\gpiOperation.c"
+"C:\Gamespy\GOA\GP\gpiPeer.c"
+"C:\Gamespy\GOA\GP\gpiProfile.c"
+"C:\Gamespy\GOA\GP\gpiSearch.c"
+"C:\Gamespy\GOA\GP\gpiTransfer.c"
+"C:\Gamespy\GOA\GP\gpiUnique.c"
+"C:\Gamespy\GOA\GP\gpiUtility.c"
+"C:\Gamespy\GOA\darray.c"
+"C:\Gamespy\GOA\common\gsAssert.c"
+"C:\Gamespy\GOA\common\gsAvailable.c"
+"C:\Gamespy\GOA\common\gsDebug.c"
+"C:\Gamespy\GOA\common\gsMemory.c"
+"C:\Gamespy\GOA\common\gsPlatform.c"
+"C:\Gamespy\GOA\common\gsPlatformSocket.c"
+"C:\Gamespy\GOA\common\gsPlatformThread.c"
+"C:\Gamespy\GOA\common\gsPlatformUtil.c"
+"C:\Gamespy\GOA\common\gsStringUtil.c"
+"C:\Gamespy\GOA\hashtable.c"
+"C:\Gamespy\GOA\md5c.c"
+]
+Creating command line "snCl.exe @C:\DOCUME~1\shorwath\LOCALS~1\Temp\RSP78D.tmp" 
+Creating temporary file "C:\DOCUME~1\shorwath\LOCALS~1\Temp\RSP78E.tmp" with contents
+[
+/nologo /subsystem:windows /incremental:no /pdb:"Release/gptest.pdb" /machine:I386 /out:"Release/gptest.exe" /ignore:4089 
+.\Release\gptest.obj
+.\Release\gptestDlg.obj
+.\Release\StdAfx.obj
+.\Release\gp.obj
+.\Release\gpi.obj
+.\Release\gpiBuddy.obj
+.\Release\gpiBuffer.obj
+.\Release\gpiCallback.obj
+.\Release\gpiConnect.obj
+.\Release\gpiInfo.obj
+.\Release\gpiOperation.obj
+.\Release\gpiPeer.obj
+.\Release\gpiProfile.obj
+.\Release\gpiSearch.obj
+.\Release\gpiTransfer.obj
+.\Release\gpiUnique.obj
+.\Release\gpiUtility.obj
+.\Release\darray.obj
+.\Release\gsAssert.obj
+.\Release\gsAvailable.obj
+.\Release\gsDebug.obj
+.\Release\gsMemory.obj
+.\Release\gsPlatform.obj
+.\Release\gsPlatformSocket.obj
+.\Release\gsPlatformThread.obj
+.\Release\gsPlatformUtil.obj
+.\Release\gsStringUtil.obj
+.\Release\hashtable.obj
+.\Release\md5c.obj
+.\Release\gptest.res
+]
+Creating command line "snLink.exe @C:\DOCUME~1\shorwath\LOCALS~1\Temp\RSP78E.tmp"
+<h3>Output Window</h3>
+Compiling resources...
+Compiling...
+snCL -- Detected win32 build...passing to cl.exe
+gptest.cpp
+gptestDlg.cpp
+StdAfx.cpp
+Generating Code...
+Compiling...
+gp.c
+gpi.c
+gpiBuddy.c
+gpiBuffer.c
+gpiCallback.c
+gpiConnect.c
+gpiInfo.c
+gpiOperation.c
+gpiPeer.c
+gpiProfile.c
+gpiSearch.c
+gpiTransfer.c
+gpiUnique.c
+gpiUtility.c
+darray.c
+gsAssert.c
+gsAvailable.c
+gsDebug.c
+gsMemory.c
+gsPlatform.c
+Generating Code...
+Compiling...
+gsPlatformSocket.c
+gsPlatformThread.c
+gsPlatformUtil.c
+gsStringUtil.c
+hashtable.c
+md5c.c
+Generating Code...
+Linking...
+snCL -- Detected win32 build...passing to link.exe
+snMonitor already running.
+
+
+
+<h3>Results</h3>
+gptest.exe - 0 error(s), 0 warning(s)
+<h3>
+--------------------Configuration: gptest - Win32 Debug--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating command line "rc.exe /l 0x409 /fo"Debug/gptest.res" /d "_DEBUG" "C:\Gamespy\GOA\GP\gptest\gptest.rc"" 
+Creating temporary file "C:\DOCUME~1\shorwath\LOCALS~1\Temp\RSP790.tmp" with contents
+[
+/nologo /MTd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /FR"Debug/" /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
+"C:\Gamespy\GOA\GP\gptest\gptest.cpp"
+"C:\Gamespy\GOA\GP\gptest\gptestDlg.cpp"
+"C:\Gamespy\GOA\GP\gp.c"
+"C:\Gamespy\GOA\GP\gpi.c"
+"C:\Gamespy\GOA\GP\gpiBuddy.c"
+"C:\Gamespy\GOA\GP\gpiBuffer.c"
+"C:\Gamespy\GOA\GP\gpiCallback.c"
+"C:\Gamespy\GOA\GP\gpiConnect.c"
+"C:\Gamespy\GOA\GP\gpiInfo.c"
+"C:\Gamespy\GOA\GP\gpiOperation.c"
+"C:\Gamespy\GOA\GP\gpiPeer.c"
+"C:\Gamespy\GOA\GP\gpiProfile.c"
+"C:\Gamespy\GOA\GP\gpiSearch.c"
+"C:\Gamespy\GOA\GP\gpiTransfer.c"
+"C:\Gamespy\GOA\GP\gpiUnique.c"
+"C:\Gamespy\GOA\GP\gpiUtility.c"
+"C:\Gamespy\GOA\darray.c"
+"C:\Gamespy\GOA\common\gsAssert.c"
+"C:\Gamespy\GOA\common\gsAvailable.c"
+"C:\Gamespy\GOA\common\gsDebug.c"
+"C:\Gamespy\GOA\common\gsMemory.c"
+"C:\Gamespy\GOA\common\gsPlatform.c"
+"C:\Gamespy\GOA\common\gsPlatformSocket.c"
+"C:\Gamespy\GOA\common\gsPlatformThread.c"
+"C:\Gamespy\GOA\common\gsPlatformUtil.c"
+"C:\Gamespy\GOA\common\gsStringUtil.c"
+"C:\Gamespy\GOA\hashtable.c"
+"C:\Gamespy\GOA\md5c.c"
+]
+Creating command line "snCl.exe @C:\DOCUME~1\shorwath\LOCALS~1\Temp\RSP790.tmp" 
+Creating temporary file "C:\DOCUME~1\shorwath\LOCALS~1\Temp\RSP791.tmp" with contents
+[
+/nologo /MTd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /FR"Debug/" /Fp"Debug/gptest.pch" /Yc"stdafx.h" /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
+"C:\Gamespy\GOA\GP\gptest\StdAfx.cpp"
+]
+Creating command line "snCl.exe @C:\DOCUME~1\shorwath\LOCALS~1\Temp\RSP791.tmp" 
+Creating temporary file "C:\DOCUME~1\shorwath\LOCALS~1\Temp\RSP792.tmp" with contents
+[
+/nologo /subsystem:windows /incremental:yes /pdb:"Debug/gptest.pdb" /debug /machine:I386 /out:"Debug/gptest.exe" /pdbtype:sept 
+.\Debug\gptest.obj
+.\Debug\gptestDlg.obj
+.\Debug\StdAfx.obj
+.\Debug\gp.obj
+.\Debug\gpi.obj
+.\Debug\gpiBuddy.obj
+.\Debug\gpiBuffer.obj
+.\Debug\gpiCallback.obj
+.\Debug\gpiConnect.obj
+.\Debug\gpiInfo.obj
+.\Debug\gpiOperation.obj
+.\Debug\gpiPeer.obj
+.\Debug\gpiProfile.obj
+.\Debug\gpiSearch.obj
+.\Debug\gpiTransfer.obj
+.\Debug\gpiUnique.obj
+.\Debug\gpiUtility.obj
+.\Debug\darray.obj
+.\Debug\gsAssert.obj
+.\Debug\gsAvailable.obj
+.\Debug\gsDebug.obj
+.\Debug\gsMemory.obj
+.\Debug\gsPlatform.obj
+.\Debug\gsPlatformSocket.obj
+.\Debug\gsPlatformThread.obj
+.\Debug\gsPlatformUtil.obj
+.\Debug\gsStringUtil.obj
+.\Debug\hashtable.obj
+.\Debug\md5c.obj
+.\Debug\gptest.res
+]
+Creating command line "snLink.exe @C:\DOCUME~1\shorwath\LOCALS~1\Temp\RSP792.tmp"
+<h3>Output Window</h3>
+Compiling resources...
+Compiling...
+snCL -- Detected win32 build...passing to cl.exe
+StdAfx.cpp
+Compiling...
+snCL -- Detected win32 build...passing to cl.exe
+snMonitor already running.
+gptest.cpp
+gptestDlg.cpp
+Generating Code...
+Compiling...
+gp.c
+gpi.c
+gpiBuddy.c
+gpiBuffer.c
+gpiCallback.c
+gpiConnect.c
+gpiInfo.c
+gpiOperation.c
+gpiPeer.c
+gpiProfile.c
+gpiSearch.c
+gpiTransfer.c
+gpiUnique.c
+gpiUtility.c
+darray.c
+gsAssert.c
+gsAvailable.c
+gsDebug.c
+gsMemory.c
+gsPlatform.c
+Generating Code...
+Compiling...
+gsPlatformSocket.c
+gsPlatformThread.c
+gsPlatformUtil.c
+gsStringUtil.c
+hashtable.c
+md5c.c
+Generating Code...
+Linking...
+snCL -- Detected win32 build...passing to link.exe
+snMonitor already running.
+
+
+
+<h3>Results</h3>
+gptest.exe - 0 error(s), 0 warning(s)
+<h3>
+--------------------Configuration: gptestc - Win32 Release--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\DOCUME~1\shorwath\LOCALS~1\Temp\RSP794.tmp" with contents
+[
+/nologo /ML /W3 /WX /GX /O2 /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /Fo"Release/" /Fd"Release/" /FD /c 
+"C:\Gamespy\GOA\GP\gptestc\gptestc.c"
+"C:\Gamespy\GOA\GP\gp.c"
+"C:\Gamespy\GOA\GP\gpi.c"
+"C:\Gamespy\GOA\GP\gpiBuddy.c"
+"C:\Gamespy\GOA\GP\gpiBuffer.c"
+"C:\Gamespy\GOA\GP\gpiCallback.c"
+"C:\Gamespy\GOA\GP\gpiConnect.c"
+"C:\Gamespy\GOA\GP\gpiInfo.c"
+"C:\Gamespy\GOA\GP\gpiOperation.c"
+"C:\Gamespy\GOA\GP\gpiPeer.c"
+"C:\Gamespy\GOA\GP\gpiProfile.c"
+"C:\Gamespy\GOA\GP\gpiSearch.c"
+"C:\Gamespy\GOA\GP\gpiTransfer.c"
+"C:\Gamespy\GOA\GP\gpiUnique.c"
+"C:\Gamespy\GOA\GP\gpiUtility.c"
+"C:\Gamespy\GOA\darray.c"
+"C:\Gamespy\GOA\common\gsAssert.c"
+"C:\Gamespy\GOA\common\gsAvailable.c"
+"C:\Gamespy\GOA\common\gsDebug.c"
+"C:\Gamespy\GOA\common\gsMemory.c"
+"C:\Gamespy\GOA\common\gsPlatform.c"
+"C:\Gamespy\GOA\common\gsPlatformSocket.c"
+"C:\Gamespy\GOA\common\gsPlatformThread.c"
+"C:\Gamespy\GOA\common\gsPlatformUtil.c"
+"C:\Gamespy\GOA\common\gsStringUtil.c"
+"C:\Gamespy\GOA\common\gsTestMain.c"
+"C:\Gamespy\GOA\hashtable.c"
+"C:\Gamespy\GOA\md5c.c"
+"C:\Gamespy\GOA\common\win32\Win32Common.c"
+]
+Creating command line "snCl.exe @C:\DOCUME~1\shorwath\LOCALS~1\Temp\RSP794.tmp" 
+Creating temporary file "C:\DOCUME~1\shorwath\LOCALS~1\Temp\RSP795.tmp" with contents
+[
+kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib wsock32.lib /nologo /subsystem:console /incremental:no /pdb:"Release/gptestc.pdb" /machine:I386 /out:"Release/gptestc.exe" 
+.\Release\gptestc.obj
+.\Release\gp.obj
+.\Release\gpi.obj
+.\Release\gpiBuddy.obj
+.\Release\gpiBuffer.obj
+.\Release\gpiCallback.obj
+.\Release\gpiConnect.obj
+.\Release\gpiInfo.obj
+.\Release\gpiOperation.obj
+.\Release\gpiPeer.obj
+.\Release\gpiProfile.obj
+.\Release\gpiSearch.obj
+.\Release\gpiTransfer.obj
+.\Release\gpiUnique.obj
+.\Release\gpiUtility.obj
+.\Release\darray.obj
+.\Release\gsAssert.obj
+.\Release\gsAvailable.obj
+.\Release\gsDebug.obj
+.\Release\gsMemory.obj
+.\Release\gsPlatform.obj
+.\Release\gsPlatformSocket.obj
+.\Release\gsPlatformThread.obj
+.\Release\gsPlatformUtil.obj
+.\Release\gsStringUtil.obj
+.\Release\gsTestMain.obj
+.\Release\hashtable.obj
+.\Release\md5c.obj
+.\Release\Win32Common.obj
+]
+Creating command line "snLink.exe @C:\DOCUME~1\shorwath\LOCALS~1\Temp\RSP795.tmp"
+<h3>Output Window</h3>
+Compiling...
+snCL -- Detected win32 build...passing to cl.exe
+gptestc.c
+gp.c
+gpi.c
+gpiBuddy.c
+gpiBuffer.c
+gpiCallback.c
+gpiConnect.c
+gpiInfo.c
+gpiOperation.c
+gpiPeer.c
+gpiProfile.c
+gpiSearch.c
+gpiTransfer.c
+gpiUnique.c
+gpiUtility.c
+darray.c
+gsAssert.c
+gsAvailable.c
+gsDebug.c
+gsMemory.c
+Generating Code...
+Compiling...
+gsPlatform.c
+gsPlatformSocket.c
+gsPlatformThread.c
+gsPlatformUtil.c
+gsStringUtil.c
+gsTestMain.c
+hashtable.c
+md5c.c
+Win32Common.c
+Generating Code...
+Linking...
+snCL -- Detected win32 build...passing to link.exe
+snMonitor already running.
+
+
+
+<h3>Results</h3>
+gptestc.exe - 0 error(s), 0 warning(s)
+<h3>
+--------------------Configuration: gptestc - Win32 Debug--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\DOCUME~1\shorwath\LOCALS~1\Temp\RSP797.tmp" with contents
+[
+/nologo /MLd /W3 /WX /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
+"C:\Gamespy\GOA\GP\gptestc\gptestc.c"
+"C:\Gamespy\GOA\GP\gp.c"
+"C:\Gamespy\GOA\GP\gpi.c"
+"C:\Gamespy\GOA\GP\gpiBuddy.c"
+"C:\Gamespy\GOA\GP\gpiBuffer.c"
+"C:\Gamespy\GOA\GP\gpiCallback.c"
+"C:\Gamespy\GOA\GP\gpiConnect.c"
+"C:\Gamespy\GOA\GP\gpiInfo.c"
+"C:\Gamespy\GOA\GP\gpiOperation.c"
+"C:\Gamespy\GOA\GP\gpiPeer.c"
+"C:\Gamespy\GOA\GP\gpiProfile.c"
+"C:\Gamespy\GOA\GP\gpiSearch.c"
+"C:\Gamespy\GOA\GP\gpiTransfer.c"
+"C:\Gamespy\GOA\GP\gpiUnique.c"
+"C:\Gamespy\GOA\GP\gpiUtility.c"
+"C:\Gamespy\GOA\darray.c"
+"C:\Gamespy\GOA\common\gsAssert.c"
+"C:\Gamespy\GOA\common\gsAvailable.c"
+"C:\Gamespy\GOA\common\gsDebug.c"
+"C:\Gamespy\GOA\common\gsMemory.c"
+"C:\Gamespy\GOA\common\gsPlatform.c"
+"C:\Gamespy\GOA\common\gsPlatformSocket.c"
+"C:\Gamespy\GOA\common\gsPlatformThread.c"
+"C:\Gamespy\GOA\common\gsPlatformUtil.c"
+"C:\Gamespy\GOA\common\gsStringUtil.c"
+"C:\Gamespy\GOA\common\gsTestMain.c"
+"C:\Gamespy\GOA\hashtable.c"
+"C:\Gamespy\GOA\md5c.c"
+"C:\Gamespy\GOA\common\win32\Win32Common.c"
+]
+Creating command line "snCl.exe @C:\DOCUME~1\shorwath\LOCALS~1\Temp\RSP797.tmp" 
+Creating temporary file "C:\DOCUME~1\shorwath\LOCALS~1\Temp\RSP798.tmp" with contents
+[
+wsock32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /incremental:yes /pdb:"Debug/gptestc.pdb" /debug /machine:I386 /out:"Debug/gptestc.exe" /pdbtype:sept 
+.\Debug\gptestc.obj
+.\Debug\gp.obj
+.\Debug\gpi.obj
+.\Debug\gpiBuddy.obj
+.\Debug\gpiBuffer.obj
+.\Debug\gpiCallback.obj
+.\Debug\gpiConnect.obj
+.\Debug\gpiInfo.obj
+.\Debug\gpiOperation.obj
+.\Debug\gpiPeer.obj
+.\Debug\gpiProfile.obj
+.\Debug\gpiSearch.obj
+.\Debug\gpiTransfer.obj
+.\Debug\gpiUnique.obj
+.\Debug\gpiUtility.obj
+.\Debug\darray.obj
+.\Debug\gsAssert.obj
+.\Debug\gsAvailable.obj
+.\Debug\gsDebug.obj
+.\Debug\gsMemory.obj
+.\Debug\gsPlatform.obj
+.\Debug\gsPlatformSocket.obj
+.\Debug\gsPlatformThread.obj
+.\Debug\gsPlatformUtil.obj
+.\Debug\gsStringUtil.obj
+.\Debug\gsTestMain.obj
+.\Debug\hashtable.obj
+.\Debug\md5c.obj
+.\Debug\Win32Common.obj
+]
+Creating command line "snLink.exe @C:\DOCUME~1\shorwath\LOCALS~1\Temp\RSP798.tmp"
+<h3>Output Window</h3>
+Compiling...
+snCL -- Detected win32 build...passing to cl.exe
+gptestc.c
+gp.c
+gpi.c
+gpiBuddy.c
+gpiBuffer.c
+gpiCallback.c
+gpiConnect.c
+gpiInfo.c
+gpiOperation.c
+gpiPeer.c
+gpiProfile.c
+gpiSearch.c
+gpiTransfer.c
+gpiUnique.c
+gpiUtility.c
+darray.c
+gsAssert.c
+gsAvailable.c
+gsDebug.c
+gsMemory.c
+Generating Code...
+Compiling...
+gsPlatform.c
+gsPlatformSocket.c
+gsPlatformThread.c
+gsPlatformUtil.c
+gsStringUtil.c
+gsTestMain.c
+hashtable.c
+md5c.c
+Win32Common.c
+Generating Code...
+Linking...
+snCL -- Detected win32 build...passing to link.exe
+snMonitor already running.
+
+
+
+<h3>Results</h3>
+gptestc.exe - 0 error(s), 0 warning(s)
+<h3>
+--------------------Configuration: gptestc - Win32 Unicode Release--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\DOCUME~1\shorwath\LOCALS~1\Temp\RSP79A.tmp" with contents
+[
+/nologo /ML /W3 /WX /GX /O2 /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /D "GSI_UNICODE" /Fo"UnicodeRelease/" /Fd"UnicodeRelease/" /FD /c 
+"C:\Gamespy\GOA\GP\gptestc\gptestc.c"
+"C:\Gamespy\GOA\GP\gp.c"
+"C:\Gamespy\GOA\GP\gpi.c"
+"C:\Gamespy\GOA\GP\gpiBuddy.c"
+"C:\Gamespy\GOA\GP\gpiBuffer.c"
+"C:\Gamespy\GOA\GP\gpiCallback.c"
+"C:\Gamespy\GOA\GP\gpiConnect.c"
+"C:\Gamespy\GOA\GP\gpiInfo.c"
+"C:\Gamespy\GOA\GP\gpiOperation.c"
+"C:\Gamespy\GOA\GP\gpiPeer.c"
+"C:\Gamespy\GOA\GP\gpiProfile.c"
+"C:\Gamespy\GOA\GP\gpiSearch.c"
+"C:\Gamespy\GOA\GP\gpiTransfer.c"
+"C:\Gamespy\GOA\GP\gpiUnique.c"
+"C:\Gamespy\GOA\GP\gpiUtility.c"
+"C:\Gamespy\GOA\darray.c"
+"C:\Gamespy\GOA\common\gsAssert.c"
+"C:\Gamespy\GOA\common\gsAvailable.c"
+"C:\Gamespy\GOA\common\gsDebug.c"
+"C:\Gamespy\GOA\common\gsMemory.c"
+"C:\Gamespy\GOA\common\gsPlatform.c"
+"C:\Gamespy\GOA\common\gsPlatformSocket.c"
+"C:\Gamespy\GOA\common\gsPlatformThread.c"
+"C:\Gamespy\GOA\common\gsPlatformUtil.c"
+"C:\Gamespy\GOA\common\gsStringUtil.c"
+"C:\Gamespy\GOA\common\gsTestMain.c"
+"C:\Gamespy\GOA\hashtable.c"
+"C:\Gamespy\GOA\md5c.c"
+"C:\Gamespy\GOA\common\win32\Win32Common.c"
+]
+Creating command line "snCl.exe @C:\DOCUME~1\shorwath\LOCALS~1\Temp\RSP79A.tmp" 
+Creating temporary file "C:\DOCUME~1\shorwath\LOCALS~1\Temp\RSP79B.tmp" with contents
+[
+kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib wsock32.lib /nologo /subsystem:console /incremental:no /pdb:"UnicodeRelease/gptestc.pdb" /machine:I386 /out:"UnicodeRelease/gptestc.exe" 
+.\UnicodeRelease\gptestc.obj
+.\UnicodeRelease\gp.obj
+.\UnicodeRelease\gpi.obj
+.\UnicodeRelease\gpiBuddy.obj
+.\UnicodeRelease\gpiBuffer.obj
+.\UnicodeRelease\gpiCallback.obj
+.\UnicodeRelease\gpiConnect.obj
+.\UnicodeRelease\gpiInfo.obj
+.\UnicodeRelease\gpiOperation.obj
+.\UnicodeRelease\gpiPeer.obj
+.\UnicodeRelease\gpiProfile.obj
+.\UnicodeRelease\gpiSearch.obj
+.\UnicodeRelease\gpiTransfer.obj
+.\UnicodeRelease\gpiUnique.obj
+.\UnicodeRelease\gpiUtility.obj
+.\UnicodeRelease\darray.obj
+.\UnicodeRelease\gsAssert.obj
+.\UnicodeRelease\gsAvailable.obj
+.\UnicodeRelease\gsDebug.obj
+.\UnicodeRelease\gsMemory.obj
+.\UnicodeRelease\gsPlatform.obj
+.\UnicodeRelease\gsPlatformSocket.obj
+.\UnicodeRelease\gsPlatformThread.obj
+.\UnicodeRelease\gsPlatformUtil.obj
+.\UnicodeRelease\gsStringUtil.obj
+.\UnicodeRelease\gsTestMain.obj
+.\UnicodeRelease\hashtable.obj
+.\UnicodeRelease\md5c.obj
+.\UnicodeRelease\Win32Common.obj
+]
+Creating command line "snLink.exe @C:\DOCUME~1\shorwath\LOCALS~1\Temp\RSP79B.tmp"
+<h3>Output Window</h3>
+Compiling...
+snCL -- Detected win32 build...passing to cl.exe
+gptestc.c
+gp.c
+gpi.c
+gpiBuddy.c
+gpiBuffer.c
+gpiCallback.c
+gpiConnect.c
+gpiInfo.c
+gpiOperation.c
+gpiPeer.c
+gpiProfile.c
+gpiSearch.c
+gpiTransfer.c
+gpiUnique.c
+gpiUtility.c
+darray.c
+gsAssert.c
+gsAvailable.c
+gsDebug.c
+gsMemory.c
+Generating Code...
+Compiling...
+gsPlatform.c
+gsPlatformSocket.c
+gsPlatformThread.c
+gsPlatformUtil.c
+gsStringUtil.c
+gsTestMain.c
+hashtable.c
+md5c.c
+Win32Common.c
+Generating Code...
+Linking...
+snCL -- Detected win32 build...passing to link.exe
+snMonitor already running.
+
+
+
+<h3>Results</h3>
+gptestc.exe - 0 error(s), 0 warning(s)
+<h3>
+--------------------Configuration: gptestc - Win32 Unicode Debug--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\DOCUME~1\shorwath\LOCALS~1\Temp\RSP79D.tmp" with contents
+[
+/nologo /MLd /W3 /WX /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /D "GSI_UNICODE" /Fo"UnicodeDebug/" /Fd"UnicodeDebug/" /FD /GZ /c 
+"C:\Gamespy\GOA\GP\gptestc\gptestc.c"
+"C:\Gamespy\GOA\GP\gp.c"
+"C:\Gamespy\GOA\GP\gpi.c"
+"C:\Gamespy\GOA\GP\gpiBuddy.c"
+"C:\Gamespy\GOA\GP\gpiBuffer.c"
+"C:\Gamespy\GOA\GP\gpiCallback.c"
+"C:\Gamespy\GOA\GP\gpiConnect.c"
+"C:\Gamespy\GOA\GP\gpiInfo.c"
+"C:\Gamespy\GOA\GP\gpiOperation.c"
+"C:\Gamespy\GOA\GP\gpiPeer.c"
+"C:\Gamespy\GOA\GP\gpiProfile.c"
+"C:\Gamespy\GOA\GP\gpiSearch.c"
+"C:\Gamespy\GOA\GP\gpiTransfer.c"
+"C:\Gamespy\GOA\GP\gpiUnique.c"
+"C:\Gamespy\GOA\GP\gpiUtility.c"
+"C:\Gamespy\GOA\darray.c"
+"C:\Gamespy\GOA\common\gsAssert.c"
+"C:\Gamespy\GOA\common\gsAvailable.c"
+"C:\Gamespy\GOA\common\gsDebug.c"
+"C:\Gamespy\GOA\common\gsMemory.c"
+"C:\Gamespy\GOA\common\gsPlatform.c"
+"C:\Gamespy\GOA\common\gsPlatformSocket.c"
+"C:\Gamespy\GOA\common\gsPlatformThread.c"
+"C:\Gamespy\GOA\common\gsPlatformUtil.c"
+"C:\Gamespy\GOA\common\gsStringUtil.c"
+"C:\Gamespy\GOA\common\gsTestMain.c"
+"C:\Gamespy\GOA\hashtable.c"
+"C:\Gamespy\GOA\md5c.c"
+"C:\Gamespy\GOA\common\win32\Win32Common.c"
+]
+Creating command line "snCl.exe @C:\DOCUME~1\shorwath\LOCALS~1\Temp\RSP79D.tmp" 
+Creating temporary file "C:\DOCUME~1\shorwath\LOCALS~1\Temp\RSP79E.tmp" with contents
+[
+wsock32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /incremental:yes /pdb:"UnicodeDebug/gptestc.pdb" /debug /machine:I386 /out:"UnicodeDebug/gptestc.exe" /pdbtype:sept 
+.\UnicodeDebug\gptestc.obj
+.\UnicodeDebug\gp.obj
+.\UnicodeDebug\gpi.obj
+.\UnicodeDebug\gpiBuddy.obj
+.\UnicodeDebug\gpiBuffer.obj
+.\UnicodeDebug\gpiCallback.obj
+.\UnicodeDebug\gpiConnect.obj
+.\UnicodeDebug\gpiInfo.obj
+.\UnicodeDebug\gpiOperation.obj
+.\UnicodeDebug\gpiPeer.obj
+.\UnicodeDebug\gpiProfile.obj
+.\UnicodeDebug\gpiSearch.obj
+.\UnicodeDebug\gpiTransfer.obj
+.\UnicodeDebug\gpiUnique.obj
+.\UnicodeDebug\gpiUtility.obj
+.\UnicodeDebug\darray.obj
+.\UnicodeDebug\gsAssert.obj
+.\UnicodeDebug\gsAvailable.obj
+.\UnicodeDebug\gsDebug.obj
+.\UnicodeDebug\gsMemory.obj
+.\UnicodeDebug\gsPlatform.obj
+.\UnicodeDebug\gsPlatformSocket.obj
+.\UnicodeDebug\gsPlatformThread.obj
+.\UnicodeDebug\gsPlatformUtil.obj
+.\UnicodeDebug\gsStringUtil.obj
+.\UnicodeDebug\gsTestMain.obj
+.\UnicodeDebug\hashtable.obj
+.\UnicodeDebug\md5c.obj
+.\UnicodeDebug\Win32Common.obj
+]
+Creating command line "snLink.exe @C:\DOCUME~1\shorwath\LOCALS~1\Temp\RSP79E.tmp"
+<h3>Output Window</h3>
+Compiling...
+snCL -- Detected win32 build...passing to cl.exe
+gptestc.c
+gp.c
+gpi.c
+gpiBuddy.c
+gpiBuffer.c
+gpiCallback.c
+gpiConnect.c
+gpiInfo.c
+gpiOperation.c
+gpiPeer.c
+gpiProfile.c
+gpiSearch.c
+gpiTransfer.c
+gpiUnique.c
+gpiUtility.c
+darray.c
+gsAssert.c
+gsAvailable.c
+gsDebug.c
+gsMemory.c
+Generating Code...
+Compiling...
+gsPlatform.c
+gsPlatformSocket.c
+gsPlatformThread.c
+gsPlatformUtil.c
+gsStringUtil.c
+gsTestMain.c
+hashtable.c
+md5c.c
+Win32Common.c
+Generating Code...
+Linking...
+snCL -- Detected win32 build...passing to link.exe
+snMonitor already running.
+
+
+
+<h3>Results</h3>
+gptestc.exe - 0 error(s), 0 warning(s)
+</pre>
+</body>
+</html>

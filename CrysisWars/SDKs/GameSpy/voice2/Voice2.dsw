@@ -1,0 +1,85 @@
+Microsoft Developer Studio Workspace File, Format Version 6.00
+# WARNING: DO NOT EDIT OR DELETE THIS WORKSPACE FILE!
+
+###############################################################################
+
+Project: "Voice2"=.\Voice2.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+    begin source code control
+    "$/Gamespy/GOA/Voice2", NONDAAAA
+    .
+    end source code control
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "Voice2BuddyMFC"=.\Voice2BuddyMFC\Voice2BuddyMFC.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+    begin source code control
+    $/Gamespy/GOA/Voice2/Voice2BuddyMFC
+    .\voice2buddymfc
+    end source code control
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "Voice2Test"=.\Voice2Test\Voice2Test.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+    begin source code control
+    "$/Gamespy/GOA/Voice2/Voice2Test", MPNDAAAA
+    .\voice2test
+    end source code control
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "voice2bench"=.\voice2bench\voice2bench.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+    begin source code control
+    $/Gamespy/GOA/Voice2/voice2bench
+    .\voice2bench
+    end source code control
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Global:
+
+Package=<5>
+{{{
+    begin source code control
+    "$/Gamespy/GOA/Voice2", NONDAAAA
+    .
+    end source code control
+}}}
+
+Package=<3>
+{{{
+}}}
+
+###############################################################################
+

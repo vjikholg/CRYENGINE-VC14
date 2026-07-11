@@ -1,0 +1,62 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 9.00
+# Visual Studio 2005
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Cry3DEngine", "Cry3DEngine.vcproj", "{7D1FD0B0-A81D-4A7D-B399-37F8B9107D3F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		CRYSIS_BETA|Win32 = CRYSIS_BETA|Win32
+		CRYSIS_BETA|x64 = CRYSIS_BETA|x64
+		Debug|Win32 = Debug|Win32
+		Debug|x64 = Debug|x64
+		DebugPS3|Win32 = DebugPS3|Win32
+		DebugPS3|x64 = DebugPS3|x64
+		Profile|Win32 = Profile|Win32
+		Profile|x64 = Profile|x64
+		ProfilePS3|Win32 = ProfilePS3|Win32
+		ProfilePS3|x64 = ProfilePS3|x64
+		Release|Win32 = Release|Win32
+		Release|x64 = Release|x64
+		SP_DEMO|Win32 = SP_DEMO|Win32
+		SP_DEMO|x64 = SP_DEMO|x64
+		test|Win32 = test|Win32
+		test|x64 = test|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7D1FD0B0-A81D-4A7D-B399-37F8B9107D3F}.CRYSIS_BETA|Win32.ActiveCfg = CRYSIS_BETA|Win32
+		{7D1FD0B0-A81D-4A7D-B399-37F8B9107D3F}.CRYSIS_BETA|Win32.Build.0 = CRYSIS_BETA|Win32
+		{7D1FD0B0-A81D-4A7D-B399-37F8B9107D3F}.CRYSIS_BETA|x64.ActiveCfg = CRYSIS_BETA|x64
+		{7D1FD0B0-A81D-4A7D-B399-37F8B9107D3F}.CRYSIS_BETA|x64.Build.0 = CRYSIS_BETA|x64
+		{7D1FD0B0-A81D-4A7D-B399-37F8B9107D3F}.Debug|Win32.ActiveCfg = Debug|Win32
+		{7D1FD0B0-A81D-4A7D-B399-37F8B9107D3F}.Debug|Win32.Build.0 = Debug|Win32
+		{7D1FD0B0-A81D-4A7D-B399-37F8B9107D3F}.Debug|x64.ActiveCfg = Debug|x64
+		{7D1FD0B0-A81D-4A7D-B399-37F8B9107D3F}.Debug|x64.Build.0 = Debug|x64
+		{7D1FD0B0-A81D-4A7D-B399-37F8B9107D3F}.DebugPS3|Win32.ActiveCfg = DebugPS3|Win32
+		{7D1FD0B0-A81D-4A7D-B399-37F8B9107D3F}.DebugPS3|Win32.Build.0 = DebugPS3|Win32
+		{7D1FD0B0-A81D-4A7D-B399-37F8B9107D3F}.DebugPS3|x64.ActiveCfg = DebugPS3|x64
+		{7D1FD0B0-A81D-4A7D-B399-37F8B9107D3F}.DebugPS3|x64.Build.0 = DebugPS3|x64
+		{7D1FD0B0-A81D-4A7D-B399-37F8B9107D3F}.Profile|Win32.ActiveCfg = Profile|Win32
+		{7D1FD0B0-A81D-4A7D-B399-37F8B9107D3F}.Profile|Win32.Build.0 = Profile|Win32
+		{7D1FD0B0-A81D-4A7D-B399-37F8B9107D3F}.Profile|x64.ActiveCfg = Profile|x64
+		{7D1FD0B0-A81D-4A7D-B399-37F8B9107D3F}.Profile|x64.Build.0 = Profile|x64
+		{7D1FD0B0-A81D-4A7D-B399-37F8B9107D3F}.ProfilePS3|Win32.ActiveCfg = ProfilePS3|Win32
+		{7D1FD0B0-A81D-4A7D-B399-37F8B9107D3F}.ProfilePS3|Win32.Build.0 = ProfilePS3|Win32
+		{7D1FD0B0-A81D-4A7D-B399-37F8B9107D3F}.ProfilePS3|x64.ActiveCfg = ProfilePS3|x64
+		{7D1FD0B0-A81D-4A7D-B399-37F8B9107D3F}.ProfilePS3|x64.Build.0 = ProfilePS3|x64
+		{7D1FD0B0-A81D-4A7D-B399-37F8B9107D3F}.Release|Win32.ActiveCfg = Release|Win32
+		{7D1FD0B0-A81D-4A7D-B399-37F8B9107D3F}.Release|Win32.Build.0 = Release|Win32
+		{7D1FD0B0-A81D-4A7D-B399-37F8B9107D3F}.Release|x64.ActiveCfg = Release|x64
+		{7D1FD0B0-A81D-4A7D-B399-37F8B9107D3F}.Release|x64.Build.0 = Release|x64
+		{7D1FD0B0-A81D-4A7D-B399-37F8B9107D3F}.SP_DEMO|Win32.ActiveCfg = SP_DEMO|Win32
+		{7D1FD0B0-A81D-4A7D-B399-37F8B9107D3F}.SP_DEMO|Win32.Build.0 = SP_DEMO|Win32
+		{7D1FD0B0-A81D-4A7D-B399-37F8B9107D3F}.SP_DEMO|x64.ActiveCfg = SP_DEMO|x64
+		{7D1FD0B0-A81D-4A7D-B399-37F8B9107D3F}.SP_DEMO|x64.Build.0 = SP_DEMO|x64
+		{7D1FD0B0-A81D-4A7D-B399-37F8B9107D3F}.test|Win32.ActiveCfg = test|Win32
+		{7D1FD0B0-A81D-4A7D-B399-37F8B9107D3F}.test|Win32.Build.0 = test|Win32
+		{7D1FD0B0-A81D-4A7D-B399-37F8B9107D3F}.test|x64.ActiveCfg = test|x64
+		{7D1FD0B0-A81D-4A7D-B399-37F8B9107D3F}.test|x64.Build.0 = test|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

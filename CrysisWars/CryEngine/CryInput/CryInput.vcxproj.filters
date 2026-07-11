@@ -1,0 +1,130 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Xenon">
+      <UniqueIdentifier>{f66e0216-361f-474e-aae3-cd36c946d0c3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DX">
+      <UniqueIdentifier>{e0ba6950-02e2-4487-85cd-d746b4b6ebcd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="PS3">
+      <UniqueIdentifier>{8ead9ebd-dde7-4612-ac16-cd3eaa8b9f9d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Linux">
+      <UniqueIdentifier>{d4208c5e-222a-4d75-9dd8-ca7032afd4a9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shared">
+      <UniqueIdentifier>{a8199939-448b-4139-9e6b-4165e40d206e}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="XDebugKeyboard.cpp">
+      <Filter>Xenon</Filter>
+    </ClCompile>
+    <ClCompile Include="XenonInput.cpp">
+      <Filter>Xenon</Filter>
+    </ClCompile>
+    <ClCompile Include="XenonInputDevice.cpp">
+      <Filter>Xenon</Filter>
+    </ClCompile>
+    <ClCompile Include="XInputKeyboard.cpp">
+      <Filter>Xenon</Filter>
+    </ClCompile>
+    <ClCompile Include="DXInput.cpp">
+      <Filter>DX</Filter>
+    </ClCompile>
+    <ClCompile Include="DXInputDevice.cpp">
+      <Filter>DX</Filter>
+    </ClCompile>
+    <ClCompile Include="Keyboard.cpp">
+      <Filter>DX</Filter>
+    </ClCompile>
+    <ClCompile Include="Mouse.cpp">
+      <Filter>DX</Filter>
+    </ClCompile>
+    <ClCompile Include="PS3Input.cpp">
+      <Filter>PS3</Filter>
+    </ClCompile>
+    <ClCompile Include="PS3InputDevice.cpp">
+      <Filter>PS3</Filter>
+    </ClCompile>
+    <ClCompile Include="PS3Keyboard.cpp">
+      <Filter>PS3</Filter>
+    </ClCompile>
+    <ClCompile Include="PS3Pad.cpp">
+      <Filter>PS3</Filter>
+    </ClCompile>
+    <ClCompile Include="LinuxInput.cpp">
+      <Filter>Linux</Filter>
+    </ClCompile>
+    <ClCompile Include="BaseInput.cpp">
+      <Filter>Shared</Filter>
+    </ClCompile>
+    <ClCompile Include="InputDevice.cpp">
+      <Filter>Shared</Filter>
+    </ClCompile>
+    <ClCompile Include="XInputDevice.cpp">
+      <Filter>Shared</Filter>
+    </ClCompile>
+    <ClCompile Include="CryInput.cpp" />
+    <ClCompile Include="InputCVars.cpp" />
+    <ClCompile Include="StdAfx.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="XDebugKeyboard.h">
+      <Filter>Xenon</Filter>
+    </ClInclude>
+    <ClInclude Include="XenonInput.h">
+      <Filter>Xenon</Filter>
+    </ClInclude>
+    <ClInclude Include="XenonInputDevice.h">
+      <Filter>Xenon</Filter>
+    </ClInclude>
+    <ClInclude Include="XInputKeyboard.h">
+      <Filter>Xenon</Filter>
+    </ClInclude>
+    <ClInclude Include="DXInput.h">
+      <Filter>DX</Filter>
+    </ClInclude>
+    <ClInclude Include="DXInputDevice.h">
+      <Filter>DX</Filter>
+    </ClInclude>
+    <ClInclude Include="Keyboard.h">
+      <Filter>DX</Filter>
+    </ClInclude>
+    <ClInclude Include="Mouse.h">
+      <Filter>DX</Filter>
+    </ClInclude>
+    <ClInclude Include="PS3Input.h">
+      <Filter>PS3</Filter>
+    </ClInclude>
+    <ClInclude Include="PS3InputDevice.h">
+      <Filter>PS3</Filter>
+    </ClInclude>
+    <ClInclude Include="PS3Keyboard.h">
+      <Filter>PS3</Filter>
+    </ClInclude>
+    <ClInclude Include="PS3Pad.h">
+      <Filter>PS3</Filter>
+    </ClInclude>
+    <ClInclude Include="LinuxInput.h">
+      <Filter>Linux</Filter>
+    </ClInclude>
+    <ClInclude Include="BaseInput.h">
+      <Filter>Shared</Filter>
+    </ClInclude>
+    <ClInclude Include="InputDevice.h">
+      <Filter>Shared</Filter>
+    </ClInclude>
+    <ClInclude Include="XInputDevice.h">
+      <Filter>Shared</Filter>
+    </ClInclude>
+    <ClInclude Include="CryInput.h" />
+    <ClInclude Include="InputCVars.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="StdAfx.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="CryInput.rc" />
+  </ItemGroup>
+</Project>

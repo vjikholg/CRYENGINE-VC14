@@ -1,0 +1,6 @@
+/.git
+/.vs
+CRYENGINE-VC14.vcxproj.user
+CRYENGINE-VC14.vcxproj.filters
+.vscode/settings.json
+*.htm

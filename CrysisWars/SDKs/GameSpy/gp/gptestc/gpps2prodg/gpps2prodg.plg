@@ -1,0 +1,841 @@
+<html>
+<body>
+<pre>
+<h1>Build Log</h1>
+<h3>
+--------------------Configuration: gpps2prodg - Win32 PS2 EE Debug EENet--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\DOCUME~1\shorwath\LOCALS~1\Temp\RSP8A3.tmp" with contents
+[
+/nologo /MLd /W4 /Od /I "c:\usr\local\sce\ee\include\libeenet" /I "C:\usr\local\sce\ee\include" /I "C:\usr\local\sce\common\include" /D "EENET" /D "SN_TARGET_PS2" /D "_DEBUG" /Fo"Debug_EENet/" /Fd"Debug_EENet/" /FD /debug /c 
+"C:\Gamespy\GOA\GP\gptestc\gptestc.c"
+"C:\Gamespy\GOA\common\ps2\ps2common.c"
+"C:\Gamespy\GOA\GP\gp.c"
+"C:\Gamespy\GOA\GP\gpi.c"
+"C:\Gamespy\GOA\GP\gpiBuddy.c"
+"C:\Gamespy\GOA\GP\gpiBuffer.c"
+"C:\Gamespy\GOA\GP\gpiCallback.c"
+"C:\Gamespy\GOA\GP\gpiConnect.c"
+"C:\Gamespy\GOA\GP\gpiInfo.c"
+"C:\Gamespy\GOA\GP\gpiOperation.c"
+"C:\Gamespy\GOA\GP\gpiPeer.c"
+"C:\Gamespy\GOA\GP\gpiProfile.c"
+"C:\Gamespy\GOA\GP\gpiSearch.c"
+"C:\Gamespy\GOA\GP\gpiTransfer.c"
+"C:\Gamespy\GOA\GP\gpiUnique.c"
+"C:\Gamespy\GOA\GP\gpiUtility.c"
+"C:\Gamespy\GOA\darray.c"
+"C:\Gamespy\GOA\common\gsAssert.c"
+"C:\Gamespy\GOA\common\gsAvailable.c"
+"C:\Gamespy\GOA\common\gsDebug.c"
+"C:\Gamespy\GOA\common\gsMemory.c"
+"C:\Gamespy\GOA\common\gsPlatform.c"
+"C:\Gamespy\GOA\common\gsPlatformSocket.c"
+"C:\Gamespy\GOA\common\gsPlatformThread.c"
+"C:\Gamespy\GOA\common\gsPlatformUtil.c"
+"C:\Gamespy\GOA\common\gsStringUtil.c"
+"C:\Gamespy\GOA\hashtable.c"
+"C:\Gamespy\GOA\md5c.c"
+"C:\usr\local\sce\ee\lib\crt0.s"
+]
+Creating command line "snCl.exe @C:\DOCUME~1\shorwath\LOCALS~1\Temp\RSP8A3.tmp" 
+Creating temporary file "C:\DOCUME~1\shorwath\LOCALS~1\Temp\RSP8A4.tmp" with contents
+[
+libcdvd.a eenetctl.a ent_smap.a ent_eth.a ent_ppp.a libeenet.a libscf.a libsn.a libgraph.a libdma.a libdev.a libpad.a libpkt.a libvu0.a /nologo /pdb:none /debug /machine:IX86 /out:"Debug_EENet\gpps2prodg.elf" /D:SN_TARGET_PS2 
+.\Debug_EENet\gptestc.obj
+.\Debug_EENet\ps2common.obj
+.\Debug_EENet\gp.obj
+.\Debug_EENet\gpi.obj
+.\Debug_EENet\gpiBuddy.obj
+.\Debug_EENet\gpiBuffer.obj
+.\Debug_EENet\gpiCallback.obj
+.\Debug_EENet\gpiConnect.obj
+.\Debug_EENet\gpiInfo.obj
+.\Debug_EENet\gpiOperation.obj
+.\Debug_EENet\gpiPeer.obj
+.\Debug_EENet\gpiProfile.obj
+.\Debug_EENet\gpiSearch.obj
+.\Debug_EENet\gpiTransfer.obj
+.\Debug_EENet\gpiUnique.obj
+.\Debug_EENet\gpiUtility.obj
+.\Debug_EENet\darray.obj
+.\Debug_EENet\gsAssert.obj
+.\Debug_EENet\gsAvailable.obj
+.\Debug_EENet\gsDebug.obj
+.\Debug_EENet\gsMemory.obj
+.\Debug_EENet\gsPlatform.obj
+.\Debug_EENet\gsPlatformSocket.obj
+.\Debug_EENet\gsPlatformThread.obj
+.\Debug_EENet\gsPlatformUtil.obj
+.\Debug_EENet\gsStringUtil.obj
+.\Debug_EENet\hashtable.obj
+.\Debug_EENet\md5c.obj
+.\Debug_EENet\crt0.obj
+]
+Creating command line "snLink.exe @C:\DOCUME~1\shorwath\LOCALS~1\Temp\RSP8A4.tmp"
+<h3>Output Window</h3>
+Compiling...
+snCL -- Compile Settings: DebugInfo:ON Define:EENET Define:SN_TARGET_PS2 Define:_DEBUG Optimize:0
+[VC6] gptestc.c
+[PS2] gptestc.c
+[VC6] ps2common.c
+[PS2] ps2common.c
+[VC6] gp.c
+[PS2] gp.c
+[VC6] gpi.c
+[PS2] gpi.c
+[VC6] gpiBuddy.c
+[PS2] gpiBuddy.c
+[VC6] gpiBuffer.c
+[PS2] gpiBuffer.c
+[VC6] gpiCallback.c
+[PS2] gpiCallback.c
+[VC6] gpiConnect.c
+[PS2] gpiConnect.c
+[VC6] gpiInfo.c
+[PS2] gpiInfo.c
+[VC6] gpiOperation.c
+[PS2] gpiOperation.c
+[VC6] gpiPeer.c
+[PS2] gpiPeer.c
+[VC6] gpiProfile.c
+[PS2] gpiProfile.c
+[VC6] gpiSearch.c
+[PS2] gpiSearch.c
+[VC6] gpiTransfer.c
+[PS2] gpiTransfer.c
+[VC6] gpiUnique.c
+[PS2] gpiUnique.c
+[VC6] gpiUtility.c
+[PS2] gpiUtility.c
+[VC6] darray.c
+[PS2] darray.c
+[VC6] gsAssert.c
+[PS2] gsAssert.c
+[VC6] gsAvailable.c
+[PS2] gsAvailable.c
+[VC6] gsDebug.c
+[PS2] gsDebug.c
+[VC6] gsMemory.c
+[PS2] gsMemory.c
+[VC6] gsPlatform.c
+[PS2] gsPlatform.c
+[VC6] gsPlatformSocket.c
+[PS2] gsPlatformSocket.c
+[VC6] gsPlatformThread.c
+[PS2] gsPlatformThread.c
+[VC6] gsPlatformUtil.c
+[PS2] gsPlatformUtil.c
+[VC6] gsStringUtil.c
+[PS2] gsStringUtil.c
+[VC6] hashtable.c
+[PS2] hashtable.c
+[VC6] md5c.c
+[PS2] md5c.c
+[PS2] crt0.s
+Linking...
+[PS2] gpps2prodg.elf
+
+
+
+<h3>Results</h3>
+gpps2prodg.elf - 0 error(s), 0 warning(s)
+<h3>
+--------------------Configuration: gpps2prodg - Win32 PS2 EE Debug SNSystems--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\DOCUME~1\shorwath\LOCALS~1\Temp\RSP8DE.tmp" with contents
+[
+/nologo /MLd /W4 /Od /I "C:\usr\local\sce\ee\include" /I "C:\usr\local\sce\common\include" /D "SN_SYSTEMS" /D "SN_TARGET_PS2" /D "_DEBUG" /Fo"Debug_SNSystems/" /Fd"Debug_SNSystems/" /FD /debug /c 
+"C:\Gamespy\GOA\GP\gptestc\gptestc.c"
+"C:\Gamespy\GOA\common\ps2\ps2common.c"
+"C:\Gamespy\GOA\GP\gp.c"
+"C:\Gamespy\GOA\GP\gpi.c"
+"C:\Gamespy\GOA\GP\gpiBuddy.c"
+"C:\Gamespy\GOA\GP\gpiBuffer.c"
+"C:\Gamespy\GOA\GP\gpiCallback.c"
+"C:\Gamespy\GOA\GP\gpiConnect.c"
+"C:\Gamespy\GOA\GP\gpiInfo.c"
+"C:\Gamespy\GOA\GP\gpiOperation.c"
+"C:\Gamespy\GOA\GP\gpiPeer.c"
+"C:\Gamespy\GOA\GP\gpiProfile.c"
+"C:\Gamespy\GOA\GP\gpiSearch.c"
+"C:\Gamespy\GOA\GP\gpiTransfer.c"
+"C:\Gamespy\GOA\GP\gpiUnique.c"
+"C:\Gamespy\GOA\GP\gpiUtility.c"
+"C:\Gamespy\GOA\darray.c"
+"C:\Gamespy\GOA\common\gsAssert.c"
+"C:\Gamespy\GOA\common\gsAvailable.c"
+"C:\Gamespy\GOA\common\gsDebug.c"
+"C:\Gamespy\GOA\common\gsMemory.c"
+"C:\Gamespy\GOA\common\gsPlatform.c"
+"C:\Gamespy\GOA\common\gsPlatformSocket.c"
+"C:\Gamespy\GOA\common\gsPlatformThread.c"
+"C:\Gamespy\GOA\common\gsPlatformUtil.c"
+"C:\Gamespy\GOA\common\gsStringUtil.c"
+"C:\Gamespy\GOA\hashtable.c"
+"C:\Gamespy\GOA\md5c.c"
+"C:\usr\local\sce\ee\lib\crt0.s"
+]
+Creating command line "snCl.exe @C:\DOCUME~1\shorwath\LOCALS~1\Temp\RSP8DE.tmp" 
+Creating temporary file "C:\DOCUME~1\shorwath\LOCALS~1\Temp\RSP8DF.tmp" with contents
+[
+sneetcp.a libcdvd.a libsn.a libgraph.a libdma.a libdev.a libpad.a libpkt.a libvu0.a /nologo /pdb:none /debug /machine:IX86 /out:"Debug_SNSystems\gpps2prodg.elf" /D:SN_TARGET_PS2 
+.\Debug_SNSystems\gptestc.obj
+.\Debug_SNSystems\ps2common.obj
+.\Debug_SNSystems\gp.obj
+.\Debug_SNSystems\gpi.obj
+.\Debug_SNSystems\gpiBuddy.obj
+.\Debug_SNSystems\gpiBuffer.obj
+.\Debug_SNSystems\gpiCallback.obj
+.\Debug_SNSystems\gpiConnect.obj
+.\Debug_SNSystems\gpiInfo.obj
+.\Debug_SNSystems\gpiOperation.obj
+.\Debug_SNSystems\gpiPeer.obj
+.\Debug_SNSystems\gpiProfile.obj
+.\Debug_SNSystems\gpiSearch.obj
+.\Debug_SNSystems\gpiTransfer.obj
+.\Debug_SNSystems\gpiUnique.obj
+.\Debug_SNSystems\gpiUtility.obj
+.\Debug_SNSystems\darray.obj
+.\Debug_SNSystems\gsAssert.obj
+.\Debug_SNSystems\gsAvailable.obj
+.\Debug_SNSystems\gsDebug.obj
+.\Debug_SNSystems\gsMemory.obj
+.\Debug_SNSystems\gsPlatform.obj
+.\Debug_SNSystems\gsPlatformSocket.obj
+.\Debug_SNSystems\gsPlatformThread.obj
+.\Debug_SNSystems\gsPlatformUtil.obj
+.\Debug_SNSystems\gsStringUtil.obj
+.\Debug_SNSystems\hashtable.obj
+.\Debug_SNSystems\md5c.obj
+.\Debug_SNSystems\crt0.obj
+]
+Creating command line "snLink.exe @C:\DOCUME~1\shorwath\LOCALS~1\Temp\RSP8DF.tmp"
+<h3>Output Window</h3>
+Compiling...
+snCL -- Compile Settings: DebugInfo:ON Define:SN_SYSTEMS Define:SN_TARGET_PS2 Define:_DEBUG Optimize:0
+[VC6] gptestc.c
+[PS2] gptestc.c
+[VC6] ps2common.c
+[PS2] ps2common.c
+[VC6] gp.c
+[PS2] gp.c
+[VC6] gpi.c
+[PS2] gpi.c
+[VC6] gpiBuddy.c
+[PS2] gpiBuddy.c
+[VC6] gpiBuffer.c
+[PS2] gpiBuffer.c
+[VC6] gpiCallback.c
+[PS2] gpiCallback.c
+[VC6] gpiConnect.c
+[PS2] gpiConnect.c
+[VC6] gpiInfo.c
+[PS2] gpiInfo.c
+[VC6] gpiOperation.c
+[PS2] gpiOperation.c
+[VC6] gpiPeer.c
+[PS2] gpiPeer.c
+[VC6] gpiProfile.c
+[PS2] gpiProfile.c
+[VC6] gpiSearch.c
+[PS2] gpiSearch.c
+[VC6] gpiTransfer.c
+[PS2] gpiTransfer.c
+[VC6] gpiUnique.c
+[PS2] gpiUnique.c
+[VC6] gpiUtility.c
+[PS2] gpiUtility.c
+[VC6] darray.c
+[PS2] darray.c
+[VC6] gsAssert.c
+[PS2] gsAssert.c
+[VC6] gsAvailable.c
+[PS2] gsAvailable.c
+[VC6] gsDebug.c
+[PS2] gsDebug.c
+[VC6] gsMemory.c
+[PS2] gsMemory.c
+[VC6] gsPlatform.c
+[PS2] gsPlatform.c
+[VC6] gsPlatformSocket.c
+[PS2] gsPlatformSocket.c
+[VC6] gsPlatformThread.c
+[PS2] gsPlatformThread.c
+[VC6] gsPlatformUtil.c
+[PS2] gsPlatformUtil.c
+[VC6] gsStringUtil.c
+[PS2] gsStringUtil.c
+[VC6] hashtable.c
+[PS2] hashtable.c
+[VC6] md5c.c
+[PS2] md5c.c
+[PS2] crt0.s
+Linking...
+[PS2] gpps2prodg.elf
+
+
+
+<h3>Results</h3>
+gpps2prodg.elf - 0 error(s), 0 warning(s)
+<h3>
+--------------------Configuration: gpps2prodg - Win32 PS2 EE Debug Insock--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\DOCUME~1\shorwath\LOCALS~1\Temp\RSP919.tmp" with contents
+[
+/nologo /MLd /W4 /Od /I "c:\usr\local\sce\ee\include\libeenet" /I "C:\usr\local\sce\ee\include" /I "C:\usr\local\sce\common\include" /D "SN_TARGET_PS2" /D "_DEBUG" /D "INSOCK" /Fo"Debug_Insock/" /Fd"Debug_Insock/" /FD /debug /c 
+"C:\Gamespy\GOA\GP\gptestc\gptestc.c"
+"C:\Gamespy\GOA\common\ps2\ps2common.c"
+"C:\Gamespy\GOA\GP\gp.c"
+"C:\Gamespy\GOA\GP\gpi.c"
+"C:\Gamespy\GOA\GP\gpiBuddy.c"
+"C:\Gamespy\GOA\GP\gpiBuffer.c"
+"C:\Gamespy\GOA\GP\gpiCallback.c"
+"C:\Gamespy\GOA\GP\gpiConnect.c"
+"C:\Gamespy\GOA\GP\gpiInfo.c"
+"C:\Gamespy\GOA\GP\gpiOperation.c"
+"C:\Gamespy\GOA\GP\gpiPeer.c"
+"C:\Gamespy\GOA\GP\gpiProfile.c"
+"C:\Gamespy\GOA\GP\gpiSearch.c"
+"C:\Gamespy\GOA\GP\gpiTransfer.c"
+"C:\Gamespy\GOA\GP\gpiUnique.c"
+"C:\Gamespy\GOA\GP\gpiUtility.c"
+"C:\Gamespy\GOA\darray.c"
+"C:\Gamespy\GOA\common\gsAssert.c"
+"C:\Gamespy\GOA\common\gsAvailable.c"
+"C:\Gamespy\GOA\common\gsDebug.c"
+"C:\Gamespy\GOA\common\gsMemory.c"
+"C:\Gamespy\GOA\common\gsPlatform.c"
+"C:\Gamespy\GOA\common\gsPlatformSocket.c"
+"C:\Gamespy\GOA\common\gsPlatformThread.c"
+"C:\Gamespy\GOA\common\gsPlatformUtil.c"
+"C:\Gamespy\GOA\common\gsStringUtil.c"
+"C:\Gamespy\GOA\hashtable.c"
+"C:\Gamespy\GOA\md5c.c"
+"C:\usr\local\sce\ee\lib\crt0.s"
+]
+Creating command line "snCl.exe @C:\DOCUME~1\shorwath\LOCALS~1\Temp\RSP919.tmp" 
+Creating temporary file "C:\DOCUME~1\shorwath\LOCALS~1\Temp\RSP91A.tmp" with contents
+[
+libinsck.a libnet.a libmrpc.a libkernl.a libcdvd.a libnetif.a netcnfif.a /nologo /pdb:none /debug /machine:IX86 /out:"Debug_Insock\gpps2prodg.elf" /D:SN_TARGET_PS2 
+.\Debug_Insock\gptestc.obj
+.\Debug_Insock\ps2common.obj
+.\Debug_Insock\gp.obj
+.\Debug_Insock\gpi.obj
+.\Debug_Insock\gpiBuddy.obj
+.\Debug_Insock\gpiBuffer.obj
+.\Debug_Insock\gpiCallback.obj
+.\Debug_Insock\gpiConnect.obj
+.\Debug_Insock\gpiInfo.obj
+.\Debug_Insock\gpiOperation.obj
+.\Debug_Insock\gpiPeer.obj
+.\Debug_Insock\gpiProfile.obj
+.\Debug_Insock\gpiSearch.obj
+.\Debug_Insock\gpiTransfer.obj
+.\Debug_Insock\gpiUnique.obj
+.\Debug_Insock\gpiUtility.obj
+.\Debug_Insock\darray.obj
+.\Debug_Insock\gsAssert.obj
+.\Debug_Insock\gsAvailable.obj
+.\Debug_Insock\gsDebug.obj
+.\Debug_Insock\gsMemory.obj
+.\Debug_Insock\gsPlatform.obj
+.\Debug_Insock\gsPlatformSocket.obj
+.\Debug_Insock\gsPlatformThread.obj
+.\Debug_Insock\gsPlatformUtil.obj
+.\Debug_Insock\gsStringUtil.obj
+.\Debug_Insock\hashtable.obj
+.\Debug_Insock\md5c.obj
+.\Debug_Insock\crt0.obj
+]
+Creating command line "snLink.exe @C:\DOCUME~1\shorwath\LOCALS~1\Temp\RSP91A.tmp"
+<h3>Output Window</h3>
+Compiling...
+snCL -- Compile Settings: DebugInfo:ON Define:SN_TARGET_PS2 Define:_DEBUG Define:INSOCK Optimize:0
+[VC6] gptestc.c
+[PS2] gptestc.c
+[VC6] ps2common.c
+[PS2] ps2common.c
+[VC6] gp.c
+[PS2] gp.c
+[VC6] gpi.c
+[PS2] gpi.c
+[VC6] gpiBuddy.c
+[PS2] gpiBuddy.c
+[VC6] gpiBuffer.c
+[PS2] gpiBuffer.c
+[VC6] gpiCallback.c
+[PS2] gpiCallback.c
+[VC6] gpiConnect.c
+[PS2] gpiConnect.c
+[VC6] gpiInfo.c
+[PS2] gpiInfo.c
+[VC6] gpiOperation.c
+[PS2] gpiOperation.c
+[VC6] gpiPeer.c
+[PS2] gpiPeer.c
+[VC6] gpiProfile.c
+[PS2] gpiProfile.c
+[VC6] gpiSearch.c
+[PS2] gpiSearch.c
+[VC6] gpiTransfer.c
+[PS2] gpiTransfer.c
+[VC6] gpiUnique.c
+[PS2] gpiUnique.c
+[VC6] gpiUtility.c
+[PS2] gpiUtility.c
+[VC6] darray.c
+[PS2] darray.c
+[VC6] gsAssert.c
+[PS2] gsAssert.c
+[VC6] gsAvailable.c
+[PS2] gsAvailable.c
+[VC6] gsDebug.c
+[PS2] gsDebug.c
+[VC6] gsMemory.c
+[PS2] gsMemory.c
+[VC6] gsPlatform.c
+[PS2] gsPlatform.c
+[VC6] gsPlatformSocket.c
+[PS2] gsPlatformSocket.c
+[VC6] gsPlatformThread.c
+[PS2] gsPlatformThread.c
+[VC6] gsPlatformUtil.c
+[PS2] gsPlatformUtil.c
+[VC6] gsStringUtil.c
+[PS2] gsStringUtil.c
+[VC6] hashtable.c
+[PS2] hashtable.c
+[VC6] md5c.c
+[PS2] md5c.c
+[PS2] crt0.s
+Linking...
+[PS2] gpps2prodg.elf
+
+
+
+<h3>Results</h3>
+gpps2prodg.elf - 0 error(s), 0 warning(s)
+<h3>
+--------------------Configuration: gpps2prodg - Win32 PS2 EE Release EENet--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\DOCUME~1\shorwath\LOCALS~1\Temp\RSP954.tmp" with contents
+[
+/nologo /MLd /W4 /WX /O2 /I "c:\usr\local\sce\ee\include\libeenet" /I "C:\usr\local\sce\ee\include" /I "C:\usr\local\sce\common\include" /D "SN_TARGET_PS2" /D "EENET" /Fo"Release_EENet/" /Fd"Release_EENet/" /FD /c 
+"C:\Gamespy\GOA\GP\gptestc\gptestc.c"
+"C:\Gamespy\GOA\common\ps2\ps2common.c"
+"C:\Gamespy\GOA\GP\gp.c"
+"C:\Gamespy\GOA\GP\gpi.c"
+"C:\Gamespy\GOA\GP\gpiBuddy.c"
+"C:\Gamespy\GOA\GP\gpiBuffer.c"
+"C:\Gamespy\GOA\GP\gpiCallback.c"
+"C:\Gamespy\GOA\GP\gpiConnect.c"
+"C:\Gamespy\GOA\GP\gpiInfo.c"
+"C:\Gamespy\GOA\GP\gpiOperation.c"
+"C:\Gamespy\GOA\GP\gpiPeer.c"
+"C:\Gamespy\GOA\GP\gpiProfile.c"
+"C:\Gamespy\GOA\GP\gpiSearch.c"
+"C:\Gamespy\GOA\GP\gpiTransfer.c"
+"C:\Gamespy\GOA\GP\gpiUnique.c"
+"C:\Gamespy\GOA\GP\gpiUtility.c"
+"C:\Gamespy\GOA\darray.c"
+"C:\Gamespy\GOA\common\gsAssert.c"
+"C:\Gamespy\GOA\common\gsAvailable.c"
+"C:\Gamespy\GOA\common\gsDebug.c"
+"C:\Gamespy\GOA\common\gsMemory.c"
+"C:\Gamespy\GOA\common\gsPlatform.c"
+"C:\Gamespy\GOA\common\gsPlatformSocket.c"
+"C:\Gamespy\GOA\common\gsPlatformThread.c"
+"C:\Gamespy\GOA\common\gsPlatformUtil.c"
+"C:\Gamespy\GOA\common\gsStringUtil.c"
+"C:\Gamespy\GOA\hashtable.c"
+"C:\Gamespy\GOA\md5c.c"
+"C:\usr\local\sce\ee\lib\crt0.s"
+]
+Creating command line "snCl.exe @C:\DOCUME~1\shorwath\LOCALS~1\Temp\RSP954.tmp" 
+Creating temporary file "C:\DOCUME~1\shorwath\LOCALS~1\Temp\RSP955.tmp" with contents
+[
+libcdvd.a eenetctl.a ent_smap.a ent_eth.a ent_ppp.a libeenet.a libscf.a libsn.a libgraph.a libdma.a libdev.a libpad.a libpkt.a libvu0.a /nologo /pdb:none /machine:IX86 /out:"Release_EENet\gpps2prodg.elf" /D:SN_TARGET_PS2 
+.\Release_EENet\gptestc.obj
+.\Release_EENet\ps2common.obj
+.\Release_EENet\gp.obj
+.\Release_EENet\gpi.obj
+.\Release_EENet\gpiBuddy.obj
+.\Release_EENet\gpiBuffer.obj
+.\Release_EENet\gpiCallback.obj
+.\Release_EENet\gpiConnect.obj
+.\Release_EENet\gpiInfo.obj
+.\Release_EENet\gpiOperation.obj
+.\Release_EENet\gpiPeer.obj
+.\Release_EENet\gpiProfile.obj
+.\Release_EENet\gpiSearch.obj
+.\Release_EENet\gpiTransfer.obj
+.\Release_EENet\gpiUnique.obj
+.\Release_EENet\gpiUtility.obj
+.\Release_EENet\darray.obj
+.\Release_EENet\gsAssert.obj
+.\Release_EENet\gsAvailable.obj
+.\Release_EENet\gsDebug.obj
+.\Release_EENet\gsMemory.obj
+.\Release_EENet\gsPlatform.obj
+.\Release_EENet\gsPlatformSocket.obj
+.\Release_EENet\gsPlatformThread.obj
+.\Release_EENet\gsPlatformUtil.obj
+.\Release_EENet\gsStringUtil.obj
+.\Release_EENet\hashtable.obj
+.\Release_EENet\md5c.obj
+.\Release_EENet\crt0.obj
+]
+Creating command line "snLink.exe @C:\DOCUME~1\shorwath\LOCALS~1\Temp\RSP955.tmp"
+<h3>Output Window</h3>
+Compiling...
+snCL -- Compile Settings: DebugInfo:OFF Define:SN_TARGET_PS2 Define:EENET Optimize:2
+[VC6] gptestc.c
+[PS2] gptestc.c
+[VC6] ps2common.c
+[PS2] ps2common.c
+[VC6] gp.c
+[PS2] gp.c
+[VC6] gpi.c
+[PS2] gpi.c
+[VC6] gpiBuddy.c
+[PS2] gpiBuddy.c
+[VC6] gpiBuffer.c
+[PS2] gpiBuffer.c
+[VC6] gpiCallback.c
+[PS2] gpiCallback.c
+[VC6] gpiConnect.c
+[PS2] gpiConnect.c
+[VC6] gpiInfo.c
+[PS2] gpiInfo.c
+[VC6] gpiOperation.c
+[PS2] gpiOperation.c
+[VC6] gpiPeer.c
+[PS2] gpiPeer.c
+[VC6] gpiProfile.c
+[PS2] gpiProfile.c
+[VC6] gpiSearch.c
+[PS2] gpiSearch.c
+[VC6] gpiTransfer.c
+[PS2] gpiTransfer.c
+[VC6] gpiUnique.c
+[PS2] gpiUnique.c
+[VC6] gpiUtility.c
+[PS2] gpiUtility.c
+[VC6] darray.c
+[PS2] darray.c
+[VC6] gsAssert.c
+[PS2] gsAssert.c
+[VC6] gsAvailable.c
+[PS2] gsAvailable.c
+[VC6] gsDebug.c
+[PS2] gsDebug.c
+[VC6] gsMemory.c
+[PS2] gsMemory.c
+[VC6] gsPlatform.c
+[PS2] gsPlatform.c
+[VC6] gsPlatformSocket.c
+[PS2] gsPlatformSocket.c
+[VC6] gsPlatformThread.c
+[PS2] gsPlatformThread.c
+[VC6] gsPlatformUtil.c
+[PS2] gsPlatformUtil.c
+[VC6] gsStringUtil.c
+[PS2] gsStringUtil.c
+[VC6] hashtable.c
+[PS2] hashtable.c
+[VC6] md5c.c
+[PS2] md5c.c
+[PS2] crt0.s
+Linking...
+[PS2] gpps2prodg.elf
+
+
+
+<h3>Results</h3>
+gpps2prodg.elf - 0 error(s), 0 warning(s)
+<h3>
+--------------------Configuration: gpps2prodg - Win32 PS2 EE Release SNSystems--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\DOCUME~1\shorwath\LOCALS~1\Temp\RSP98F.tmp" with contents
+[
+/nologo /MLd /W4 /WX /O2 /I "C:\usr\local\sce\ee\include" /I "C:\usr\local\sce\common\include" /D "SN_TARGET_PS2" /D "SN_SYSTEMS" /Fo"Release_SNSystems/" /Fd"Release_SNSystems/" /FD /c 
+"C:\Gamespy\GOA\GP\gptestc\gptestc.c"
+"C:\Gamespy\GOA\common\ps2\ps2common.c"
+"C:\Gamespy\GOA\GP\gp.c"
+"C:\Gamespy\GOA\GP\gpi.c"
+"C:\Gamespy\GOA\GP\gpiBuddy.c"
+"C:\Gamespy\GOA\GP\gpiBuffer.c"
+"C:\Gamespy\GOA\GP\gpiCallback.c"
+"C:\Gamespy\GOA\GP\gpiConnect.c"
+"C:\Gamespy\GOA\GP\gpiInfo.c"
+"C:\Gamespy\GOA\GP\gpiOperation.c"
+"C:\Gamespy\GOA\GP\gpiPeer.c"
+"C:\Gamespy\GOA\GP\gpiProfile.c"
+"C:\Gamespy\GOA\GP\gpiSearch.c"
+"C:\Gamespy\GOA\GP\gpiTransfer.c"
+"C:\Gamespy\GOA\GP\gpiUnique.c"
+"C:\Gamespy\GOA\GP\gpiUtility.c"
+"C:\Gamespy\GOA\darray.c"
+"C:\Gamespy\GOA\common\gsAssert.c"
+"C:\Gamespy\GOA\common\gsAvailable.c"
+"C:\Gamespy\GOA\common\gsDebug.c"
+"C:\Gamespy\GOA\common\gsMemory.c"
+"C:\Gamespy\GOA\common\gsPlatform.c"
+"C:\Gamespy\GOA\common\gsPlatformSocket.c"
+"C:\Gamespy\GOA\common\gsPlatformThread.c"
+"C:\Gamespy\GOA\common\gsPlatformUtil.c"
+"C:\Gamespy\GOA\common\gsStringUtil.c"
+"C:\Gamespy\GOA\hashtable.c"
+"C:\Gamespy\GOA\md5c.c"
+"C:\usr\local\sce\ee\lib\crt0.s"
+]
+Creating command line "snCl.exe @C:\DOCUME~1\shorwath\LOCALS~1\Temp\RSP98F.tmp" 
+Creating temporary file "C:\DOCUME~1\shorwath\LOCALS~1\Temp\RSP990.tmp" with contents
+[
+sneetcp.a libcdvd.a libsn.a libgraph.a libdma.a libdev.a libpad.a libpkt.a libvu0.a /nologo /pdb:none /machine:IX86 /out:"Release_SNSystems\gpps2prodg.elf" /D:SN_TARGET_PS2 
+.\Release_SNSystems\gptestc.obj
+.\Release_SNSystems\ps2common.obj
+.\Release_SNSystems\gp.obj
+.\Release_SNSystems\gpi.obj
+.\Release_SNSystems\gpiBuddy.obj
+.\Release_SNSystems\gpiBuffer.obj
+.\Release_SNSystems\gpiCallback.obj
+.\Release_SNSystems\gpiConnect.obj
+.\Release_SNSystems\gpiInfo.obj
+.\Release_SNSystems\gpiOperation.obj
+.\Release_SNSystems\gpiPeer.obj
+.\Release_SNSystems\gpiProfile.obj
+.\Release_SNSystems\gpiSearch.obj
+.\Release_SNSystems\gpiTransfer.obj
+.\Release_SNSystems\gpiUnique.obj
+.\Release_SNSystems\gpiUtility.obj
+.\Release_SNSystems\darray.obj
+.\Release_SNSystems\gsAssert.obj
+.\Release_SNSystems\gsAvailable.obj
+.\Release_SNSystems\gsDebug.obj
+.\Release_SNSystems\gsMemory.obj
+.\Release_SNSystems\gsPlatform.obj
+.\Release_SNSystems\gsPlatformSocket.obj
+.\Release_SNSystems\gsPlatformThread.obj
+.\Release_SNSystems\gsPlatformUtil.obj
+.\Release_SNSystems\gsStringUtil.obj
+.\Release_SNSystems\hashtable.obj
+.\Release_SNSystems\md5c.obj
+.\Release_SNSystems\crt0.obj
+]
+Creating command line "snLink.exe @C:\DOCUME~1\shorwath\LOCALS~1\Temp\RSP990.tmp"
+<h3>Output Window</h3>
+Compiling...
+snCL -- Compile Settings: DebugInfo:OFF Define:SN_TARGET_PS2 Define:SN_SYSTEMS Optimize:2
+[VC6] gptestc.c
+[PS2] gptestc.c
+[VC6] ps2common.c
+[PS2] ps2common.c
+[VC6] gp.c
+[PS2] gp.c
+[VC6] gpi.c
+[PS2] gpi.c
+[VC6] gpiBuddy.c
+[PS2] gpiBuddy.c
+[VC6] gpiBuffer.c
+[PS2] gpiBuffer.c
+[VC6] gpiCallback.c
+[PS2] gpiCallback.c
+[VC6] gpiConnect.c
+[PS2] gpiConnect.c
+[VC6] gpiInfo.c
+[PS2] gpiInfo.c
+[VC6] gpiOperation.c
+[PS2] gpiOperation.c
+[VC6] gpiPeer.c
+[PS2] gpiPeer.c
+[VC6] gpiProfile.c
+[PS2] gpiProfile.c
+[VC6] gpiSearch.c
+[PS2] gpiSearch.c
+[VC6] gpiTransfer.c
+[PS2] gpiTransfer.c
+[VC6] gpiUnique.c
+[PS2] gpiUnique.c
+[VC6] gpiUtility.c
+[PS2] gpiUtility.c
+[VC6] darray.c
+[PS2] darray.c
+[VC6] gsAssert.c
+[PS2] gsAssert.c
+[VC6] gsAvailable.c
+[PS2] gsAvailable.c
+[VC6] gsDebug.c
+[PS2] gsDebug.c
+[VC6] gsMemory.c
+[PS2] gsMemory.c
+[VC6] gsPlatform.c
+[PS2] gsPlatform.c
+[VC6] gsPlatformSocket.c
+[PS2] gsPlatformSocket.c
+[VC6] gsPlatformThread.c
+[PS2] gsPlatformThread.c
+[VC6] gsPlatformUtil.c
+[PS2] gsPlatformUtil.c
+[VC6] gsStringUtil.c
+[PS2] gsStringUtil.c
+[VC6] hashtable.c
+[PS2] hashtable.c
+[VC6] md5c.c
+[PS2] md5c.c
+[PS2] crt0.s
+Linking...
+[PS2] gpps2prodg.elf
+
+
+
+<h3>Results</h3>
+gpps2prodg.elf - 0 error(s), 0 warning(s)
+<h3>
+--------------------Configuration: gpps2prodg - Win32 PS2 EE Release Insock--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\DOCUME~1\shorwath\LOCALS~1\Temp\RSP9CA.tmp" with contents
+[
+/nologo /MLd /W4 /WX /O2 /I "c:\usr\local\sce\ee\include\libeenet" /I "C:\usr\local\sce\ee\include" /I "C:\usr\local\sce\common\include" /D "SN_TARGET_PS2" /D "INSOCK" /Fo"Release_Insock/" /Fd"Release_Insock/" /FD /debug /c 
+"C:\Gamespy\GOA\GP\gptestc\gptestc.c"
+"C:\Gamespy\GOA\common\ps2\ps2common.c"
+"C:\Gamespy\GOA\GP\gp.c"
+"C:\Gamespy\GOA\GP\gpi.c"
+"C:\Gamespy\GOA\GP\gpiBuddy.c"
+"C:\Gamespy\GOA\GP\gpiBuffer.c"
+"C:\Gamespy\GOA\GP\gpiCallback.c"
+"C:\Gamespy\GOA\GP\gpiConnect.c"
+"C:\Gamespy\GOA\GP\gpiInfo.c"
+"C:\Gamespy\GOA\GP\gpiOperation.c"
+"C:\Gamespy\GOA\GP\gpiPeer.c"
+"C:\Gamespy\GOA\GP\gpiProfile.c"
+"C:\Gamespy\GOA\GP\gpiSearch.c"
+"C:\Gamespy\GOA\GP\gpiTransfer.c"
+"C:\Gamespy\GOA\GP\gpiUnique.c"
+"C:\Gamespy\GOA\GP\gpiUtility.c"
+"C:\Gamespy\GOA\darray.c"
+"C:\Gamespy\GOA\common\gsAssert.c"
+"C:\Gamespy\GOA\common\gsAvailable.c"
+"C:\Gamespy\GOA\common\gsDebug.c"
+"C:\Gamespy\GOA\common\gsMemory.c"
+"C:\Gamespy\GOA\common\gsPlatform.c"
+"C:\Gamespy\GOA\common\gsPlatformSocket.c"
+"C:\Gamespy\GOA\common\gsPlatformThread.c"
+"C:\Gamespy\GOA\common\gsPlatformUtil.c"
+"C:\Gamespy\GOA\common\gsStringUtil.c"
+"C:\Gamespy\GOA\hashtable.c"
+"C:\Gamespy\GOA\md5c.c"
+"C:\usr\local\sce\ee\lib\crt0.s"
+]
+Creating command line "snCl.exe @C:\DOCUME~1\shorwath\LOCALS~1\Temp\RSP9CA.tmp" 
+Creating temporary file "C:\DOCUME~1\shorwath\LOCALS~1\Temp\RSP9CB.tmp" with contents
+[
+libinsck.a libnet.a libmrpc.a libkernl.a libcdvd.a libnetif.a netcnfif.a /nologo /pdb:none /debug /machine:IX86 /out:"Release_Insock\gpps2prodg.elf" /D:SN_TARGET_PS2 
+.\Release_Insock\gptestc.obj
+.\Release_Insock\ps2common.obj
+.\Release_Insock\gp.obj
+.\Release_Insock\gpi.obj
+.\Release_Insock\gpiBuddy.obj
+.\Release_Insock\gpiBuffer.obj
+.\Release_Insock\gpiCallback.obj
+.\Release_Insock\gpiConnect.obj
+.\Release_Insock\gpiInfo.obj
+.\Release_Insock\gpiOperation.obj
+.\Release_Insock\gpiPeer.obj
+.\Release_Insock\gpiProfile.obj
+.\Release_Insock\gpiSearch.obj
+.\Release_Insock\gpiTransfer.obj
+.\Release_Insock\gpiUnique.obj
+.\Release_Insock\gpiUtility.obj
+.\Release_Insock\darray.obj
+.\Release_Insock\gsAssert.obj
+.\Release_Insock\gsAvailable.obj
+.\Release_Insock\gsDebug.obj
+.\Release_Insock\gsMemory.obj
+.\Release_Insock\gsPlatform.obj
+.\Release_Insock\gsPlatformSocket.obj
+.\Release_Insock\gsPlatformThread.obj
+.\Release_Insock\gsPlatformUtil.obj
+.\Release_Insock\gsStringUtil.obj
+.\Release_Insock\hashtable.obj
+.\Release_Insock\md5c.obj
+.\Release_Insock\crt0.obj
+]
+Creating command line "snLink.exe @C:\DOCUME~1\shorwath\LOCALS~1\Temp\RSP9CB.tmp"
+<h3>Output Window</h3>
+Compiling...
+snCL -- Compile Settings: DebugInfo:ON Define:SN_TARGET_PS2 Define:INSOCK Optimize:2
+[VC6] gptestc.c
+[PS2] gptestc.c
+[VC6] ps2common.c
+[PS2] ps2common.c
+[VC6] gp.c
+[PS2] gp.c
+[VC6] gpi.c
+[PS2] gpi.c
+[VC6] gpiBuddy.c
+[PS2] gpiBuddy.c
+[VC6] gpiBuffer.c
+[PS2] gpiBuffer.c
+[VC6] gpiCallback.c
+[PS2] gpiCallback.c
+[VC6] gpiConnect.c
+[PS2] gpiConnect.c
+[VC6] gpiInfo.c
+[PS2] gpiInfo.c
+[VC6] gpiOperation.c
+[PS2] gpiOperation.c
+[VC6] gpiPeer.c
+[PS2] gpiPeer.c
+[VC6] gpiProfile.c
+[PS2] gpiProfile.c
+[VC6] gpiSearch.c
+[PS2] gpiSearch.c
+[VC6] gpiTransfer.c
+[PS2] gpiTransfer.c
+[VC6] gpiUnique.c
+[PS2] gpiUnique.c
+[VC6] gpiUtility.c
+[PS2] gpiUtility.c
+[VC6] darray.c
+[PS2] darray.c
+[VC6] gsAssert.c
+[PS2] gsAssert.c
+[VC6] gsAvailable.c
+[PS2] gsAvailable.c
+[VC6] gsDebug.c
+[PS2] gsDebug.c
+[VC6] gsMemory.c
+[PS2] gsMemory.c
+[VC6] gsPlatform.c
+[PS2] gsPlatform.c
+[VC6] gsPlatformSocket.c
+[PS2] gsPlatformSocket.c
+[VC6] gsPlatformThread.c
+[PS2] gsPlatformThread.c
+[VC6] gsPlatformUtil.c
+[PS2] gsPlatformUtil.c
+[VC6] gsStringUtil.c
+[PS2] gsStringUtil.c
+[VC6] hashtable.c
+[PS2] hashtable.c
+[VC6] md5c.c
+[PS2] md5c.c
+[PS2] crt0.s
+Linking...
+[PS2] gpps2prodg.elf
+
+
+
+<h3>Results</h3>
+gpps2prodg.elf - 0 error(s), 0 warning(s)
+</pre>
+</body>
+</html>

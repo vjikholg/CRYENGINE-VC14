@@ -1,0 +1,113 @@
+
+
+
+
+
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+05.08.06 15:05.47 | OUT | CRYPT des 1 gmtest
+05.08.06 15:05.47 | IN  | :s 705 * n?KwWJGQ?KGy`^?F Bx|FmIhpH<luWgCV
+05.08.06 15:05.47 | OUT | LOGIN 1 * 79762d33f049e8108b9a763a70c7860d :azyrien2@azyrien@yahoo.com
+05.08.06 15:05.47 | IN  | :s 707 * 56509352 69625837
+05.08.06 15:05.47 | OUT | USRIP
+05.08.06 15:05.47 | IN  | :s 302  :=+@192.168.60.178
+05.08.06 15:05.47 | OUT | USER X9Fq1qOa9X|69625837 127.0.0.1 peerchat.gamespy.com :f6878a520c1ca0d9d1dbb7ed45da8231
+05.08.06 15:05.47 | OUT | NICK *
+05.08.06 15:05.47 | IN  | :s 001 azyrien2-gs :Welcome to the Matrix azyrien2-gs
+05.08.06 15:05.47 | IN  | :s 002 azyrien2-gs :Your host is xs3, running version 1.0
+05.08.06 15:05.47 | IN  | :s 003 azyrien2-gs :This server was created Fri Oct 19 1979 at 21:50:00 PDT
+05.08.06 15:05.47 | IN  | :s 004 azyrien2-gs s 1.0 iq biklmnopqustvhe
+05.08.06 15:05.47 | IN  | :s 375 azyrien2-gs :- (M) Message of the day -
+05.08.06 15:05.47 | IN  | :s 372 azyrien2-gs :- Welcome to GameSpy
+05.08.06 15:05.47 | IN  | :s 376 azyrien2-gs :End of MOTD command
+05.08.06 15:05.52 | OUT | JOIN #GSP!gmtest 
+05.08.06 15:05.53 | IN  | :azyrien2-gs!X9Fq1qOa9X|69625837@* JOIN :#GSP!gmtest
+05.08.06 15:05.53 | OUT | MODE #GSP!gmtest
+05.08.06 15:05.53 | IN  | :s 332 azyrien2-gs #GSP!gmtest :Click on the "Game Info" button at the top of your screen for the latest information on patches, add-on files, interviews, strategy guides and more!  It`s all there!
+05.08.06 15:05.53 | IN  | :s 333 azyrien2-gs #GSP!gmtest SERVER 1147125952
+05.08.06 15:05.53 | IN  | :s 353 azyrien2-gs * #GSP!gmtest :azyrien2-gs
+05.08.06 15:05.53 | IN  | :s 366 azyrien2-gs #GSP!gmtest :End of NAMES list
+05.08.06 15:05.53 | OUT | GETCKEY #GSP!gmtest * 000 0 :\username\b_flags
+05.08.06 15:05.53 | IN  | :s 324 azyrien2-gs #GSP!gmtest +tnp
+05.08.06 15:05.53 | IN  | :s 702 azyrien2-gs #GSP!gmtest azyrien2-gs 000 :\X9Fq1qOa9X|69625837\
+05.08.06 15:05.53 | IN  | :s 703 azyrien2-gs #GSP!gmtest 000 :End of GETCKEY
+05.08.06 15:06.05 | IN  | :[GSI]Ichi-nii-gs!XOWq1qOa9X|66732392@* JOIN :#GSP!gmtest
+05.08.06 15:06.25 | IN  | :[GSI]Ichi-nii-gs!XOWq1qOa9X|66732392@* PART #GSP!gmtest :
+05.08.06 15:06.28 | OUT | JOIN #GPG!3 
+05.08.06 15:06.28 | IN  | :azyrien2-gs!X9Fq1qOa9X|69625837@* JOIN :#GPG!3
+05.08.06 15:06.28 | OUT | MODE #GPG!3
+05.08.06 15:06.28 | IN  | :s 332 azyrien2-gs #GPG!3 :Click on the "Game Info" button at the top of your screen for the latest information on patches, add-on files, interviews, strategy guides and more!  It`s all there!
+05.08.06 15:06.28 | IN  | :s 333 azyrien2-gs #GPG!3 SERVER 1147125982
+05.08.06 15:06.28 | IN  | :s 353 azyrien2-gs * #GPG!3 :[GSI]Ichi-nii-gs azyrien2-gs
+05.08.06 15:06.28 | IN  | :s 366 azyrien2-gs #GPG!3 :End of NAMES list
+05.08.06 15:06.28 | OUT | GETCKEY #GPG!3 * 001 0 :\username\b_flags
+05.08.06 15:06.28 | IN  | :s 324 azyrien2-gs #GPG!3 +tnp
+05.08.06 15:06.28 | IN  | :s 702 azyrien2-gs #GPG!3 azyrien2-gs 001 :\X9Fq1qOa9X|69625837\
+05.08.06 15:06.28 | IN  | :s 702 azyrien2-gs #GPG!3 [GSI]Ichi-nii-gs 001 :\XOWq1qOa9X|66732392\
+05.08.06 15:06.28 | IN  | :s 703 azyrien2-gs #GPG!3 001 :End of GETCKEY
+05.08.06 15:06.29 | OUT | PART #GSP!gmtest :
+05.08.06 15:06.29 | IN  | :azyrien2-gs!X9Fq1qOa9X|69625837@* PART #GSP!gmtest :
+05.08.06 15:06.41 | IN  | :[GSI]Ichi-nii-gs!XOWq1qOa9X|66732392@* UTM azyrien2-gs :NFO sometext
+05.08.06 15:06.51 | OUT | UTM [GSI]Ichi-nii-gs :NFO sometext
+05.08.06 15:06.53 | OUT | UTM azyrien2-gs :NFO sometext
+05.08.06 15:06.53 | IN  | :azyrien2-gs!X9Fq1qOa9X|69625837@* UTM azyrien2-gs :NFO sometext
+05.08.06 15:07.02 | OUT | UTM [GSI]Ichi-nii-gs :NFO sometext
+05.08.06 15:07.06 | OUT | UTM [GSI]Ichi-nii-gs :NFO sometext
+05.08.06 15:07.09 | OUT | UTM [GSI]Ichi-nii-gs :NFO sometext
+05.08.06 15:07.41 | IN  | :[GSI]Ichi-nii-gs!XOWq1qOa9X|66732392@* QUIT :Later!
+05.08.06 15:07.42 | OUT | QUIT :Later!
+
+
+
+
+
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+05.08.06 15:10.53 | OUT | CRYPT des 1 gmtest
+05.08.06 15:10.53 | IN  | :s 705 * ALl;WFaNvZaAl^UZ ]iSfBVJnUeeKfamb
+05.08.06 15:10.53 | OUT | LOGIN 1 * 79762d33f049e8108b9a763a70c7860d :azyrien2@azyrien@yahoo.com
+05.08.06 15:10.53 | IN  | :s 707 * 56509352 69625837
+05.08.06 15:10.53 | OUT | USRIP
+05.08.06 15:10.53 | IN  | :s 302  :=+@192.168.60.178
+05.08.06 15:10.53 | OUT | USER X9Fq1qOa9X|69625837 127.0.0.1 peerchat.gamespy.com :f6878a520c1ca0d9d1dbb7ed45da8231
+05.08.06 15:10.53 | OUT | NICK *
+05.08.06 15:10.53 | IN  | :s 001 azyrien2-gs :Welcome to the Matrix azyrien2-gs
+05.08.06 15:10.53 | IN  | :s 002 azyrien2-gs :Your host is xs5, running version 1.0
+05.08.06 15:10.53 | IN  | :s 003 azyrien2-gs :This server was created Fri Oct 19 1979 at 21:50:00 PDT
+05.08.06 15:10.53 | IN  | :s 004 azyrien2-gs s 1.0 iq biklmnopqustvhe
+05.08.06 15:10.53 | IN  | :s 375 azyrien2-gs :- (M) Message of the day -
+05.08.06 15:10.53 | IN  | :s 372 azyrien2-gs :- Welcome to GameSpy
+05.08.06 15:10.53 | IN  | :s 376 azyrien2-gs :End of MOTD command
+05.08.06 15:11.07 | OUT | JOIN #GPG!3 
+05.08.06 15:11.07 | IN  | :azyrien2-gs!X9Fq1qOa9X|69625837@* JOIN :#GPG!3
+05.08.06 15:11.07 | OUT | MODE #GPG!3
+05.08.06 15:11.07 | IN  | :s 332 azyrien2-gs #GPG!3 :Click on the "Game Info" button at the top of your screen for the latest information on patches, add-on files, interviews, strategy guides and more!  It`s all there!
+05.08.06 15:11.07 | IN  | :s 333 azyrien2-gs #GPG!3 SERVER 1147126267
+05.08.06 15:11.07 | IN  | :s 353 azyrien2-gs * #GPG!3 :azyrien2-gs
+05.08.06 15:11.07 | IN  | :s 366 azyrien2-gs #GPG!3 :End of NAMES list
+05.08.06 15:11.07 | OUT | GETCKEY #GPG!3 * 000 0 :\username\b_flags
+05.08.06 15:11.07 | IN  | :s 324 azyrien2-gs #GPG!3 +tnp
+05.08.06 15:11.08 | IN  | :s 702 azyrien2-gs #GPG!3 azyrien2-gs 000 :\X9Fq1qOa9X|69625837\
+05.08.06 15:11.08 | IN  | :s 703 azyrien2-gs #GPG!3 000 :End of GETCKEY
+05.08.06 15:11.09 | IN  | :[GSI]Ichi-nii-gs!XOWq1qOa9X|66732392@* JOIN :#GPG!3
+05.08.06 15:11.22 | OUT | UTM [GSI]Ichi-nii-gs :NFO sometext
+05.08.06 15:11.25 | OUT | UTM [GSI]Ichi-nii-gs :NFO sometext
+05.08.06 15:11.27 | OUT | UTM [GSI]Ichi-nii-gs :NFO sometext
+05.08.06 15:11.33 | IN  | :[GSI]Ichi-nii-gs!XOWq1qOa9X|66732392@* UTM azyrien2-gs :how about this sometext
+05.08.06 15:12.33 | OUT | PING azyrien2-gs
+05.08.06 15:12.33 | IN  | :s PONG s :
+05.08.06 15:12.56 | IN  | :[GSI]Ichi-nii-gs!XOWq1qOa9X|66732392@* UTM azyrien2-gs :how about this sometext
+05.08.06 15:13.56 | OUT | PING azyrien2-gs
+05.08.06 15:13.56 | IN  | :s PONG s :
+05.08.06 15:14.04 | IN  | :[GSI]Ichi-nii-gs!XOWq1qOa9X|66732392@* UTM azyrien2-gs :how about this sometext
+05.08.06 15:15.04 | OUT | PING azyrien2-gs
+05.08.06 15:15.04 | IN  | :s PONG s :
+05.08.06 15:15.22 | IN  | :[GSI]Ichi-nii-gs!XOWq1qOa9X|66732392@* UTM azyrien2-gs :how about this sometext
+05.08.06 15:15.34 | IN  | :[GSI]Ichi-nii-gs!XOWq1qOa9X|66732392@* QUIT :
+05.08.06 15:15.53 | OUT | PING
+05.08.06 15:15.53 | IN  | :s PONG s :
+05.08.06 15:16.01 | IN  | :[GSI]Ichi-nii-gs!XOWq1qOa9X|66732392@* JOIN :#GPG!3
+05.08.06 15:16.05 | IN  | :[GSI]Ichi-nii-gs!XOWq1qOa9X|66732392@* UTM azyrien2-gs :howaboutthis sometext
+05.08.06 15:16.12 | IN  | :[GSI]Ichi-nii-gs!XOWq1qOa9X|66732392@* UTM azyrien2-gs :howaboutthis sometext
+05.08.06 15:16.13 | IN  | :[GSI]Ichi-nii-gs!XOWq1qOa9X|66732392@* UTM azyrien2-gs :howaboutthis sometext
+05.08.06 15:16.16 | OUT | UTM [GSI]Ichi-nii-gs :NFO sometext
+05.08.06 15:16.17 | OUT | UTM [GSI]Ichi-nii-gs :NFO sometext
+05.08.06 15:16.36 | IN  | :[GSI]Ichi-nii-gs!XOWq1qOa9X|66732392@* QUIT :

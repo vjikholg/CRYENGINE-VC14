@@ -1,0 +1,218 @@
+
+
+
+
+
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+05.03.06 16:23.25 | OUT | CRYPT des 1 gmtest
+05.03.06 16:23.25 | IN  | :s 705 * e{Ohp>bLWOmm_mAM pLQO>HgLtHurXXm`
+05.03.06 16:23.25 | OUT | USRIP
+05.03.06 16:23.25 | IN  | :s 302  :=+@192.168.60.178
+05.03.06 16:23.25 | OUT | USER X9Fq1qOa9X|0 127.0.0.1 peerchat.gamespy.com :f6878a520c1ca0d9d1dbb7ed45da8231
+05.03.06 16:23.25 | OUT | NICK PeerPants
+05.03.06 16:23.25 | IN  | :s 001 PeerPants :Welcome to the Matrix PeerPants
+05.03.06 16:23.26 | IN  | :s 002 PeerPants :Your host is xs2, running version 1.0
+05.03.06 16:23.26 | IN  | :s 003 PeerPants :This server was created Fri Oct 19 1979 at 21:50:00 PDT
+05.03.06 16:23.26 | IN  | :s 004 PeerPants s 1.0 iq biklmnopqustvhe
+05.03.06 16:23.26 | IN  | :s 375 PeerPants :- (M) Message of the day -
+05.03.06 16:23.26 | IN  | :s 372 PeerPants :- Welcome to GameSpy
+05.03.06 16:23.26 | IN  | :s 376 PeerPants :End of MOTD command
+05.03.06 16:23.29 | OUT | JOIN #GSP!gmtest 
+05.03.06 16:23.29 | IN  | :PeerPants!X9Fq1qOa9X|0@* JOIN :#GSP!gmtest
+05.03.06 16:23.29 | OUT | MODE #GSP!gmtest
+05.03.06 16:23.29 | IN  | :s 332 PeerPants #GSP!gmtest :Click on the "Game Info" button at the top of your screen for the latest information on patches, add-on files, interviews, strategy guides and more!  It`s all there!
+05.03.06 16:23.29 | IN  | :s 333 PeerPants #GSP!gmtest SERVER 1146698419
+05.03.06 16:23.29 | IN  | :s 353 PeerPants * #GSP!gmtest :Ichi-nii PeerPants
+05.03.06 16:23.29 | IN  | :s 366 PeerPants #GSP!gmtest :End of NAMES list
+05.03.06 16:23.29 | OUT | GETCKEY #GSP!gmtest * 000 0 :\username\b_flags
+05.03.06 16:23.29 | IN  | :s 324 PeerPants #GSP!gmtest +tnp
+05.03.06 16:23.30 | IN  | :s 702 PeerPants #GSP!gmtest PeerPants 000 :\X9Fq1qOa9X|0\
+05.03.06 16:23.30 | IN  | :s 702 PeerPants #GSP!gmtest Ichi-nii 000 :\XOWq1qOa9X|0\
+05.03.06 16:23.30 | IN  | :s 703 PeerPants #GSP!gmtest 000 :End of GETCKEY
+05.03.06 16:24.30 | OUT | PING PeerPants
+05.03.06 16:24.30 | IN  | :s PONG s :
+05.03.06 16:25.30 | OUT | PING PeerPants
+05.03.06 16:25.30 | IN  | :s PONG s :
+05.03.06 16:25.53 | OUT | SETCKEY #GSP!gmtest PeerPants :\b_test2\60
+05.03.06 16:25.53 | IN  | :s 702 #GSP!gmtest #GSP!gmtest PeerPants BCAST :\b_test2\60
+05.03.06 16:25.57 | OUT | GETCKEY #GSP!gmtest PeerPants 001 0 :\b_test2
+05.03.06 16:25.57 | IN  | :s 702 PeerPants #GSP!gmtest PeerPants 001 :\60
+05.03.06 16:26.05 | OUT | SETCKEY #GSP!gmtest PeerPants :\b_test2\20
+05.03.06 16:26.05 | IN  | :s 702 #GSP!gmtest #GSP!gmtest PeerPants BCAST :\b_test2\20
+05.03.06 16:26.13 | OUT | QUIT :Later!
+
+
+
+
+
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+05.03.06 16:27.09 | OUT | CRYPT des 1 gmtest
+05.03.06 16:27.09 | IN  | :s 705 * aZn;=ksKjZlWK_@u E=bB@NDq^[h{rxMB
+05.03.06 16:27.09 | OUT | USRIP
+05.03.06 16:27.09 | IN  | :s 302  :=+@192.168.60.178
+05.03.06 16:27.09 | OUT | USER X9Fq1qOa9X|0 127.0.0.1 peerchat.gamespy.com :f6878a520c1ca0d9d1dbb7ed45da8231
+05.03.06 16:27.09 | OUT | NICK PeerPants
+05.03.06 16:27.10 | IN  | :s 001 PeerPants :Welcome to the Matrix PeerPants
+05.03.06 16:27.10 | IN  | :s 002 PeerPants :Your host is xs4, running version 1.0
+05.03.06 16:27.10 | IN  | :s 003 PeerPants :This server was created Fri Oct 19 1979 at 21:50:00 PDT
+05.03.06 16:27.10 | IN  | :s 004 PeerPants s 1.0 iq biklmnopqustvhe
+05.03.06 16:27.10 | IN  | :s 375 PeerPants :- (M) Message of the day -
+05.03.06 16:27.10 | IN  | :s 372 PeerPants :- Welcome to GameSpy
+05.03.06 16:27.10 | IN  | :s 376 PeerPants :End of MOTD command
+05.03.06 16:27.12 | OUT | JOIN #GSP!gmtest 
+05.03.06 16:27.12 | IN  | :PeerPants!X9Fq1qOa9X|0@* JOIN :#GSP!gmtest
+05.03.06 16:27.12 | OUT | MODE #GSP!gmtest
+05.03.06 16:27.12 | IN  | :s 332 PeerPants #GSP!gmtest :Click on the "Game Info" button at the top of your screen for the latest information on patches, add-on files, interviews, strategy guides and more!  It`s all there!
+05.03.06 16:27.12 | IN  | :s 333 PeerPants #GSP!gmtest SERVER 1146698419
+05.03.06 16:27.12 | IN  | :s 353 PeerPants * #GSP!gmtest :Ichi-nii PeerPants
+05.03.06 16:27.12 | IN  | :s 366 PeerPants #GSP!gmtest :End of NAMES list
+05.03.06 16:27.12 | OUT | GETCKEY #GSP!gmtest * 000 0 :\username\b_flags
+05.03.06 16:27.12 | IN  | :s 324 PeerPants #GSP!gmtest +tnp
+05.03.06 16:27.13 | IN  | :s 702 PeerPants #GSP!gmtest PeerPants 000 :\X9Fq1qOa9X|0\
+05.03.06 16:27.13 | IN  | :s 702 PeerPants #GSP!gmtest Ichi-nii 000 :\XOWq1qOa9X|0\
+05.03.06 16:27.13 | IN  | :s 703 PeerPants #GSP!gmtest 000 :End of GETCKEY
+05.03.06 16:28.13 | OUT | PING PeerPants
+05.03.06 16:28.13 | IN  | :s PONG s :
+05.03.06 16:29.07 | OUT | PART #GSP!gmtest :
+05.03.06 16:29.08 | IN  | :PeerPants!X9Fq1qOa9X|0@* PART #GSP!gmtest :
+05.03.06 16:29.11 | OUT | JOIN #GSP!gmtest 
+05.03.06 16:29.12 | IN  | :PeerPants!X9Fq1qOa9X|0@* JOIN :#GSP!gmtest
+05.03.06 16:29.12 | OUT | MODE #GSP!gmtest
+05.03.06 16:29.12 | IN  | :s 332 PeerPants #GSP!gmtest :Click on the "Game Info" button at the top of your screen for the latest information on patches, add-on files, interviews, strategy guides and more!  It`s all there!
+05.03.06 16:29.12 | IN  | :s 333 PeerPants #GSP!gmtest SERVER 1146698419
+05.03.06 16:29.12 | IN  | :s 353 PeerPants * #GSP!gmtest :Ichi-nii PeerPants
+05.03.06 16:29.12 | IN  | :s 366 PeerPants #GSP!gmtest :End of NAMES list
+05.03.06 16:29.12 | OUT | GETCKEY #GSP!gmtest * 001 0 :\username\b_flags
+05.03.06 16:29.12 | IN  | :s 324 PeerPants #GSP!gmtest +tnp
+05.03.06 16:29.12 | IN  | :s 702 PeerPants #GSP!gmtest PeerPants 001 :\X9Fq1qOa9X|0\
+05.03.06 16:29.12 | IN  | :s 702 PeerPants #GSP!gmtest Ichi-nii 001 :\XOWq1qOa9X|0\
+05.03.06 16:29.12 | IN  | :s 703 PeerPants #GSP!gmtest 001 :End of GETCKEY
+05.03.06 16:29.26 | OUT | SETKEY :\b_roomkey\2
+05.03.06 16:29.32 | OUT | GETKEY PeerPants 002 0 :\b_roomkey
+05.03.06 16:29.32 | IN  | :s 700 PeerPants PeerPants 002 :\2
+05.03.06 16:29.34 | OUT | SETCKEY #GSP!gmtest PeerPants :\b_roomkey\2
+05.03.06 16:29.35 | IN  | :s 702 #GSP!gmtest #GSP!gmtest PeerPants BCAST :\b_roomkey\2
+05.03.06 16:29.41 | OUT | GETCKEY #GSP!gmtest PeerPants 003 0 :\b_roomkey
+05.03.06 16:29.41 | IN  | :s 702 PeerPants #GSP!gmtest PeerPants 003 :\2
+05.03.06 16:29.43 | OUT | PART #GSP!gmtest :
+05.03.06 16:29.43 | IN  | :PeerPants!X9Fq1qOa9X|0@* PART #GSP!gmtest :
+05.03.06 16:29.45 | OUT | JOIN #GSP!gmtest 
+05.03.06 16:29.46 | IN  | :PeerPants!X9Fq1qOa9X|0@* JOIN :#GSP!gmtest
+05.03.06 16:29.46 | OUT | MODE #GSP!gmtest
+05.03.06 16:29.46 | IN  | :s 332 PeerPants #GSP!gmtest :Click on the "Game Info" button at the top of your screen for the latest information on patches, add-on files, interviews, strategy guides and more!  It`s all there!
+05.03.06 16:29.46 | IN  | :s 333 PeerPants #GSP!gmtest SERVER 1146698419
+05.03.06 16:29.46 | IN  | :s 353 PeerPants * #GSP!gmtest :Ichi-nii PeerPants
+05.03.06 16:29.46 | IN  | :s 366 PeerPants #GSP!gmtest :End of NAMES list
+05.03.06 16:29.46 | OUT | GETCKEY #GSP!gmtest * 004 0 :\username\b_flags
+05.03.06 16:29.46 | IN  | :s 324 PeerPants #GSP!gmtest +tnp
+05.03.06 16:29.47 | IN  | :s 702 PeerPants #GSP!gmtest PeerPants 004 :\X9Fq1qOa9X|0\
+05.03.06 16:29.47 | IN  | :s 702 PeerPants #GSP!gmtest Ichi-nii 004 :\XOWq1qOa9X|0\
+05.03.06 16:29.47 | IN  | :s 703 PeerPants #GSP!gmtest 004 :End of GETCKEY
+05.03.06 16:30.07 | IN  | :Ichi-nii!XOWq1qOa9X|0@* QUIT :Later!
+05.03.06 16:30.09 | OUT | QUIT :Later!
+
+
+
+
+
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+05.03.06 16:31.54 | OUT | CRYPT des 1 gmtest
+05.03.06 16:31.54 | IN  | :s 705 * YEgOgGP\kz]mYDTo VsJr=t|aixcZA@qB
+05.03.06 16:31.54 | OUT | USRIP
+05.03.06 16:31.54 | IN  | :s 302  :=+@192.168.60.178
+05.03.06 16:31.54 | OUT | USER X9Fq1qOa9X|0 127.0.0.1 peerchat.gamespy.com :f6878a520c1ca0d9d1dbb7ed45da8231
+05.03.06 16:31.54 | OUT | NICK PeerPants
+05.03.06 16:31.55 | IN  | :s 001 PeerPants :Welcome to the Matrix PeerPants
+05.03.06 16:31.55 | IN  | :s 002 PeerPants :Your host is xs3, running version 1.0
+05.03.06 16:31.55 | IN  | :s 003 PeerPants :This server was created Fri Oct 19 1979 at 21:50:00 PDT
+05.03.06 16:31.55 | IN  | :s 004 PeerPants s 1.0 iq biklmnopqustvhe
+05.03.06 16:31.55 | IN  | :s 375 PeerPants :- (M) Message of the day -
+05.03.06 16:31.55 | IN  | :s 372 PeerPants :- Welcome to GameSpy
+05.03.06 16:31.55 | IN  | :s 376 PeerPants :End of MOTD command
+05.03.06 16:31.57 | OUT | JOIN #GSP!gmtest 
+05.03.06 16:31.57 | IN  | :PeerPants!X9Fq1qOa9X|0@* JOIN :#GSP!gmtest
+05.03.06 16:31.57 | OUT | MODE #GSP!gmtest
+05.03.06 16:31.57 | IN  | :s 332 PeerPants #GSP!gmtest :Click on the "Game Info" button at the top of your screen for the latest information on patches, add-on files, interviews, strategy guides and more!  It`s all there!
+05.03.06 16:31.57 | IN  | :s 333 PeerPants #GSP!gmtest SERVER 1146699088
+05.03.06 16:31.57 | IN  | :s 353 PeerPants * #GSP!gmtest :Ichi-nii PeerPants
+05.03.06 16:31.57 | IN  | :s 366 PeerPants #GSP!gmtest :End of NAMES list
+05.03.06 16:31.57 | OUT | GETCKEY #GSP!gmtest * 000 0 :\username\b_flags
+05.03.06 16:31.58 | IN  | :s 324 PeerPants #GSP!gmtest +tnp
+05.03.06 16:31.58 | IN  | :s 702 PeerPants #GSP!gmtest PeerPants 000 :\X9Fq1qOa9X|0\
+05.03.06 16:31.58 | IN  | :s 702 PeerPants #GSP!gmtest Ichi-nii 000 :\XOWq1qOa9X|0\
+05.03.06 16:31.58 | IN  | :s 703 PeerPants #GSP!gmtest 000 :End of GETCKEY
+05.03.06 16:32.02 | OUT | MODE PeerPants +q
+05.03.06 16:32.12 | OUT | PART #GSP!gmtest :
+05.03.06 16:32.20 | OUT | JOIN #GSP!gmtest 
+05.03.06 16:32.21 | IN  | :PeerPants!X9Fq1qOa9X|0@* JOIN :#GSP!gmtest
+05.03.06 16:32.21 | OUT | MODE #GSP!gmtest
+05.03.06 16:32.21 | IN  | :s 332 PeerPants #GSP!gmtest :Click on the "Game Info" button at the top of your screen for the latest information on patches, add-on files, interviews, strategy guides and more!  It`s all there!
+05.03.06 16:32.21 | IN  | :s 333 PeerPants #GSP!gmtest SERVER 1146699088
+05.03.06 16:32.21 | IN  | :s 353 PeerPants * #GSP!gmtest :Ichi-nii PeerPants
+05.03.06 16:32.21 | IN  | :s 366 PeerPants #GSP!gmtest :End of NAMES list
+05.03.06 16:32.21 | OUT | GETCKEY #GSP!gmtest * 001 0 :\username\b_flags
+05.03.06 16:32.21 | IN  | :s 324 PeerPants #GSP!gmtest +tnp
+05.03.06 16:32.21 | IN  | :s 702 PeerPants #GSP!gmtest PeerPants 001 :\X9Fq1qOa9X|0\
+05.03.06 16:32.21 | IN  | :s 702 PeerPants #GSP!gmtest Ichi-nii 001 :\XOWq1qOa9X|0\
+05.03.06 16:32.21 | IN  | :s 703 PeerPants #GSP!gmtest 001 :End of GETCKEY
+05.03.06 16:32.51 | OUT | QUIT :Later!
+
+
+
+
+
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+05.03.06 16:33.49 | OUT | CRYPT des 1 gmtest
+05.03.06 16:33.49 | IN  | :s 705 * GalZduDoteeCIMI^ RNJIsFSLAAoJ=Rb[
+05.03.06 16:33.49 | OUT | USRIP
+05.03.06 16:33.49 | IN  | :s 302  :=+@192.168.60.178
+05.03.06 16:33.49 | OUT | USER X9Fq1qOa9X|0 127.0.0.1 peerchat.gamespy.com :f6878a520c1ca0d9d1dbb7ed45da8231
+05.03.06 16:33.49 | OUT | NICK PeerPants
+05.03.06 16:33.49 | IN  | :s 001 PeerPants :Welcome to the Matrix PeerPants
+05.03.06 16:33.49 | IN  | :s 002 PeerPants :Your host is xs1, running version 1.0
+05.03.06 16:33.49 | IN  | :s 003 PeerPants :This server was created Fri Oct 19 1979 at 21:50:00 PDT
+05.03.06 16:33.49 | IN  | :s 004 PeerPants s 1.0 iq biklmnopqustvhe
+05.03.06 16:33.49 | IN  | :s 375 PeerPants :- (M) Message of the day -
+05.03.06 16:33.49 | IN  | :s 372 PeerPants :- Welcome to GameSpy
+05.03.06 16:33.49 | IN  | :s 376 PeerPants :End of MOTD command
+05.03.06 16:33.51 | OUT | JOIN #GSP!gmtest 
+05.03.06 16:33.51 | IN  | :PeerPants!X9Fq1qOa9X|0@* JOIN :#GSP!gmtest
+05.03.06 16:33.51 | OUT | MODE #GSP!gmtest
+05.03.06 16:33.51 | IN  | :s 332 PeerPants #GSP!gmtest :Click on the "Game Info" button at the top of your screen for the latest information on patches, add-on files, interviews, strategy guides and more!  It`s all there!
+05.03.06 16:33.51 | IN  | :s 333 PeerPants #GSP!gmtest SERVER 1146699223
+05.03.06 16:33.51 | IN  | :s 353 PeerPants * #GSP!gmtest :Ichi-nii PeerPants
+05.03.06 16:33.51 | IN  | :s 366 PeerPants #GSP!gmtest :End of NAMES list
+05.03.06 16:33.51 | OUT | GETCKEY #GSP!gmtest * 000 0 :\username\b_flags
+05.03.06 16:33.52 | IN  | :s 324 PeerPants #GSP!gmtest +tnp
+05.03.06 16:33.52 | IN  | :s 702 PeerPants #GSP!gmtest PeerPants 000 :\X9Fq1qOa9X|0\
+05.03.06 16:33.52 | IN  | :s 702 PeerPants #GSP!gmtest Ichi-nii 000 :\XOWq1qOa9X|0\
+05.03.06 16:33.52 | IN  | :s 703 PeerPants #GSP!gmtest 000 :End of GETCKEY
+05.03.06 16:33.56 | OUT | MODE PeerPants +q
+05.03.06 16:34.30 | OUT | PART #GSP!gmtest :
+05.03.06 16:34.31 | OUT | JOIN #GSP!gmtest 
+05.03.06 16:34.31 | IN  | :PeerPants!X9Fq1qOa9X|0@* JOIN :#GSP!gmtest
+05.03.06 16:34.31 | OUT | MODE #GSP!gmtest
+05.03.06 16:34.31 | IN  | :s 332 PeerPants #GSP!gmtest :Click on the "Game Info" button at the top of your screen for the latest information on patches, add-on files, interviews, strategy guides and more!  It`s all there!
+05.03.06 16:34.31 | IN  | :s 333 PeerPants #GSP!gmtest SERVER 1146699223
+05.03.06 16:34.31 | IN  | :s 353 PeerPants * #GSP!gmtest :Ichi-nii PeerPants
+05.03.06 16:34.31 | IN  | :s 366 PeerPants #GSP!gmtest :End of NAMES list
+05.03.06 16:34.31 | OUT | GETCKEY #GSP!gmtest * 001 0 :\username\b_flags
+05.03.06 16:34.32 | IN  | :s 324 PeerPants #GSP!gmtest +tnp
+05.03.06 16:34.32 | IN  | :s 702 PeerPants #GSP!gmtest PeerPants 001 :\X9Fq1qOa9X|0\
+05.03.06 16:34.32 | IN  | :s 702 PeerPants #GSP!gmtest Ichi-nii 001 :\XOWq1qOa9X|0\
+05.03.06 16:34.32 | IN  | :s 703 PeerPants #GSP!gmtest 001 :End of GETCKEY
+05.03.06 16:34.36 | OUT | PART #GSP!gmtest :
+05.03.06 16:34.37 | OUT | MODE PeerPants -q
+05.03.06 16:34.38 | OUT | JOIN #GSP!gmtest 
+05.03.06 16:34.38 | IN  | :PeerPants!X9Fq1qOa9X|0@* JOIN :#GSP!gmtest
+05.03.06 16:34.38 | OUT | MODE #GSP!gmtest
+05.03.06 16:34.38 | IN  | :s 332 PeerPants #GSP!gmtest :Click on the "Game Info" button at the top of your screen for the latest information on patches, add-on files, interviews, strategy guides and more!  It`s all there!
+05.03.06 16:34.38 | IN  | :s 333 PeerPants #GSP!gmtest SERVER 1146699223
+05.03.06 16:34.38 | IN  | :s 353 PeerPants * #GSP!gmtest :Ichi-nii PeerPants
+05.03.06 16:34.38 | IN  | :s 366 PeerPants #GSP!gmtest :End of NAMES list
+05.03.06 16:34.38 | OUT | GETCKEY #GSP!gmtest * 002 0 :\username\b_flags
+05.03.06 16:34.38 | IN  | :s 324 PeerPants #GSP!gmtest +tnp
+05.03.06 16:34.38 | IN  | :s 702 PeerPants #GSP!gmtest PeerPants 002 :\X9Fq1qOa9X|0\
+05.03.06 16:34.38 | IN  | :s 702 PeerPants #GSP!gmtest Ichi-nii 002 :\XOWq1qOa9X|0\
+05.03.06 16:34.38 | IN  | :s 703 PeerPants #GSP!gmtest 002 :End of GETCKEY
+05.03.06 16:34.40 | OUT | QUIT :Later!

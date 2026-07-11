@@ -1,0 +1,77 @@
+<html>
+<body>
+<pre>
+<h1>Build Log</h1>
+<h3>
+--------------------Configuration: simpletest - Win32 Debug--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\DOCUME~1\shorwath\LOCALS~1\Temp\RSP1972.tmp" with contents
+[
+/nologo /MLd /W3 /WX /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /D "GSI_COMMON_DEBUG" /Fp"Debug/simpletest.pch" /YX /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
+"C:\Gamespy\GOA\natneg\simpletest\simpletest.c"
+"C:\Gamespy\GOA\darray.c"
+"C:\Gamespy\GOA\common\gsAssert.c"
+"C:\Gamespy\GOA\common\gsAvailable.c"
+"C:\Gamespy\GOA\common\gsDebug.c"
+"C:\Gamespy\GOA\common\gsMemory.c"
+"C:\Gamespy\GOA\common\gsPlatform.c"
+"C:\Gamespy\GOA\common\gsPlatformSocket.c"
+"C:\Gamespy\GOA\common\gsPlatformThread.c"
+"C:\Gamespy\GOA\common\gsPlatformUtil.c"
+"C:\Gamespy\GOA\common\gsStringUtil.c"
+"C:\Gamespy\GOA\common\gsTestMain.c"
+"C:\Gamespy\GOA\common\win32\Win32Common.c"
+"C:\Gamespy\GOA\natneg\NATify.c"
+"C:\Gamespy\GOA\natneg\natneg.c"
+]
+Creating command line "snCl.exe @C:\DOCUME~1\shorwath\LOCALS~1\Temp\RSP1972.tmp" 
+Creating temporary file "C:\DOCUME~1\shorwath\LOCALS~1\Temp\RSP1973.tmp" with contents
+[
+kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /incremental:yes /pdb:"Debug/simpletest.pdb" /debug /machine:I386 /out:"Debug/simpletest.exe" /pdbtype:sept 
+.\Debug\simpletest.obj
+.\Debug\darray.obj
+.\Debug\gsAssert.obj
+.\Debug\gsAvailable.obj
+.\Debug\gsDebug.obj
+.\Debug\gsMemory.obj
+.\Debug\gsPlatform.obj
+.\Debug\gsPlatformSocket.obj
+.\Debug\gsPlatformThread.obj
+.\Debug\gsPlatformUtil.obj
+.\Debug\gsStringUtil.obj
+.\Debug\gsTestMain.obj
+.\Debug\Win32Common.obj
+.\Debug\NATify.obj
+.\Debug\natneg.obj
+]
+Creating command line "snLink.exe @C:\DOCUME~1\shorwath\LOCALS~1\Temp\RSP1973.tmp"
+<h3>Output Window</h3>
+Compiling...
+snCL -- Detected win32 build...passing to cl.exe
+simpletest.c
+darray.c
+gsAssert.c
+gsAvailable.c
+gsDebug.c
+gsMemory.c
+gsPlatform.c
+gsPlatformSocket.c
+gsPlatformThread.c
+gsPlatformUtil.c
+gsStringUtil.c
+gsTestMain.c
+Win32Common.c
+NATify.c
+natneg.c
+Linking...
+snCL -- Detected win32 build...passing to link.exe
+snMonitor already running.
+
+
+
+<h3>Results</h3>
+simpletest.exe - 0 error(s), 0 warning(s)
+</pre>
+</body>
+</html>
