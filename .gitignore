@@ -4,3 +4,5 @@ CRYENGINE-VC14.vcxproj.user
 CRYENGINE-VC14.vcxproj.filters
 .vscode/settings.json
 *.htm
+/CrysisWars/BinTemp/x64/Profile
+/gitignore
