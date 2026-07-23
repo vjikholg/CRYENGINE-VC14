@@ -22,7 +22,7 @@
 #include "ITimer.h"
 #include "SaltBufferArray.h"					// SaltBufferArray<>
 #include "EntityTimeoutList.h"
-#include <StlUtils.h>
+#include <CryCommon/StlHashMap.h>
 #include "STLPoolAllocator.h"
 
 //////////////////////////////////////////////////////////////////////////
@@ -41,27 +41,7 @@ class  CEntityArchetypeManager;
 class  CPartitionGrid;
 class  CProximityTriggerSystem;
 //////////////////////////////////////////////////////////////////////////
-
-#ifdef _AMD64_
-// workaround for Amd64 compiler
-#include <map>
-#define hash_map map 
-#else //_AMD64_
-#if defined(LINUX)
-#include <ext/hash_map>
-#else
-#include <hash_map>
-#endif
-#endif //_AMD64_
-
-//////////////////////////////////////////////////////////////////////////
-#if defined(LINUX)
-typedef __gnu_cxx::hash_map<EntityId,CEntity*> EntityMap;
-#else
-typedef stl::hash_map<EntityId,CEntity*,stl::hash_simple<EntityId> > EntityMap;
-#endif
-
-
+using EntityMap = stl::CryHashMap<EntityId, CEntity*, stl::hash_simple<EntityId>>;
 
 //////////////////////////////////////////////////////////////////////////
 struct SEntityTimerEvent

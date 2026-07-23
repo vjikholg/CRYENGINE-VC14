@@ -33,7 +33,7 @@ History:
 #include "IWorldQuery.h"
 #include "ShotValidator.h"
 
-#include <StlUtils.h>
+#include <CryCommon/StlAlgorithms.h>
 
 
 //------------------------------------------------------------------------

@@ -5,7 +5,9 @@
 
 #pragma once
 
-#include "Network.h"
+#include "MementoMemoryManager.h"
+
+#include <type_traits>
 
 template <class T> class STLMementoAllocator
 {
@@ -17,28 +19,32 @@ public:
 	typedef T&        reference;
 	typedef const T&  const_reference;
 	typedef T         value_type;
+	typedef std::false_type propagate_on_container_copy_assignment;
+	typedef std::false_type propagate_on_container_move_assignment;
+	typedef std::false_type propagate_on_container_swap;
+	typedef std::false_type is_always_equal;
 	template <class U> struct rebind
 	{
 		typedef STLMementoAllocator<U> other;
 	};
 
-	STLMementoAllocator() throw() : m_pMMM(&MMM()) 
+	STLMementoAllocator() noexcept : m_pMMM(&MMM())
 	{
 	}
 
-	STLMementoAllocator( const CMementoMemoryManagerPtr& pMMM ) throw() : m_pMMM(pMMM)
+	STLMementoAllocator( const CMementoMemoryManagerPtr& pMMM ) noexcept : m_pMMM(pMMM)
 	{
 	}
 
-	STLMementoAllocator(const STLMementoAllocator& other) throw() : m_pMMM(other.m_pMMM)
+	STLMementoAllocator(const STLMementoAllocator& other) noexcept : m_pMMM(other.m_pMMM)
 	{
 	}
 
-	template <class U> STLMementoAllocator(const STLMementoAllocator<U>& other) throw() : m_pMMM(other.m_pMMM)
+	template <class U> STLMementoAllocator(const STLMementoAllocator<U>& other) noexcept : m_pMMM(other.m_pMMM)
 	{
 	}
 
-	~STLMementoAllocator() throw()
+	~STLMementoAllocator() noexcept
 	{
 	}
 
@@ -52,7 +58,7 @@ public:
 		return &x;
 	}
 
-	pointer allocate(size_type n, const void* hint = 0)
+	pointer allocate(size_type n, const void* = 0)
 	{
 		return static_cast<T*>(m_pMMM->AllocPtr(n*sizeof(T)));
 	}
@@ -62,7 +68,7 @@ public:
 		m_pMMM->FreePtr(p, n*sizeof(T));
 	}
 
-	size_type max_size() const throw()
+	size_type max_size() const noexcept
 	{
 		return INT_MAX;
 	}
@@ -82,8 +88,27 @@ public:
 		p->~T();
 	}
 
-	bool operator==(const STLMementoAllocator& other) {return m_pMMM == other.m_pMMM;}
-	bool operator!=(const STLMementoAllocator& other) {return m_pMMM != other.m_pMMM;}
+	bool operator==(const STLMementoAllocator& other) const noexcept
+	{
+		return m_pMMM == other.m_pMMM;
+	}
+
+	bool operator!=(const STLMementoAllocator& other) const noexcept
+	{
+		return m_pMMM != other.m_pMMM;
+	}
+
+	template <class U>
+	bool operator==(const STLMementoAllocator<U>& other) const noexcept
+	{
+		return m_pMMM == other.m_pMMM;
+	}
+
+	template <class U>
+	bool operator!=(const STLMementoAllocator<U>& other) const noexcept
+	{
+		return m_pMMM != other.m_pMMM;
+	}
 
 	CMementoMemoryManagerPtr m_pMMM;
 };
@@ -94,8 +119,53 @@ public:
 	typedef void* pointer;
 	typedef const void* const_pointer;
 	typedef void value_type;
-	template <class U> 
+	typedef std::false_type propagate_on_container_copy_assignment;
+	typedef std::false_type propagate_on_container_move_assignment;
+	typedef std::false_type propagate_on_container_swap;
+	typedef std::false_type is_always_equal;
+	template <class U>
 	struct rebind { typedef STLMementoAllocator<U> other; };
-};    
+
+	STLMementoAllocator() noexcept : m_pMMM(&MMM())
+	{
+	}
+
+	STLMementoAllocator(const CMementoMemoryManagerPtr& pMMM) noexcept : m_pMMM(pMMM)
+	{
+	}
+
+	STLMementoAllocator(const STLMementoAllocator& other) noexcept : m_pMMM(other.m_pMMM)
+	{
+	}
+
+	template <class U>
+	STLMementoAllocator(const STLMementoAllocator<U>& other) noexcept : m_pMMM(other.m_pMMM)
+	{
+	}
+
+	bool operator==(const STLMementoAllocator& other) const noexcept
+	{
+		return m_pMMM == other.m_pMMM;
+	}
+
+	bool operator!=(const STLMementoAllocator& other) const noexcept
+	{
+		return m_pMMM != other.m_pMMM;
+	}
+
+	template <class U>
+	bool operator==(const STLMementoAllocator<U>& other) const noexcept
+	{
+		return m_pMMM == other.m_pMMM;
+	}
+
+	template <class U>
+	bool operator!=(const STLMementoAllocator<U>& other) const noexcept
+	{
+		return m_pMMM != other.m_pMMM;
+	}
+
+	CMementoMemoryManagerPtr m_pMMM;
+};
 
 #endif

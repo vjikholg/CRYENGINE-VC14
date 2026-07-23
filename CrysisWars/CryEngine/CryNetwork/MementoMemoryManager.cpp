@@ -6,6 +6,11 @@
 
 CMementoMemoryManager * CMementoMemoryRegion::m_pMMM = 0;
 
+CMementoMemoryManager& MMM()
+{
+	return CMementoMemoryRegion::Get();
+}
+
 CMementoMemoryManager::CMementoMemoryManager()
 {
 	ASSERT_GLOBAL_LOCK;

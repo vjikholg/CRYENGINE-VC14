@@ -12,27 +12,12 @@
 
 
 
-#ifdef WIN64
-// Workaround for Amd64 compiler
-#include <map>
-#define hash_map map
-#else
-#if defined(LINUX)
-#include <ext/hash_map>
-#define std__hash_map __gnu_cxx::hash_map
-#else
-#include <hash_map>
-#endif
-#endif
-
-#ifndef std__hash_map
-#define std__hash_map std::hash_map
-#endif
+#include <StlHashMap.h>
 
 #include <vector>
 #include "GlyphBitmap.h"
 #include "FontRenderer.h"
-#include <StlUtils.h>
+
 
 
 typedef struct CCacheSlot
@@ -59,9 +44,8 @@ typedef struct CCacheSlot
 
 } CCacheSlot;
 
-
-typedef std__hash_map<uint16, CCacheSlot *>			CCacheTable;
-//typedef std__hash_map<wchar_t, CCacheSlot *>::iterator	CCacheTableItor;
+using CCacheTable = stl::CryHashMap<uint16, CCacheSlot*, stl::hash_simple<uint16>>;
+using CCacheTableItor = stl::CryHashMap<uint16, CCacheSlot*, stl::hash_simple<uint16>>::iterator;
 
 typedef std::vector<CCacheSlot *>						CCacheSlotList;
 typedef std::vector<CCacheSlot *>::iterator				CCacheSlotListItor;

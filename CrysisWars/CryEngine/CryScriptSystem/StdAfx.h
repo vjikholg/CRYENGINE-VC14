@@ -38,7 +38,7 @@ inline char *_strlwr(const char *str)
 //#define DEBUG_LUA_STATE
 
 #include <ISystem.h>
-#include <StlUtils.h>
+#include <CryCommon/StlAlgorithms.h>
 #include <CrySizer.h>
 #include <PoolAllocator.h>
 #include "CryTypeInfo.h"

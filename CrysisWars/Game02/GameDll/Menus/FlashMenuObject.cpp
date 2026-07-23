@@ -13,7 +13,8 @@ History:
 
 *************************************************************************/
 #include "StdAfx.h"
-#include <StlUtils.h>
+#include <map>
+#include <vector>
 
 #include <IVideoPlayer.h>
 #include <time.h>

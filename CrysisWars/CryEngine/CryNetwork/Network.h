@@ -440,9 +440,4 @@ private:
 
 #define MMM_REGION(pMMM) CMementoMemoryRegion _mmmrgn(pMMM)
 
-ILINE CMementoMemoryManager& MMM()
-{
-	return CMementoMemoryRegion::Get();
-}
-
 #endif

@@ -23,7 +23,7 @@
 #include <set>
 #include "AnimNode.h"
 #include "SoundTrack.h"
-#include "StlUtils.h"
+#include <CryCommon/StlContainerUtils.h>
 
 #include <IFacialAnimation.h>
 

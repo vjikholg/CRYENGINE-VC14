@@ -1,5 +1,5 @@
 #include "StdAfx.h"
-#include <StlUtils.h>
+#include <vector>
 
 #include "HUD.h"
 #include "GameFlashAnimation.h"

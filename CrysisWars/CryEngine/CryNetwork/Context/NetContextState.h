@@ -8,6 +8,7 @@
 #include "ContextEstablisher.h"
 #include "ChangeList.h"
 #include "STLMementoAllocator.h"
+#include "StlHashMap.h"
 
 class CNetContext;
 typedef _smart_ptr<CNetContext> CNetContextPtr;
@@ -409,9 +410,17 @@ private:
 	void ClearContextObjectCache() { m_cacheObjectID = SNetObjectID(); m_cacheObjectRef = SContextObjectRef(); }
 
 #if USE_SYSTEM_ALLOCATOR
-	typedef stl::hash_map<EntityId, SNetObjectID, stl::hash_uint32> TNetIDMap;
+	using TNetIDMap = stl::CryHashMap<
+		EntityId,
+		SNetObjectID,
+		stl::hash_uint32>;
 #else
-	typedef stl::hash_map<EntityId, SNetObjectID, stl::hash_uint32, STLMementoAllocator<std::pair<EntityId, SNetObjectID> > > TNetIDMap;
+	using TNetIDMap = stl::CryHashMap<
+		EntityId,
+		SNetObjectID,
+		stl::hash_uint32,
+		STLMementoAllocator<std::pair<const EntityId, SNetObjectID>
+		>>;
 #endif
 	std::auto_ptr<TNetIDMap> m_pNetIDs;
 

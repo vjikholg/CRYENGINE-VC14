@@ -8,6 +8,7 @@
 #include "INetwork.h"
 #include "SerializationChunk.h"
 #include "STLPoolAllocator_ManyElems.h"
+#include <CryCommon/StlHashMap.h>
 
 struct ICompressionPolicy;
 typedef _smart_ptr<ICompressionPolicy> ICompressionPolicyPtr;
@@ -80,19 +81,9 @@ public:
 	void GetMemoryStatistics(ICrySizer* pSizer);
 
 private:
-	class HashTraits : public stl::hash_uint32
-	{
-	public:
-		enum {	// parameters for hash table
-			bucket_size = 1,	// 0 < bucket_size
-			min_buckets = 128	};// min_buckets = 2 ^^ N, 0 < N
-	};
+	using TCompressionPoliciesMap =
+		stl::CryHashMap<uint32, ICompressionPolicyPtr, stl::hash_uint32>;
 
-#if USE_SYSTEM_ALLOCATOR
-	typedef stl::hash_map<uint32, ICompressionPolicyPtr, HashTraits> TCompressionPoliciesMap;
-#else
-	typedef stl::hash_map<uint32, ICompressionPolicyPtr, HashTraits, stl::STLPoolAllocator_ManyElems<std::pair<uint32, ICompressionPolicyPtr> > > TCompressionPoliciesMap;
-#endif
 	TCompressionPoliciesMap m_compressionPolicies;
 	ICompressionPolicyPtr m_pDefaultPolicy;
 

@@ -8,6 +8,7 @@
 
 //! Include standard headers.
 #include <platform.h>
+#include <map>
 
 #pragma warning(disable : 4996)
 #pragma warning(default:4018)	// signed/unsigned mismatch
@@ -23,7 +24,8 @@
 #include <ILog.h>
 #include <IConsole.h>
 #include <ICryPak.h>
-#include <StlUtils.h>
+#include <CryCommon/StlAlgorithms.h>
+#include <CryCommon/StlContainerUtils.h>
 
 #include <ICryAnimation.h>
 #include "AnimationBase.h"

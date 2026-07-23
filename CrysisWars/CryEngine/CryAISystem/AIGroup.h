@@ -13,7 +13,9 @@
 #include "IRenderAuxGeom.h"	
 #include "IAgent.h"
 #include "IAIGroup.h"
-#include "StlUtils.h"
+#include <list>
+#include <map>
+#include <vector>
 
 struct IAIGroupTactic;
 class CLeader;

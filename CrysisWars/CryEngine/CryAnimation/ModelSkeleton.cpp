@@ -11,7 +11,8 @@
 
 #include "stdafx.h"
 #include "ModelSkeleton.h"
-#include <StlUtils.h>
+#include <CryCommon/StlAlgorithms.h>
+#include <CryCommon/StlContainerUtils.h>
 #include "StringUtils.h"
 
 

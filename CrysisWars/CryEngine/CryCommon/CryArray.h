@@ -59,12 +59,12 @@ protected:
 // Allocation functors.
 struct FModuleAlloc
 {
-	static void* Alloc( void* oldptr, size_t oldsize, size_t newsize )	{ return ModuleAlloc( oldptr, newsize ); }
+	static void* Alloc( void* oldptr, size_t, size_t newsize )	{ return ModuleAlloc( oldptr, newsize ); }
 };
 
 struct FSafeModuleAlloc
 {
-	static void* Alloc( void* oldptr, size_t oldsize, size_t newsize ) { return SafeAlloc( ModuleAlloc, oldptr, newsize ); }
+	static void* Alloc( void* oldptr, size_t, size_t newsize ) { return SafeAlloc( ModuleAlloc, oldptr, newsize ); }
 };
 
 //---------------------------------------------------------------------------

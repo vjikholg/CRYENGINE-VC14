@@ -32,6 +32,7 @@
 #include <platform.h>
 
 #include <stdio.h>
+#include <map>
 
 #define MAX_PATH_LENGTH 512
 
@@ -58,7 +59,8 @@
 #include "CryArray.h"
 #include "cvars.h"
 #include <CrySizer.h>
-#include <StlUtils.h>
+#include <CryCommon/StlAlgorithms.h>
+#include <CryCommon/StlContainerUtils.h>
 #include "Array2d.h"
 #include "3dEngine.h"
 #include "ObjMan.h"

@@ -13,7 +13,7 @@ History:
 *************************************************************************/
 
 #include "StdAfx.h"
-#include <StlUtils.h>
+
 #include "MovieManager.h"
 
 #include <IVideoPlayer.h>

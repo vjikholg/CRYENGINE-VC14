@@ -11,7 +11,7 @@
 #include "IRenderAuxGeom.h"	
 #include "IAgent.h"
 #include "IAIGroup.h"
-#include "StlUtils.h"
+#include <vector>
 
 class CAIGroup;
 

@@ -21,7 +21,7 @@ History:
 #endif
 
 #include "CAISystem.h"
-#include "StlUtils.h"
+#include <vector>
 
 struct IRenderer;
 

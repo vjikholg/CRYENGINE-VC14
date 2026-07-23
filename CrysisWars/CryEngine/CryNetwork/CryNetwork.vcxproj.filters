@@ -243,6 +243,9 @@
     <ClInclude Include="STLMementoAllocator.h">
       <Filter>Main</Filter>
     </ClInclude>
+    <ClInclude Include="StreamAllocator.h">
+      <Filter>Main</Filter>
+    </ClInclude>
     <ClInclude Include="Utils.h">
       <Filter>Main</Filter>
     </ClInclude>

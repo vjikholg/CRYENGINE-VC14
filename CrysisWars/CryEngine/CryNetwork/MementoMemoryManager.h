@@ -3,8 +3,18 @@
 
 #pragma once
 
+#include <platform.h>
+#include <smartptr.h>
+
 #include "STLPoolAllocator.h"
 #include "Config.h"
+#include "StreamAllocator.h"
+
+#include <cstdint>
+#include <vector>
+
+class ICrySizer;
+void CryError(const char*, ...);
 
 struct IMementoManagedThing
 {
@@ -66,11 +76,15 @@ public:
 private:
 	ILINE Hdl ProtectHdl( Hdl x ) const
 	{
-		return (x + 0x80) ^ (uint32)this;
+		return (x + 0x80) ^ GetHandleProtectionKey();
 	}
 	ILINE Hdl UnprotectHdl( Hdl x ) const
 	{
-		return (x ^ (uint32)this) - 0x80;
+		return (x ^ GetHandleProtectionKey()) - 0x80;
+	}
+	ILINE uint32 GetHandleProtectionKey() const
+	{
+		return static_cast<uint32>(reinterpret_cast<std::uintptr_t>(this));
 	}
 
 	struct SPoolStats
@@ -167,11 +181,18 @@ private:
 	std::map<uint32, void*> m_hdlToAlloc;
 	std::map<void*, uint32> m_allocAmt;
 #endif
+
+	size_t GetLiveAllocationBytes() const noexcept
+	{
+		return m_totalAllocations;
+	}
 };
 
 typedef CMementoMemoryManager::Hdl TMemHdl;
 
 typedef _smart_ptr<CMementoMemoryManager> CMementoMemoryManagerPtr;
+
+CMementoMemoryManager& MMM();
 
 class CMementoStreamAllocator : public IStreamAllocator
 {

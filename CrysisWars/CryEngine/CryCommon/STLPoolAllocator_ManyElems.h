@@ -10,7 +10,7 @@
 //
 // this class acts like STLPoolAllocator, but it is also usable for vectors
 // which means that it can be used as a more efficient allocator for many
-// implementations of hash_map (typically this uses internally a vector and
+// implementations of unordered_map (typically this uses internally a vector and
 // a list with the same allocator)
 //---------------------------------------------------------------------------
 

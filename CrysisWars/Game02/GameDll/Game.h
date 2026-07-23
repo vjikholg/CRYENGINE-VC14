@@ -23,7 +23,7 @@
 #include <IGameObjectSystem.h>
 #include <IGameObject.h>
 #include <IActorSystem.h>
-#include <StlUtils.h>
+#include <CryCommon/StlContainerUtils.h>
 #include "ClientSynchedStorage.h"
 #include "ServerSynchedStorage.h"
 

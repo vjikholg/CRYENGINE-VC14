@@ -62,11 +62,6 @@
 #include <vector>
 #include <list>
 #include <map>
-#if defined(LINUX)
-	#include <ext/hash_map>
-#else
-	#include <hash_map>
-#endif
 #include <set>
 #include <stack>
 #include <deque>
@@ -85,7 +80,8 @@
 #include <smartptr.h>
 #include <Range.h>
 #include <CrySizer.h>
-#include <StlUtils.h>
+#include <CryCommon/StlAlgorithms.h>
+#include <CryCommon/StlContainerUtils.h>
 
 
 static inline int

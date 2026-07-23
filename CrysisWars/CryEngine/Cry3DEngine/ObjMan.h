@@ -31,7 +31,7 @@ enum EOcclusionObjectType
 #include "StatObj.h"
 #include "../RenderDll/Common/Shadow_Renderer.h"
 #include "terrain_sector.h"
-#include "StlUtils.h"
+#include <CryCommon/StlContainerUtils.h>
 #include "CullBuffer.h"
 
 #include <map>

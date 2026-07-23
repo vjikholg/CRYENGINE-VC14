@@ -1,5 +1,6 @@
 #include "IScriptSystem.h"
-#include <StlUtils.h>
+#include <CryCommon/StlAlgorithms.h>
+#include <CryCommon/StlContainerUtils.h>
 
 #define MUSICLOAD_MODE_BASE					0
 #define MUSICLOAD_MODE_PATTERNS			1

@@ -50,9 +50,11 @@ void CCompressionRegistry::Create()
  */
 
 CCompressionManager::CCompressionManager()
+	: m_compressionPolicies(128)
+	, m_pDefaultPolicy(0)
 {
-	m_pDefaultPolicy = 0;
 }
+
 
 CCompressionManager::~CCompressionManager()
 {

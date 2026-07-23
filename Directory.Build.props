@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <CryEngineRoot>$(MSBuildThisFileDirectory)CrysisWars\CryEngine</CryEngineRoot>
+    <CryCommonDir>$(CryEngineRoot)\CryCommon</CryCommonDir>
+    <CryRuntimeProject>false</CryRuntimeProject>
+    <CryRuntimeProject Condition="'$(MSBuildProjectName)' == 'Cry3DEngine' Or
+                                  '$(MSBuildProjectName)' == 'CryAction' Or
+                                  '$(MSBuildProjectName)' == 'CryAISystem' Or
+                                  '$(MSBuildProjectName)' == 'CryAnimation' Or
+                                  '$(MSBuildProjectName)' == 'CryCommon' Or
+                                  '$(MSBuildProjectName)' == 'CryEntitySystem' Or
+                                  '$(MSBuildProjectName)' == 'CryFont' Or
+                                  '$(MSBuildProjectName)' == 'CryInput' Or
+                                  '$(MSBuildProjectName)' == 'CryMovie' Or
+                                  '$(MSBuildProjectName)' == 'CryNetwork' Or
+                                  '$(MSBuildProjectName)' == 'CryPhysics' Or
+                                  '$(MSBuildProjectName)' == 'CryScriptSystem' Or
+                                  '$(MSBuildProjectName)' == 'CrySoundSystem' Or
+                                  '$(MSBuildProjectName)' == 'CrySystem' Or
+                                  '$(MSBuildProjectName)' == 'GameDll' Or
+                                  '$(MSBuildProjectName)' == 'launcher' Or
+                                  '$(MSBuildProjectName)' == 'XRenderD3D9' Or
+                                  '$(MSBuildProjectName)' == 'XRenderD3D10'">true</CryRuntimeProject>
+  </PropertyGroup>
+
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(CryEngineRoot);$(CryCommonDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+
+  <ItemDefinitionGroup Condition="'$(CryRuntimeProject)' == 'true' And '$(Platform)' == 'x64'">
+    <ClCompile>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalOptions>/Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+</Project>

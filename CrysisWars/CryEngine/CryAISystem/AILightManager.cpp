@@ -18,7 +18,7 @@ History:
 #include "CAISystem.h"
 #include "IRenderer.h"
 #include "IRenderAuxGeom.h"	
-#include "StlUtils.h"
+
 #include "AILightManager.h"
 #include "CryPodArray.h"
 #include "AIDebugDrawHelpers.h"

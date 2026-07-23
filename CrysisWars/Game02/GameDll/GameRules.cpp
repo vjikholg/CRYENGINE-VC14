@@ -40,7 +40,7 @@
 #include "SPAnalyst.h"
 #include "IWorldQuery.h"
 
-#include <StlUtils.h>
+#include <CryCommon/StlAlgorithms.h>
 #include <StringUtils.h>
 
 DbgPlotter	g_dbgPlotter;

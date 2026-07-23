@@ -137,13 +137,7 @@ struct SMacroFX
   uint m_nMask;
 };
 
-//typedef stl::hash_map<string,SMacroFX,stl::hash_strcmp<string> > FXMacro;
-//typedef std::map<string,SMacroFX> FXMacro;
-#ifdef USE_HASH_MAP
-typedef stl::hash_map<string,SMacroFX,stl::hash_strcmp<const char*> > FXMacro;
-#else
-typedef std::map<string,SMacroFX,stl::less_strcmp<const char*> > FXMacro;
-#endif
+using FXMacro = stl::CryHashMap<string, SMacroFX, stl::hash_strcmp<string>>;
 
 typedef FXMacro::iterator FXMacroItor;
 

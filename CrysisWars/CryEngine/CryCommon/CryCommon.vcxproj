@@ -438,6 +438,9 @@
     <ClInclude Include="SimpleSerialize.h" />
     <ClInclude Include="smartptr.h" />
     <ClInclude Include="StlDbgAlloc.h" />
+    <ClInclude Include="StlAlgorithms.h" />
+    <ClInclude Include="StlContainerUtils.h" />
+    <ClInclude Include="StlHashMap.h" />
     <ClInclude Include="STLPoolAllocator.h" />
     <ClInclude Include="STLPoolAllocator_ManyElems.h" />
     <ClInclude Include="StlUtils.h" />

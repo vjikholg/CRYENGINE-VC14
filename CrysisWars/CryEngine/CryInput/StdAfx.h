@@ -16,6 +16,7 @@
 
 #include <vector>
 #include <list>
+#include <map>
 
 #if defined(_DEBUG) && !defined(PS3) && !defined(LINUX)
 #include <crtdbg.h>
@@ -24,7 +25,7 @@
 #include <ITimer.h>
 #include <IInput.h>
 #include <CryName.h>
-#include <StlUtils.h>
+#include <CryCommon/StlContainerUtils.h>
 #include "CryInput.h"
 
 //{{AFX_INSERT_LOCATION}}

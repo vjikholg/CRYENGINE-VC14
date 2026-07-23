@@ -45,7 +45,8 @@
 
 #include <Cry_Math.h>
 #include <CrySizer.h>
-#include "StlUtils.h"
+#include <CryCommon/StlAlgorithms.h>
+#include <CryCommon/StlHashMap.h>
 
 #include "IRenderer.h"
 
@@ -186,13 +187,7 @@ inline void __NET_TRACE(const char *sFormat, ... )
 
 #endif //_DEBUG
 
-struct IStreamAllocator
-{
-	virtual void *Alloc(size_t size, void * callerOverride = 0)=0;
-	virtual void *Realloc(void *old,size_t size)=0;
-	virtual void Free(void *old)=0;
-};
-
+#include "StreamAllocator.h"
 
 class CDefaultStreamAllocator : public IStreamAllocator
 {

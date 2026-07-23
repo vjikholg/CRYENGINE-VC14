@@ -18,7 +18,7 @@
 #pragma once
 
 #include "Cry_Color.h"
-#include "StlUtils.h"
+#include <CryCommon/StlContainerUtils.h>
 
 // Description:
 //    2D Texture coordinates used by CMesh.

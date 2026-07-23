@@ -41,7 +41,9 @@
 
 inline void GameWarning(const char * ,...) PRINTF_PARAMS(1, 2);
 
-#include <StlUtils.h>
+#include <CryCommon/StlAlgorithms.h>
+#include <CryCommon/StlContainerUtils.h>
+#include <CryCommon/StlHashMap.h>
 #include <Cry_Math.h>
 #include <ISystem.h>
 //#include <IRenderer.h>

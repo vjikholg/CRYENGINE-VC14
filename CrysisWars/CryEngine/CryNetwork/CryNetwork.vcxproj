@@ -1055,6 +1055,7 @@
     <ClInclude Include="Socket\WatchdogTimer.h" />
     <ClInclude Include="StdAfx.h" />
     <ClInclude Include="STLMementoAllocator.h" />
+    <ClInclude Include="StreamAllocator.h" />
     <ClInclude Include="Streams\ArithStream.h" />
     <ClInclude Include="Streams\ByteStream.h" />
     <ClInclude Include="Streams\CommStream.h" />

@@ -20,7 +20,7 @@ History:
 
 #include "IItemSystem.h"
 #include <ConfigurableVariant.h>
-#include <StlUtils.h>
+#include <CryCommon/StlContainerUtils.h>
 
 
 template <class F, class T>

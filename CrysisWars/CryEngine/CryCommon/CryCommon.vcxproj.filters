@@ -474,6 +474,15 @@
     <ClInclude Include="STLPoolAllocator_ManyElems.h">
       <Filter>Common_h</Filter>
     </ClInclude>
+    <ClInclude Include="StlAlgorithms.h">
+      <Filter>Common_h</Filter>
+    </ClInclude>
+    <ClInclude Include="StlContainerUtils.h">
+      <Filter>Common_h</Filter>
+    </ClInclude>
+    <ClInclude Include="StlHashMap.h">
+      <Filter>Common_h</Filter>
+    </ClInclude>
     <ClInclude Include="StlUtils.h">
       <Filter>Common_h</Filter>
     </ClInclude>

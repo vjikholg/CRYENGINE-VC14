@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{CA20F6C7-01BE-40DA-98E1-25B393D93D34}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;cc</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{7E47AC9E-9552-4DBE-9CC6-826E5B84CA7F}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx</Extensions>
+    </Filter>
+    <Filter Include="Shared Test Support">
+      <UniqueIdentifier>{5B12B645-EAF8-4C6F-A217-C73447016699}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\CryNetwork\StreamAllocator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CryNetworkTestPreamble.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MementoAllocatorTestSupport.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="STLMementoAllocatorTests.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\CryCommonTests\TestRunner.h">
+      <Filter>Shared Test Support</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MementoAllocatorTestSupport.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="STLMementoAllocatorTests.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\CryCommonTests\TestRunner.cpp">
+      <Filter>Shared Test Support</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

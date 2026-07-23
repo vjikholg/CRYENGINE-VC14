@@ -18,7 +18,8 @@
 #pragma once
 
 #include "IGameTokens.h"
-#include "StlUtils.h"
+#include <CryCommon/StlAlgorithms.h>
+#include <CryCommon/StlHashMap.h>
 
 class CGameToken;
 
@@ -66,11 +67,9 @@ private:
 	bool _InternalLoadLibrary( const char *filename, const char* tag );
 
 	// Use Hash map for speed.
-#ifdef USE_HASH_MAP
-	typedef stl::hash_map<const char*,CGameToken*,stl::hash_stricmp<const char*> > GameTokensMap;
-#else
-	typedef std::map<const char*,CGameToken*,stl::less_stricmp<const char*> > GameTokensMap;
-#endif
+
+	using GameTokensMap =
+		stl::CryHashMap<const char*, CGameToken*, stl::hash_stricmp<const char*> >;
 
 	typedef std::vector<IGameTokenEventListener*> Listeners;
 	Listeners m_listeners;

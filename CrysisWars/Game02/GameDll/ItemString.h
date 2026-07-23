@@ -20,7 +20,8 @@
 #endif
 
 #include <ISystem.h>
-#include <StlUtils.h>
+#include <CryCommon/StlAlgorithms.h>
+#include <CryCommon/StlHashMap.h>
 
 namespace SharedString
 {

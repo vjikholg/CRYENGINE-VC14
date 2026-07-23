@@ -163,15 +163,6 @@ void CRTDeleteArray(void *pData);
 #include <vector>
 #include <list>
 #include <map>
-#ifdef WIN64
-#define hash_map map
-#else
-#if defined(LINUX)
-#include <ext/hash_map>
-#else
-#include <hash_map>
-#endif
-#endif
 #include <set>
 #include <algorithm>
 #include <memory>
@@ -235,7 +226,9 @@ extern ISystem  *iSystem;
 #include <Cry_Geo.h>
 //#include "_Malloc.h"
 //#include "math.h"
-#include <StlUtils.h>
+#include <CryCommon/StlAlgorithms.h>
+#include <CryCommon/StlContainerUtils.h>
+#include <CryCommon/StlHashMap.h>
 
 #include <VertexFormats.h>
 

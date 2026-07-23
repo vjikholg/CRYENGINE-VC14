@@ -257,6 +257,7 @@ _inline void CryHeapCheck()
 {
 #if !defined(LINUX) && !defined (PS3)
   int Result = _heapchk();
+  (void)Result;
   assert(Result!=_HEAPBADBEGIN);
   assert(Result!=_HEAPBADNODE);
   assert(Result!=_HEAPBADPTR);

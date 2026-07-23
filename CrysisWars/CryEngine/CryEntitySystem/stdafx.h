@@ -39,7 +39,9 @@
 #include "Cry_GeoIntersect.h"
 #include <CrySizer.h>
 #include <smartptr.h>
-#include <StlUtils.h>
+#include <CryCommon/StlAlgorithms.h>
+#include <CryCommon/StlContainerUtils.h>
+#include <CryCommon/StlHashMap.h>
 
 ////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////

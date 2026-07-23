@@ -16,7 +16,7 @@
 #define CRY_SIMD_H
 
 #if _MSC_VER > 1000
-# pragma once
+#pragma once
 #endif
 
 #include <platform.h>
@@ -24,23 +24,23 @@
 //========================================================================================
 
 #ifdef CRYANIMATION_EXPORTS
-	#define CRYANIMATION_API	DLL_EXPORT
+#define CRYANIMATION_API DLL_EXPORT
 #else
-  #ifndef CRYANIMATION_API
-		#define CRYANIMATION_API	DLL_IMPORT
-	#endif
+#ifndef CRYANIMATION_API
+#define CRYANIMATION_API DLL_IMPORT
+#endif
 #endif
 
-//#ifndef _XBOX
- extern int g_CpuFlags;
-//#else
- //extern CRYANIMATION_API int g_CpuFlags;
-//#endif
+// #ifndef _XBOX
+extern int g_CpuFlags;
+// #else
+// extern CRYANIMATION_API int g_CpuFlags;
+// #endif
 
-#define CPUF_SSE   1
-#define CPUF_SSE2  2
+#define CPUF_SSE 1
+#define CPUF_SSE2 2
 #define CPUF_3DNOW 4
-#define CPUF_MMX   8
+#define CPUF_MMX 8
 
 #ifdef _CPU_SSE
 
@@ -48,24 +48,30 @@
 #include <xmmintrin.h>
 #endif
 
-#define _MM_PREFETCH( MemPtr,Hint ) _mm_prefetch( (MemPtr),(Hint) );
-#define _MM_PREFETCH_LOOP( nCount,MemPtr,Hint ) { for (int p = 0; p < nCount; p+=64) { _mm_prefetch( (const char*)(MemPtr)+p,Hint); } }
+#define _MM_PREFETCH(MemPtr, Hint) _mm_prefetch((MemPtr), (Hint));
+#define _MM_PREFETCH_LOOP(nCount, MemPtr, Hint)       \
+  {                                                   \
+    for (int p = 0; p < nCount; p += 64)              \
+    {                                                 \
+      _mm_prefetch((const char *)(MemPtr) + p, Hint); \
+    }                                                 \
+  }
 #else //_CPU_SSE
-#define _MM_PREFETCH( MemPtr,Hint )
-#define _MM_PREFETCH_LOOP( nCount,MemPtr,Hint )
+#define _MM_PREFETCH(MemPtr, Hint)
+#define _MM_PREFETCH_LOOP(nCount, MemPtr, Hint)
 #endif //_CPU_SSE
 
-void cryMemcpy( void* Dst, const void* Src, int Count );
+void cryMemcpy(void *Dst, const void *Src, int Count);
 
 inline float AngleMod(float a)
 {
-  a = (float)((360.0/65536) * ((int)(a*(65536/360.0)) & 65535));
+  a = (float)((360.0 / 65536) * ((int)(a * (65536 / 360.0)) & 65535));
   return a;
 }
 
 inline unsigned short Degr2Word(float f)
 {
-  return (unsigned short)(AngleMod(f)/360.0f*65536.0f);
+  return (unsigned short)(AngleMod(f) / 360.0f * 65536.0f);
 }
 inline float Word2Degr(unsigned short s)
 {
@@ -76,12 +82,12 @@ inline float Word2Degr(unsigned short s)
 MISC FUNCTIONS
 *****************************************************/
 
-
 //////////////////////////////////////
 #if defined(_CPU_X86)
-ILINE float __fastcall Ffabs(float f) {
-	*((unsigned *) & f) &= ~0x80000000;
-	return (f);
+ILINE float __fastcall Ffabs(float f)
+{
+  *((unsigned *)&f) &= ~0x80000000;
+  return (f);
 }
 #else
 inline float Ffabs(float x) { return fabsf(x); }
@@ -95,17 +101,16 @@ inline int fastftol_positive(float f)
 
   f -= 0.5f;
 #if defined(_MSC_VER)
-  __asm fld [f]
-  __asm fistp [i]
+  __asm fld[f] __asm fistp[i]
 #elif defined(__GNUC__)
-  __asm__ ("fld %[f]\n fistpl %[i]" : [i] "+m" (i) : [f] "m" (f));
+  __asm__("fld %[f]\n fistpl %[i]" : [i] "+m"(i) : [f] "m"(f));
 #else
 #error
 #endif
-  return i;
+      return i;
 }
 #else
-inline int fastftol_positive (float f)
+inline int fastftol_positive(float f)
 {
   assert(f >= 0.f);
   return (int)floorf(f);
@@ -116,31 +121,30 @@ inline int fastftol_positive (float f)
 #if defined(_CPU_X86)
 inline int fastround_positive(float f)
 {
-	int i;
+  int i;
   assert(f >= 0.f);
 #if defined(_MSC_VER)
-	__asm fld [f]
-	__asm fistp [i]
+  __asm fld[f] __asm fistp[i]
 #elif defined(__GNUC__)
-	__asm__ ("fld %[f]\n fistpl %[i]" : [i] "+m" (i) : [f] "m" (f));
+  __asm__("fld %[f]\n fistpl %[i]" : [i] "+m"(i) : [f] "m"(f));
 #else
 #error
 #endif
-	return i;
+      return i;
 }
 #else
 inline int fastround_positive(float f)
 {
   assert(f >= 0.f);
-	return (int) (f+0.5f);
+  return (int)(f + 0.5f);
 }
 #endif
 
 //////////////////////////////////////////////////////////////////////////
 #if defined(_CPU_X86)
-ILINE int __fastcall FtoI(float  x)
+ILINE int __fastcall FtoI(float x)
 {
-  int	   t;
+  int t;
 #if defined(_MSC_VER)
   __asm
   {
@@ -148,7 +152,7 @@ ILINE int __fastcall FtoI(float  x)
     fistp t
   }
 #elif defined(__GNUC__)
-	__asm__ ("fld %[x]\n fistpl %[t]" : [x] "+m" (x) : [t] "m" (t));
+  __asm__("fld %[x]\n fistpl %[t]" : [x] "+m"(x) : [t] "m"(t));
 #else
 #error
 #endif
@@ -158,23 +162,23 @@ ILINE int __fastcall FtoI(float  x)
 inline int FtoI(float x) { return (int)x; }
 #endif
 
-
-
 //////////////////////////////////////
-#define rnd()	(((float)cry_rand())/RAND_MAX)  // Floating point random number generator ( 0 -> 1)
+#define rnd() (((float)cry_rand()) / RAND_MAX) // Floating point random number generator ( 0 -> 1)
 
 //////////////////////////////////////
 inline void multMatrices(double dst[16], const double a[16], const double b[16])
 {
   int i, j;
 
-  for (i = 0; i < 4; i++) {
-    for (j = 0; j < 4; j++) {
+  for (i = 0; i < 4; i++)
+  {
+    for (j = 0; j < 4; j++)
+    {
       dst[i * 4 + j] =
-        b[i * 4 + 0] * a[0 * 4 + j] +
-        b[i * 4 + 1] * a[1 * 4 + j] +
-        b[i * 4 + 2] * a[2 * 4 + j] +
-        b[i * 4 + 3] * a[3 * 4 + j];
+          b[i * 4 + 0] * a[0 * 4 + j] +
+          b[i * 4 + 1] * a[1 * 4 + j] +
+          b[i * 4 + 2] * a[2 * 4 + j] +
+          b[i * 4 + 3] * a[3 * 4 + j];
     }
   }
 }
@@ -184,13 +188,15 @@ inline void multMatrices(float dst[16], const float a[16], const float b[16])
 {
   int i, j;
 
-  for (i = 0; i < 4; i++) {
-    for (j = 0; j < 4; j++) {
+  for (i = 0; i < 4; i++)
+  {
+    for (j = 0; j < 4; j++)
+    {
       dst[i * 4 + j] =
-        b[i * 4 + 0] * a[0 * 4 + j] +
-        b[i * 4 + 1] * a[1 * 4 + j] +
-        b[i * 4 + 2] * a[2 * 4 + j] +
-        b[i * 4 + 3] * a[3 * 4 + j];
+          b[i * 4 + 0] * a[0 * 4 + j] +
+          b[i * 4 + 1] * a[1 * 4 + j] +
+          b[i * 4 + 2] * a[2 * 4 + j] +
+          b[i * 4 + 3] * a[3 * 4 + j];
     }
   }
 }
@@ -204,33 +210,31 @@ inline void matmult_trans_only(float a[3], float b[4][4], float result[3])
   result[2] = a[0] * b[0][2] + a[1] * b[1][2] + a[2] * b[2][2] + b[3][2];
 }
 
-
 /*
 ======================================
 Matrix 4x4
 ======================================
 */
 
-
 inline void multMatrixf(float *product, const float *m1, const float *m2)
 {
-	float temp[16];
+  float temp[16];
 
-#define A(row,col)  m1[(col<<2)+row]
-#define B(row,col)  m2[(col<<2)+row]
-#define P(row,col)  temp[(col<<2)+row]
+#define A(row, col) m1[(col << 2) + row]
+#define B(row, col) m2[(col << 2) + row]
+#define P(row, col) temp[(col << 2) + row]
 
   int i;
-  for (i=0; i<4; i++)
+  for (i = 0; i < 4; i++)
   {
-    float ai0=A(i,0),  ai1=A(i,1),  ai2=A(i,2),  ai3=A(i,3);
-    P(i,0) = ai0 * B(0,0) + ai1 * B(1,0) + ai2 * B(2,0) + ai3 * B(3,0);
-    P(i,1) = ai0 * B(0,1) + ai1 * B(1,1) + ai2 * B(2,1) + ai3 * B(3,1);
-    P(i,2) = ai0 * B(0,2) + ai1 * B(1,2) + ai2 * B(2,2) + ai3 * B(3,2);
-    P(i,3) = ai0 * B(0,3) + ai1 * B(1,3) + ai2 * B(2,3) + ai3 * B(3,3);
+    float ai0 = A(i, 0), ai1 = A(i, 1), ai2 = A(i, 2), ai3 = A(i, 3);
+    P(i, 0) = ai0 * B(0, 0) + ai1 * B(1, 0) + ai2 * B(2, 0) + ai3 * B(3, 0);
+    P(i, 1) = ai0 * B(0, 1) + ai1 * B(1, 1) + ai2 * B(2, 1) + ai3 * B(3, 1);
+    P(i, 2) = ai0 * B(0, 2) + ai1 * B(1, 2) + ai2 * B(2, 2) + ai3 * B(3, 2);
+    P(i, 3) = ai0 * B(0, 3) + ai1 * B(1, 3) + ai2 * B(2, 3) + ai3 * B(3, 3);
   }
 
-	cryMemcpy(product, temp, sizeof(temp));
+  cryMemcpy(product, temp, sizeof(temp));
 
 #undef A
 #undef B
@@ -241,18 +245,18 @@ inline void multMatrixf_Transp2(float *product, const float *m1, const float *m2
 {
   float temp[16];
 
-#define A(row,col)  m1[(col<<2)+row]
-#define B(row,col)  m2[(col<<2)+row]
-#define P(row,col)  temp[(col<<2)+row]
+#define A(row, col) m1[(col << 2) + row]
+#define B(row, col) m2[(col << 2) + row]
+#define P(row, col) temp[(col << 2) + row]
 
   int i;
-  for (i=0; i<4; i++)
+  for (i = 0; i < 4; i++)
   {
-    float ai0=A(i,0),  ai1=A(i,1),  ai2=A(i,2),  ai3=A(i,3);
-    P(i,0) = ai0 * B(0,0) + ai1 * B(0,1) + ai2 * B(0,2);
-    P(i,1) = ai0 * B(1,0) + ai1 * B(1,1) + ai2 * B(1,2);
-    P(i,2) = ai0 * B(2,0) + ai1 * B(2,1) + ai2 * B(2,2);
-    P(i,3) = ai0 * B(3,0) + ai1 * B(3,1) + ai2 * B(3,2) + ai3;
+    float ai0 = A(i, 0), ai1 = A(i, 1), ai2 = A(i, 2), ai3 = A(i, 3);
+    P(i, 0) = ai0 * B(0, 0) + ai1 * B(0, 1) + ai2 * B(0, 2);
+    P(i, 1) = ai0 * B(1, 0) + ai1 * B(1, 1) + ai2 * B(1, 2);
+    P(i, 2) = ai0 * B(2, 0) + ai1 * B(2, 1) + ai2 * B(2, 2);
+    P(i, 3) = ai0 * B(3, 0) + ai1 * B(3, 1) + ai2 * B(3, 2) + ai3;
   }
 
   cryMemcpy(product, temp, sizeof(temp));
@@ -266,7 +270,7 @@ inline void multMatrixf_Transp2(float *product, const float *m1, const float *m2
 // 3DNow! optimizations
 
 #pragma warning(push)
-#pragma warning(disable:4731) // frame pointer register 'ebp' modified by inline assembly code
+#pragma warning(disable : 4731) // frame pointer register 'ebp' modified by inline assembly code
 
 struct SConst3DN
 {
@@ -276,9 +280,6 @@ struct SConst3DN
 const SConst3DN const3DN_1_N1 = {1.0f, -1.0f};
 const SConst3DN const3DN_0_1 = {0.0f, 1.0f};
 
-
-
-
 /*!
 Compute inverse of 4x4 transformation SINGLE-PRECISION matrix.
 Code lifted from Brian Paul's Mesa freeware OpenGL implementation.
@@ -286,127 +287,203 @@ Return true for success, false for failure (singular matrix)
 */
 inline bool QQinvertMatrixf(float *out, const float *m)
 {
-#define SWAP_ROWS(a, b) { float *_tmp = a; (a)=(b); (b)=_tmp; }
-#define MAT(m,r,c) (m)[(c)*4+(r)]
+#define SWAP_ROWS(a, b) \
+  {                     \
+    float *_tmp = a;    \
+    (a) = (b);          \
+    (b) = _tmp;         \
+  }
+#define MAT(m, r, c) (m)[(c) * 4 + (r)]
 
-	float wtmp[4][8];
-	float m0, m1, m2, m3, s;
-	float *r0, *r1, *r2, *r3;
+  float wtmp[4][8];
+  float m0, m1, m2, m3, s;
+  float *r0, *r1, *r2, *r3;
 
-	r0 = wtmp[0], r1 = wtmp[1], r2 = wtmp[2], r3 = wtmp[3];
+  r0 = wtmp[0], r1 = wtmp[1], r2 = wtmp[2], r3 = wtmp[3];
 
-	r0[0] = MAT(m,0,0), r0[1] = MAT(m,0,1),
-		r0[2] = MAT(m,0,2), r0[3] = MAT(m,0,3),
-		r0[4] = 1.0f, r0[5] = r0[6] = r0[7] = 0.0f,
+  r0[0] = MAT(m, 0, 0), r0[1] = MAT(m, 0, 1),
+  r0[2] = MAT(m, 0, 2), r0[3] = MAT(m, 0, 3),
+  r0[4] = 1.0f, r0[5] = r0[6] = r0[7] = 0.0f,
 
-		r1[0] = MAT(m,1,0), r1[1] = MAT(m,1,1),
-		r1[2] = MAT(m,1,2), r1[3] = MAT(m,1,3),
-		r1[5] = 1.0f, r1[4] = r1[6] = r1[7] = 0.0f,
+  r1[0] = MAT(m, 1, 0), r1[1] = MAT(m, 1, 1),
+  r1[2] = MAT(m, 1, 2), r1[3] = MAT(m, 1, 3),
+  r1[5] = 1.0f, r1[4] = r1[6] = r1[7] = 0.0f,
 
-		r2[0] = MAT(m,2,0), r2[1] = MAT(m,2,1),
-		r2[2] = MAT(m,2,2), r2[3] = MAT(m,2,3),
-		r2[6] = 1.0f, r2[4] = r2[5] = r2[7] = 0.0f,
+  r2[0] = MAT(m, 2, 0), r2[1] = MAT(m, 2, 1),
+  r2[2] = MAT(m, 2, 2), r2[3] = MAT(m, 2, 3),
+  r2[6] = 1.0f, r2[4] = r2[5] = r2[7] = 0.0f,
 
-		r3[0] = MAT(m,3,0), r3[1] = MAT(m,3,1),
-		r3[2] = MAT(m,3,2), r3[3] = MAT(m,3,3),
-		r3[7] = 1.0f, r3[4] = r3[5] = r3[6] = 0.0f;
+  r3[0] = MAT(m, 3, 0), r3[1] = MAT(m, 3, 1),
+  r3[2] = MAT(m, 3, 2), r3[3] = MAT(m, 3, 3),
+  r3[7] = 1.0f, r3[4] = r3[5] = r3[6] = 0.0f;
 
-	/* choose pivot - or die */
-	if (fabs(r3[0])>fabs(r2[0])) SWAP_ROWS(r3, r2);
-	if (fabs(r2[0])>fabs(r1[0])) SWAP_ROWS(r2, r1);
-	if (fabs(r1[0])>fabs(r0[0])) SWAP_ROWS(r1, r0);
-	if (0.0 == r0[0])
-	{
-		return 0;
-	}
+  /* choose pivot - or die */
+  if (fabs(r3[0]) > fabs(r2[0]))
+    SWAP_ROWS(r3, r2);
+  if (fabs(r2[0]) > fabs(r1[0]))
+    SWAP_ROWS(r2, r1);
+  if (fabs(r1[0]) > fabs(r0[0]))
+    SWAP_ROWS(r1, r0);
+  if (0.0 == r0[0])
+  {
+    return 0;
+  }
 
-	/* eliminate first variable     */
-	m1 = r1[0]/r0[0]; m2 = r2[0]/r0[0]; m3 = r3[0]/r0[0];
-	s = r0[1]; r1[1] -= m1 * s; r2[1] -= m2 * s; r3[1] -= m3 * s;
-	s = r0[2]; r1[2] -= m1 * s; r2[2] -= m2 * s; r3[2] -= m3 * s;
-	s = r0[3]; r1[3] -= m1 * s; r2[3] -= m2 * s; r3[3] -= m3 * s;
-	s = r0[4];
-	if (s != 0.0) { r1[4] -= m1 * s; r2[4] -= m2 * s; r3[4] -= m3 * s; }
-	s = r0[5];
-	if (s != 0.0) { r1[5] -= m1 * s; r2[5] -= m2 * s; r3[5] -= m3 * s; }
-	s = r0[6];
-	if (s != 0.0) { r1[6] -= m1 * s; r2[6] -= m2 * s; r3[6] -= m3 * s; }
-	s = r0[7];
-	if (s != 0.0) { r1[7] -= m1 * s; r2[7] -= m2 * s; r3[7] -= m3 * s; }
+  /* eliminate first variable     */
+  m1 = r1[0] / r0[0];
+  m2 = r2[0] / r0[0];
+  m3 = r3[0] / r0[0];
+  s = r0[1];
+  r1[1] -= m1 * s;
+  r2[1] -= m2 * s;
+  r3[1] -= m3 * s;
+  s = r0[2];
+  r1[2] -= m1 * s;
+  r2[2] -= m2 * s;
+  r3[2] -= m3 * s;
+  s = r0[3];
+  r1[3] -= m1 * s;
+  r2[3] -= m2 * s;
+  r3[3] -= m3 * s;
+  s = r0[4];
+  if (s != 0.0)
+  {
+    r1[4] -= m1 * s;
+    r2[4] -= m2 * s;
+    r3[4] -= m3 * s;
+  }
+  s = r0[5];
+  if (s != 0.0)
+  {
+    r1[5] -= m1 * s;
+    r2[5] -= m2 * s;
+    r3[5] -= m3 * s;
+  }
+  s = r0[6];
+  if (s != 0.0)
+  {
+    r1[6] -= m1 * s;
+    r2[6] -= m2 * s;
+    r3[6] -= m3 * s;
+  }
+  s = r0[7];
+  if (s != 0.0)
+  {
+    r1[7] -= m1 * s;
+    r2[7] -= m2 * s;
+    r3[7] -= m3 * s;
+  }
 
-	/* choose pivot - or die */
-	if (fabs(r3[1])>fabs(r2[1])) SWAP_ROWS(r3, r2);
-	if (fabs(r2[1])>fabs(r1[1])) SWAP_ROWS(r2, r1);
-	if (0.0 == r1[1])
-	{
-		return 0;
-	}
+  /* choose pivot - or die */
+  if (fabs(r3[1]) > fabs(r2[1]))
+    SWAP_ROWS(r3, r2);
+  if (fabs(r2[1]) > fabs(r1[1]))
+    SWAP_ROWS(r2, r1);
+  if (0.0 == r1[1])
+  {
+    return 0;
+  }
 
-	/* eliminate second variable */
-	m2 = r2[1]/r1[1]; m3 = r3[1]/r1[1];
-	r2[2] -= m2 * r1[2]; r3[2] -= m3 * r1[2];
-	r2[3] -= m2 * r1[3]; r3[3] -= m3 * r1[3];
-	s = r1[4]; if (0.0 != s) { r2[4] -= m2 * s; r3[4] -= m3 * s; }
-	s = r1[5]; if (0.0 != s) { r2[5] -= m2 * s; r3[5] -= m3 * s; }
-	s = r1[6]; if (0.0 != s) { r2[6] -= m2 * s; r3[6] -= m3 * s; }
-	s = r1[7]; if (0.0 != s) { r2[7] -= m2 * s; r3[7] -= m3 * s; }
+  /* eliminate second variable */
+  m2 = r2[1] / r1[1];
+  m3 = r3[1] / r1[1];
+  r2[2] -= m2 * r1[2];
+  r3[2] -= m3 * r1[2];
+  r2[3] -= m2 * r1[3];
+  r3[3] -= m3 * r1[3];
+  s = r1[4];
+  if (0.0 != s)
+  {
+    r2[4] -= m2 * s;
+    r3[4] -= m3 * s;
+  }
+  s = r1[5];
+  if (0.0 != s)
+  {
+    r2[5] -= m2 * s;
+    r3[5] -= m3 * s;
+  }
+  s = r1[6];
+  if (0.0 != s)
+  {
+    r2[6] -= m2 * s;
+    r3[6] -= m3 * s;
+  }
+  s = r1[7];
+  if (0.0 != s)
+  {
+    r2[7] -= m2 * s;
+    r3[7] -= m3 * s;
+  }
 
-	/* choose pivot - or die */
-	if (fabs(r3[2])>fabs(r2[2])) SWAP_ROWS(r3, r2);
-	if (0.0 == r2[2])
-	{
-		return 0;
-	}
+  /* choose pivot - or die */
+  if (fabs(r3[2]) > fabs(r2[2]))
+    SWAP_ROWS(r3, r2);
+  if (0.0 == r2[2])
+  {
+    return 0;
+  }
 
-	/* eliminate third variable */
-	m3 = r3[2]/r2[2];
-	r3[3] -= m3 * r2[3], r3[4] -= m3 * r2[4],
-		r3[5] -= m3 * r2[5], r3[6] -= m3 * r2[6],
-		r3[7] -= m3 * r2[7];
+  /* eliminate third variable */
+  m3 = r3[2] / r2[2];
+  r3[3] -= m3 * r2[3], r3[4] -= m3 * r2[4],
+      r3[5] -= m3 * r2[5], r3[6] -= m3 * r2[6],
+      r3[7] -= m3 * r2[7];
 
-	/* last check */
-	if (0.0 == r3[3])
-	{
-		return 0;
-	}
+  /* last check */
+  if (0.0 == r3[3])
+  {
+    return 0;
+  }
 
-	s = 1.0f/r3[3];              /* now back substitute row 3 */
-	r3[4] *= s; r3[5] *= s; r3[6] *= s; r3[7] *= s;
+  s = 1.0f / r3[3]; /* now back substitute row 3 */
+  r3[4] *= s;
+  r3[5] *= s;
+  r3[6] *= s;
+  r3[7] *= s;
 
-	m2 = r2[3];                 /* now back substitute row 2 */
-	s  = 1.0f/r2[2];
-	r2[4] = s * (r2[4] - r3[4] * m2), r2[5] = s * (r2[5] - r3[5] * m2),
-		r2[6] = s * (r2[6] - r3[6] * m2), r2[7] = s * (r2[7] - r3[7] * m2);
-	m1 = r1[3];
-	r1[4] -= r3[4] * m1, r1[5] -= r3[5] * m1,
-		r1[6] -= r3[6] * m1, r1[7] -= r3[7] * m1;
-	m0 = r0[3];
-	r0[4] -= r3[4] * m0, r0[5] -= r3[5] * m0,
-		r0[6] -= r3[6] * m0, r0[7] -= r3[7] * m0;
+  m2 = r2[3]; /* now back substitute row 2 */
+  s = 1.0f / r2[2];
+  r2[4] = s * (r2[4] - r3[4] * m2), r2[5] = s * (r2[5] - r3[5] * m2),
+  r2[6] = s * (r2[6] - r3[6] * m2), r2[7] = s * (r2[7] - r3[7] * m2);
+  m1 = r1[3];
+  r1[4] -= r3[4] * m1, r1[5] -= r3[5] * m1,
+      r1[6] -= r3[6] * m1, r1[7] -= r3[7] * m1;
+  m0 = r0[3];
+  r0[4] -= r3[4] * m0, r0[5] -= r3[5] * m0,
+      r0[6] -= r3[6] * m0, r0[7] -= r3[7] * m0;
 
-	m1 = r1[2];                 /* now back substitute row 1 */
-	s  = 1.0f/r1[1];
-	r1[4] = s * (r1[4] - r2[4] * m1), r1[5] = s * (r1[5] - r2[5] * m1),
-		r1[6] = s * (r1[6] - r2[6] * m1), r1[7] = s * (r1[7] - r2[7] * m1);
-	m0 = r0[2];
-	r0[4] -= r2[4] * m0, r0[5] -= r2[5] * m0,
-		r0[6] -= r2[6] * m0, r0[7] -= r2[7] * m0;
+  m1 = r1[2]; /* now back substitute row 1 */
+  s = 1.0f / r1[1];
+  r1[4] = s * (r1[4] - r2[4] * m1), r1[5] = s * (r1[5] - r2[5] * m1),
+  r1[6] = s * (r1[6] - r2[6] * m1), r1[7] = s * (r1[7] - r2[7] * m1);
+  m0 = r0[2];
+  r0[4] -= r2[4] * m0, r0[5] -= r2[5] * m0,
+      r0[6] -= r2[6] * m0, r0[7] -= r2[7] * m0;
 
-	m0 = r0[1];                 /* now back substitute row 0 */
-	s  = 1.0f/r0[0];
-	r0[4] = s * (r0[4] - r1[4] * m0), r0[5] = s * (r0[5] - r1[5] * m0),
-		r0[6] = s * (r0[6] - r1[6] * m0), r0[7] = s * (r0[7] - r1[7] * m0);
+  m0 = r0[1]; /* now back substitute row 0 */
+  s = 1.0f / r0[0];
+  r0[4] = s * (r0[4] - r1[4] * m0), r0[5] = s * (r0[5] - r1[5] * m0),
+  r0[6] = s * (r0[6] - r1[6] * m0), r0[7] = s * (r0[7] - r1[7] * m0);
 
-	MAT(out,0,0) = r0[4]; MAT(out,0,1) = r0[5],
-		MAT(out,0,2) = r0[6]; MAT(out,0,3) = r0[7],
-		MAT(out,1,0) = r1[4]; MAT(out,1,1) = r1[5],
-		MAT(out,1,2) = r1[6]; MAT(out,1,3) = r1[7],
-		MAT(out,2,0) = r2[4]; MAT(out,2,1) = r2[5],
-		MAT(out,2,2) = r2[6]; MAT(out,2,3) = r2[7],
-		MAT(out,3,0) = r3[4]; MAT(out,3,1) = r3[5],
-		MAT(out,3,2) = r3[6]; MAT(out,3,3) = r3[7];
+  MAT(out, 0, 0) = r0[4];
+  MAT(out, 0, 1) = r0[5],
+              MAT(out, 0, 2) = r0[6];
+  MAT(out, 0, 3) = r0[7],
+              MAT(out, 1, 0) = r1[4];
+  MAT(out, 1, 1) = r1[5],
+              MAT(out, 1, 2) = r1[6];
+  MAT(out, 1, 3) = r1[7],
+              MAT(out, 2, 0) = r2[4];
+  MAT(out, 2, 1) = r2[5],
+              MAT(out, 2, 2) = r2[6];
+  MAT(out, 2, 3) = r2[7],
+              MAT(out, 3, 0) = r3[4];
+  MAT(out, 3, 1) = r3[5],
+              MAT(out, 3, 2) = r3[6];
+  MAT(out, 3, 3) = r3[7];
 
-	return 1;
+  return 1;
 
 #undef MAT
 #undef SWAP_ROWS
@@ -420,7 +497,7 @@ inline void cryPrecacheSSE(const void *src, int nbytes)
   {
     mov esi, src
     mov ecx, nbytes
-    // 64 bytes per pass
+                         // 64 bytes per pass
     shr ecx, 6
     jz endLabel
 
@@ -453,7 +530,7 @@ inline void cryPrecacheMMX(const void *src, int nbytes)
   {
     mov esi, src
     mov ecx, nbytes
-    // 64 bytes per pass
+                         // 64 bytes per pass
     shr ecx, 6
     jz endLabel
 
@@ -477,13 +554,12 @@ endLabel:
   }
 }
 
-
 #endif
 
 inline void cryPrefetchNTSSE(const void *src)
 {
 #if defined(WIN32) && !defined(WIN64) && !defined(LINUX)
-	_asm
+  _asm
   {
     mov esi, src
     prefetchnta [ESI] // Prefetch non-temporal
@@ -491,18 +567,16 @@ inline void cryPrefetchNTSSE(const void *src)
 #endif
 }
 
-
-
 ILINE void cryPrefetchT0SSE(const void *src)
 {
 #if defined(WIN32) && !defined(WIN64)
   _asm
-  {
+      {
     mov esi, src
     prefetchT0 [ESI] // Prefetch
-  }
+      }
 #else
-	_MM_PREFETCH( (char*)src, _MM_HINT_T0 );
+  _MM_PREFETCH((char *)src, _MM_HINT_T0);
 #endif
 }
 
@@ -515,11 +589,11 @@ ILINE void cryPrefetchT0SSE(const void *src)
 // "Streaming Store"), and also uses the software prefetch instructions,
 // be sure you're running on Athlon/Duron or other recent CPU before calling!
 
-#define TINY_BLOCK_COPY 64       // upper limit for movsd type copy
+#define TINY_BLOCK_COPY 64 // upper limit for movsd type copy
 // The smallest copy uses the X86 "movsd" instruction, in an optimized
 // form which is an "unrolled loop".
 
-#define IN_CACHE_COPY 64 * 1024  // upper limit for movq/movq copy w/SW prefetch
+#define IN_CACHE_COPY 64 * 1024 // upper limit for movq/movq copy w/SW prefetch
 // Next is a copy that uses the MMX registers to copy 8 bytes at a time,
 // also using the "unrolled loop" optimization.   This code uses
 // the software prefetch instruction to get the data into the cache.
@@ -531,23 +605,22 @@ ILINE void cryPrefetchT0SSE(const void *src)
 // uses the software prefetch instruction to pre-read the data.
 // USE 64 * 1024 FOR THIS VALUE IF YOU'RE ALWAYS FILLING A "CLEAN CACHE"
 
-#define BLOCK_PREFETCH_COPY  infinity // no limit for movq/movntq w/block prefetch
-#define CACHEBLOCK 80h // number of 64-byte blocks (cache lines) for block prefetch
+#define BLOCK_PREFETCH_COPY infinity // no limit for movq/movntq w/block prefetch
+#define CACHEBLOCK 80h               // number of 64-byte blocks (cache lines) for block prefetch
 // For the largest size blocks, a special technique called Block Prefetch
 // can be used to accelerate the read operations.   Block Prefetch reads
 // one address per cache line, for a series of cache lines, in a short loop.
 // This is faster than using software prefetch.  The technique is great for
 // getting maximum read bandwidth, especially in DDR memory systems.
 
-
 #if defined _CPU_X86 && !defined(LINUX)
 // Inline assembly syntax for use with Visual C++
-inline void cryMemcpy( void* Dst, const void* Src, int Count )
+inline void cryMemcpy(void *Dst, const void *Src, int Count)
 {
   if (g_CpuFlags & CPUF_SSE)
   {
-	  __asm
-	  {
+    __asm
+    {
 		  mov		ecx, [Count]	; number of bytes to copy
 		  mov		edi, [Dst]		; destination
 		  mov		esi, [Src]		; source
@@ -588,9 +661,9 @@ inline void cryMemcpy( void* Dst, const void* Src, int Count )
 		  cmp		ecx, IN_CACHE_COPY/64	; too big 4 cache? use uncached copy
 		  jae		$memcpy_uc_test
 
-	  // This is small block copy that uses the MMX registers to copy 8 bytes
-	  // at a time.  It uses the "unrolled loop" optimization, and also uses
-	  // the software prefetch instruction to get the data into the cache.
+                           // This is small block copy that uses the MMX registers to copy 8 bytes
+                           // at a time.  It uses the "unrolled loop" optimization, and also uses
+                           // the software prefetch instruction to get the data into the cache.
 	  align 16
 	  $memcpy_ic_1:			; 64-byte block copies, in-cache copy
 
@@ -635,10 +708,10 @@ inline void cryMemcpy( void* Dst, const void* Src, int Count )
 		  or		ecx, ecx		; tail end of block prefetch will jump here
 		  jz		$memcpy_ic_2	; no more 64-byte blocks left
 
-	  // For larger blocks, which will spill beyond the cache, it's faster to
-	  // use the Streaming Store instruction MOVNTQ.   This write instruction
-	  // bypasses the cache and writes straight to main memory.  This code also
-	  // uses the software prefetch instruction to pre-read the data.
+                   // For larger blocks, which will spill beyond the cache, it's faster to
+                   // use the Streaming Store instruction MOVNTQ.   This write instruction
+                   // bypasses the cache and writes straight to main memory.  This code also
+                   // uses the software prefetch instruction to pre-read the data.
 	  align 16
 	  $memcpy_uc_1:				; 64-byte blocks, uncached copy
 
@@ -667,11 +740,11 @@ inline void cryMemcpy( void* Dst, const void* Src, int Count )
 
 		  jmp		$memcpy_ic_2		; almost done
 
-	  // For the largest size blocks, a special technique called Block Prefetch
-	  // can be used to accelerate the read operations.   Block Prefetch reads
-	  // one address per cache line, for a series of cache lines, in a short loop.
-	  // This is faster than using software prefetch.  The technique is great for
-	  // getting maximum read bandwidth, especially in DDR memory systems.
+          // For the largest size blocks, a special technique called Block Prefetch
+          // can be used to accelerate the read operations.   Block Prefetch reads
+          // one address per cache line, for a series of cache lines, in a short loop.
+          // This is faster than using software prefetch.  The technique is great for
+          // getting maximum read bandwidth, especially in DDR memory systems.
 	  $memcpy_bp_1:			; large blocks, block prefetch copy
 
 		  cmp		ecx, CACHEBLOCK			; big enough to run another prefetch loop?
@@ -715,8 +788,8 @@ inline void cryMemcpy( void* Dst, const void* Src, int Count )
 		  sub		ecx, CACHEBLOCK		; update the 64-byte block count
 		  jmp		$memcpy_bp_1		; keep processing chunks
 
-	  // The smallest copy uses the X86 "movsd" instruction, in an optimized
-	  // form which is an "unrolled loop".   Then it handles the last few bytes.
+          // The smallest copy uses the X86 "movsd" instruction, in an optimized
+          // form which is an "unrolled loop".   Then it handles the last few bytes.
 	  align 4
 		  movsd
 		  movsd			; perform last 1-15 dword copies
@@ -744,8 +817,8 @@ inline void cryMemcpy( void* Dst, const void* Src, int Count )
 	  $memcpy_final:
 		  emms				; clean up the MMX state
 		  sfence				; flush the write buffer
-	  //	mov		eax, [dest]	; ret value = destination pointer
-	  }
+      //	mov		eax, [dest]	; ret value = destination pointer
+    }
   }
   else
   {
@@ -753,7 +826,7 @@ inline void cryMemcpy( void* Dst, const void* Src, int Count )
   }
 }
 
-inline void cryPrefetch(const void* Src, int nCount)
+inline void cryPrefetch(const void *Src, int nCount)
 {
   nCount >>= 6;
   if (nCount > 0)
@@ -788,7 +861,7 @@ mPr1:
   }
 }
 
-inline void cryMemcpy (void* inDst, const void* inSrc, int nCount, int nFlags)
+inline void cryMemcpy(void *inDst, const void *inSrc, int nCount, int nFlags)
 {
   int i;
   int cnt;
@@ -809,7 +882,7 @@ inline void cryMemcpy (void* inDst, const void* inSrc, int nCount, int nFlags)
     if (nAlign16 & 3)
     {
       cnt = (int)(4 - nAlign16);
-      for (i=0; i<cnt; i++)
+      for (i = 0; i < cnt; i++)
       {
         *Dst++ = *Src++;
       }
@@ -818,7 +891,7 @@ inline void cryMemcpy (void* inDst, const void* inSrc, int nCount, int nFlags)
     if (nCount >= 16 && (nAlign16 & 0xc))
     {
       cnt = (int)(16 - nAlign16);
-      for (i=0; i<(cnt>>2); i++)
+      for (i = 0; i < (cnt >> 2); i++)
       {
         *(UINT_PTR *)Dst = *(UINT_PTR *)Src;
         Dst += 4;
@@ -937,8 +1010,7 @@ inline void cryMemcpy (void* inDst, const void* inSrc, int nCount, int nFlags)
             }
           }
         }
-        else
-        if (g_CpuFlags & CPUF_MMX)
+        else if (g_CpuFlags & CPUF_MMX)
         {
           _asm
           {
@@ -995,7 +1067,7 @@ St5:
       if (Count_64 > 128)
       {
         cryPrefetch(Src, Count_64);
-        cnt = Count_64>>6;
+        cnt = Count_64 >> 6;
 
         if (g_CpuFlags & CPUF_SSE)
         {
@@ -1096,8 +1168,7 @@ St5:
             }
           }
         }
-        else
-        if (g_CpuFlags & CPUF_MMX)
+        else if (g_CpuFlags & CPUF_MMX)
         {
           _asm
           {
@@ -1154,7 +1225,7 @@ St11:
     }
     if (Count_64)
     {
-      cnt = Count_64>>6;
+      cnt = Count_64 >> 6;
 
       if (g_CpuFlags & CPUF_SSE)
       {
@@ -1255,8 +1326,7 @@ St15:
           }
         }
       }
-      else
-      if (g_CpuFlags & CPUF_MMX)
+      else if (g_CpuFlags & CPUF_MMX)
       {
         _asm
         {
@@ -1312,7 +1382,7 @@ St17:
   }
   if (Count_16)
   {
-    cnt = Count_16>>4;
+    cnt = Count_16 >> 4;
     if (g_CpuFlags & CPUF_SSE)
     {
       if ((INT_PTR)Src & 0xf)
@@ -1388,8 +1458,7 @@ St21:
         }
       }
     }
-    else
-    if (g_CpuFlags & CPUF_MMX)
+    else if (g_CpuFlags & CPUF_MMX)
     {
       _asm
       {
@@ -1471,13 +1540,12 @@ St25:
 
 //==============================================================================
 
-
 // Matrix inversion using 3DNow! instructions set
 // NOTE: On AMD Athlon - much faster then SSE version
 inline bool invertMatrixf_3DNow(float *pOut, const float *pIn)
 {
   _asm
-  {
+      {
     mov         edx, pIn
     sub         esp,40h
     movq        mm1,mmword ptr [edx+10h]
@@ -1669,7 +1737,7 @@ inline bool invertMatrixf_3DNow(float *pOut, const float *pIn)
 m1:
     femms
     add         esp,40h
-  }
+      }
   return true;
 }
 
@@ -2575,7 +2643,7 @@ lEnd:
 inline void transformVec3Nf_SSE(float *result, float *inV, float *matrix)
 {
   _asm
-  {
+      {
     and         esp,0FFFFFFF0h
     sub         esp,20h
     mov         eax, matrix
@@ -2641,73 +2709,73 @@ lEnd:
     mov         esp,ebp
     pop         ebp
     ret         0Ch
-  }
+      }
 }
-#elif defined (XENON)
-ILINE void cryMemcpy(void* Dst, const void* Src, int n)
+#elif defined(XENON)
+ILINE void cryMemcpy(void *Dst, const void *Src, int n)
 {
   XMemCpy(Dst, Src, n);
 }
-ILINE void cryMemcpy(void* Dst, const void* Src, int n, int nFlags)
+ILINE void cryMemcpy(void *Dst, const void *Src, int n, int nFlags)
 {
   XMemCpy(Dst, Src, n);
 }
 #else
 
-const int PREFNTA_BLOCK = 0x4000;
+const int PREFNTA_BLOCK = 0x4000; // 16kb block
 
-ILINE void cryMemcpy(void* Dst, const void* Src, int n) {
-	char* dst=(char*)Dst;
-	char* src=(char*)Src;
-	while (n > PREFNTA_BLOCK) 
-	{
+ILINE void cryMemcpy(void *Dst, const void *Src, int n)
+{
+  char *dst = (char *)Dst;
+  char *src = (char *)Src;
+  while (n > PREFNTA_BLOCK)
+  {
 
-		_MM_PREFETCH_LOOP( PREFNTA_BLOCK,src,_MM_HINT_NTA );
+    _MM_PREFETCH_LOOP(PREFNTA_BLOCK, src, _MM_HINT_NTA);
 
-		memcpy(dst, src, PREFNTA_BLOCK);
-		src += PREFNTA_BLOCK;
-		dst += PREFNTA_BLOCK;
-		n -= PREFNTA_BLOCK;
-	}
-	_MM_PREFETCH_LOOP( n,src,_MM_HINT_NTA );
-	memcpy(dst, src, n);
+    memcpy(dst, src, PREFNTA_BLOCK);
+    src += PREFNTA_BLOCK;
+    dst += PREFNTA_BLOCK;
+    n -= PREFNTA_BLOCK;
+  }
+  _MM_PREFETCH_LOOP(n, src, _MM_HINT_NTA);
+  memcpy(dst, src, n);
 }
 
-ILINE void cryMemcpy( void* Dst, const void* Src, int n, int nFlags )
+ILINE void cryMemcpy(void *Dst, const void *Src, int n, int nFlags)
 {
-	char* dst=(char*)Dst;
-	char* src=(char*)Src;
-	while (n > PREFNTA_BLOCK) 
-	{
-		_MM_PREFETCH_LOOP( PREFNTA_BLOCK,src,_MM_HINT_NTA );
-		memcpy(dst, src, PREFNTA_BLOCK);
-		src += PREFNTA_BLOCK;
-		dst += PREFNTA_BLOCK;
-		n -= PREFNTA_BLOCK;
-	}
-	_MM_PREFETCH_LOOP( n,src,_MM_HINT_NTA );
-	memcpy(dst, src, n);
+  char *dst = (char *)Dst;
+  char *src = (char *)Src;
+  while (n > PREFNTA_BLOCK)
+  {
+    _MM_PREFETCH_LOOP(PREFNTA_BLOCK, src, _MM_HINT_NTA);
+    memcpy(dst, src, PREFNTA_BLOCK);
+    src += PREFNTA_BLOCK;
+    dst += PREFNTA_BLOCK;
+    n -= PREFNTA_BLOCK;
+  }
+  _MM_PREFETCH_LOOP(n, src, _MM_HINT_NTA);
+  memcpy(dst, src, n);
 }
 #endif
 
 inline void mathTransformVec3fN(float *pOut, float *pIn, float *matrix, int nV, int OptFlags)
 {
 #if defined _CPU_X86 && !defined(LINUX)
-	// TODO: AMD64 port: NEED TO IMPLEMENT!!!
-	int i;
+  // TODO: AMD64 port: NEED TO IMPLEMENT!!!
+  int i;
   if (OptFlags & CPUF_3DNOW)
   {
-    for (i=0; i<nV; i++)
+    for (i = 0; i < nV; i++)
     {
       transformVec3Nf_3DNow(pOut, pIn, matrix);
       pIn += 3;
       pOut += 3;
     }
   }
-  else
-  if (OptFlags & CPUF_SSE)
+  else if (OptFlags & CPUF_SSE)
   {
-    for (i=0; i<nV; i++)
+    for (i = 0; i < nV; i++)
     {
       transformVec3Nf_SSE(pOut, pIn, matrix);
       pIn += 3;
@@ -2716,7 +2784,7 @@ inline void mathTransformVec3fN(float *pOut, float *pIn, float *matrix, int nV, 
   }
   else
   {
-    for (i=0; i<nV; i++)
+    for (i = 0; i < nV; i++)
     {
       transformVec3Nf_SSE(pOut, pIn, matrix);
       pIn += 3;
@@ -2729,21 +2797,20 @@ inline void mathTransformVec3fN(float *pOut, float *pIn, float *matrix, int nV, 
 inline void mathTransformVec3f(float *pOut, float *pIn, float *matrix, int nV, int OptFlags)
 {
 #if defined(_CPU_X86) && !defined(LINUX)
-	int i;
-	// TODO: AMD64 port: NEED TO IMPLEMENT!!!
+  int i;
+  // TODO: AMD64 port: NEED TO IMPLEMENT!!!
   if (OptFlags & CPUF_3DNOW)
   {
-    for (i=0; i<nV; i++)
+    for (i = 0; i < nV; i++)
     {
       transformVec3f_3DNow(pOut, pIn, matrix);
       pIn += 3;
       pOut += 3;
     }
   }
-  else
-  if (OptFlags & CPUF_SSE)
+  else if (OptFlags & CPUF_SSE)
   {
-    for (i=0; i<nV; i++)
+    for (i = 0; i < nV; i++)
     {
       transformVec3f_SSE(pOut, pIn, matrix);
       pIn += 3;
@@ -2752,7 +2819,7 @@ inline void mathTransformVec3f(float *pOut, float *pIn, float *matrix, int nV, i
   }
   else
   {
-    for (i=0; i<nV; i++)
+    for (i = 0; i < nV; i++)
     {
       transformVec3f_SSE(pOut, pIn, matrix);
       pIn += 3;
@@ -2765,11 +2832,10 @@ inline void mathTransformVec3f(float *pOut, float *pIn, float *matrix, int nV, i
 inline void mathMatrixInverse(float *pOut, float *pIn, int OptFlags)
 {
 #if defined(_CPU_X86) && !defined(LINUX)
-	// TODO: AMD64 port: NEED TO IMPLEMENT!!!
+  // TODO: AMD64 port: NEED TO IMPLEMENT!!!
   if (OptFlags & CPUF_3DNOW)
     invertMatrixf_3DNow(pOut, pIn);
-  else
-  if (OptFlags & CPUF_SSE)
+  else if (OptFlags & CPUF_SSE)
     invertMatrixf_SSE(pOut, pIn);
   else
 #endif
@@ -2781,8 +2847,7 @@ inline void mathMatrixMultiply(float *pOut, const float *pM1, const float *pM2, 
 #if defined _CPU_X86 && !defined(LINUX)
   if (OptFlags & CPUF_3DNOW)
     multMatrixf_3DNow(pOut, pM1, pM2);
-  else
-  if (OptFlags & CPUF_SSE)
+  else if (OptFlags & CPUF_SSE)
     multMatrixf_SSE(pOut, pM1, pM2);
   else
 #endif
@@ -2799,33 +2864,33 @@ inline void mathMatrixMultiply_Transp2(float *pOut, const float *pM1, const floa
     multMatrixf_Transp2(pOut, pM1, pM2);
 }
 
-#define mathMatrixMultiplyF(pOut, pM1, pM2, OptFlags) mathMatrixMultiply((f32*)pOut, (const f32*)pM1, (const f32*)pM2, OptFlags)
+#define mathMatrixMultiplyF(pOut, pM1, pM2, OptFlags) mathMatrixMultiply((f32 *)pOut, (const f32 *)pM1, (const f32 *)pM2, OptFlags)
 
+#define mathMatrixInverseF(pOut, pDeterminant, pM) (*(Matrix44 *)pOut) = (((Matrix44 *)pM)->GetInverted())
+#define mathMatrixTransposeF(pOut, pM) (*(Matrix44 *)pOut) = GetTransposed44(*((Matrix44 *)pM))
+#define mathMatrixRotationZ(pOut, angle) (*(Matrix44 *)pOut) = GetTransposed44(Matrix44(Matrix34::CreateRotationZ(angle)))
+#define mathMatrixRotationY(pOut, angle) (*(Matrix44 *)pOut) = GetTransposed44(Matrix44(Matrix34::CreateRotationY(angle)))
+#define mathMatrixRotationX(pOut, angle) (*(Matrix44 *)pOut) = GetTransposed44(Matrix44(Matrix34::CreateRotationX(angle)))
+#define mathMatrixTranslation(pOut, x, y, z) (*(Matrix44 *)pOut) = GetTransposed44(Matrix44(Matrix34::CreateTranslationMat(Vec3(x, y, z))))
+#define mathMatrixScaling(pOut, sx, sy, sz) (*(Matrix44 *)pOut) = GetTransposed44(Matrix44(Matrix34::CreateScale(Vec3(sx, sy, sz))))
 
-#define mathMatrixInverseF(pOut, pDeterminant, pM) (*(Matrix44*)pOut) = (((Matrix44*)pM)->GetInverted())
-#define mathMatrixTransposeF(pOut, pM) (*(Matrix44*)pOut) = GetTransposed44( *((Matrix44*)pM) )
-#define mathMatrixRotationZ(pOut, angle) (*(Matrix44*)pOut) = GetTransposed44( Matrix44(Matrix34::CreateRotationZ(angle)) )
-#define mathMatrixRotationY(pOut, angle) (*(Matrix44*)pOut) = GetTransposed44( Matrix44(Matrix34::CreateRotationY(angle)) )
-#define mathMatrixRotationX(pOut, angle) (*(Matrix44*)pOut) = GetTransposed44( Matrix44(Matrix34::CreateRotationX(angle)) )
-#define mathMatrixTranslation(pOut, x, y, z) (*(Matrix44*)pOut) = GetTransposed44( Matrix44(Matrix34::CreateTranslationMat(Vec3(x,y,z))) )
-#define mathMatrixScaling(pOut, sx, sy, sz) (*(Matrix44*)pOut) = GetTransposed44( Matrix44(Matrix34::CreateScale(Vec3(sx,sy,sz))) )
-
-template <class T> inline void ExchangeVals(T& X, T& Y)
+template <class T>
+inline void ExchangeVals(T &X, T &Y)
 {
-	const T Tmp = X;
-	X = Y;
-	Y = Tmp;
+  const T Tmp = X;
+  X = Y;
+  Y = Tmp;
 }
 
 inline void mathMatrixTranspose(float *pOut, float *pIn, int OptFlags)
 {
 #if defined _CPU_X86 && !defined(LINUX)
-	// TODO: AMD64 port: NEED TO IMPLEMENT!!!
+  // TODO: AMD64 port: NEED TO IMPLEMENT!!!
   if (OptFlags & CPUF_3DNOW)
     transposeMatrixf_3DNow(pOut, pIn);
   else
 #endif
-	{
+  {
     if (pOut == pIn)
     {
       ExchangeVals(pOut[1], pOut[4]);
@@ -2865,490 +2930,592 @@ inline void mathMatrixTranspose(float *pOut, float *pIn, int OptFlags)
 inline void mathRotateX(float *pMatr, float fDegr, int OptFlags)
 {
   Matrix44 rm;
- // float cossin[2];  sincos_tpl(DEG2RAD(fDegr), cossin);
-	f32 s,c; sincos_tpl(DEG2RAD(fDegr), &s,&c);
-  rm(0,0) = 1; rm(0,1) = 0; rm(0,2) = 0; rm(0,3) = 0;
-  rm(1,0) = 0; rm(1,1) = c; rm(1,2) = s; rm(1,3) = 0;
-  rm(2,0) = 0; rm(2,1) = -s; rm(2,2) = c; rm(2,3) = 0;
-  rm(3,0) = 0; rm(3,1) = 0; rm(3,2) = 0; rm(3,3) = 1;
+  // float cossin[2];  sincos_tpl(DEG2RAD(fDegr), cossin);
+  f32 s, c;
+  sincos_tpl(DEG2RAD(fDegr), &s, &c);
+  rm(0, 0) = 1;
+  rm(0, 1) = 0;
+  rm(0, 2) = 0;
+  rm(0, 3) = 0;
+  rm(1, 0) = 0;
+  rm(1, 1) = c;
+  rm(1, 2) = s;
+  rm(1, 3) = 0;
+  rm(2, 0) = 0;
+  rm(2, 1) = -s;
+  rm(2, 2) = c;
+  rm(2, 3) = 0;
+  rm(3, 0) = 0;
+  rm(3, 1) = 0;
+  rm(3, 2) = 0;
+  rm(3, 3) = 1;
   mathMatrixMultiply(pMatr, pMatr, rm.GetData(), OptFlags);
 }
 inline void mathRotateY(float *pMatr, float fDegr, int OptFlags)
 {
   Matrix44 rm;
- // float cossin[2];  sincos_tpl(DEG2RAD(fDegr), cossin);
-	f32 s,c; sincos_tpl(DEG2RAD(fDegr), &s,&c);
-  rm(0,0) = c; rm(0,1) = 0; rm(0,2) = -s; rm(0,3) = 0;
-  rm(1,0) = 0; rm(1,1) = 1; rm(1,2) = 0; rm(1,3) = 0;
-  rm(2,0) = s; rm(2,1) = 0; rm(2,2) = c; rm(2,3) = 0;
-  rm(3,0) = 0; rm(3,1) = 0; rm(3,2) = 0; rm(3,3) = 1;
+  // float cossin[2];  sincos_tpl(DEG2RAD(fDegr), cossin);
+  f32 s, c;
+  sincos_tpl(DEG2RAD(fDegr), &s, &c);
+  rm(0, 0) = c;
+  rm(0, 1) = 0;
+  rm(0, 2) = -s;
+  rm(0, 3) = 0;
+  rm(1, 0) = 0;
+  rm(1, 1) = 1;
+  rm(1, 2) = 0;
+  rm(1, 3) = 0;
+  rm(2, 0) = s;
+  rm(2, 1) = 0;
+  rm(2, 2) = c;
+  rm(2, 3) = 0;
+  rm(3, 0) = 0;
+  rm(3, 1) = 0;
+  rm(3, 2) = 0;
+  rm(3, 3) = 1;
   mathMatrixMultiply(pMatr, pMatr, rm.GetData(), OptFlags);
 }
 inline void mathRotateZ(float *pMatr, float fDegr, int OptFlags)
 {
   Matrix44 rm;
- // float cossin[2];  sincos_tpl(DEG2RAD(fDegr), cossin);
-	f32 s,c; sincos_tpl(DEG2RAD(fDegr), &s,&c);
-  rm(0,0) = c; rm(0,1) = s; rm(0,2) = 0; rm(0,3) = 0;
-  rm(1,0) = -s; rm(1,1) = c; rm(1,2) = 0; rm(1,3) = 0;
-  rm(2,0) = 0; rm(2,1) = 0; rm(2,2) = 1; rm(2,3) = 0;
-  rm(3,0) = 0; rm(3,1) = 0; rm(3,2) = 0; rm(3,3) = 1;
+  // float cossin[2];  sincos_tpl(DEG2RAD(fDegr), cossin);
+  f32 s, c;
+  sincos_tpl(DEG2RAD(fDegr), &s, &c);
+  rm(0, 0) = c;
+  rm(0, 1) = s;
+  rm(0, 2) = 0;
+  rm(0, 3) = 0;
+  rm(1, 0) = -s;
+  rm(1, 1) = c;
+  rm(1, 2) = 0;
+  rm(1, 3) = 0;
+  rm(2, 0) = 0;
+  rm(2, 1) = 0;
+  rm(2, 2) = 1;
+  rm(2, 3) = 0;
+  rm(3, 0) = 0;
+  rm(3, 1) = 0;
+  rm(3, 2) = 0;
+  rm(3, 3) = 1;
   mathMatrixMultiply(pMatr, pMatr, rm.GetData(), OptFlags);
 }
 
-inline void mathScale(float *pMatr, Vec3 vScale, int )
+inline void mathScale(float *pMatr, Vec3 vScale, int)
 {
-  pMatr[0] *= vScale.x;   pMatr[4] *= vScale.y;   pMatr[8]  *= vScale.z;
-  pMatr[1] *= vScale.x;   pMatr[5] *= vScale.y;   pMatr[9]  *= vScale.z;
-  pMatr[2] *= vScale.x;   pMatr[6] *= vScale.y;   pMatr[10] *= vScale.z;
-  pMatr[3] *= vScale.x;   pMatr[7] *= vScale.y;   pMatr[11] *= vScale.z;
-}
- 
-inline void mathCalcMatrix(Matrix34& Matrix, Vec3 vPos, Ang3 vAngs, Vec3 vScale, int)
-{
-	Matrix = Matrix34::Create(vScale,CryQuat::CreateRotationXYZ(DEG2RAD(vAngs)),vPos);
-}
-
-inline void mathMatrixPerspectiveFov(Matrix44* pMatr, f32 fovY, f32 Aspect, f32 zn, f32 zf)
-{
-	f32 yScale = 1.0f/cry_tanf(fovY/2.0f);
-	f32 xScale = yScale / Aspect;
-
-	(*pMatr)(0,0) = xScale;		(*pMatr)(0,1) = 0;			(*pMatr)(0,2) = 0;						(*pMatr)(0,3) = 0; 
-	(*pMatr)(1,0) = 0;				(*pMatr)(1,1) = yScale; (*pMatr)(1,2) = 0;						(*pMatr)(1,3) = 0; 
-	(*pMatr)(2,0) = 0;				(*pMatr)(2,1) = 0;			(*pMatr)(2,2) = zf/(zn-zf);		(*pMatr)(2,3) = -1.0f; 
-	(*pMatr)(3,0) = 0;				(*pMatr)(3,1) = 0;			(*pMatr)(3,2) = zn*zf/(zn-zf); (*pMatr)(3,3) = 0; 
+  pMatr[0] *= vScale.x;
+  pMatr[4] *= vScale.y;
+  pMatr[8] *= vScale.z;
+  pMatr[1] *= vScale.x;
+  pMatr[5] *= vScale.y;
+  pMatr[9] *= vScale.z;
+  pMatr[2] *= vScale.x;
+  pMatr[6] *= vScale.y;
+  pMatr[10] *= vScale.z;
+  pMatr[3] *= vScale.x;
+  pMatr[7] *= vScale.y;
+  pMatr[11] *= vScale.z;
 }
 
-
-
-inline void mathMatrixOrtho(Matrix44* pMatr, f32 w, f32 h, f32 zn, f32 zf)
+inline void mathCalcMatrix(Matrix34 &Matrix, Vec3 vPos, Ang3 vAngs, Vec3 vScale, int)
 {
-
-	(*pMatr)(0,0) = 2.0f/w;  (*pMatr)(0,1) = 0;			 (*pMatr)(0,2) = 0;							(*pMatr)(0,3) = 0;
-	(*pMatr)(1,0) = 	0;		 (*pMatr)(1,1) = 2.0f/h; (*pMatr)(1,2) = 0;							(*pMatr)(1,3) = 0;
-	(*pMatr)(2,0) =		0;     (*pMatr)(2,1) = 0;			 (*pMatr)(2,2) = 1.0f/(zn-zf);	(*pMatr)(2,3) = 0;
-	(*pMatr)(3,0) =		0;		 (*pMatr)(3,1) = 0;			 (*pMatr)(3,2) = zn/(zn-zf);		(*pMatr)(3,3) =	1;
-
+  Matrix = Matrix34::Create(vScale, CryQuat::CreateRotationXYZ(DEG2RAD(vAngs)), vPos);
 }
 
-inline void mathMatrixOrthoOffCenter(Matrix44* pMatr, f32 l, f32 r, f32 b, f32 t, f32 zn, f32 zf)
+inline void mathMatrixPerspectiveFov(Matrix44 *pMatr, f32 fovY, f32 Aspect, f32 zn, f32 zf)
 {
-	(*pMatr)(0,0) = 2.0f/(r-l);		(*pMatr)(0,1) = 0;					(*pMatr)(0,2) = 0;						(*pMatr)(0,3) =	0;
-	(*pMatr)(1,0) = 	0;          (*pMatr)(1,1) = 2.0f/(t-b);	(*pMatr)(1,2) = 0;						(*pMatr)(1,3) = 0;
-	(*pMatr)(2,0) =		0;          (*pMatr)(2,1) =	 0;					(*pMatr)(2,2) =	1.0f/(zn-zf);	(*pMatr)(2,3) =	0;
-	(*pMatr)(3,0) =	(l+r)/(l-r);  (*pMatr)(3,1) =(t+b)/(b-t); (*pMatr)(3,2) = zn/(zn-zf);		(*pMatr)(3,3) = 1.0f;
+  f32 yScale = 1.0f / cry_tanf(fovY / 2.0f);
+  f32 xScale = yScale / Aspect;
+
+  (*pMatr)(0, 0) = xScale;
+  (*pMatr)(0, 1) = 0;
+  (*pMatr)(0, 2) = 0;
+  (*pMatr)(0, 3) = 0;
+  (*pMatr)(1, 0) = 0;
+  (*pMatr)(1, 1) = yScale;
+  (*pMatr)(1, 2) = 0;
+  (*pMatr)(1, 3) = 0;
+  (*pMatr)(2, 0) = 0;
+  (*pMatr)(2, 1) = 0;
+  (*pMatr)(2, 2) = zf / (zn - zf);
+  (*pMatr)(2, 3) = -1.0f;
+  (*pMatr)(3, 0) = 0;
+  (*pMatr)(3, 1) = 0;
+  (*pMatr)(3, 2) = zn * zf / (zn - zf);
+  (*pMatr)(3, 3) = 0;
 }
 
-
-inline void mathMatrixOrthoOffCenterLH(Matrix44* pMatr, f32 l, f32 r, f32 b, f32 t, f32 zn, f32 zf)
+inline void mathMatrixOrtho(Matrix44 *pMatr, f32 w, f32 h, f32 zn, f32 zf)
 {
-	(*pMatr)(0,0) = 2.0f/(r-l);		(*pMatr)(0,1) = 0;					(*pMatr)(0,2) = 0;						(*pMatr)(0,3) =	0;
-	(*pMatr)(1,0) = 	0;          (*pMatr)(1,1) = 2.0f/(t-b);	(*pMatr)(1,2) = 0;						(*pMatr)(1,3) = 0;
-	(*pMatr)(2,0) =		0;          (*pMatr)(2,1) =	 0;					(*pMatr)(2,2) =	1.0f/(zf-zn);	(*pMatr)(2,3) =	0;
-	(*pMatr)(3,0) =	(l+r)/(l-r);  (*pMatr)(3,1) =(t+b)/(b-t); (*pMatr)(3,2) = zn/(zn-zf);		(*pMatr)(3,3) = 1.0f;
+
+  (*pMatr)(0, 0) = 2.0f / w;
+  (*pMatr)(0, 1) = 0;
+  (*pMatr)(0, 2) = 0;
+  (*pMatr)(0, 3) = 0;
+  (*pMatr)(1, 0) = 0;
+  (*pMatr)(1, 1) = 2.0f / h;
+  (*pMatr)(1, 2) = 0;
+  (*pMatr)(1, 3) = 0;
+  (*pMatr)(2, 0) = 0;
+  (*pMatr)(2, 1) = 0;
+  (*pMatr)(2, 2) = 1.0f / (zn - zf);
+  (*pMatr)(2, 3) = 0;
+  (*pMatr)(3, 0) = 0;
+  (*pMatr)(3, 1) = 0;
+  (*pMatr)(3, 2) = zn / (zn - zf);
+  (*pMatr)(3, 3) = 1;
 }
 
-
-inline void mathMatrixPerspectiveOffCenter(Matrix44* pMatr, f32 l, f32 r, f32 b, f32 t, f32 zn, f32 zf)
+inline void mathMatrixOrthoOffCenter(Matrix44 *pMatr, f32 l, f32 r, f32 b, f32 t, f32 zn, f32 zf)
 {
-	(*pMatr)(0,0) =	2*zn/(r-l);			(*pMatr)(0,1) =  0;						(*pMatr)(0,2) = 0;							(*pMatr)(0,3) = 0;
-	(*pMatr)(1,0) = 0;            	(*pMatr)(1,1) = 2*zn/(t-b);   (*pMatr)(1,2) = 0;							(*pMatr)(1,3) =	0;
-	(*pMatr)(2,0) =	(l+r)/(r-l);		(*pMatr)(2,1) =	(t+b)/(t-b);  (*pMatr)(2,2) =	zf/(zn-zf);			(*pMatr)(2,3) =	-1;
-	(*pMatr)(3,0) =	0;							(*pMatr)(3,1) =	0;            (*pMatr)(3,2) =	zn*zf/(zn-zf);	(*pMatr)(3,3) =	0;
+  (*pMatr)(0, 0) = 2.0f / (r - l);
+  (*pMatr)(0, 1) = 0;
+  (*pMatr)(0, 2) = 0;
+  (*pMatr)(0, 3) = 0;
+  (*pMatr)(1, 0) = 0;
+  (*pMatr)(1, 1) = 2.0f / (t - b);
+  (*pMatr)(1, 2) = 0;
+  (*pMatr)(1, 3) = 0;
+  (*pMatr)(2, 0) = 0;
+  (*pMatr)(2, 1) = 0;
+  (*pMatr)(2, 2) = 1.0f / (zn - zf);
+  (*pMatr)(2, 3) = 0;
+  (*pMatr)(3, 0) = (l + r) / (l - r);
+  (*pMatr)(3, 1) = (t + b) / (b - t);
+  (*pMatr)(3, 2) = zn / (zn - zf);
+  (*pMatr)(3, 3) = 1.0f;
 }
 
-
-//RH
-inline void mathMatrixLookAt(Matrix44* pMatr, const Vec3& Eye, const Vec3& At, const Vec3& Up)
+inline void mathMatrixOrthoOffCenterLH(Matrix44 *pMatr, f32 l, f32 r, f32 b, f32 t, f32 zn, f32 zf)
 {
-	Vec3 vLightDir = (Eye - At);
-	Vec3 zaxis = vLightDir.GetNormalized();
-	Vec3 xaxis = (Up.Cross(zaxis)).GetNormalized();
-	Vec3 yaxis =zaxis.Cross(xaxis);
-
-	(*pMatr)(0,0) = xaxis.x;		(*pMatr)(0,1) = yaxis.x;	(*pMatr)(0,2) = zaxis.x;	(*pMatr)(0,3) = 0; 
-	(*pMatr)(1,0) = xaxis.y;		(*pMatr)(1,1) = yaxis.y;	(*pMatr)(1,2) = zaxis.y;	(*pMatr)(1,3) = 0; 
-	(*pMatr)(2,0) = xaxis.z;		(*pMatr)(2,1) = yaxis.z;	(*pMatr)(2,2) = zaxis.z;	(*pMatr)(2,3) = 0; 
-	(*pMatr)(3,0) = -xaxis.Dot(Eye);	(*pMatr)(3,1) = -yaxis.Dot(Eye);	(*pMatr)(3,2) = -zaxis.Dot(Eye);	(*pMatr)(3,3) = 1; 
+  (*pMatr)(0, 0) = 2.0f / (r - l);
+  (*pMatr)(0, 1) = 0;
+  (*pMatr)(0, 2) = 0;
+  (*pMatr)(0, 3) = 0;
+  (*pMatr)(1, 0) = 0;
+  (*pMatr)(1, 1) = 2.0f / (t - b);
+  (*pMatr)(1, 2) = 0;
+  (*pMatr)(1, 3) = 0;
+  (*pMatr)(2, 0) = 0;
+  (*pMatr)(2, 1) = 0;
+  (*pMatr)(2, 2) = 1.0f / (zf - zn);
+  (*pMatr)(2, 3) = 0;
+  (*pMatr)(3, 0) = (l + r) / (l - r);
+  (*pMatr)(3, 1) = (t + b) / (b - t);
+  (*pMatr)(3, 2) = zn / (zn - zf);
+  (*pMatr)(3, 3) = 1.0f;
 }
 
+inline void mathMatrixPerspectiveOffCenter(Matrix44 *pMatr, f32 l, f32 r, f32 b, f32 t, f32 zn, f32 zf)
+{
+  (*pMatr)(0, 0) = 2 * zn / (r - l);
+  (*pMatr)(0, 1) = 0;
+  (*pMatr)(0, 2) = 0;
+  (*pMatr)(0, 3) = 0;
+  (*pMatr)(1, 0) = 0;
+  (*pMatr)(1, 1) = 2 * zn / (t - b);
+  (*pMatr)(1, 2) = 0;
+  (*pMatr)(1, 3) = 0;
+  (*pMatr)(2, 0) = (l + r) / (r - l);
+  (*pMatr)(2, 1) = (t + b) / (t - b);
+  (*pMatr)(2, 2) = zf / (zn - zf);
+  (*pMatr)(2, 3) = -1;
+  (*pMatr)(3, 0) = 0;
+  (*pMatr)(3, 1) = 0;
+  (*pMatr)(3, 2) = zn * zf / (zn - zf);
+  (*pMatr)(3, 3) = 0;
+}
+
+// RH
+inline void mathMatrixLookAt(Matrix44 *pMatr, const Vec3 &Eye, const Vec3 &At, const Vec3 &Up)
+{
+  Vec3 vLightDir = (Eye - At);
+  Vec3 zaxis = vLightDir.GetNormalized();
+  Vec3 xaxis = (Up.Cross(zaxis)).GetNormalized();
+  Vec3 yaxis = zaxis.Cross(xaxis);
+
+  (*pMatr)(0, 0) = xaxis.x;
+  (*pMatr)(0, 1) = yaxis.x;
+  (*pMatr)(0, 2) = zaxis.x;
+  (*pMatr)(0, 3) = 0;
+  (*pMatr)(1, 0) = xaxis.y;
+  (*pMatr)(1, 1) = yaxis.y;
+  (*pMatr)(1, 2) = zaxis.y;
+  (*pMatr)(1, 3) = 0;
+  (*pMatr)(2, 0) = xaxis.z;
+  (*pMatr)(2, 1) = yaxis.z;
+  (*pMatr)(2, 2) = zaxis.z;
+  (*pMatr)(2, 3) = 0;
+  (*pMatr)(3, 0) = -xaxis.Dot(Eye);
+  (*pMatr)(3, 1) = -yaxis.Dot(Eye);
+  (*pMatr)(3, 2) = -zaxis.Dot(Eye);
+  (*pMatr)(3, 3) = 1;
+}
 
 inline void mathVec4Transform(f32 out[4], const f32 m[16], const f32 in[4])
 {
-#define M(row,col)  m[col*4+row]
-	out[0] =	M(0, 0) * in[0] + M(0, 1) * in[1] + M(0, 2) * in[2] + M(0, 3) * in[3];
-	out[1] =	M(1, 0) * in[0] + M(1, 1) * in[1] + M(1, 2) * in[2] + M(1, 3) * in[3];
-	out[2] =	M(2, 0) * in[0] + M(2, 1) * in[1] + M(2, 2) * in[2] + M(2, 3) * in[3];
-	out[3] =	M(3, 0) * in[0] + M(3, 1) * in[1] + M(3, 2) * in[2] + M(3, 3) * in[3];
+#define M(row, col) m[col * 4 + row]
+  out[0] = M(0, 0) * in[0] + M(0, 1) * in[1] + M(0, 2) * in[2] + M(0, 3) * in[3];
+  out[1] = M(1, 0) * in[0] + M(1, 1) * in[1] + M(1, 2) * in[2] + M(1, 3) * in[3];
+  out[2] = M(2, 0) * in[0] + M(2, 1) * in[1] + M(2, 2) * in[2] + M(2, 3) * in[3];
+  out[3] = M(3, 0) * in[0] + M(3, 1) * in[1] + M(3, 2) * in[2] + M(3, 3) * in[3];
 #undef M
 }
 
-//fix: replace by 3x4 Matrix transformation and move to crymath
+// fix: replace by 3x4 Matrix transformation and move to crymath
 inline void mathVec3Transform(f32 out[4], const f32 m[16], const f32 in[3])
 {
-#define M(row,col)  m[col*4+row]
-	out[0] =	M(0, 0) * in[0] + M(0, 1) * in[1] + M(0, 2) * in[2] + M(0, 3) * 1.0f;
-	out[1] =	M(1, 0) * in[0] + M(1, 1) * in[1] + M(1, 2) * in[2] + M(1, 3) * 1.0f;
-	out[2] =	M(2, 0) * in[0] + M(2, 1) * in[1] + M(2, 2) * in[2] + M(2, 3) * 1.0f;
-	out[3] =	M(3, 0) * in[0] + M(3, 1) * in[1] + M(3, 2) * in[2] + M(3, 3) * 1.0f;
+#define M(row, col) m[col * 4 + row]
+  out[0] = M(0, 0) * in[0] + M(0, 1) * in[1] + M(0, 2) * in[2] + M(0, 3) * 1.0f;
+  out[1] = M(1, 0) * in[0] + M(1, 1) * in[1] + M(1, 2) * in[2] + M(1, 3) * 1.0f;
+  out[2] = M(2, 0) * in[0] + M(2, 1) * in[1] + M(2, 2) * in[2] + M(2, 3) * 1.0f;
+  out[3] = M(3, 0) * in[0] + M(3, 1) * in[1] + M(3, 2) * in[2] + M(3, 3) * 1.0f;
 #undef M
 }
 
-#define mathVec3TransformF(pOut, pV, pM) mathVec3Transform( (f32*)pOut, (const f32*)pM, (f32*)pV )
-#define mathVec4TransformF(pOut, pV, pM) mathVec4Transform( (f32*)pOut, (const f32*)pM, (f32*)pV )
-#define mathVec3NormalizeF(pOut, pV) (*(Vec3*)pOut) = (((Vec3*)pV)->GetNormalizedSafe())
-#define mathVec2NormalizeF(pOut, pV) (*(Vec2*)pOut) = (((Vec2*)pV)->GetNormalizedSafe())
+#define mathVec3TransformF(pOut, pV, pM) mathVec3Transform((f32 *)pOut, (const f32 *)pM, (f32 *)pV)
+#define mathVec4TransformF(pOut, pV, pM) mathVec4Transform((f32 *)pOut, (const f32 *)pM, (f32 *)pV)
+#define mathVec3NormalizeF(pOut, pV) (*(Vec3 *)pOut) = (((Vec3 *)pV)->GetNormalizedSafe())
+#define mathVec2NormalizeF(pOut, pV) (*(Vec2 *)pOut) = (((Vec2 *)pV)->GetNormalizedSafe())
 
-
-//fix replace viewport by int16 array
-//fix for d3d viewport
-inline Vec3* mathVec3Project(Vec3 *pvWin, const Vec3 *pvObj,
-															const int32 pViewport[4],
-															const Matrix44* pProjection,
-															const Matrix44* pView,
-															const Matrix44*	pWorld
-														)
+// fix replace viewport by int16 array
+// fix for d3d viewport
+inline Vec3 *mathVec3Project(Vec3 *pvWin, const Vec3 *pvObj,
+                             const int32 pViewport[4],
+                             const Matrix44 *pProjection,
+                             const Matrix44 *pView,
+                             const Matrix44 *pWorld)
 {
-	Vec4 in, out;
+  Vec4 in, out;
 
-	in.x = pvObj->x;
-	in.y = pvObj->y;
-	in.z = pvObj->z;
-	in.w = 1.0f;
-	mathVec4Transform((f32*)&out, (f32*)pWorld, (f32*)&in);
-	mathVec4Transform((f32*)&in, (f32*)pView, (f32*)&out);
-	mathVec4Transform((f32*)&out, (f32*)pProjection, (f32*)&in);
+  in.x = pvObj->x;
+  in.y = pvObj->y;
+  in.z = pvObj->z;
+  in.w = 1.0f;
+  mathVec4Transform((f32 *)&out, (f32 *)pWorld, (f32 *)&in);
+  mathVec4Transform((f32 *)&in, (f32 *)pView, (f32 *)&out);
+  mathVec4Transform((f32 *)&out, (f32 *)pProjection, (f32 *)&in);
 
-	if (out.w == 0.0f)
-		return NULL;
+  if (out.w == 0.0f)
+    return NULL;
 
-	out.x /= out.w;
-	out.y /= out.w;
-	out.z /= out.w;
+  out.x /= out.w;
+  out.y /= out.w;
+  out.z /= out.w;
 
-	//output coords
-	pvWin->x = pViewport[0] + (1 + out.x) * pViewport[2] / 2;
-	pvWin->y = pViewport[1] + (1 - out.y) * pViewport[3] / 2;  //flip coords for y axis
+  // output coords
+  pvWin->x = pViewport[0] + (1 + out.x) * pViewport[2] / 2;
+  pvWin->y = pViewport[1] + (1 - out.y) * pViewport[3] / 2; // flip coords for y axis
 
-	//FIX: update fViewportMinZ fViewportMaxZ support for Viewport everywhere
-	float fViewportMinZ = 0, fViewportMaxZ = 1.0f;
+  // FIX: update fViewportMinZ fViewportMaxZ support for Viewport everywhere
+  float fViewportMinZ = 0, fViewportMaxZ = 1.0f;
 
-	pvWin->z = fViewportMinZ + out.z*(fViewportMaxZ-fViewportMinZ);
+  pvWin->z = fViewportMinZ + out.z * (fViewportMaxZ - fViewportMinZ);
 
-	return pvWin;
+  return pvWin;
 }
 
-inline Vec3* mathVec3UnProject(Vec3 *pvObj, const Vec3 *pvWin,
-														 const int32 pViewport[4],
-														 const Matrix44* pProjection,
-														 const Matrix44* pView,
-														 const Matrix44* pWorld,
-														 int32 OptFlags
-														 )
+inline Vec3 *mathVec3UnProject(Vec3 *pvObj, const Vec3 *pvWin,
+                               const int32 pViewport[4],
+                               const Matrix44 *pProjection,
+                               const Matrix44 *pView,
+                               const Matrix44 *pWorld,
+                               int32 OptFlags)
 {
-	Matrix44 m, mA;
-	Vec4 in, out;
+  Matrix44 m, mA;
+  Vec4 in, out;
 
-	//FIX: update fViewportMinZ fViewportMaxZ support for Viewport everywhere
-	float fViewportMinZ = 0, fViewportMaxZ = 1.0f;
+  // FIX: update fViewportMinZ fViewportMaxZ support for Viewport everywhere
+  float fViewportMinZ = 0, fViewportMaxZ = 1.0f;
 
-	in.x = (pvWin->x - pViewport[0]) * 2 / pViewport[2] - 1.0f;
-	in.y = 1.0f - ( (pvWin->y - pViewport[1]) * 2 / pViewport[3] ); //flip coords for y axis
-	in.z = (pvWin->z - fViewportMinZ)/(fViewportMaxZ - fViewportMinZ);
-	in.w = 1.0f;
+  in.x = (pvWin->x - pViewport[0]) * 2 / pViewport[2] - 1.0f;
+  in.y = 1.0f - ((pvWin->y - pViewport[1]) * 2 / pViewport[3]); // flip coords for y axis
+  in.z = (pvWin->z - fViewportMinZ) / (fViewportMaxZ - fViewportMinZ);
+  in.w = 1.0f;
 
-	//prepare inverse projection matrix
-	mA =  ((*pWorld) * (*pView)) * (*pProjection);
-	mathMatrixInverse(m.GetData(), mA.GetData(), OptFlags);
+  // prepare inverse projection matrix
+  mA = ((*pWorld) * (*pView)) * (*pProjection);
+  mathMatrixInverse(m.GetData(), mA.GetData(), OptFlags);
 
-	mathVec4Transform((f32*)&out, m.GetData(), (f32*)&in);
-	if (out.w == 0.0f)
-		return NULL;
+  mathVec4Transform((f32 *)&out, m.GetData(), (f32 *)&in);
+  if (out.w == 0.0f)
+    return NULL;
 
-	pvObj->x = out.x / out.w;
-	pvObj->y = out.y / out.w;
-	pvObj->z = out.z / out.w;
+  pvObj->x = out.x / out.w;
+  pvObj->y = out.y / out.w;
+  pvObj->z = out.z / out.w;
 
-	return pvObj;
+  return pvObj;
 }
 
-
-inline Vec3* mathVec3ProjectArray(	Vec3 *pOut,
-																	uint32 OutStride,
-																	const Vec3 *pV,
-																	uint32 VStride,
-																	const int32 pViewport[4],
-																	const Matrix44* pProjection,
-																	const Matrix44* pView,
-																	const Matrix44* pWorld,
-																	uint32 n,
-																	int32
-																	)
+inline Vec3 *mathVec3ProjectArray(Vec3 *pOut,
+                                  uint32 OutStride,
+                                  const Vec3 *pV,
+                                  uint32 VStride,
+                                  const int32 pViewport[4],
+                                  const Matrix44 *pProjection,
+                                  const Matrix44 *pView,
+                                  const Matrix44 *pWorld,
+                                  uint32 n,
+                                  int32)
 {
-	Matrix44 m;
-	Vec4 in, out;
+  Matrix44 m;
+  Vec4 in, out;
 
-	int8* pOutT = (int8*)pOut;
-	int8* pInT = (int8*)pV;
+  int8 *pOutT = (int8 *)pOut;
+  int8 *pInT = (int8 *)pV;
 
-	Vec3* pvWin;
-	Vec3* pvObj;
+  Vec3 *pvWin;
+  Vec3 *pvObj;
 
-	//FIX: update fViewportMinZ fViewportMaxZ support for Viewport everywhere
-	float fViewportMinZ = 0, fViewportMaxZ = 1.0f;
+  // FIX: update fViewportMinZ fViewportMaxZ support for Viewport everywhere
+  float fViewportMinZ = 0, fViewportMaxZ = 1.0f;
 
-	m =  ((*pWorld) * (*pView)) * (*pProjection);
+  m = ((*pWorld) * (*pView)) * (*pProjection);
 
-	for (uint32 i=0; i<n; i++)
-	{
+  for (uint32 i = 0; i < n; i++)
+  {
 
-		pvObj = (Vec3*)pInT;
-		pvWin = (Vec3*)pOutT;
+    pvObj = (Vec3 *)pInT;
+    pvWin = (Vec3 *)pOutT;
 
-		in.x = pvObj->x;
-		in.y = pvObj->y;
-		in.z = pvObj->z;
-		in.w = 1.0f;
+    in.x = pvObj->x;
+    in.y = pvObj->y;
+    in.z = pvObj->z;
+    in.w = 1.0f;
 
-		mathVec4Transform((f32*)&out, m.GetData(), (f32*)&in);
+    mathVec4Transform((f32 *)&out, m.GetData(), (f32 *)&in);
 
-		if (out.w == 0.0f)
-			return NULL;
+    if (out.w == 0.0f)
+      return NULL;
 
     float fInvW = 1.0f / out.w;
-		out.x *= fInvW;
-		out.y *= fInvW;
-		out.z *= fInvW;
+    out.x *= fInvW;
+    out.y *= fInvW;
+    out.z *= fInvW;
 
-		//output coords
-		pvWin->x = pViewport[0] + (1 + out.x) * pViewport[2] / 2;
-		pvWin->y = pViewport[1] + (1 - out.y) * pViewport[3] / 2;  //flip coords for y axis
+    // output coords
+    pvWin->x = pViewport[0] + (1 + out.x) * pViewport[2] / 2;
+    pvWin->y = pViewport[1] + (1 - out.y) * pViewport[3] / 2; // flip coords for y axis
 
-		pvWin->z = fViewportMinZ + out.z*(fViewportMaxZ-fViewportMinZ);
+    pvWin->z = fViewportMinZ + out.z * (fViewportMaxZ - fViewportMinZ);
 
-		pOutT += OutStride;
-		pInT += VStride;
-	}
+    pOutT += OutStride;
+    pInT += VStride;
+  }
 
-	return pOut;
+  return pOut;
 }
 
-inline Vec3* mathVec3UnprojectArray(	Vec3 *pOut,
-																	  uint32 OutStride,
-																		const Vec3 *pV,
-																		uint32 VStride,
-																		const int32 pViewport[4],
-																		const Matrix44* pProjection,
-																		const Matrix44* pView,
-																		const Matrix44* pWorld,
-																		uint32 n,
-																		int32 OptFlags
-																	)
+inline Vec3 *mathVec3UnprojectArray(Vec3 *pOut,
+                                    uint32 OutStride,
+                                    const Vec3 *pV,
+                                    uint32 VStride,
+                                    const int32 pViewport[4],
+                                    const Matrix44 *pProjection,
+                                    const Matrix44 *pView,
+                                    const Matrix44 *pWorld,
+                                    uint32 n,
+                                    int32 OptFlags)
 {
-	Vec4 in, out;
-	Matrix44 m, mA;
+  Vec4 in, out;
+  Matrix44 m, mA;
 
-	int8* pOutT = (int8*)pOut;
-	int8* pInT = (int8*)pV;
+  int8 *pOutT = (int8 *)pOut;
+  int8 *pInT = (int8 *)pV;
 
-	Vec3* pvWin;
-	Vec3* pvObj;
+  Vec3 *pvWin;
+  Vec3 *pvObj;
 
-	//FIX: update fViewportMinZ fViewportMaxZ support for Viewport everywhere
-	float fViewportMinZ = 0, fViewportMaxZ = 1.0f;
+  // FIX: update fViewportMinZ fViewportMaxZ support for Viewport everywhere
+  float fViewportMinZ = 0, fViewportMaxZ = 1.0f;
 
-	mA =  ((*pWorld) * (*pView)) * (*pProjection);
-	mathMatrixInverse(m.GetData(), mA.GetData(), OptFlags);
+  mA = ((*pWorld) * (*pView)) * (*pProjection);
+  mathMatrixInverse(m.GetData(), mA.GetData(), OptFlags);
 
-	for (uint32 i=0; i<n; i++)
-	{
-		pvWin = (Vec3*)pInT;
-		pvObj = (Vec3*)pOutT;
+  for (uint32 i = 0; i < n; i++)
+  {
+    pvWin = (Vec3 *)pInT;
+    pvObj = (Vec3 *)pOutT;
 
-		in.x = (pvWin->x - pViewport[0]) * 2 / pViewport[2] - 1.0f;
-		in.y = 1.0f - ( (pvWin->y - pViewport[1]) * 2 / pViewport[3] ); //flip coords for y axis
-		in.z = (pvWin->z - fViewportMinZ)/(fViewportMaxZ - fViewportMinZ);
-		in.w = 1.0f;
+    in.x = (pvWin->x - pViewport[0]) * 2 / pViewport[2] - 1.0f;
+    in.y = 1.0f - ((pvWin->y - pViewport[1]) * 2 / pViewport[3]); // flip coords for y axis
+    in.z = (pvWin->z - fViewportMinZ) / (fViewportMaxZ - fViewportMinZ);
+    in.w = 1.0f;
 
-		mathVec4Transform((f32*)&out, m.GetData(), (f32*)&in);
+    mathVec4Transform((f32 *)&out, m.GetData(), (f32 *)&in);
 
-		assert(out.w != 0.0f);
+    assert(out.w != 0.0f);
 
-		if (out.w == 0.0f)
-			return NULL;
+    if (out.w == 0.0f)
+      return NULL;
 
-		pvObj->x = out.x / out.w;
-		pvObj->y = out.y / out.w;
-		pvObj->z = out.z / out.w;
+    pvObj->x = out.x / out.w;
+    pvObj->y = out.y / out.w;
+    pvObj->z = out.z / out.w;
 
-		pOutT += OutStride;
-		pInT += VStride;
-	}
+    pOutT += OutStride;
+    pInT += VStride;
+  }
 
-	return pOut;
+  return pOut;
 }
 
-#define mathVec3TransformCoordArrayF(pOut, OutStride, pV, VStride, pM, n) mathVec3TransformCoordArray((Vec3*)pOut, OutStride, (Vec3*)pV, VStride, (Matrix44*)pM, n)
+#define mathVec3TransformCoordArrayF(pOut, OutStride, pV, VStride, pM, n) mathVec3TransformCoordArray((Vec3 *)pOut, OutStride, (Vec3 *)pV, VStride, (Matrix44 *)pM, n)
 
-inline Vec3* mathVec3TransformCoordArray(	Vec3 *pOut,
-																					uint32 OutStride,
-																					const Vec3 *pV,
-																					uint32 VStride,
-																					const Matrix44* pM,
-																					uint32 n
-																				)
+inline Vec3 *mathVec3TransformCoordArray(Vec3 *pOut,
+                                         uint32 OutStride,
+                                         const Vec3 *pV,
+                                         uint32 VStride,
+                                         const Matrix44 *pM,
+                                         uint32 n)
 {
-	Vec4 in, out;
+  Vec4 in, out;
 
-	int8* pOutT = (int8*)pOut;
-	int8* pInT = (int8*)pV;
+  int8 *pOutT = (int8 *)pOut;
+  int8 *pInT = (int8 *)pV;
 
-	Vec3* pvOut;
-	Vec3* pvIn;
+  Vec3 *pvOut;
+  Vec3 *pvIn;
 
-	for (uint32 i=0; i<n; i++)
-	{
-		pvOut = (Vec3*)pOutT;
-		pvIn = (Vec3*)pInT;
+  for (uint32 i = 0; i < n; i++)
+  {
+    pvOut = (Vec3 *)pOutT;
+    pvIn = (Vec3 *)pInT;
 
-		in.x = pvIn->x;
-		in.y = pvIn->y;
-		in.z = pvIn->z;
-		in.w = 1.0f;
+    in.x = pvIn->x;
+    in.y = pvIn->y;
+    in.z = pvIn->z;
+    in.w = 1.0f;
 
-		mathVec4Transform((f32*)&out, pM->GetData(), (f32*)&in);
+    mathVec4Transform((f32 *)&out, pM->GetData(), (f32 *)&in);
 
-		if (out.w == 0.0f)
-			return NULL;
+    if (out.w == 0.0f)
+      return NULL;
 
-		pvOut->x = out.x / out.w;
-		pvOut->y = out.y / out.w;
-		pvOut->z = out.z / out.w;
+    pvOut->x = out.x / out.w;
+    pvOut->y = out.y / out.w;
+    pvOut->z = out.z / out.w;
 
-		pOutT += OutStride;
-		pInT += VStride;
-	}
+    pOutT += OutStride;
+    pInT += VStride;
+  }
 
-	return pOut;
+  return pOut;
 }
-
 
 #pragma warning(pop)
 
 #if defined(PS3)
-	#if defined(__SPU__)
-		#include <spu_intrinsics.h>	
-		#include <vmx2spu.h>
-	#else
-		#include <ppu_intrinsics.h>	
-		#include <si2vmx.h>
-	#endif
-	__attribute__((always_inline))
-	ILINE void CryPrefetch(const void* const cpSrc)
-	{
-		#if defined(__SPU__)
-			__spu_dma_pref((unsigned int)cpSrc);
-		#else
-			__dcbt((unsigned int)cpSrc & ~127);
-		#endif//__SPU__
-	}
+#if defined(__SPU__)
+#include <spu_intrinsics.h>
+#include <vmx2spu.h>
+#else
+#include <ppu_intrinsics.h>
+#include <si2vmx.h>
+#endif
+__attribute__((always_inline))
+ILINE void CryPrefetch(const void *const cpSrc)
+{
+#if defined(__SPU__)
+  __spu_dma_pref((unsigned int)cpSrc);
+#else
+  __dcbt((unsigned int)cpSrc & ~127);
+#endif //__SPU__
+}
 
-	#undef _MM_PREFETCH
-	#undef _MM_PREFETCH_LOOP
-	#define _MM_PREFETCH( MemPtr,Hint ) CryPrefetch(MemPtr)
-	#define _MM_PREFETCH_LOOP( nCount,MemPtr,Hint ) CryPrefetch(MemPtr)
+#undef _MM_PREFETCH
+#undef _MM_PREFETCH_LOOP
+#define _MM_PREFETCH(MemPtr, Hint) CryPrefetch(MemPtr)
+#define _MM_PREFETCH_LOOP(nCount, MemPtr, Hint) CryPrefetch(MemPtr)
 
-	#define _MM_HINT_T0     (1)
-	#define _MM_HINT_T1     (2)
-	#define _MM_HINT_T2     (3)
-	#define _MM_HINT_NTA    (0)
+#define _MM_HINT_T0 (1)
+#define _MM_HINT_T1 (2)
+#define _MM_HINT_T2 (3)
+#define _MM_HINT_NTA (0)
 
-	#define _mm_prefetch( MemPtr,Hint ) CryPrefetch(MemPtr)
-	#define cryPrecacheSSE(src, nbytes) CryPrefetch(src)
-	#define cryPrecacheMMX(src, nbytes) CryPrefetch(src)
-	#define cryPrefetchNTSSE(src) CryPrefetch(src)
-	#define cryPrefetchT0SSE(src) CryPrefetch(src)
-	#define cryPrefetch(src, count) CryPrefetch(src)
+#define _mm_prefetch(MemPtr, Hint) CryPrefetch(MemPtr)
+#define cryPrecacheSSE(src, nbytes) CryPrefetch(src)
+#define cryPrecacheMMX(src, nbytes) CryPrefetch(src)
+#define cryPrefetchNTSSE(src) CryPrefetch(src)
+#define cryPrefetchT0SSE(src) CryPrefetch(src)
+#define cryPrefetch(src, count) CryPrefetch(src)
 
-	#if defined(PS3OPT)
-		//map sse intrinsics to ppu(altivec)/spu intrinsics
-		#define _CPU_SSE
-		#define __m128 qword
+#if defined(PS3OPT)
+// map sse intrinsics to ppu(altivec)/spu intrinsics
+#define _CPU_SSE
+#define __m128 qword
 
-		ILINE __m128 _mm_load_ps(float * p){return (__m128)*(vec_float4*)p;}
-		ILINE void _mm_store_ps(float *p, __m128 a){*(vec_float4*)p = (vec_float4)a;}
-		ILINE __m128 _mm_set_ps(float z, float y, float x, float w){return (__m128)(vec_float4){w, x, y, z};}
-		ILINE __m128 _mm_div_ps(__m128 a, __m128 b){return (__m128)divf4((vec_float4)a, (vec_float4)b);}
-		ILINE __m128 _mm_add_ps(__m128 a, __m128 b){return (__m128)vec_add((vec_float4)a, (vec_float4)b);}
-		ILINE __m128 _mm_sub_ps(__m128 a, __m128 b){return (__m128)vec_sub((vec_float4)a, (vec_float4)b);}
-		ILINE __m128 _mm_mul_ps(__m128 a, __m128 b){return (__m128)vec_madd((vec_float4)a, (vec_float4)b, (vec_float4){0.0f});}
-		ILINE __m128 _mm_cmpgt_ps(__m128 a, __m128 b){return (__m128)vec_cmpgt((vec_float4)a, (vec_float4)b);}
-		ILINE __m128 _mm_cmplt_ps(__m128 a, __m128 b){return (__m128)vec_cmplt((vec_float4)a, (vec_float4)b);}
-		ILINE __m128 _mm_cmpneq_ps(__m128 a, __m128 b)
-		{
-			vec_uint4 eqRes = (vec_uint4)vec_cmpeq((vec_float4)a, (vec_float4)b);
-			return (__m128)vec_nor(eqRes, eqRes);
-		}
-		ILINE void _mm_empty(){}
-		ILINE __m128 _mm_loadu_ps(const float * const p)
-		{
-			union 
-			{
-				vec_float4 q;
-				float f[4];
-			} x;
-			x.f[0] = p[0];
-			x.f[1] = p[1];
-			x.f[2] = p[2];
-			x.f[3] = p[3];
-			return (__m128)x.q;
-		}
-		ILINE void _mm_storeu_ps(float *const p, __m128 a)
-		{
-			union 
-			{
-				vec_float4 q;
-				float f[4];
-			} x;
-			x.q = (vec_float4)a;
-			p[0] = x.f[0];
-			p[1] = x.f[1];
-			p[2] = x.f[2];
-			p[3] = x.f[3];
-		}
+ILINE __m128 _mm_load_ps(float *p) { return (__m128) * (vec_float4 *)p; }
+ILINE void _mm_store_ps(float *p, __m128 a) { *(vec_float4 *)p = (vec_float4)a; }
+ILINE __m128 _mm_set_ps(float z, float y, float x, float w) { return (__m128)(vec_float4){w, x, y, z}; }
+ILINE __m128 _mm_div_ps(__m128 a, __m128 b) { return (__m128)divf4((vec_float4)a, (vec_float4)b); }
+ILINE __m128 _mm_add_ps(__m128 a, __m128 b) { return (__m128)vec_add((vec_float4)a, (vec_float4)b); }
+ILINE __m128 _mm_sub_ps(__m128 a, __m128 b) { return (__m128)vec_sub((vec_float4)a, (vec_float4)b); }
+ILINE __m128 _mm_mul_ps(__m128 a, __m128 b) { return (__m128)vec_madd((vec_float4)a, (vec_float4)b, (vec_float4){0.0f}); }
+ILINE __m128 _mm_cmpgt_ps(__m128 a, __m128 b) { return (__m128)vec_cmpgt((vec_float4)a, (vec_float4)b); }
+ILINE __m128 _mm_cmplt_ps(__m128 a, __m128 b) { return (__m128)vec_cmplt((vec_float4)a, (vec_float4)b); }
+ILINE __m128 _mm_cmpneq_ps(__m128 a, __m128 b)
+{
+  vec_uint4 eqRes = (vec_uint4)vec_cmpeq((vec_float4)a, (vec_float4)b);
+  return (__m128)vec_nor(eqRes, eqRes);
+}
+ILINE void _mm_empty() {}
+ILINE __m128 _mm_loadu_ps(const float *const p)
+{
+  union
+  {
+    vec_float4 q;
+    float f[4];
+  } x;
+  x.f[0] = p[0];
+  x.f[1] = p[1];
+  x.f[2] = p[2];
+  x.f[3] = p[3];
+  return (__m128)x.q;
+}
+ILINE void _mm_storeu_ps(float *const p, __m128 a)
+{
+  union
+  {
+    vec_float4 q;
+    float f[4];
+  } x;
+  x.q = (vec_float4)a;
+  p[0] = x.f[0];
+  p[1] = x.f[1];
+  p[2] = x.f[2];
+  p[3] = x.f[3];
+}
 
-		#if defined(__SPU__)
-			ILINE int _mm_movemask_ps(__m128 a){return (int)spu_extract(spu_gather((vec_uint4)a), 0);}
-			ILINE __m128 _mm_load1_ps(const float * const p){return (__m128)spu_splats(*p);}		
-			//additional function shuffling w component
-			ILINE __m128 _mm_shuffle_ps_w(__m128 a)
-			{
-				return (__m128)spu_splats(spu_extract((vec_float4)a, 3));
-			}
-		#else
-			ILINE int _mm_movemask_ps(__m128 a){return si_to_int(si_gb(a));}
-			ILINE __m128 _mm_load1_ps(const float * const p)
-			{
-				const float cP = *p;
-				return (__m128)(vec_float4){cP, cP, cP, cP};
-			}
-			//additional function shuffling w component
-			ILINE __m128 _mm_shuffle_ps_w(__m128 a)
-			{
-				return (__m128)vec_splat((vec_float4)a, 3);
-			}
-		#endif//__SPU__
-	#endif//PS3OPT
+#if defined(__SPU__)
+ILINE int _mm_movemask_ps(__m128 a) { return (int)spu_extract(spu_gather((vec_uint4)a), 0); }
+ILINE __m128 _mm_load1_ps(const float *const p) { return (__m128)spu_splats(*p); }
+// additional function shuffling w component
+ILINE __m128 _mm_shuffle_ps_w(__m128 a)
+{
+  return (__m128)spu_splats(spu_extract((vec_float4)a, 3));
+}
+#else
+ILINE int _mm_movemask_ps(__m128 a) { return si_to_int(si_gb(a)); }
+ILINE __m128 _mm_load1_ps(const float *const p)
+{
+  const float cP = *p;
+  return (__m128)(vec_float4){cP, cP, cP, cP};
+}
+// additional function shuffling w component
+ILINE __m128 _mm_shuffle_ps_w(__m128 a)
+{
+  return (__m128)vec_splat((vec_float4)a, 3);
+}
+#endif //__SPU__
+#endif // PS3OPT
 
-#else//PS3
-	//implement something usual to bring one memory location into L1 data cache
-	ILINE void CryPrefetch(const void* const cpSrc)
-	{
-		cryPrefetchT0SSE(cpSrc);
-	}
+#else // PS3
+// implement something usual to bring one memory location into L1 data cache
+ILINE void CryPrefetch(const void *const cpSrc)
+{
+  cryPrefetchT0SSE(cpSrc);
+}
 #endif
 
-
-#endif //math
-
+#endif // math

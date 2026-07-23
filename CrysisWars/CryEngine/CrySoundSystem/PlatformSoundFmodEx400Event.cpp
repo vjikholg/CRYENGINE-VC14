@@ -25,7 +25,7 @@
 #include "SoundSystem.h"
 #include "FmodEx/inc/fmod_errors.h"
 #include "ITimer.h"
-#include <StlUtils.h>
+
 
 //////////////////////////////////////////////////////////////////////////
 #define IS_FMODERROR (m_ExResult != FMOD_OK )

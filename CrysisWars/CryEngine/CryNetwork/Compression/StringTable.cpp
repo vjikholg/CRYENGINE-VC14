@@ -1,6 +1,6 @@
 #include "StdAfx.h"
 #include "StringTable.h"
-#include "StlUtils.h"
+#include <StlHashMap.h>
 #include "ArithModel.h"
 
 static const uint32 LOG2_NUM_STRING_IDS = 16;
@@ -17,7 +17,7 @@ public:
 
 	bool IsUnique() { return m_nRefs == 1; }
 
-	typedef stl::hash_map<string, uint32, stl::hash_strcmp<string> > StrToIdMap;
+	using StrToIdMap = stl::CryHashMap<string, uint32, stl::hash_strcmp<string> >;
 	typedef std::vector<string> StrVec;
 	StrToIdMap m_strToId;
 	StrVec m_strings;
