@@ -24,8 +24,8 @@
 #include <ILog.h>
 #include <IConsole.h>
 #include <ICryPak.h>
-#include <CryCommon/StlAlgorithms.h>
-#include <CryCommon/StlContainerUtils.h>
+#include <StlAlgorithms.h>
+#include <StlContainerUtils.h>
 
 #include <ICryAnimation.h>
 #include "AnimationBase.h"

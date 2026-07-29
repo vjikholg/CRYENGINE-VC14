@@ -22,6 +22,7 @@
 #include "CryAction.h"
 #include "IConsole.h"
 #include "CryThread.h"
+#include <memory>
 
 #define FLAGS_FIELD "__sendto"
 #define ID_FIELD "__id"
@@ -782,7 +783,7 @@ INetAtSyncItem * CScriptRMI::HandleRMI( bool bClient, EntityId objID, uint8 func
 		}
 
 	private:
-		std::auto_ptr<CScriptRMISerialize> m_pSer;
+		std::unique_ptr<CScriptRMISerialize> m_pSer;
 		bool m_bClient;
 		CGameContext * m_pContext;
 		EntityId m_objID;

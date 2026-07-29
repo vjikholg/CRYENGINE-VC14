@@ -16,6 +16,8 @@
 #ifndef __MICROPHONE_H__
 #define __MICROPHONE_H__
 
+#include <memory>
+
 #include "ISound.h"
 #include "CryThread.h"
 
@@ -59,7 +61,7 @@ private:
 	IAudioDevice								*m_pAudioDevice; // AudioDevice
 	CSoundBuffer								*m_pBufMicro;
 
-	std::auto_ptr<uint8>						m_TempBuffer;
+	std::unique_ptr<uint8[]>						m_TempBuffer;
 	unsigned int								m_DataSize;
 	unsigned int								m_TempBufferSize;
 };

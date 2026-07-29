@@ -89,7 +89,7 @@ private:
 	void UpdateRenderParams();
 
 private:
-	std::auto_ptr< CSkyLightNishita > m_pSkyLightNishita;
+	std::unique_ptr< CSkyLightNishita > m_pSkyLightNishita;
 		
 	SkyDomeTextureData m_skyDomeTextureDataMie[ 2 ];
 	SkyDomeTextureData m_skyDomeTextureDataRayleigh[ 2 ];

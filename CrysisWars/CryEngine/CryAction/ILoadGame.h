@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <memory>
 struct ILoadGame
 {
 	// initialize - set name of game
@@ -15,7 +16,7 @@ struct ILoadGame
 	// serialize a console variable
 	virtual bool GetConsoleVariable( ICVar * pVar ) = 0;
 	// create a serializer for some data section
-	virtual std::auto_ptr<TSerialize> GetSection( const char * section ) = 0;
+	virtual std::unique_ptr<TSerialize> GetSection( const char * section ) = 0;
 	virtual bool HaveSection( const char * section ) = 0;
 
 	// finish - indicate success (negative success *must* remove file)

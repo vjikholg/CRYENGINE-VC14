@@ -16,7 +16,7 @@
 #ifndef CRYSOUND_IMUSICSYSTEM_H
 #define CRYSOUND_IMUSICSYSTEM_H
 
-#include <CryCommon/StlContainerUtils.h>
+#include <StlContainerUtils.h>
 #include "ISerialize.h"
 //#include "SerializeFwd.h"
 

@@ -25,7 +25,7 @@
 #include <ITimer.h>
 #include <IInput.h>
 #include <CryName.h>
-#include <CryCommon/StlContainerUtils.h>
+#include <StlContainerUtils.h>
 #include "CryInput.h"
 
 //{{AFX_INSERT_LOCATION}}

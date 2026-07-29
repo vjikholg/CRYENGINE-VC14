@@ -23,7 +23,7 @@
 #include "ZipDir.h"
 #include "MTSafeAllocator.h"
 #include "CritSection.h"
-#include <CryCommon/StlContainerUtils.h>
+#include <StlContainerUtils.h>
 #include "PakVars.h"
 
 class CCryPak;

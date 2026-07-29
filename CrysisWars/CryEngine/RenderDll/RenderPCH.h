@@ -69,6 +69,8 @@
 #include "windows.h"
 #endif
 
+#include <ISystem.h>
+#include <ILog.h>
 #include "CryThread.h"
 #define AUTO_LOCK(csLock) CryAutoLock<CryFastLock> __AL__##csLock(csLock)
 
@@ -198,8 +200,6 @@ typedef const char*			cstr;
 #include <ICryPak.h>
 #include <IProcess.h>
 #include <ITimer.h>
-#include <ISystem.h>
-#include <ILog.h>
 #include <IConsole.h>
 #include <IRenderer.h>
 #include <IStreamEngine.h>
@@ -226,9 +226,9 @@ extern ISystem  *iSystem;
 #include <Cry_Geo.h>
 //#include "_Malloc.h"
 //#include "math.h"
-#include <CryCommon/StlAlgorithms.h>
-#include <CryCommon/StlContainerUtils.h>
-#include <CryCommon/StlHashMap.h>
+#include <StlAlgorithms.h>
+#include <StlContainerUtils.h>
+#include <StlHashMap.h>
 
 #include <VertexFormats.h>
 

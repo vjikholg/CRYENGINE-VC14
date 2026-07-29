@@ -29,7 +29,7 @@ public:
 	void Update();
 
 private:
-	std::auto_ptr<CCPUMonitor> m_pCPUMonitor;
+	std::unique_ptr<CCPUMonitor> m_pCPUMonitor;
 
 	void SetStep(int step, float * dueToCPU);
 

@@ -10,6 +10,7 @@
 #include <queue>
 #include "BitFiddling.h"
 #include "IDebugHistory.h"
+#include <memory>
 
 //--------------------------------------------------------------------------------
 
@@ -52,7 +53,7 @@ struct IAnimationBlending;
 //--------------------------------------------------------------------------------
 /*
 struct IAnimatedCharacterPositionTracker;
-typedef std::auto_ptr<IAnimatedCharacterPositionTracker> IAnimatedCharacterPositionTrackerAutoPtr;
+typedef std::unique_ptr<IAnimatedCharacterPositionTracker> IAnimatedCharacterPositionTrackerAutoPtr;
 struct IAnimatedCharacterPositionTracker
 {
 	virtual ~IAnimatedCharacterPositionTracker() {}

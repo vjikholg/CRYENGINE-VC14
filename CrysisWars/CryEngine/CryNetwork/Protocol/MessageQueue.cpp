@@ -507,11 +507,17 @@ public:
 	}
 
 private:
+	using TBucketValue = std::pair<const uint32, uint32>;
 #if USE_SYSTEM_ALLOCATOR
-	typedef std::map<uint32,uint32,std::greater<uint32> > TBucketMap;
+	using TBucketAllocator = std::allocator<TBucketValue>;
 #else
-	typedef std::map<uint32,uint32,std::greater<uint32>,STLMementoAllocator<std::pair<uint32,uint32> > > TBucketMap;
+	using TBucketAllocator = STLMementoAllocator<TBucketValue>;
 #endif
+	using TBucketMap = std::map<
+		uint32,
+		uint32,
+		std::greater<uint32>,
+		TBucketAllocator>;
 
 	int m_curLatencyBucket;
 	TBucketMap::iterator m_curOrderingBucket;

@@ -1,6 +1,7 @@
 #include "StdAfx.h"
 #include "StateIndex.h"
 #include <iterator>
+#include <memory>
 #include <IAnimationStateNode.h>
 
 #define LOG_QUERY_PROGRESS 0
@@ -87,7 +88,7 @@ CStateIndex::CStateIndex()
 {
 }
 
-void CStateIndex::Init( std::auto_ptr<Builder> builder )
+void CStateIndex::Init( std::unique_ptr<Builder> builder )
 {
 	m_database.resize(0);
 	m_inputData.resize(0);

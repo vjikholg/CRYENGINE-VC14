@@ -11,6 +11,8 @@ enum EStateMatchesInputFlags
 
 struct AG_FILE;
 
+#include <memory>
+
 // a state index is supposed to allow efficient queries on a set of input data
 // as a support structure for animation selection
 class CStateIndex
@@ -32,7 +34,7 @@ public:
 	class Builder;
 
 	CStateIndex();
-	void Init( std::auto_ptr<Builder> );
+	void Init( std::unique_ptr<Builder> );
 	void Swap( CStateIndex& rhs );
 
 	struct IInputSetCallback

@@ -15,6 +15,8 @@ History:
 
 #pragma once
 
+#include <memory>
+
 #include "CryThread.h"
 #include "INetwork.h"
 #include "INetworkService.h"
@@ -54,7 +56,7 @@ private:
 
 	// threads
 	class CDownloadThread;
-	std::auto_ptr<CDownloadThread> m_downloadThread;
+	std::unique_ptr<CDownloadThread> m_downloadThread;
 
 	static MD5_CTX m_MD5Context;
 	static unsigned char m_md5Checksum[16];

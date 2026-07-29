@@ -67,11 +67,17 @@ private:
 	CryFastLock m_lock;
 
 	IVoiceDecoder * m_pDecoder;
+	using PacketValue = std::pair<const uint32, TVoicePacketPtr>;
 #if USE_SYSTEM_ALLOCATOR
-	typedef std::map<uint32, TVoicePacketPtr, std::less<uint32> > PacketMap;
+	using PacketAllocator = std::allocator<PacketValue>;
 #else
-	typedef std::map<uint32, TVoicePacketPtr, std::less<uint32>, stl::STLPoolAllocator< std::pair<uint32, TVoicePacketPtr> > > PacketMap;
+	using PacketAllocator = stl::STLPoolAllocator<PacketValue>;
 #endif
+	using PacketMap = std::map<
+		uint32,
+		TVoicePacketPtr,
+		std::less<uint32>,
+		PacketAllocator>;
 	PacketMap m_packets;
 	uint32 m_counter;
 	uint32 m_endCounter;

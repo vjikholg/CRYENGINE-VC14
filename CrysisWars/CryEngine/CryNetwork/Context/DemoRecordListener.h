@@ -24,6 +24,7 @@ History:
 #include "Streams/CompressingStream.h"
 #include "SimpleSerialize.h"
 #include "NetHelpers.h"
+#include <memory>
 
 class CNetContext;
 
@@ -79,7 +80,7 @@ private:
 	typedef std::map<SNetObjectID, uint8> TChangedObjects;
 	TChangedObjects m_changedObjects;
 
-	const std::auto_ptr<CSimpleOutputStream> m_output;
+	std::unique_ptr<CSimpleOutputStream> m_output;
 
 	std::set<EntityId> m_boundObjects;
 

@@ -17,6 +17,8 @@
 # pragma once
 #endif
 
+#include <memory>
+
 #include <ISystem.h>
 #include <IRenderer.h>
 #include <IPhysics.h>
@@ -672,7 +674,7 @@ private: // ------------------------------------------------------
 	ESystemConfigSpec m_nServerConfigSpec;
 	ESystemConfigSpec m_nMaxConfigSpec;
 
-	std::auto_ptr<CServerThrottle> m_pServerThrottle;
+	std::unique_ptr<CServerThrottle> m_pServerThrottle;
 
 	// Pause mode.
 	bool m_bPaused;

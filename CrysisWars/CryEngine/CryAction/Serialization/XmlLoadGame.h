@@ -4,6 +4,7 @@
 #pragma once
 
 #include "ILoadGame.h"
+#include <memory>
 
 class CXmlLoadGame : public ILoadGame
 {
@@ -17,7 +18,7 @@ public:
 	virtual bool GetMetadata( const char * tag, int& value );
 	virtual bool HaveMetadata( const char * tag );
 	virtual bool GetConsoleVariable( ICVar * pVar );
-	virtual std::auto_ptr<TSerialize> GetSection( const char * section );
+	virtual std::unique_ptr<TSerialize> GetSection( const char * section );
 	virtual bool HaveSection( const char * section );
 	virtual void Complete();
 	virtual const char* GetFileName() const;
@@ -29,7 +30,7 @@ protected:
 private:
 	class CSerializeCtx;
 	struct Impl;
-	std::auto_ptr<Impl> m_pImpl;
+	std::unique_ptr<Impl> m_pImpl;
 };
 
 #endif

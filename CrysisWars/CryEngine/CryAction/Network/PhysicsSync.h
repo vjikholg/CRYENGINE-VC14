@@ -4,6 +4,7 @@
 #pragma once
 
 #include "MiniQueue.h"
+#include <memory>
 
 struct IPhysicalWorld;
 class CGameChannel;
@@ -46,7 +47,7 @@ private:
 	PingQueue m_pastPings;
 
 	class CDebugTimeline;
-	std::auto_ptr<CDebugTimeline> m_pDBTL;
+	std::unique_ptr<CDebugTimeline> m_pDBTL;
 
 	CTimeValue m_physPrevRemoteTime;
 	CTimeValue m_pingEstimate;

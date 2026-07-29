@@ -6,6 +6,7 @@
 #pragma once
 
 #include "ISaveGame.h"
+#include <memory>
 
 class CXmlSaveGame : public ISaveGame
 {
@@ -33,7 +34,7 @@ protected:
 private:
 	class CSerializeCtx;
 	struct Impl;
-	std::auto_ptr<Impl> m_pImpl;
+	std::unique_ptr<Impl> m_pImpl;
 	ESaveGameReason	m_eReason;
 
 };

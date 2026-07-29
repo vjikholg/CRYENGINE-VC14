@@ -18,8 +18,8 @@
 #pragma once
 
 #include "IGameTokens.h"
-#include <CryCommon/StlAlgorithms.h>
-#include <CryCommon/StlHashMap.h>
+#include <StlAlgorithms.h>
+#include <StlHashMap.h>
 
 class CGameToken;
 

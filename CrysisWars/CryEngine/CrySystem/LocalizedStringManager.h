@@ -18,7 +18,7 @@
 #pragma once
 
 #include <ISystem.h>
-#include <CryCommon/StlContainerUtils.h>
+#include <StlContainerUtils.h>
 
 //////////////////////////////////////////////////////////////////////////
 /*

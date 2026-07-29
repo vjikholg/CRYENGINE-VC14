@@ -15,7 +15,7 @@ public:
 			return false;
 		}
 
-		char *szFilename = "Bin32/rc/TextureFallbackFile.dat";
+		const char* szFilename = "Bin32/rc/TextureFallbackFile.dat";
 
 		FILE *in = iSystem->GetIPak()->FOpen(szFilename,"rb");
 

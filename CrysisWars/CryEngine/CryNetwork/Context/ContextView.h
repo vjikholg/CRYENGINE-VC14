@@ -32,6 +32,7 @@ NOTE: CUpdateMessage is a friend of this class
 #include "SyncContext.h"
 #include "NetContext.h"
 #include "STLMementoAllocator.h"
+#include <memory>
 
 class CNetContext;
 class CNetChannel;
@@ -520,16 +521,29 @@ private:
 		return mask;
 	}
 
-	typedef std::map<SAttachmentIndex, IRMIMessageBodyPtr, std::less<SAttachmentIndex>, STLMementoAllocator<std::pair<SAttachmentIndex, IRMIMessageBodyPtr> > > TAttachmentMap;
-	std::auto_ptr<TAttachmentMap> m_pAttachments[2];
+	using TAttachmentValue = std::pair<const SAttachmentIndex, IRMIMessageBodyPtr>;
+	using TAttachmentAllocator = STLMementoAllocator<TAttachmentValue>;
+	using TAttachmentMap = std::map<
+		SAttachmentIndex,
+		IRMIMessageBodyPtr,
+		std::less<SAttachmentIndex>,
+		TAttachmentAllocator>;
+
+	std::unique_ptr<TAttachmentMap> m_pAttachments[2];
 
 protected:
+	using TSendablesValue = std::pair<const SNetObjectID, SSendableHandle>;
 #if USE_SYSTEM_ALLOCATOR
-	typedef std::multimap<SNetObjectID, SSendableHandle, std::less<SNetObjectID> > TSendablesMap;
+	using TSendablesAllocator = std::allocator<TSendablesValue>;
 #else
-	typedef std::multimap<SNetObjectID, SSendableHandle, std::less<SNetObjectID>, STLMementoAllocator<std::pair<SNetObjectID, SSendableHandle> > > TSendablesMap;
+	using TSendablesAllocator = STLMementoAllocator<TSendablesValue>;
 #endif
-	std::auto_ptr<TSendablesMap> m_pSendables;
+	using TSendablesMap = std::multimap<
+		SNetObjectID,
+		SSendableHandle,
+		std::less<SNetObjectID>,
+		TSendablesAllocator>;
+	std::unique_ptr<TSendablesMap> m_pSendables;
 
 private:
   typedef std::vector<IContextViewExtension*> TExtensionsSet;
@@ -545,8 +559,14 @@ private:
 
 	SNetObjectID m_witness;
 	VectorMap<SNetObjectID, SSendableHandle> m_voiceMessageHandles;
-	typedef std::map<SNetObjectID, uint8, std::less<SNetObjectID>, STLMementoAllocator<std::pair<SNetObjectID, uint8> > > TEarlyPartialUpdateIDs;
-	std::auto_ptr<TEarlyPartialUpdateIDs> m_pEarlyPartialUpdateIDs;
+	using TEarlyPartialUpdateIDsValue = std::pair<const SNetObjectID, uint8>;
+	using TEarlyPartialUpdateIDsAllocator = STLMementoAllocator<TEarlyPartialUpdateIDsValue>;
+	using TEarlyPartialUpdateIDs = std::map<
+		SNetObjectID,
+		uint8,
+		std::less<SNetObjectID>,
+		TEarlyPartialUpdateIDsAllocator>;
+	std::unique_ptr<TEarlyPartialUpdateIDs> m_pEarlyPartialUpdateIDs;
 
 	CTimeValue m_remotePhysicsTime;
 

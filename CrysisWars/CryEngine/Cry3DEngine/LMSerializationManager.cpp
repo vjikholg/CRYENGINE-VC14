@@ -350,7 +350,7 @@ bool CLMSerializationManager::_Load( const char *pszFileName, struct IRenderNode
 						else
 							pUVh = new UVSetHeader();//old format
 		assert(pUVh);
-		std::auto_ptr<UVSetHeader> uvh(pUVh);
+		std::unique_ptr<UVSetHeader> uvh(pUVh);
 		// Read position of GLM which uses this texture coordinate set. FIX!
 		int32 nUVSetHeaderSize;
 		if( sHeader.iVersion>=8 )

@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "XmlLoadGame.h"
 
+#include <memory>
+
 #define XML_LOADGAME_USE_COMPRESSION   // must be in sync with XmlSaveGame.cpp
 #undef  XML_LOADGAME_USE_COMPRESSION   // undef because does NOT work with aliases yet
 
@@ -117,14 +119,14 @@ bool CXmlLoadGame::GetConsoleVariable( ICVar * pVar )
 	return false;
 }
 
-std::auto_ptr<TSerialize> CXmlLoadGame::GetSection( const char * section )
+std::unique_ptr<TSerialize> CXmlLoadGame::GetSection( const char * section )
 {
 	XmlNodeRef node = m_pImpl->root->findChild(section);
 	if (!node)
-		return std::auto_ptr<TSerialize>();
+		return std::unique_ptr<TSerialize>();
 	_smart_ptr<CSerializeCtx> pCtx = new CSerializeCtx(node);
 	m_pImpl->sections.push_back( pCtx );
-	return std::auto_ptr<TSerialize>( new TSerialize(pCtx->GetTSerialize()) );
+	return std::unique_ptr<TSerialize>( new TSerialize(pCtx->GetTSerialize()) );
 }
 
 bool CXmlLoadGame::HaveSection( const char * section )

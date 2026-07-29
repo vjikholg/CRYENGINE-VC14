@@ -1478,8 +1478,13 @@ void CGraph::FindNodesWithinRange(MapConstNodesDistance &result, float curDistT,
 	const CGraphLinkManager& linkManager = GetLinkManager();
 	const CGraphNodeManager& nodeManager = GetNodeManager();
 
-	typedef stl::STLPoolAllocator< std::pair<float, const GraphNode*> > FloatNodeMapAllocator;
-	typedef std::multimap<float, const GraphNode*, std::less<float>, FloatNodeMapAllocator> OpenListMap;
+	using OpenListMapValue = std::pair<const float, const GraphNode*>;
+	using OpenListMapAllocator = stl::STLPoolAllocator<OpenListMapValue>;
+	using OpenListMap = std::multimap<
+		float,
+		const GraphNode*,
+		std::less<float>,
+		OpenListMapAllocator>;
 
 	typedef stl::STLPoolAllocator< const GraphNode* > NodeSetAllocator;
 

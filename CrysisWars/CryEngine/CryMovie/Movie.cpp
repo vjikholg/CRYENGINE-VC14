@@ -25,7 +25,7 @@
 #include "SceneNode.h"
 #include "MaterialNode.h"
 
-#include <CryCommon/StlAlgorithms.h>
+#include <StlAlgorithms.h>
 
 #include <ISystem.h>
 #include <ILog.h>

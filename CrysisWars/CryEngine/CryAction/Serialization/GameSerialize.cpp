@@ -23,6 +23,8 @@
 #include <time.h>
 #include <ITimer.h>
 
+#include <memory>
+
 #define ENABLE_QUICK_LOAD 1
 
 //#define EXCESSIVE_ENTITY_DEBUG 1
@@ -931,11 +933,11 @@ ELoadGameResult CGameSerialize::LoadGame( CCryAction * pCryAction, const char * 
 
 	checkpoint.Check("PreSerialize Event");
 
-	std::auto_ptr<TSerialize> pSer;
+	std::unique_ptr<TSerialize> pSer;
 
 	// load timer data
-	std::auto_ptr<TSerialize> temp(pLoadGame->GetSection(SAVEGAME_TIMER_SECTION));
-	pSer = temp;
+	std::unique_ptr<TSerialize> temp(pLoadGame->GetSection(SAVEGAME_TIMER_SECTION));
+	pSer = std::move(temp);
 
 	if (pSer.get())
 		gEnv->pTimer->Serialize(*pSer);
@@ -975,8 +977,8 @@ ELoadGameResult CGameSerialize::LoadGame( CCryAction * pCryAction, const char * 
 
 	// basic game state loading... need to do it early to reserve entity id's
 	{
-		std::auto_ptr<TSerialize> temp(pLoadGame->GetSection(SAVEGAME_GAMESTATE_SECTION));
-		pSer = temp;
+		std::unique_ptr<TSerialize> temp(pLoadGame->GetSection(SAVEGAME_GAMESTATE_SECTION));
+		pSer = std::move(temp);
 	}
 	if (!pSer.get()) {
 		gEnv->pSystem->SetThreadState(ESubsys_Physics, true);
@@ -1090,8 +1092,8 @@ ELoadGameResult CGameSerialize::LoadGame( CCryAction * pCryAction, const char * 
 
 	// timer serialization (after potential context switch, e.g. when loading a savegame for which Level has not been loaded yet)
 	{
-		std::auto_ptr<TSerialize> temp(pLoadGame->GetSection(SAVEGAME_TIMER_SECTION));
-		pSer = temp;
+		std::unique_ptr<TSerialize> temp(pLoadGame->GetSection(SAVEGAME_TIMER_SECTION));
+		pSer = std::move(temp);
 	}
 	if (!pSer.get())
 		GameWarning("Unable to open timer %s", SAVEGAME_TIMER_SECTION);
@@ -1109,8 +1111,8 @@ ELoadGameResult CGameSerialize::LoadGame( CCryAction * pCryAction, const char * 
 
 	// terrain modifications (e.g. heightmap changes)
 	{
-		std::auto_ptr<TSerialize> temp(pLoadGame->GetSection(SAVEGAME_TERRAINSTATE_SECTION));
-		pSer = temp;
+		std::unique_ptr<TSerialize> temp(pLoadGame->GetSection(SAVEGAME_TERRAINSTATE_SECTION));
+		pSer = std::move(temp);
 	}
 	if (!pSer.get())
 		GameWarning("Unable to open section %s", SAVEGAME_TERRAINSTATE_SECTION);
@@ -1121,8 +1123,8 @@ ELoadGameResult CGameSerialize::LoadGame( CCryAction * pCryAction, const char * 
 
 	// game tokens
 	{
-		std::auto_ptr<TSerialize> temp(pLoadGame->GetSection(SAVEGAME_GAMETOKEN_SECTION));
-		pSer = temp;
+		std::unique_ptr<TSerialize> temp(pLoadGame->GetSection(SAVEGAME_GAMETOKEN_SECTION));
+		pSer = std::move(temp);
 	}
 	if (!pSer.get())
 		GameWarning("No game token data in save game");
@@ -1169,8 +1171,8 @@ ELoadGameResult CGameSerialize::LoadGame( CCryAction * pCryAction, const char * 
 		pMatFX->Reset();
 
 	{
-		std::auto_ptr<TSerialize> temp(pLoadGame->GetSection(SAVEGAME_MATERIALEFFECTS_SECTION));
-		pSer = temp;
+		std::unique_ptr<TSerialize> temp(pLoadGame->GetSection(SAVEGAME_MATERIALEFFECTS_SECTION));
+		pSer = std::move(temp);
 	}
 	if (!pSer.get())
 		GameWarning("Unable to open section %s", SAVEGAME_MATERIALEFFECTS_SECTION);
@@ -1186,8 +1188,8 @@ ELoadGameResult CGameSerialize::LoadGame( CCryAction * pCryAction, const char * 
 	// ViewSystem Serialization
 	IViewSystem* pViewSystem = pCryAction->GetIViewSystem();
 	{
-		std::auto_ptr<TSerialize> temp(pLoadGame->GetSection(SAVEGAME_VIEWSYSTEM_SECTION));
-		pSer = temp;
+		std::unique_ptr<TSerialize> temp(pLoadGame->GetSection(SAVEGAME_VIEWSYSTEM_SECTION));
+		pSer = std::move(temp);
 	}
 	if (!pSer.get())
 		GameWarning("Unable to open section %s", SAVEGAME_VIEWSYSTEM_SECTION);
@@ -1207,8 +1209,8 @@ ELoadGameResult CGameSerialize::LoadGame( CCryAction * pCryAction, const char * 
 	{
 		pSoundystem->Silence(false, false);
 		pSoundystem->Update(eSoundUpdateMode_All); // call one update so it can remove some sounds
-		std::auto_ptr<TSerialize> temp(pLoadGame->GetSection(SAVEGAME_SOUNDSYSTEM_SECTION));
-		pSer = temp;
+		std::unique_ptr<TSerialize> temp(pLoadGame->GetSection(SAVEGAME_SOUNDSYSTEM_SECTION));
+		pSer = std::move(temp);
 		
 		if (pSer.get())
 			pSoundystem->Serialize(*pSer);
@@ -1219,8 +1221,8 @@ ELoadGameResult CGameSerialize::LoadGame( CCryAction * pCryAction, const char * 
 
 	if(pCryAction->GetIItemSystem())
 	{
-		std::auto_ptr<TSerialize> temp(pLoadGame->GetSection(SAVEGAME_LTLINVENTORY_SECTION));
-		pSer = temp;
+		std::unique_ptr<TSerialize> temp(pLoadGame->GetSection(SAVEGAME_LTLINVENTORY_SECTION));
+		pSer = std::move(temp);
 		if(pSer.get())
 			pCryAction->GetIItemSystem()->Serialize(*pSer);
 		else
@@ -1235,8 +1237,8 @@ ELoadGameResult CGameSerialize::LoadGame( CCryAction * pCryAction, const char * 
 
 	// Dialog System First Pass [recreates DialogSessions]
 	{
-		std::auto_ptr<TSerialize> temp(pLoadGame->GetSection(SAVEGAME_DIALOGSYSTEM_SECTION));
-		pSer = temp;
+		std::unique_ptr<TSerialize> temp(pLoadGame->GetSection(SAVEGAME_DIALOGSYSTEM_SECTION));
+		pSer = std::move(temp);
 	}
 	if (!pSer.get())
 		GameWarning("Unable to open section %s", SAVEGAME_DIALOGSYSTEM_SECTION);
@@ -1291,8 +1293,8 @@ ELoadGameResult CGameSerialize::LoadGame( CCryAction * pCryAction, const char * 
 		// serialize breakable objects AFTER reservation
 		// this will quite likely spawn new entities
 		{
-			std::auto_ptr<TSerialize> temp(pLoadGame->GetSection(SAVEGAME_GAMESTATE_SECTION));
-			pSer = temp;
+			std::unique_ptr<TSerialize> temp(pLoadGame->GetSection(SAVEGAME_GAMESTATE_SECTION));
+			pSer = std::move(temp);
 		}
 		if (!pSer.get()) {
 			gEnv->pSystem->SetThreadState(ESubsys_Physics, true);
@@ -1518,8 +1520,8 @@ ELoadGameResult CGameSerialize::LoadGame( CCryAction * pCryAction, const char * 
 	checkpoint.Check("EntitySystem");
 
 	{
-		std::auto_ptr<TSerialize> temp(pLoadGame->GetSection(SAVEGAME_AISTATE_SECTION));
-		pSer = temp;
+		std::unique_ptr<TSerialize> temp(pLoadGame->GetSection(SAVEGAME_AISTATE_SECTION));
+		pSer = std::move(temp);
 	}
 	if (!pSer.get())
 	{
@@ -1543,8 +1545,8 @@ ELoadGameResult CGameSerialize::LoadGame( CCryAction * pCryAction, const char * 
 	if (gEnv->pMusicSystem)
 	{
 		gEnv->pMusicSystem->EndTheme(EThemeFade_StopAtOnce, 0);
-		std::auto_ptr<TSerialize> temp(pLoadGame->GetSection(SAVEGAME_MUSICSYSTEM_SECTION));
-		pSer = temp;
+		std::unique_ptr<TSerialize> temp(pLoadGame->GetSection(SAVEGAME_MUSICSYSTEM_SECTION));
+		pSer = std::move(temp);
 
 		if (pSer.get())
 			gEnv->pMusicSystem->Serialize(*pSer);
@@ -1556,8 +1558,8 @@ ELoadGameResult CGameSerialize::LoadGame( CCryAction * pCryAction, const char * 
 	// MusicLogic Serialization
 	if (pCryAction->GetMusicLogic())
 	{
-		std::auto_ptr<TSerialize> temp(pLoadGame->GetSection(SAVEGAME_MUSICLOGIC_SECTION));
-		pSer = temp;
+		std::unique_ptr<TSerialize> temp(pLoadGame->GetSection(SAVEGAME_MUSICLOGIC_SECTION));
+		pSer = std::move(temp);
 
 		if (pSer.get())
 			pCryAction->GetMusicLogic()->Serialize(*pSer);

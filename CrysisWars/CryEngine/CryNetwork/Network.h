@@ -257,7 +257,7 @@ private:
 	bool AllSuicidal();
 	void UpdateLoop( ENetworkGameSync sync );
 #if ENABLE_DISTRIBUTED_LOGGER
-	std::auto_ptr<CDistributedLogger> m_pLogger;
+	std::unique_ptr<CDistributedLogger> m_pLogger;
 #endif
 
 	typedef std::map<NRESULT,string> TErrorMap;
@@ -292,12 +292,12 @@ private:
 	int m_schedulerVersion;
 	int m_inSync[eNGS_NUM_ITEMS+2]; // one extra for the continuous update loop, and the other for flushing the lazy queue
 
-	std::auto_ptr<CServiceManager> m_pServiceManager;
+	std::unique_ptr<CServiceManager> m_pServiceManager;
 
 	std::vector<CNetChannel*> m_vFastChannelLookup;
 
 	class CNetworkThread;
-	std::auto_ptr<CNetworkThread> m_pThread;
+	std::unique_ptr<CNetworkThread> m_pThread;
 	NetFastMutex m_mutex;
 	NetFastMutex m_commMutex;
 	NetFastMutex m_logMutex;

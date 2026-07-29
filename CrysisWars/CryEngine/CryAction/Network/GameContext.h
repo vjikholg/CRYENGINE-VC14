@@ -25,6 +25,8 @@
 #include "ClassRegistryReplicator.h"
 #include "INetworkService.h"
 
+#include <memory>
+
 // FIXME: Cell SDK GCC bug workaround.
 #ifndef __GAMEOBJECT_H__
 #include "GameObjects/GameObject.h"
@@ -253,8 +255,8 @@ private:
 	typedef std::multimap<SDelegateCallbackIndex, HSCRIPTFUNCTION> DelegateCallbacks;
 	DelegateCallbacks m_delegateCallbacks;
 
-	std::auto_ptr<IContextEstablisher> m_pContextEstablisher;
-	std::auto_ptr<CBreakReplicator> m_pBreakReplicator;
+	std::unique_ptr<IContextEstablisher> m_pContextEstablisher;
+	std::unique_ptr<CBreakReplicator> m_pBreakReplicator;
 };
 
 class CScopedRemoveObjectUnlock

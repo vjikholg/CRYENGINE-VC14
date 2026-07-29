@@ -8,6 +8,7 @@
 #include "NavRegion.h"
 #include "AICollision.h"
 #include <set>
+#include <memory>
 
 class CGraph;
 class CCalculationStopper;
@@ -99,7 +100,7 @@ public:
   /// Iterates over all links in a graph that connect two human waypoints.
   class LinkIterator {
     const CGraph * m_pGraph;
-    std::auto_ptr <CAllNodesContainer::Iterator> m_currNodeIt;
+    std::unique_ptr <CAllNodesContainer::Iterator> m_currNodeIt;
     unsigned int m_currLinkIndex;
 
     void FindNextWaypointLink();

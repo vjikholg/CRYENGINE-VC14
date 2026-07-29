@@ -582,7 +582,7 @@ public:
   float m_dt;
   string m_name;
   /// the pair is calls and time (seconds)
-  typedef std::map< string, std::pair<unsigned, float> > TMapCallRate;
+  typedef std::map< string, std::pair<const unsigned int, float> > TMapCallRate;
   static TMapCallRate m_mapCallRate;
 #endif
 };

@@ -45,8 +45,8 @@
 
 #include <Cry_Math.h>
 #include <CrySizer.h>
-#include <CryCommon/StlAlgorithms.h>
-#include <CryCommon/StlHashMap.h>
+#include <StlAlgorithms.h>
+#include <StlHashMap.h>
 
 #include "IRenderer.h"
 

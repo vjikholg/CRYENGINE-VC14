@@ -8,7 +8,7 @@
 #include "INetwork.h"
 #include "SerializationChunk.h"
 #include "STLPoolAllocator_ManyElems.h"
-#include <CryCommon/StlHashMap.h>
+#include <StlHashMap.h>
 
 struct ICompressionPolicy;
 typedef _smart_ptr<ICompressionPolicy> ICompressionPolicyPtr;

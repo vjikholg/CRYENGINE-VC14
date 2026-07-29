@@ -25,7 +25,7 @@ The DXRenderer interface Class
 #include "xgraphics.h"
 #define XENON_EDRAM_SIZE GPU_EDRAM_SIZE // 10 Mb
 #define XENON_RING_SIZE  512*1024       // 512Kb
-
+    
 //--------------------------------------------------------------------------------------
 // Name: struct TILING_SCENARIO
 // Desc: Describes a configuration of MSAA quality and tiling rectangles to be used for
@@ -49,7 +49,7 @@ struct TILING_SCENARIO
 #include "DXUT/DXUTenum.h"
 #include "DXUT/DXUTmisc.h"
 #endif
-
+#include <memory>
 //=======================================================================
 
 // DRIVERD3D.H
@@ -237,7 +237,7 @@ class CMyDirect3DDevice9 : public IXenonDirect3DDevice9
 
 #elif defined (DIRECT3D10)
 
-interface CMyDirect3DDevice10 : public ID3D10Device
+class CMyDirect3DDevice10 : public ID3D10Device
 {
 public:
   /*** IUnknown methods ***/
@@ -886,7 +886,7 @@ struct SStateDepth
 
 #if defined (WIN32) || defined(XENON)
 class CAsyncShaderManager;
-typedef const std::auto_ptr<CAsyncShaderManager> TConstAsyncShaderManagerPtr;
+using TConstAsyncShaderManagerPtr = std::unique_ptr<CAsyncShaderManager>;
 #endif
 
 class CD3D9Renderer : public CRenderer
@@ -897,7 +897,10 @@ class CD3D9Renderer : public CRenderer
 private:
 	TConstAsyncShaderManagerPtr m_pAsyncShaderManager;
 public:
-	TConstAsyncShaderManagerPtr& GetAsyncShaderManager() const { return m_pAsyncShaderManager; }
+    CAsyncShaderManager* GetAsyncShaderManager() const
+    { 
+        return m_pAsyncShaderManager.get();
+    }
 #endif
 
 public:

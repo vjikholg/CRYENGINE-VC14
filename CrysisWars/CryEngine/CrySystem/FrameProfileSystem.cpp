@@ -19,7 +19,7 @@
 #include <ILog.h>
 #include <IRenderer.h>
 #include <IInput.h>
-#include <CryCommon/StlAlgorithms.h>
+#include <StlAlgorithms.h>
 #include <IConsole.h>
 #include <IHardwareMouse.h>
 

@@ -28,9 +28,9 @@
 
 CMicrophone::CMicrophone(IAudioDevice *pAudioDevice)
 {
-	m_pAudioDevice			= pAudioDevice;
-	m_pBufMicro					= NULL;
-	m_DataSize			=0;
+	m_pAudioDevice = pAudioDevice;
+	m_pBufMicro	= NULL;
+	m_DataSize = 0;
 	
 }
 

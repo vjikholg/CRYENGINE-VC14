@@ -25,6 +25,8 @@ History:
 #include "NetHelpers.h"
 #include "STLMementoAllocator.h"
 
+#include <memory>
+
 class CServerDefence : public CNetMessageSinkHelper<CServerDefence, IDefenceContext>
 {
 public:
@@ -51,16 +53,31 @@ private:
 	CNetChannel * m_pParent;
 	CMementoMemoryManagerPtr m_pMMM;
 
-	typedef std::multimap<uint32, CDefenceData::SProtectedFile, std::less<uint32>, STLMementoAllocator< std::pair<uint32, string> > > TPFMap;
-	std::auto_ptr<TPFMap> m_protectedFiles;
+	using TPFValue = std::pair<const uint32, CDefenceData::SProtectedFile>;
+	using TPFAllocator = STLMementoAllocator<TPFValue>;
+	using TPFMap = std::multimap<
+		uint32,
+		CDefenceData::SProtectedFile,
+		std::less<uint32>,
+		TPFAllocator>;
+
+	std::unique_ptr<TPFMap> m_protectedFiles;
 	struct SPending
 	{
 		SPending( const SDataProbeContext& c ) : ctx(c), when(g_time) {}
 		SDataProbeContext ctx;
 		CTimeValue when;
 	};
-	typedef std::map<uint32, SPending, std::less<uint32>, STLMementoAllocator< std::pair<uint32, SPending> > > TPMap;
-	std::auto_ptr<TPMap> m_pending;
+
+	using TPValue = std::pair<const uint32, SPending>;
+	using TPMementoAllocator = STLMementoAllocator<TPValue>;
+	using TPMap = std::map<
+		uint32,
+		SPending,
+		std::less<uint32>,
+		TPMementoAllocator>;
+
+	std::unique_ptr<TPMap> m_pending;
 	uint32 m_nextID;
 
 	class CServerFileProbeRequestMessage;

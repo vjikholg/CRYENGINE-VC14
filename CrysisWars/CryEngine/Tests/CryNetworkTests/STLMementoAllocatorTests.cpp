@@ -3,7 +3,7 @@
 #include "STLMementoAllocatorTests.h"
 #include "TestRunner.h"
 
-#include <CryCommon/StlHashMap.h>
+#include <StlHashMap.h>
 #include <STLMementoAllocator.h>
 
 #include <memory>

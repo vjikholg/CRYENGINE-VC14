@@ -449,7 +449,15 @@ protected:
 public:
 
 	// classes now keep track of all their instances
-	typedef std::multimap< float, CSmartObject*, std::less<float>, stl::STLPoolAllocator<std::pair<float, CSmartObject*>, stl::PoolAllocatorSynchronizationSinglethreaded> > MapSmartObjectsByPos;
+	using MapSmartObjectsByPosValue = std::pair<const float, CSmartObject*>;
+	using MapSmartObjectsByPosAllocator = stl::STLPoolAllocator<
+		MapSmartObjectsByPosValue,
+		stl::PoolAllocatorSynchronizationSinglethreaded>;
+	using MapSmartObjectsByPos = std::multimap<
+		float,
+		CSmartObject*,
+		std::less<float>,
+		MapSmartObjectsByPosAllocator>;
 	MapSmartObjectsByPos m_MapObjectsByPos; // map of all smart objects indexed by their position
 
 

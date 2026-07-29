@@ -268,11 +268,12 @@ class dbg_allocator: public std::allocator<T>
 #if defined(_DEBUG) && defined(WIN32)
 #if _MSC_VER >= 1300 && defined(_MAP_)
 	template <class Key, class Type, class Traits = std::less<Key> >
-	class map: public std::map <Key, Type, Traits, dbg_allocator<std::pair<Key, Type> > >
+	class map: public std::map<Key, Type, Traits, dbg_allocator<std::pair<const Key, Type>>>
 	{
 	public:
-		typedef dbg_allocator<std::pair<Key, Type> > _Allocator;
-		typedef std::map <Key, Type, Traits, _Allocator > _Base;
+		using _Value = std::pair<const Key, Type>;
+		using _Allocator = dbg_allocator<_Value>;
+		using _Base = std::map<Key, Type, Traits, _Allocator>;
 		map (const char* szParentObject = "STL map", int nParentIndex = 0):
 			_Base (_Base::key_compare(), _Base::allocator_type(szParentObject, nParentIndex))
 			{

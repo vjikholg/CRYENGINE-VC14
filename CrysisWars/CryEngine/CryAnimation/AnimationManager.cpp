@@ -12,7 +12,7 @@
 
 #include "stdafx.h"
 #include <CryHeaders.h>
-#include <CryCommon/StlContainerUtils.h>
+#include <StlContainerUtils.h>
 #include <CryCompiledFile.h>
 
 #include "LoaderCAF.h"

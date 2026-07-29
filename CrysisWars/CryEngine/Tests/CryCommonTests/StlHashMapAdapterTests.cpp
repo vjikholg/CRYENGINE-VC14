@@ -3,7 +3,7 @@
 #include "StlHashMapAdapterTests.h"
 #include "TestRunner.h"
 
-#include <CryCommon/StlHashMap.h>
+#include <StlHashMap.h>
 
 #include <type_traits>
 #include <utility>

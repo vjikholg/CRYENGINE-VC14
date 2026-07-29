@@ -59,8 +59,8 @@
 #include "CryArray.h"
 #include "cvars.h"
 #include <CrySizer.h>
-#include <CryCommon/StlAlgorithms.h>
-#include <CryCommon/StlContainerUtils.h>
+#include <StlAlgorithms.h>
+#include <StlContainerUtils.h>
 #include "Array2d.h"
 #include "3dEngine.h"
 #include "ObjMan.h"

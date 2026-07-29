@@ -15,6 +15,8 @@
 
 #pragma once
 
+#include <memory>
+
 #include "NetAddress.h"
 
 extern volatile uint32 g_watchdogTimerGlobalLockCount;
@@ -48,7 +50,7 @@ public:
 
 private:
 	class CTimerThread;
-	std::auto_ptr<CTimerThread> m_pThread;
+	std::unique_ptr<CTimerThread> m_pThread;
 };
 
 #endif

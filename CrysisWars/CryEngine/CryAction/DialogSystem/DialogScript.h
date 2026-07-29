@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include <CryCommon/StlContainerUtils.h>
+#include <StlContainerUtils.h>
 #include <bitset>
 
 class CDialogScript

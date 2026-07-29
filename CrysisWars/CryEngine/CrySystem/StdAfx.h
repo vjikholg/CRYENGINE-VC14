@@ -80,8 +80,8 @@
 #include <smartptr.h>
 #include <Range.h>
 #include <CrySizer.h>
-#include <CryCommon/StlAlgorithms.h>
-#include <CryCommon/StlContainerUtils.h>
+#include <StlAlgorithms.h>
+#include <StlContainerUtils.h>
 
 
 static inline int

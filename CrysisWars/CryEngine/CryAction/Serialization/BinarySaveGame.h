@@ -4,6 +4,7 @@
 #pragma once
 
 #include "ISaveGame.h"
+#include <memory>
 
 class CBinarySaveGame : public ISaveGame
 {
@@ -26,7 +27,7 @@ public:
 private:
 	class CSerializeCtx;
 	struct Impl;
-	std::auto_ptr<Impl> m_pImpl;
+	std::unique_ptr<Impl> m_pImpl;
 
 	virtual FILE * Open( const char * outputPath );
 };

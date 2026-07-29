@@ -15,7 +15,7 @@
 #include "ModelSkeleton.h"
 #include "NameCRCHelper.h"
 #include "VectorSet.h"
-#include <CryCommon/StlContainerUtils.h>
+#include <StlContainerUtils.h>
 
 class CModelMesh;
 class CCharacterModel;

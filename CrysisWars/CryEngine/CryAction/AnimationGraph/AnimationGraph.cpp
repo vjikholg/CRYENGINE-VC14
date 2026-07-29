@@ -14,10 +14,12 @@
 #include <deque>
 #include <set>
 #include "AnimatedCharacter.h"
+#include <memory>
 
-char* g_szMCMString[eMCM_COUNT] = { "Undefined", "Entity", "Animation", "DecoupledCatchUp", "ClampedEntity", "SmoothedEntity" };
-char* g_szColliderModeString[eColliderMode_COUNT] = { "Undefined", "Disabled", "GroundedOnly", "Pushable", "NonPushable", "PushesPlayersOnly", "Spectator" };
-char* g_szColliderModeLayerString[eColliderModeLayer_COUNT] = { "AG", "Game", "Script", "FG", "Sleep", "Debug" };
+
+const char* g_szMCMString[eMCM_COUNT] = { "Undefined", "Entity", "Animation", "DecoupledCatchUp", "ClampedEntity", "SmoothedEntity" };
+const char* g_szColliderModeString[eColliderMode_COUNT] = { "Undefined", "Disabled", "GroundedOnly", "Pushable", "NonPushable", "PushesPlayersOnly", "Spectator" };
+const char* g_szColliderModeLayerString[eColliderModeLayer_COUNT] = { "AG", "Game", "Script", "FG", "Sleep", "Debug" };
 
 // penalty for pathfinding if a state has force-follow links
 static const uint32 FORCE_FOLLOW_COST = 0;
@@ -857,7 +859,7 @@ CAnimationGraph::~CAnimationGraph()
 
 bool CAnimationGraph::Init( const XmlNodeRef& root )
 {
-	std::auto_ptr<CStateIndex::Builder> pStateIndexBuilder(new CStateIndex::Builder());
+	std::unique_ptr<CStateIndex::Builder> pStateIndexBuilder(new CStateIndex::Builder());
 
 	if (!PreprocessParameterization(root))
 		GameWarning("Failed processing state parameterization");
@@ -889,7 +891,7 @@ bool CAnimationGraph::Init( const XmlNodeRef& root )
 	if (!LoadStates( root, pStateIndexBuilder.get(), stateLoader ))
 		GameWarning("Animation graph failed loading states");
 	// initialize state index - destroys pStateIndexBuilder
-	m_stateIndex.Init( pStateIndexBuilder );
+	m_stateIndex.Init( std::move(pStateIndexBuilder) );
 	// load transitions
 	if (!LoadTransitions( root, stateLoader ))
 		GameWarning("Animation graph failed loading transitions");

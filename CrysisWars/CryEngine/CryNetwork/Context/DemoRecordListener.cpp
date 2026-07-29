@@ -1,6 +1,8 @@
 #include "StdAfx.h"
 #include "Config.h"
 
+#include <memory>
+
 #if INCLUDE_DEMO_RECORDING
 
 #include "DemoRecordListener.h"
@@ -172,15 +174,15 @@ NET_IMPLEMENT_IMMEDIATE_MESSAGE(CDemoRecordListener::CDemoRecorderChannel, RMI_A
 	return true;
 }
 
-static std::auto_ptr<CSimpleOutputStream> CreateOutput( const char * filename )
-{
-	std::auto_ptr<CSimpleOutputStream> out;
-	std::auto_ptr<CCompressingOutputStream> stream;
+static std::unique_ptr<CSimpleOutputStream> CreateOutput( const char * filename )
+{	
+	std::unique_ptr<CSimpleOutputStream> out;
+	std::unique_ptr<CCompressingOutputStream> stream;
 	stream.reset( new CCompressingOutputStream() );
 	string path = string(NDemo::TopLevelDemoFilesFolder) + filename;
 	if (!stream->Init(path.c_str()))
 		stream.reset();
-	out = stream;
+	out = std::move(stream);
 	return out;
 }
 

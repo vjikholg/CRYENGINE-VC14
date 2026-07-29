@@ -195,7 +195,7 @@ typedef VectorMap<unsigned, SCachedPassabilityResult> PassabilityCache;
 
 // [Mikko] Note: The Vector map is faster when traversing, and the normal map with pool allocator seems
 // to be a little faster in CGraph.GetNodesInRange. Both are faster than normal std::map.
-//typedef stl::STLPoolAllocator< std::pair<const GraphNode*, float> > NodeMapAllocator;
+//typedef stl::STLPoolAllocator< std::pair<const GraphNode* const, float> > NodeMapAllocator;
 //typedef std::map<const GraphNode*, float, std::less<const GraphNode*>, NodeMapAllocator> MapConstNodesDistance;
 typedef VectorMap<const GraphNode*, float> MapConstNodesDistance;
 

@@ -5,6 +5,8 @@
 
 #include "IFlowSystem.h"
 #include "../FlowGraph.h"
+
+#include <memory>
 class CFlowSystem;
 
 class CFlowCompositeNodeFactory;
@@ -151,8 +153,8 @@ private:
 	TFlowNodeId m_interfaceNode;
 
 	const string& AddString( const char * str );
-	typedef std::pair<SInputPortConfig, SOutputPortConfig> TPortPair;
-	typedef std::auto_ptr<TPortPair> TPortPairPtr;
+	using TPortPair = std::pair<SInputPortConfig, SOutputPortConfig>;
+	using TPortPairPtr = std::unique_ptr<TPortPair>;
 	TPortPairPtr GeneratePortsFromXML( XmlNodeRef port );
 
 	std::vector<string> m_stringPool;

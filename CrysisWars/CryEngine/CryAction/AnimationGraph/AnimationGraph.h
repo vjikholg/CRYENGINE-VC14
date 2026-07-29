@@ -295,8 +295,15 @@ private:
 	uint8 m_nextBlendValueID;
 	VectorMap< string, uint8 > m_blendValueIDs;
 
-	typedef stl::STLPoolAllocator< std::pair<uint32, StateID>, stl::PoolAllocatorSynchronizationSinglethreaded > OpenMapAllocator;
-	typedef std::multimap<uint32, StateID, std::less<uint32>, OpenMapAllocator > OpenMap;
+	using OpenMapValue = std::pair<const uint32, StateID>;
+	using OpenMapAllocator = stl::STLPoolAllocator<
+		OpenMapValue,
+		stl::PoolAllocatorSynchronizationSinglethreaded>;
+	using OpenMap = std::multimap<
+		uint32,
+		StateID,
+		std::less<uint32>,
+		OpenMapAllocator>;
 
 	// path-finder temporary state
 	// shared to save lots of allocations

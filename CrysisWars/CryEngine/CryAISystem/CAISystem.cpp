@@ -74,6 +74,7 @@
 #include "AIRadialOcclusion.h"
 #include "GraphNodeManager.h"
 #include "CentralInterestManager.h"
+#include <memory>
 
 
 static const float g_POINT_DIST_PRESISION = 0.0000000015f;
@@ -17418,7 +17419,7 @@ bool CAISystem::GetNearestPunchableObjectPosition(IAIObject* pRef, const Vec3& s
 // Update: <mikko> Changed the validation to reflect the changes in hash space code.
 bool CAllNodesContainer::ValidateHashSpace() const
 {
-	std::auto_ptr <Iterator> nodeIt (new Iterator(*this, IAISystem::NAV_WAYPOINT_HUMAN));
+	std::unique_ptr <Iterator> nodeIt (new Iterator(*this, IAISystem::NAV_WAYPOINT_HUMAN));
 	int numWayptNodes = 0;
 
 	AILogProgress(">>> Validating HashSpace");

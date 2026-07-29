@@ -22,7 +22,7 @@
 #include "ITimer.h"
 #include "SaltBufferArray.h"					// SaltBufferArray<>
 #include "EntityTimeoutList.h"
-#include <CryCommon/StlHashMap.h>
+#include <StlHashMap.h>
 #include "STLPoolAllocator.h"
 
 //////////////////////////////////////////////////////////////////////////
@@ -188,7 +188,15 @@ private: // -----------------------------------------------------------------
 
 	typedef std::list<IEntitySystemSink*> SinkList;
 	typedef std::list<CEntity*>	DeletedEntities;
-	typedef std::multimap<CTimeValue,SEntityTimerEvent,std::less<CTimeValue>,stl::STLPoolAllocator<std::pair<CTimeValue,SEntityTimerEvent>,stl::PoolAllocatorSynchronizationSinglethreaded> > EntityTimersMap;
+	using EntityTimersMapValue = std::pair<const CTimeValue, SEntityTimerEvent>;
+	using EntityTimersMapAllocator = stl::STLPoolAllocator<
+		EntityTimersMapValue,
+		stl::PoolAllocatorSynchronizationSinglethreaded>;
+	using EntityTimersMap = std::multimap<
+		CTimeValue,
+		SEntityTimerEvent,
+		std::less<CTimeValue>,
+		EntityTimersMapAllocator>;
 	typedef std::multimap<const char*,EntityId,stl::less_stricmp<const char*> > EntityNamesMap;
 	typedef std::map<EntityId,CEntity*> EntitiesMap;
 	typedef std::set<EntityId> EntitiesSet;

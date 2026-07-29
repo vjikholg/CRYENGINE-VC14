@@ -5,6 +5,7 @@
 
 #include "TimeValue.h"
 #include <queue>
+#include <memory>
 //#include "VectorMap.h"
 #include "STLPoolAllocator.h"
 #include "Config.h"
@@ -34,11 +35,20 @@ private:
 	static const int TIMER_SLOTS = 32; // 0.128 seconds
 	int m_timerCallbacks[TIMER_SLOTS];
 	int m_curSlot;
+	using SlowCallbacksValue = std::pair<const CTimeValue, int>;
 #if USE_SYSTEM_ALLOCATOR
-	std::multimap<CTimeValue, int, std::less<CTimeValue> > m_slowCallbacks;
+	using SlowCallbacksAllocator = std::allocator<SlowCallbacksValue>;
 #else
-	std::multimap<CTimeValue, int, std::less<CTimeValue>, stl::STLPoolAllocator<std::pair<CTimeValue,int>, stl::PoolAllocatorSynchronizationSinglethreaded> > m_slowCallbacks;
+	using SlowCallbacksAllocator = stl::STLPoolAllocator<
+		SlowCallbacksValue,
+		stl::PoolAllocatorSynchronizationSinglethreaded>;
 #endif
+	using SlowCallbacks = std::multimap<
+		CTimeValue,
+		int,
+		std::less<CTimeValue>,
+		SlowCallbacksAllocator>;
+	SlowCallbacks m_slowCallbacks;
 
 	struct SCallbackInfo
 	{

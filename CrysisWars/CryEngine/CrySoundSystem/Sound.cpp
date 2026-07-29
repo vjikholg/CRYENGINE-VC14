@@ -26,7 +26,7 @@
 #include <I3DEngine.h> //needed to check if the listener is in indoor or outdoor
 #include "ISoundMoodManager.h" // getVolumeDB
 #include "IEntitySystem.h"
-#include <CryCommon/StlAlgorithms.h>
+#include <StlAlgorithms.h>
 
 #pragma warning(disable:4003)	// warning C4003: not enough actual parameters for macro 'CHECK_LOADED'
  

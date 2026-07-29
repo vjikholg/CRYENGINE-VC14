@@ -8,6 +8,7 @@
 #include "MiniQueue.h"
 #include "AnimationTrigger.h"
 #include "STLPoolAllocator.h"
+#include <memory>
 
 #define HEAVY_ANIM_PROFILING 1
 
@@ -363,7 +364,15 @@ private:
 
   std::vector<SListener> m_listeners;
   std::vector<SListener> m_callingListeners;
-	typedef std::multimap<uint32, IAnimationStateNode*, std::less<uint32>, stl::STLPoolAllocator<std::pair<uint32, IAnimationStateNode*>, stl::PoolAllocatorSynchronizationSinglethreaded> > PendingLeftStates;
+	using PendingLeftStatesValue = std::pair<const uint32, IAnimationStateNode*>;
+	using PendingLeftStatesAllocator = stl::STLPoolAllocator<
+		PendingLeftStatesValue,
+		stl::PoolAllocatorSynchronizationSinglethreaded>;
+	using PendingLeftStates = std::multimap<
+		uint32,
+		IAnimationStateNode*,
+		std::less<uint32>,
+		PendingLeftStatesAllocator>;
 	PendingLeftStates m_pendingLeftStates;
 	std::vector<StateID> m_pendingLeftStateIDs;
 	typedef std::vector<TAnimationGraphQueryID> PendingLeftQueries;
@@ -404,7 +413,7 @@ private:
 	CAnimationGraph::PathFindStats m_pathFindStats;
 	CTimeValue m_lastPathFind;
 
-	std::auto_ptr<CExactPositioning> m_pExactPositioning;
+	std::unique_ptr<CExactPositioning> m_pExactPositioning;
 
 	// activation/deactivation
 	bool m_bActivated;

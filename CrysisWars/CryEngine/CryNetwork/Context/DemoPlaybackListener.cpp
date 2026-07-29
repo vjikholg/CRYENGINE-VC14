@@ -15,6 +15,7 @@
 #include "StringUtils.h"
 #include "StringUtils.h"
 #include "IGameFramework.h"				// LOCAL_PLAYER_ENTITY_ID
+#include <memory>
 
 static const uint32 Events =
 	eNOE_ChangeContext |
@@ -247,13 +248,13 @@ CDemoPlaybackListener::CDemoPlaybackListener( CNetContext * pContext, const char
 	m_skipAmount = 0.0f;
 	m_demoName = filename;
 
-	std::auto_ptr<CCompressingInputStream> pComp;
+	std::unique_ptr<CCompressingInputStream> pComp;
 	pComp.reset( new CCompressingInputStream() );
 	string path = string(NDemo::TopLevelDemoFilesFolder) + filename;
 	if (!pComp->Init(path.c_str()))
 		pComp.reset();
 	else
-		m_pInput = pComp;
+		m_pInput = std::move(pComp);
 
 	if ( !m_pInput.get() )
 	{

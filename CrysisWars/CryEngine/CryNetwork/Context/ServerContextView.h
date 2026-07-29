@@ -12,6 +12,8 @@
 #ifndef __SERVERCONTEXTVIEW_H__
 #define __SERVERCONTEXTVIEW_H__
 
+#include <memory>
+
 #include "ContextView.h"
 #include "Authentication.h"
 
@@ -120,7 +122,7 @@ private:
 
 	void GC_BindObject( SNetObjectID, CNetObjectBindLock lk, CChangeStateLock cslk );
 
-	typedef std::auto_ptr<SAuthenticationSalt> TAuthPtr;
+	using TAuthPtr = std::unique_ptr<SAuthenticationSalt>;
 
 	class CBindObjectMessage;
 	class CDeclareBrokenProductMessage;
@@ -165,8 +167,14 @@ private:
 			return false;
 		}
 	};
-	typedef std::map<BreakSegmentID, SSendableHandle, CompareBreakSegmentIDs, STLMementoAllocator<std::pair<BreakSegmentID, SSendableHandle> > > TBreakSegmentStreams;
-	std::auto_ptr<TBreakSegmentStreams> m_pBreakSegmentStreams;
+	using TBreakSegmentStreamsValue = std::pair<const BreakSegmentID, SSendableHandle>;
+	using TBreakSegmentStreamsAllocator = STLMementoAllocator<TBreakSegmentStreamsValue>;
+	using TBreakSegmentStreams = std::map<
+		BreakSegmentID,
+		SSendableHandle,
+		CompareBreakSegmentIDs,
+		TBreakSegmentStreamsAllocator>;
+	std::unique_ptr<TBreakSegmentStreams> m_pBreakSegmentStreams;
 
 	TAuthPtr m_pAuth;
 
@@ -174,15 +182,27 @@ private:
 	CChangeStateLock m_lockRemoteMapLoaded;
 	CChangeStateLock m_lockLocalMapLoaded;
 
-	typedef std::map<EntityId, EntityId, std::less<EntityId>, STLMementoAllocator<std::pair<EntityId, EntityId> > > TValidatedPredictionMap;
-	std::auto_ptr<TValidatedPredictionMap> m_pValidatedPredictions;
+	using TValidatedPredictionMapValue = std::pair<const EntityId, EntityId>;
+	using TValidatedPredictionMapAllocator = STLMementoAllocator<TValidatedPredictionMapValue>;
+	using TValidatedPredictionMap = std::map<
+		EntityId,
+		EntityId,
+		std::less<EntityId>,
+		TValidatedPredictionMapAllocator>;
+	std::unique_ptr<TValidatedPredictionMap> m_pValidatedPredictions;
 
+	using TPendingUnbindsValue = std::pair<const SNetObjectID, CNetObjectBindLock>;
 #if USE_SYSTEM_ALLOCATOR
-	typedef std::map<SNetObjectID, CNetObjectBindLock, std::less<SNetObjectID> > TPendingUnbinds;
+	using TPendingUnbindsAllocator = std::allocator<TPendingUnbindsValue>;
 #else
-	typedef std::map<SNetObjectID, CNetObjectBindLock, std::less<SNetObjectID>, STLMementoAllocator< std::pair<SNetObjectID, CNetObjectBindLock> > > TPendingUnbinds;
+	using TPendingUnbindsAllocator = STLMementoAllocator<TPendingUnbindsValue>;
 #endif
-	std::auto_ptr<TPendingUnbinds> m_pPendingUnbinds;
+	using TPendingUnbinds = std::map<
+		SNetObjectID,
+		CNetObjectBindLock,
+		std::less<SNetObjectID>,
+		TPendingUnbindsAllocator>;
+	std::unique_ptr<TPendingUnbinds> m_pPendingUnbinds;
 
 	std::vector<INetChannel*> m_pVoiceListeners;
 
