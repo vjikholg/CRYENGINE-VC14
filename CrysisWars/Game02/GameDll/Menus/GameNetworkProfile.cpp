@@ -16,6 +16,8 @@ History:
 #include "GameNetworkProfile.h"
 #include "MPHub.h"
 
+#include <memory>
+
 #include "Game.h"
 #include "GameCVars.h"
 #include "HUD/HUD.h"
@@ -1347,7 +1349,7 @@ struct CGameNetworkProfile::SBuddies  : public INetworkProfileListener
   TBuddyRequestsMap       m_requests;
 
   TChatTextMap              m_buddyChats;
-  std::auto_ptr<SChatText>  m_globalChat;
+  std::unique_ptr<SChatText>  m_globalChat;
 
   std::vector<SPendingOperation>  m_operations;
 

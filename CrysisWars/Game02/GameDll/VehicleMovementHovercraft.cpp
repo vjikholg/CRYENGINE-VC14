@@ -14,7 +14,7 @@ History:
 #include "StdAfx.h"
 #include "Game.h"
 #include "GameUtils.h"
-#include <CryCommon/StlContainerUtils.h>
+#include <StlContainerUtils.h>
 #include "IVehicleSystem.h"
 #include "VehicleMovementHovercraft.h"
 #include "GameCVars.h"

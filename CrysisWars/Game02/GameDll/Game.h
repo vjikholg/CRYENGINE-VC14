@@ -16,6 +16,8 @@
 
 #if _MSC_VER > 1000
 # pragma once
+
+#include <memory>
 #endif
 
 #include <IGame.h>
@@ -23,7 +25,7 @@
 #include <IGameObjectSystem.h>
 #include <IGameObject.h>
 #include <IActorSystem.h>
-#include <CryCommon/StlContainerUtils.h>
+#include <StlContainerUtils.h>
 #include "ClientSynchedStorage.h"
 #include "ServerSynchedStorage.h"
 
@@ -291,7 +293,7 @@ protected:
 	TLevelMapMap m_mapNames;
 
 	CDownloadTask					*m_pDownloadTask;
-	std::auto_ptr<SNewsDownload> m_newsDownload;
+	std::unique_ptr<SNewsDownload> m_newsDownload;
 };
 
 extern CGame *g_pGame;

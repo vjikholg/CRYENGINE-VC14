@@ -19,8 +19,8 @@ History:
 
 *************************************************************************/
 #include "StdAfx.h"
-#include <CryCommon/StlAlgorithms.h>
-#include <CryCommon/StlContainerUtils.h>
+#include <StlAlgorithms.h>
+#include <StlContainerUtils.h>
 #include <ctype.h>
 
 #include "Game.h"

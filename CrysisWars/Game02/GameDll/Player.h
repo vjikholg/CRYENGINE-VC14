@@ -16,6 +16,8 @@
 
 #if _MSC_VER > 1000
 # pragma once
+
+#include <memory>
 #endif
 
 #include "Actor.h"
@@ -798,7 +800,7 @@ protected:
 	SPlayerParams		m_params;
 	SSpectatorStats	m_spectatorstats;
 	
-	std::auto_ptr<IPlayerInput> m_pPlayerInput;
+	std::unique_ptr<IPlayerInput> m_pPlayerInput;
 
 	// for foot/leg ik
 	Vec3 m_feetWpos[2];
