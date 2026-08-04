@@ -7464,27 +7464,31 @@ int CScriptBind_AI::GetNavigationType(IFunctionHandler * pH)
 
 }
 
-// Binary finction to sort AI objects based on distance to given point.
-struct AIObjDistanceTo : public std::binary_function <IAIObject*, IAIObject*, bool> 
+// Binary function to sort AI objects based on distance to a given point.
+struct AIObjDistanceTo
 {
 	AIObjDistanceTo( const Vec3& target, float range ) : m_target(target), m_range(range) {}
 	bool operator()( const IAIObject* lhs,  const IAIObject* rhs ) const
 	{
-		return fabsf( Distance::Point_PointSq( lhs->GetPos(), m_target ) - m_range) > fabsf( Distance::Point_Point( rhs->GetPos(), m_target ) - m_range);
+		const float lhsDistance = Distance::Point_Point(lhs->GetPos(), m_target);
+		const float rhsDistance = Distance::Point_Point(rhs->GetPos(), m_target);
+		return fabsf(lhsDistance - m_range) > fabsf(rhsDistance - m_range);
 	}
 	const Vec3& m_target;
 	const float m_range;
 };
 
-// Binary finction to sort AI objects based on distance to given point.
-struct AIObjDistanceToDir : public std::binary_function <IAIObject*, IAIObject*, bool> 
+// Binary function to sort AI objects based on distance to a given point.
+struct AIObjDistanceToDir
 {
 	AIObjDistanceToDir( const Vec3& target, const Vec3& dir, float range ) : m_target(target), m_dir(dir), m_range(range) {}
 	bool operator()( const IAIObject* lhs,  const IAIObject* rhs ) const
 	{
-		float	lhsMod = m_dir.Dot( lhs->GetPos() - m_target ) < 0.0f ? 10.0f : 1.0f;
-		float	rhsMod = m_dir.Dot( rhs->GetPos() - m_target ) < 0.0f ? 10.0f : 1.0f;
-		return lhsMod * fabsf( Distance::Point_PointSq( lhs->GetPos(), m_target ) - m_range) > lhsMod * fabsf( Distance::Point_Point( rhs->GetPos(), m_target ) - m_range);
+		const float lhsMod = m_dir.Dot(lhs->GetPos() - m_target) < 0.0f ? 10.0f : 1.0f;
+		const float rhsMod = m_dir.Dot(rhs->GetPos() - m_target) < 0.0f ? 10.0f : 1.0f;
+		const float lhsDistance = Distance::Point_Point(lhs->GetPos(), m_target);
+		const float rhsDistance = Distance::Point_Point(rhs->GetPos(), m_target);
+		return lhsMod * fabsf(lhsDistance - m_range) > rhsMod * fabsf(rhsDistance - m_range);
 	}
 	const Vec3& m_target;
 	const Vec3& m_dir;

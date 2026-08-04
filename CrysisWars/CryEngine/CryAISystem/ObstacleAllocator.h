@@ -19,13 +19,13 @@ History:
 #endif
 
 #include "platform.h"
+#include "AISystemAccess.h"
 #include "Graph.h"
 
 #include <set>
 #include <map>
 
 class CAIObject;
-class CAISystem;
 class CLeader;
 
 class CObstacleAllocator
@@ -183,11 +183,6 @@ public:
     return rnd * (runDistance - benefit - closerToLeader);
   }
 };
-
-#if defined(__GNUC__)
-// Proto required for GCC.
-CAISystem *GetAISystem();
-#endif
 
 template < class FCost = CObstacleCostFtor >
 class CIncrementalObstacleFinder

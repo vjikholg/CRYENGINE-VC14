@@ -113,7 +113,7 @@ private:
 	typedef std::set<string> PrototypeSoundEvents;
 	PrototypeSoundEvents m_prototypeEvents;  // this set is purely used for clever string/string assigning to save memory
 
-	struct less_wcscmp : public std::binary_function<const wstring&,const wstring&,bool> 
+	struct less_wcscmp
 	{
 		bool operator()( const wstring& left,const wstring& right ) const
 		{

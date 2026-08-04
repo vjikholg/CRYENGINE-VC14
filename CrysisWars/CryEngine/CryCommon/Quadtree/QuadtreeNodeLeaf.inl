@@ -187,7 +187,7 @@ namespace NQT
 	inline typename CQuadTree<TLeafContent, TMaxCellElems, TPosType, TIndexType, TUseRadius>::SQuadLeafRadius<TLeafContentQuad, TIndexTypeQuad>
 		CQuadTree<TLeafContent, TMaxCellElems, TPosType, TIndexType, TUseRadius>::SQuadLeafRadius<TLeafContentQuad, TIndexTypeQuad>::Clone() const
 	{
-		return SQuadLeafRadius<TLeafContentQuad, TIndexTypeQuad>(cont, pos, radius);
+		return SQuadLeafRadius<TLeafContentQuad, TIndexTypeQuad>(this->cont, this->pos, radius);
 	}
 
 	template <class TLeafContent, uint32 TMaxCellElems, class TPosType, class TIndexType, bool TUseRadius>

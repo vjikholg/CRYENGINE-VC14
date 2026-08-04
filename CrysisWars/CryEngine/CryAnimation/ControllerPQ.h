@@ -1159,7 +1159,7 @@ public:
 		if (key == 0)
 		{
 			DEFINE_ALIGNED_DATA (_Type, p1, 16);
-			GetValueFromKey(0, p1);
+			this->GetValueFromKey(0, p1);
 			pos = p1;
 
 		}
@@ -1167,7 +1167,7 @@ public:
 			if (key >= this->GetNumKeys())
 			{
 				DEFINE_ALIGNED_DATA (_Type, p1, 16);
-				GetValueFromKey(key-1, p1);
+				this->GetValueFromKey(key-1, p1);
 				pos = p1;
 			}
 			else
@@ -1175,8 +1175,8 @@ public:
 				//_Type p1, p2;
 				DEFINE_ALIGNED_DATA (_Type, p1, 16);
 				DEFINE_ALIGNED_DATA (_Type, p2, 16);
-				GetValueFromKey(key-1, p1);
-				GetValueFromKey(key, p2);
+				this->GetValueFromKey(key-1, p1);
+				this->GetValueFromKey(key, p2);
 
 				_Interpolator::Blend(pos, p1, p2, t);
 			}

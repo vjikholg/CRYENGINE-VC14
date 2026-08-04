@@ -19,6 +19,8 @@
 
 #include <platform.h>
 
+#include "AISystemAccess.h"
+
 #include <stdio.h>
 
 #include <limits>
@@ -87,11 +89,6 @@ void ClearVectorMemory(T &container)
 #include "Graph.h"
 #include "GraphStructures.h"
 //#endif
-
-//////////////////////////////////////////////////////////////////////////
-
-class CAISystem; 
-inline CAISystem *GetAISystem() {extern CAISystem *g_pAISystem; return g_pAISystem;}
 
 //====================================================================
 // SetAABBCornerPoints

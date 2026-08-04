@@ -326,6 +326,9 @@
     <ClInclude Include="BuildingIDManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="AISystemAccess.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="CAISystem.h">
       <Filter>Header Files</Filter>
     </ClInclude>

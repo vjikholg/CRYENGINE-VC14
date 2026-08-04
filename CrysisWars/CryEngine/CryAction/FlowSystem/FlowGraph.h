@@ -350,7 +350,7 @@ public:
 	CFlowGraphStub( CFlowSystem* pSys ) : CFlowGraphStub<T>(pSys) {}
 	virtual void DoActivatePort( const SFlowAddress addr, const H& value )
 	{
-		PerformActivation( addr, value );
+		this->PerformActivation( addr, value );
 	}
 };
 

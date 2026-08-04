@@ -11,14 +11,23 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ComparisonCompatibilityTests.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="StlHashMapAdapterTests.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="TestRunner.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="VectorMapTests.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ComparisonCompatibilityTests.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="Main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -26,6 +35,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TestRunner.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="VectorMapTests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

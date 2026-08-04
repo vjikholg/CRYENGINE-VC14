@@ -83,7 +83,7 @@
 			if (elem.nFlags != SPLINE_KEY_NONCONTINUOUS_SLOPE)
 				elem.nFlags = 0;
 
-			int nKey = insert_key(elem.fTime, elem.Value);
+			int nKey = this->insert_key(elem.fTime, elem.Value);
 			this->key(nKey).flags = elem.nFlags;
 		};
 		this->update();

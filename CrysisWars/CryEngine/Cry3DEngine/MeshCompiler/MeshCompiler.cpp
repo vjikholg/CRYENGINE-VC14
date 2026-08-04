@@ -171,7 +171,7 @@ inline bool CompareVoxelMeshVertices( CMesh &mesh,int a,int b )
 class CMeshInputProxy :public ITriangleInputProxy
 {
 	// helper to get order for CVertexLoadHelper
-	struct NormalCompare: public std::binary_function<Vec3, Vec3, bool>
+	struct NormalCompare
 	{
 		bool operator() ( const Vec3 &a, const Vec3 &b ) const
 		{

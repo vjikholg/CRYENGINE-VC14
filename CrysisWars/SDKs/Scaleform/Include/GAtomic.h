@@ -393,6 +393,12 @@ struct GAtomicOpsRaw_DefImpl : public O
     // If succeeded, stores val int '*p' and returns true; otherwise returns false.
     inline static bool  CompareAndSet_NoSync(volatile O_T* p, O_T c, O_T val) { if (*p==c) { *p = val; return 1; } return 0; }
 
+#else
+
+    using O::Exchange_NoSync;
+    using O::ExchangeAdd_NoSync;
+    using O::CompareAndSet_NoSync;
+
 #endif
 
     // If NoSync wrapped implementation may not be possible, it this block should be

@@ -3,6 +3,7 @@
   <PropertyGroup>
     <CryEngineRoot>$(MSBuildThisFileDirectory)CrysisWars\CryEngine</CryEngineRoot>
     <CryCommonDir>$(CryEngineRoot)\CryCommon</CryCommonDir>
+    <CryRenderDllDir>$(CryEngineRoot)\RenderDll</CryRenderDllDir>
     <CryRuntimeProject>false</CryRuntimeProject>
     <CryRuntimeProject Condition="'$(MSBuildProjectName)' == 'Cry3DEngine' Or
                                   '$(MSBuildProjectName)' == 'CryAction' Or
@@ -27,6 +28,13 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>$(CryEngineRoot);$(CryCommonDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+
+  <ItemDefinitionGroup Condition="'$(MSBuildProjectName)' == 'XRenderD3D9' Or
+                                  '$(MSBuildProjectName)' == 'XRenderD3D10'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(CryRenderDllDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
 

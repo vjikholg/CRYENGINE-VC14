@@ -860,6 +860,7 @@
     <ClInclude Include="AStarSolver.h" />
     <ClInclude Include="AutoTypeStructs.h" />
     <ClInclude Include="BuildingIDManager.h" />
+    <ClInclude Include="AISystemAccess.h" />
     <ClInclude Include="CAISystem.h" />
     <ClInclude Include="CentralInterestManager.h" />
     <ClInclude Include="CryAISystem.h" />

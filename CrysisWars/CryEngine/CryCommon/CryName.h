@@ -490,17 +490,17 @@ inline bool	CCryName::operator>(const CCryName& n) const {
 }
 
 inline bool	operator==(const string& s, const CCryName& n) {
-	return n == s;
+	return n.operator==(s.c_str());
 }
 inline bool	operator!=(const string& s, const CCryName& n) {
-	return n != s;
+	return !n.operator==(s.c_str());
 }
 
 inline bool	operator==(const char* s, const CCryName& n) {
-	return n == s;
+	return n.operator==(s);
 }
 inline bool	operator!=(const char* s, const CCryName& n) {
-	return n != s;
+	return !n.operator==(s);
 }
 
 #endif //__CryName_h__

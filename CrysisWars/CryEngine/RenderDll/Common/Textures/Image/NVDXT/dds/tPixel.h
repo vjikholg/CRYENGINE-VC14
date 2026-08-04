@@ -7,13 +7,6 @@
 
 #pragma warning(disable : 4201)
 
-#if defined __GNUC__
-inline int mod(int x, int y) { return x % y; }
-inline long mod(long x, long y) { return x % y; }
-inline float mod(float x, float y) { return fmodf(x, y); }
-inline double mod(double x, double y) { return fmod(x, y); }
-#endif
-
 namespace nv
 {
 // modulo value x between [lo,hi]
@@ -1002,8 +995,8 @@ public:
 
     _Type * pixelsXY_wrapped(int x, int y)
     {
-        y = mod(y, m_height);
-        x = mod(x, m_width);
+        y = nv::iModulo(y, m_height);
+        x = nv::iModulo(x, m_width);
 
         return &m_pixels[y * m_width + x];
     }
