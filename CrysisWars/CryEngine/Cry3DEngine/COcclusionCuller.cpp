@@ -442,11 +442,11 @@ void COcculsionCuller::AddRenderMesh(IRenderMesh * pRM, Matrix34* pTranRotMatrix
 	float Mat[32];
 	Matrix44& rMat=*reinterpret_cast<Matrix44*>(reinterpret_cast<size_t>(&Mat[15])&~0xf);
 	rMat=MatWorldViewProj;//need to copy as the compiler kinda makes alligned load in _mm_loadu_ps on the first element ->crash
-	register __m128	MX		=	_mm_load_ps(&((float*)&rMat)[0]);
-	register __m128	MY		=	_mm_load_ps(&((float*)&rMat)[4]);
-	register __m128	MZ		=	_mm_load_ps(&((float*)&rMat)[8]);
-	register __m128	MW		=	_mm_load_ps(&((float*)&rMat)[12]);
-	register __m128 WMask	=	_mm_set_ps(0.f,0.f,-1.f,-1.f);
+	__m128	MX		=	_mm_load_ps(&((float*)&rMat)[0]);
+	__m128	MY		=	_mm_load_ps(&((float*)&rMat)[4]);
+	__m128	MZ		=	_mm_load_ps(&((float*)&rMat)[8]);
+	__m128	MW		=	_mm_load_ps(&((float*)&rMat)[12]);
+	__m128 WMask	=	_mm_set_ps(0.f,0.f,-1.f,-1.f);
 	Vec4 OutPos;
 #ifdef OC_COHENSUTHERLAND
 	if(!bCompletelyInFrustum)
@@ -458,7 +458,7 @@ void COcculsionCuller::AddRenderMesh(IRenderMesh * pRM, Matrix34* pTranRotMatrix
 			_mm_prefetch((const char*)(&pVertexCache[a])+128,_MM_HINT_NTA);
 			_mm_prefetch((const char*)(&pVertexClipOutcodes[a])+128,_MM_HINT_NTA);
 			const Vec3&	Pos	=	*reinterpret_cast<const Vec3*>(&pPos[VertexSize*a]);
-			register __m128 OutPos	=	_mm_loadu_ps((const float*)&Pos);
+			__m128 OutPos	=	_mm_loadu_ps((const float*)&Pos);
 #if defined(PS3)
 			vec_float4 res;
 			vec_float4 xxxx, yyyy, zzzz;
@@ -499,7 +499,7 @@ void COcculsionCuller::AddRenderMesh(IRenderMesh * pRM, Matrix34* pTranRotMatrix
 			_mm_prefetch((const char*)(&pPos[VertexSize*a])+256,_MM_HINT_T0);
 			_mm_prefetch((const char*)(&pVertexCache[a])+256,_MM_HINT_NTA);
 			const Vec3&	Pos	=	*reinterpret_cast<const Vec3*>(&pPos[VertexSize*a]);
-			register __m128 OutPos	=	_mm_loadu_ps((const float*)&Pos);
+			__m128 OutPos	=	_mm_loadu_ps((const float*)&Pos);
 #if defined(PS3)
 			vec_float4 res;
 			vec_float4 xxxx, yyyy, zzzz;

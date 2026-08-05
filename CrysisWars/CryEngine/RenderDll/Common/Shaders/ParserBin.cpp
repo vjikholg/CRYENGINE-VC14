@@ -10,7 +10,7 @@
 #include "RenderPCH.h"
 
 extern byte sSkipChars[256];
-char *g_KeyTokens[eT_max];
+const char *g_KeyTokens[eT_max];
 TArray<bool> sfxIFDef;
 TArray<bool> sfxIFIgnore;
 bool CParserBin::m_bD3D10;
@@ -671,7 +671,7 @@ void CParserBin::Warning(const char *str,...)
     iSystem->Warning(VALIDATOR_MODULE_RENDERER, VALIDATOR_WARNING, 0, NULL, "%s", buffer);
 }
 
-uint32 CParserBin::fxTokenKey(char *szToken, EToken eTC)
+uint32 CParserBin::fxTokenKey(const char *szToken, EToken eTC)
 {
   g_KeyTokens[eTC] = szToken;
   return eTC;

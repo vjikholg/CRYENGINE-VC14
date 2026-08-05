@@ -2148,7 +2148,7 @@ void CLeader::UpdateAlertStatus()
 }
 //
 //------------------------------------------------------------------------------------------------------------
-string CLeader::GetFormationName(char* type,int size)
+string CLeader::GetFormationName(const char* type,int size)
 {
 	string name = "_leader_"+string(type);
 	char c[5];

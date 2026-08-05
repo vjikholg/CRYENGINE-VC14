@@ -3018,7 +3018,7 @@ void CPlayer::UpdateStats(float frameTime)
 			{
 				const char* side = gEnv->bServer ? "Server" : "Client";
 
-				char* color = "";
+				const char* color = "";
 				if (velFraction < 0.33f)
 					color = "$6"; // Yellow
 				else if (velFraction < 0.66f)
@@ -3036,7 +3036,7 @@ void CPlayer::UpdateStats(float frameTime)
 			if (m_stats.downwardsImpactVelocity > 0.5f)
 			{
 				const char* side = gEnv->bServer ? "Server" : "Client";
-				char* color = "$3"; // Green
+				const char* color = "$3"; // Green
 				CryLogAlways("%s[%s][%s] ImpactVelo=%3.2f, FallSpeed=%3.2f, FallDamage: NONE", 
 					color, side, GetEntity()->GetName(), m_stats.downwardsImpactVelocity, m_stats.fallSpeed);
 			}

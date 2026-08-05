@@ -3601,7 +3601,7 @@ bool CRenderer::EF_TryToMerge(CRenderObject *pObjN, CRenderObject *pObjO, CRendE
 }
 
 // Note: If you add any new technique, update this list with it's name, in correct order (used for debug output)
-static char *sDescList[] = 
+static const char * const sDescList[] =
 { 
   "NULL", 
   "Preprocess", 
@@ -3617,7 +3617,7 @@ static char *sDescList[] =
   "ShadowPass",
   "RefractPass"
 };
-static char *sBatchList[] = 
+static const char * const sBatchList[] =
 { 
   "FB_GENERAL", 
   "FB_TRANSPARENT", 

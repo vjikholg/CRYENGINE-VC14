@@ -133,7 +133,7 @@ namespace SharedString
 			}
 		}
 	private:
-		typedef stl::hash_map<const char*,SNameEntry*,hash_strcmp<const char*> > NameMap;
+		using NameMap = stl::CryHashMap<const char*, SNameEntry*, stl::hash_strcmp<const char*> >;
 		NameMap m_nameMap;
 	};
 

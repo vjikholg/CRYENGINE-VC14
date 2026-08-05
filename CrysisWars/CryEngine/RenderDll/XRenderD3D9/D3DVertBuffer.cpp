@@ -227,7 +227,7 @@ void *CD3D9Renderer::GetDynVBPtr(int nVerts, int &nOffs, int Pool)
 }
 
 #ifdef _DEBUG
-static char *szDescBuf[] = 
+static const char * const szDescBuf[] =
 {
   "Base Mesh",
   "Mesh Tangents",
@@ -708,7 +708,7 @@ void CD3D9Renderer::CreateBuffer(int size, int vertexformat, CVertexBuffer *buf,
   #elif defined (DIRECT3D10)
     ID3D10Buffer *vbuf = (ID3D10Buffer *)buf->GetStream(nType, &nOffs);
   #endif
-    char *szDesc = szDescBuf[nType];
+    const char *szDesc = szDescBuf[nType];
     if (szSource && szSource[0])
     {
       char s[256];
@@ -750,7 +750,7 @@ void CD3D9Renderer::CreateBuffer(int size, int vertexformat, CVertexBuffer *buf,
     return;
 
 #ifdef _DEBUG
-  char *szDesc = szDescBuf[nType];
+  const char *szDesc = szDescBuf[nType];
   if (szSource && szSource[0])
   {
     char s[256];
@@ -809,7 +809,7 @@ CVertexBuffer *CD3D9Renderer::CreateBuffer(int vertexcount,int vertexformat, con
   {
     AllocVBInPool(size, vertexformat, &newbuf->m_VS[VSF_GENERAL]);
 #ifdef _DEBUG
-    char *szDesc = szDescBuf[VSF_GENERAL];
+    const char *szDesc = szDescBuf[VSF_GENERAL];
     if (szSource && szSource[0])
     {
       char s[256];
@@ -846,7 +846,7 @@ CVertexBuffer *CD3D9Renderer::CreateBuffer(int vertexcount,int vertexformat, con
   newbuf->m_VS[VSF_GENERAL].m_VertBuf.m_pPtr = vptr;
 
 #ifdef _DEBUG
-  char *szDesc = szDescBuf[VSF_GENERAL];
+  const char *szDesc = szDescBuf[VSF_GENERAL];
   if (szSource && szSource[0])
   {
     char s[256];

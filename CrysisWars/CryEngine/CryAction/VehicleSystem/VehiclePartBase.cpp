@@ -125,7 +125,7 @@ bool CVehiclePartBase::Init(IVehicle* pVehicle, const SmartScriptTable &table, I
 
 	table->GetValue("disableCollision", m_disableCollision);
 	
-  char* component = "";
+  const char* component = "";
   if (table->GetValue("component", component) && component[0])
     initInfo.partComponentMap.push_back(CVehicle::SPartComponentPair(this, component));
 

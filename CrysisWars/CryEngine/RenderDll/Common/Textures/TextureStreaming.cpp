@@ -92,7 +92,7 @@ void CTexture::StreamRestore()
 
 void CTexture::StreamGetCacheName(char *name)
 {
-  char *sETT;
+  const char *sETT;
   switch (m_eTT)
   {
     case eTT_2D:

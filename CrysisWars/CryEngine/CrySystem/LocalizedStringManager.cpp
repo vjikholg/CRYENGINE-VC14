@@ -494,8 +494,6 @@ bool CLocalizedStringsManager::LoadExcelXmlSpreadsheet( const char *sFileName,bo
 			continue;
 		}
 
-		wchar_t *sUnicodeStr = L"";
-
 		if (*sEnglishString)
 		{
 			ReplaceEndOfLine( const_cast<char*>(sEnglishString) );

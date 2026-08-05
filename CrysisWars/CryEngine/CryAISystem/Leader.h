@@ -440,7 +440,7 @@ public:
 	bool		CreateFormation_Saw(const Vec3& pos, float scale,int size=0 );
 	bool		CreateFormation_Circle(float scale,int size=0 );
 	bool		CreateFormation_Funnel(float scale,int size=0 );
-	string	GetFormationName(char* type, int size);
+	string	GetFormationName(const char* type, int size);
 	// Creates horizontal wedge shaped formation.
 	//	pos		- The position of the wedge tip.
 	//	scale - The scale of the whole formation. The formation is create to fit inside the normalized [-1,1] coordinates.

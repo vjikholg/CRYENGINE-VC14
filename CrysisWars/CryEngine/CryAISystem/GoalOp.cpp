@@ -23,6 +23,8 @@
 #include "ITimer.h"
 #include "IPhysics.h"
 #include "Cry_Math.h"
+
+#include <algorithm>
 #include "ILog.h"
 #include "ISerialize.h"
 
@@ -7560,7 +7562,7 @@ void COPUseCover::ChooseCoverUsage(CPipeUser *pOperand)
 	// Shuffle.
 	if(!coverUsage.empty())
 	{
-		std::random_shuffle(coverUsage.begin(), coverUsage.end());
+		std::shuffle(coverUsage.begin(), coverUsage.end(), CryRandomEngine{});
 		m_curCoverUsage = coverUsage.front().first;
 
 		switch(coverUsage.front().second)

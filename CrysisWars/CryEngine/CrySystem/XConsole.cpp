@@ -1600,7 +1600,7 @@ void CXConsole::DumpCommandsVarsTxt( const char *prefix )
 	for(itrVar=m_mapVariables.begin(); itrVar!=itrVarEnd; ++itrVar)
 	{
 		ICVar *var = itrVar->second;
-		char *types[] = { "?", "int", "float", "string", "?" };
+		const char * const types[] = { "?", "int", "float", "string", "?" };
 
 		var->GetRealIVal();			// assert inside checks consistency for all cvars
 
@@ -1645,7 +1645,7 @@ static string GetNameTillRet( const char *p )
 // output data should go to: \\server41\http\twiki\data\CryAutoGen
 void CXConsole::DumpCommandsVarsWiki()
 {
-	char *szFolderName = "CryAutoGen";
+	const char *szFolderName = "CryAutoGen";
 
 	CryCreateDirectory(szFolderName,0);
 

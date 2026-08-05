@@ -427,7 +427,7 @@ DXUTState& GetDXUTState()
 // Internal functions forward declarations
 //--------------------------------------------------------------------------------------
 void    DXUTParseCommandLine( WCHAR* strCommandLine );
-bool    DXUTIsNextArg( WCHAR*& strCmdLine, WCHAR* strArg );
+bool    DXUTIsNextArg( WCHAR*& strCmdLine, const WCHAR* strArg );
 bool    DXUTGetCmdParam( WCHAR*& strCmdLine, WCHAR* strFlag );
 void    DXUTAllowShortcutKeys( bool bAllowKeys );
 void    DXUTHandleTimers();
@@ -848,7 +848,7 @@ void DXUTParseCommandLine( WCHAR* strCommandLine )
 //--------------------------------------------------------------------------------------
 // Helper function for DXUTParseCommandLine
 //--------------------------------------------------------------------------------------
-bool DXUTIsNextArg( WCHAR*& strCmdLine, WCHAR* strArg )
+bool DXUTIsNextArg( WCHAR*& strCmdLine, const WCHAR* strArg )
 {
     int nArgLen = (int) wcslen(strArg);
     int nCmdLen = (int) wcslen(strCmdLine);

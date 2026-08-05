@@ -346,14 +346,14 @@ void CFlowSystem::Update()
 			// call pre updates
 
 			// 1. system inspectors
-			std::for_each (m_systemInspectors.begin(), m_systemInspectors.end(), std::bind2nd (std::mem_fun(&IFlowGraphInspector::PreUpdate), (IFlowGraph*) 0));
+			for (const IFlowGraphInspectorPtr& inspector : m_systemInspectors)
+				inspector->PreUpdate(nullptr);
 
 			// 2. graph inspectors TODO: optimize not to go over all graphs ;-)
-			std::vector<CFlowGraphBase*>::iterator iter = m_graphs.begin();
-			while (iter != m_graphs.end()) {
-				const std::vector<IFlowGraphInspectorPtr>& graphInspectors ((*iter)->GetInspectors());
-				std::for_each (graphInspectors.begin(), graphInspectors.end(), std::bind2nd (std::mem_fun(&IFlowGraphInspector::PreUpdate), *iter));
-				++iter;
+			for (CFlowGraphBase* graph : m_graphs) {
+				const std::vector<IFlowGraphInspectorPtr>& graphInspectors(graph->GetInspectors());
+				for (const IFlowGraphInspectorPtr& inspector : graphInspectors)
+					inspector->PreUpdate(graph);
 			}
 		}
 
@@ -363,14 +363,14 @@ void CFlowSystem::Update()
 			// call post updates
 
 			// 1. system inspectors
-			std::for_each (m_systemInspectors.begin(), m_systemInspectors.end(), std::bind2nd (std::mem_fun(&IFlowGraphInspector::PostUpdate), (IFlowGraph*) 0));
+			for (const IFlowGraphInspectorPtr& inspector : m_systemInspectors)
+				inspector->PostUpdate(nullptr);
 
 			// 2. graph inspectors TODO: optimize not to go over all graphs ;-)
-			std::vector<CFlowGraphBase*>::iterator iter = m_graphs.begin();
-			while (iter != m_graphs.end()) {
-				const std::vector<IFlowGraphInspectorPtr>& graphInspectors ((*iter)->GetInspectors());
-				std::for_each (graphInspectors.begin(), graphInspectors.end(), std::bind2nd (std::mem_fun(&IFlowGraphInspector::PostUpdate), *iter));
-				++iter;
+			for (CFlowGraphBase* graph : m_graphs) {
+				const std::vector<IFlowGraphInspectorPtr>& graphInspectors(graph->GetInspectors());
+				for (const IFlowGraphInspectorPtr& inspector : graphInspectors)
+					inspector->PostUpdate(graph);
 			}
 		}
 	}

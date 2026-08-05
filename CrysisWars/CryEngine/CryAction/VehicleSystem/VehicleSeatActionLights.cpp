@@ -38,7 +38,7 @@ bool CVehicleSeatActionLights::Init(IVehicle* pVehicle, TVehicleSeatId seatId, c
 	SmartScriptTable lightsTable;
 	if (table->GetValue("Lights", lightsTable))
 	{
-    char* activation = "";
+    const char* activation = "";
     lightsTable->GetValue("activation", activation);
 
     if (!strcmp(activation, "brake"))

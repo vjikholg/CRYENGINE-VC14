@@ -109,7 +109,7 @@ class CResFile
 {
 private:
   char m_name[1024];
-  char *m_szAccess;
+  const char *m_szAccess;
   FILE* m_handle;
   ResFilesMap m_dir;
   int m_typeaccess;

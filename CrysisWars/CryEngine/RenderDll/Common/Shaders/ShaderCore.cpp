@@ -2325,7 +2325,7 @@ EHWSProfile CHWShader::mfStringToProfile(const char *profile)
 }
 const char *CHWShader::mfProfileToString(EHWSProfile eProfile)
 {
-  char *szProfile = "Unknown";
+  const char *szProfile = "Unknown";
   switch (eProfile)
   {
     case eHWSP_VS_1_1:

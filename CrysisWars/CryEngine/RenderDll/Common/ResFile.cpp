@@ -1074,7 +1074,7 @@ const char *fpGetExtension (const char *in)
   return NULL;
 }
 
-void fpAddExtension (char *path, char *extension)
+void fpAddExtension (char *path, const char *extension)
 {
   char    *src;
   src = path + strlen(path) - 1;

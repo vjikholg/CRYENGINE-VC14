@@ -74,15 +74,18 @@ void CImageFile::mfSet_dimensions (int w, int h)
   m_Height = h;
 }
 
-void CImageFile::mfSet_error (EImFileError error, char* detail)
+void CImageFile::mfSet_error (EImFileError error, const char* detail)
 {
   CImageFile::m_eError = error;
-  if (detail)
-    strcpy (m_Error_detail, detail);
   m_Error_detail[0] = 0;
+  if (detail)
+  {
+    strncpy(m_Error_detail, detail, sizeof(m_Error_detail) - 1);
+    m_Error_detail[sizeof(m_Error_detail) - 1] = 0;
+  }
 }
 
-void CImageFile::mfWrite_error (char* extra)
+void CImageFile::mfWrite_error (const char* extra)
 {
   if (m_eError == eIFE_OK)
     return;

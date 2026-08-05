@@ -652,7 +652,7 @@ int CGParamCallback( const VOID* arg1, const VOID* arg2 )
   return 0;
 }
 
-char *szNamesCB[CB_MAX] = {"PER_BATCH", "PER_INSTANCE", "PER_FRAME", "PER_MATERIAL", "PER_LIGHT", "PER_SHADOWGEN", "SKIN_DATA", "SHAPE_DATA", "INSTANCE_DATA"};
+const char * const szNamesCB[CB_MAX] = {"PER_BATCH", "PER_INSTANCE", "PER_FRAME", "PER_MATERIAL", "PER_LIGHT", "PER_SHADOWGEN", "SKIN_DATA", "SHAPE_DATA", "INSTANCE_DATA"};
 void CHWShader_D3D::mfCreateBinds(SHWSInstance *pInst, LPD3DXCONSTANTTABLE pConstantTable, byte* pShader, int nSize)
 {
 #if defined (DIRECT3D9) || defined(OPENGL)
@@ -2543,8 +2543,8 @@ void CHWShader_D3D::mfCommitParams(bool bSetPM)
 }
 
 
-static char *sSH[] = {"VS", "PS", "GS"};
-static char *sComp[] = {"x", "y", "z", "w"};
+static const char * const sSH[] = {"VS", "PS", "GS"};
+static const char * const sComp[] = {"x", "y", "z", "w"};
 
 
 #if defined (DIRECT3D10)
@@ -2563,7 +2563,7 @@ float *CHWShader_D3D::mfSetParameters(SCGParam *pParams, int nINParams, float *p
   SEfResTexture *pRT;
   SEnvTexture *pEnv;
   float *pData;
-  register float *pSrc;
+  float *pSrc;
   Vec3 v;
   uint i;
   const SCGParam *ParamBind;

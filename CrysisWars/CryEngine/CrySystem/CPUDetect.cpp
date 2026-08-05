@@ -328,10 +328,10 @@ static unsigned long __stdcall DetectProcessor( void *arg )
   char  vendor[13];
   char  name[49];
   char  *serial;
-  char  *cpu_string;
-  char  *cpu_extra_string;
-  char  *fpu_string;
-  char  *vendor_string;
+  const char  *cpu_string;
+  const char  *cpu_extra_string;
+  const char  *fpu_string;
+  const char  *vendor_string;
   SCpu  *p = (SCpu *) arg;
   float     test_val[4] = { 1.f, 1.f, 1.f, 1.f };
 

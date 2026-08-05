@@ -1618,7 +1618,7 @@ WIN_HWND CD3D9Renderer::Init(int x,int y,int width,int height,unsigned int cbpp,
     _SetVar("r_GeomInstancing", 0);
 #endif
 
-  char *str = "Unsupported Pixel Shaders Version";
+  const char *str = "Unsupported Pixel Shaders Version";
 #if defined (DIRECT3D9) || defined (OPENGL)
   if (m_Features & RFT_HW_PS30)
     str = "PS.3.0, PS.2.X, PS.2.0 and PS.1.1";
@@ -1721,7 +1721,7 @@ const char *CD3D9Renderer::D3DError( HRESULT h )
 #endif
 }
 
-bool CD3D9Renderer::Error(char *Msg, HRESULT h)
+bool CD3D9Renderer::Error(const char *Msg, HRESULT h)
 {
   const char *str = D3DError(h);
   iLog->Log("Error: %s (%s)", Msg, str);
@@ -1738,7 +1738,7 @@ bool CD3D9Renderer::Error(char *Msg, HRESULT h)
 
 //=============================================================================
 
-static char *sD3DFMT( D3DFORMAT fmt )
+static const char *sD3DFMT( D3DFORMAT fmt )
 {
   switch( fmt )
   {
@@ -2477,12 +2477,8 @@ bool CD3D9Renderer::SetRes(void)
   DXUTSetCallbackD3D10DeviceDestroyed(OnD3D10DestroyDevice );
   DXUTSetCallbackDeviceChanging(OnD3D10DeviceChanging);
 #endif
-	WCHAR *sExtDXCmds = NULL;
-	if (CD3D9Renderer::CV_d3d9_null_ref_device != 0)
-	{
-		sExtDXCmds = L"-forcenullref";
-	}
-  DXUTInit(true, true, sExtDXCmds ); // Parse the command line, show msgboxes on error, no extra command line params
+	WCHAR sExtDXCmds[] = L"-forcenullref";
+  DXUTInit(true, true, CD3D9Renderer::CV_d3d9_null_ref_device != 0 ? sExtDXCmds : NULL); // Parse the command line, show msgboxes on error, no extra command line params
   DXUTSetWindow(m_hWnd, m_hWnd, m_hWnd, false);
 
   int width = m_width;
@@ -2684,7 +2680,7 @@ void CALLBACK CD3D9Renderer::OnD3D9FrameRender(LPDIRECT3DDEVICE9 pd3dDevice, dou
 struct SNVDevice
 {
   int nDevID;
-  char *szDescr;
+  const char *szDescr;
 };
 static SNVDevice s_NVDevList[] = 
 {
@@ -2846,8 +2842,8 @@ static SNVDevice s_NVDevList[] =
 
 struct SATIDevice
 {
-  char *szDescr;
-  char *szASIC;
+  const char *szDescr;
+  const char *szASIC;
   int nDevID;
 };
 static SATIDevice s_ATIDevList[] = 

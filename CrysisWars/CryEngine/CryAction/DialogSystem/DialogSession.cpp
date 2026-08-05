@@ -519,7 +519,7 @@ void CDialogSession::UnCacheSounds()
 ////////////////////////////////////////////////////////////////////////////
 const char* CDialogSession::GetEventName(EDialogSessionEvent event)
 {
-	static char* names [] = {
+	static const char* const names [] = {
 		"eDSE_SessionStart",
 		"eDSE_EndOfDialog",
 		"eDSE_UserStopped",

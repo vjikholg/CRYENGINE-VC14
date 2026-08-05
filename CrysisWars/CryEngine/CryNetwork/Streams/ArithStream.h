@@ -361,10 +361,10 @@ inline void CCommOutputStream::Reset( uint8 bonus )
 
 inline void CCommOutputStream::Renormalize()
 {
-	register InternalStateType range = m_range;
-	register InternalStateType low = m_low;
-	register int help = m_help;
-	register uint8 buffer = m_buffer;
+	InternalStateType range = m_range;
+	InternalStateType low = m_low;
+	int help = m_help;
+	uint8 buffer = m_buffer;
 
 	while (range <= BottomValue)
 	{

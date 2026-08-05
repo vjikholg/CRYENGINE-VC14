@@ -80,11 +80,11 @@ public:
   }
 
   // Log utility
-  static void Log(char *pszMsg)
+  static void Log(const char *pszMsg)
   {
     if(gRenDev->m_LogFile && pszMsg)
     {
-      gRenDev->Logv(SRendItem::m_RecurseLevel, pszMsg);
+      gRenDev->Logv(SRendItem::m_RecurseLevel, "%s", pszMsg);
     }
   }
 

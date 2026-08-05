@@ -979,7 +979,7 @@ void CFrameProfileSystem::DrawGraph()
 #else
 		ColorF graphColor(0,1,0,1);
 #endif
-		char *sFuncName = "FrameTime";
+		const char *sFuncName = "FrameTime";
 		if (m_pGraphProfiler)
 			sFuncName = "";
 		float value = 255.0f - (m_frameTimeHistory.GetLast()*fValueScale);
@@ -1005,7 +1005,7 @@ void CFrameProfileSystem::DrawGraph()
 			if (value > 255) value = 255;
 
 			ColorF graphColor(1,0.3f,0,1);
-			sFuncName = const_cast<char*>((const char*)GetFullName(m_pGraphProfiler));
+			sFuncName = GetFullName(m_pGraphProfiler);
 
 			if (w != m_timeGraph2.size())
 				m_timeGraph2.resize(w);
@@ -1016,7 +1016,7 @@ void CFrameProfileSystem::DrawGraph()
 	else
 	{
 		// Page Faults graph.
-		char *sFuncName = "PageFaults";
+		const char *sFuncName = "PageFaults";
 		float value = 255.0f - (m_nPagesFaultsLastFrame*fValueScale*10.0f);
 
 		ColorF graphColor(1,0,0,1);

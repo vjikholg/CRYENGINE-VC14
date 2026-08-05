@@ -450,10 +450,10 @@ wstring CSystem::GetErrorStringUnsupportedGPU(const char* gpuName, unsigned int 
 	if (pCVarGLang)
 		lang = pCVarGLang->GetString();
 
-	wchar_t* unsupportedGPU(0);
-	wchar_t* vendor(0);
-	wchar_t* device(0);
-	wchar_t* hint(0);
+	const wchar_t* unsupportedGPU(0);
+	const wchar_t* vendor(0);
+	const wchar_t* device(0);
+	const wchar_t* hint(0);
 
 	wchar_t* pFmtMsgBuf(0);
 
@@ -3058,7 +3058,7 @@ static void ScreenshotCmd( IConsoleCmdArgs *pParams )
 	{
 		static int iScreenshotNumber=-1;
 
-		char *szPrefix="Screenshot";
+		const char *szPrefix="Screenshot";
 		uint32 dwPrefixSize=strlen(szPrefix);
 
 		char path[ICryPak::g_nMaxPath];

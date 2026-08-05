@@ -749,7 +749,10 @@ bool CAudioDeviceFmodEx400::InitDevice(CSoundSystem* pSoundSystem)
 			else
 			{
 				if (m_pSoundSystem->g_nOutputConfig == 2 || m_pSoundSystem->g_nOutputConfig == 3)
-					m_ExResult = m_pAPISystemDSound->init(5, FMOD_INIT_NORMAL, "audio_capture_dsound.wav");
+				{
+					static char captureFileName[] = "audio_capture_dsound.wav";
+					m_ExResult = m_pAPISystemDSound->init(5, FMOD_INIT_NORMAL, captureFileName);
+				}
 				else
 					m_ExResult = m_pAPISystemDSound->init(5, FMOD_INIT_NORMAL, m_pSoundSystem->g_nNetworkAudition?NULL:m_pHWnd);
 				
@@ -883,7 +886,8 @@ bool CAudioDeviceFmodEx400::InitDevice(CSoundSystem* pSoundSystem)
 
 	if (m_pSoundSystem->g_nOutputConfig == 2 || m_pSoundSystem->g_nOutputConfig == 3)
 	{
-		m_ExResult = m_pEventSystem->init(m_InitSettings.nSoftwareChannels, InitFlags, "audio_capture.wav", FMOD_EVENT_INIT_NORMAL);
+		static char captureFileName[] = "audio_capture.wav";
+		m_ExResult = m_pEventSystem->init(m_InitSettings.nSoftwareChannels, InitFlags, captureFileName, FMOD_EVENT_INIT_NORMAL);
 		if (IS_FMODERROR)
 		{
 			FmodErrorOutput("event system init failed pipeing into audio_capture.wav! ", IMiniLog::eError);

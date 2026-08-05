@@ -1509,7 +1509,7 @@ public:
 
   void D3DSetCull(ECull eCull);
   const char *D3DError( HRESULT h );
-  bool Error(char *Msg, HRESULT h);
+  bool Error(const char *Msg, HRESULT h);
 
   void SetDeviceGamma(ushort *r, ushort *g, ushort *b);
   HRESULT AdjustWindowForChange();
@@ -1529,8 +1529,8 @@ private:
   void DestroyWindow(void);
   virtual void RestoreGamma(void);
   void SetGamma(float fGamma, float fBrigtness, float fContrast, bool bForce);
-  virtual char*	GetVertexProfile(bool bSupportedProfile);
-  virtual char*	GetPixelProfile(bool bSupportedProfile);
+  virtual const char*	GetVertexProfile(bool bSupportedProfile);
+  virtual const char*	GetPixelProfile(bool bSupportedProfile);
 
   struct texture_info
   {
@@ -1699,7 +1699,7 @@ public:
   void DrawLines(Vec3 v[], int nump, ColorF& col, int flags, float fGround);
   void DrawLineColor(const Vec3 & vPos1, const ColorF & vColor1, const Vec3 & vPos2, const ColorF & vColor2);
   virtual void DrawLine(const Vec3 & vPos1, const Vec3 & vPos2);
-  virtual void Graph(byte *g, int x, int y, int wdt, int hgt, int nC, int type, char *text, ColorF& color, float fScale);
+  virtual void Graph(byte *g, int x, int y, int wdt, int hgt, int nC, int type, const char *text, ColorF& color, float fScale);
 
   virtual void *GetDynVBPtr(int nVerts, int &nOffs, int Pool);
   virtual void DrawDynVB(int nOffs, int Pool, int nVerts);
@@ -1724,7 +1724,7 @@ public:
   virtual void ResetToDefault();
 
   virtual void SetMaterialColor(float r, float g, float b, float a);
-  virtual char * GetStatusText(ERendStats type);
+  virtual const char * GetStatusText(ERendStats type);
 
   virtual void ProjectToScreen(float ptx, float pty, float ptz,float *sx, float *sy, float *sz );
   virtual int UnProject(float sx, float sy, float sz, float *px, float *py, float *pz, const float modelMatrix[16], const float projMatrix[16], const int    viewport[4]);

@@ -1806,12 +1806,12 @@ bool PatchDXBCShaderCode(LPD3D10BLOB& pShader, CHWShader_D3D *pSh)
     nMax++;
     pRDEF->m_CBuffers = nMax;
     RDEF.Copy(pByteCodeRDEF, sizeof(SDXBCShaderRDEF));
-    char *szNamesCB[CB_MAX] = {"$PER_BATCH", "$PER_INSTANCE", "$PER_FRAME", "$PER_MATERIAL", "$SKIN_DATA", "$SHAPE_DATA"};
+    const char * const szNamesCB[CB_MAX] = {"$PER_BATCH", "$PER_INSTANCE", "$PER_FRAME", "$PER_MATERIAL", "$SKIN_DATA", "$SHAPE_DATA"};
     int nOffs = sizeof(SDXBCShaderRDEF);
     pRDEF = (SDXBCShaderRDEF *)&RDEF[0];
     pRDEF->m_OffsCreator = nOffs;
     uint nLen = strlen(Refl.Desc.Creator)+1;
-    RDEF.Align4Copy((byte *)Refl.Desc.Creator, nLen);
+    RDEF.Align4Copy(reinterpret_cast<const byte *>(Refl.Desc.Creator), nLen);
     nOffs += nLen;
 
     int nStringOffset[CB_MAX+1];
@@ -1819,7 +1819,7 @@ bool PatchDXBCShaderCode(LPD3D10BLOB& pShader, CHWShader_D3D *pSh)
     {
       nStringOffset[i] = nOffs;
       uint nLen = strlen(szNamesCB[i])+1;
-      RDEF.Align4Copy((byte *)szNamesCB[i], nLen);
+      RDEF.Align4Copy(reinterpret_cast<const byte *>(szNamesCB[i]), nLen);
       nOffs += nLen;
     }
     pRDEF = (SDXBCShaderRDEF *)&RDEF[0];

@@ -72,7 +72,7 @@ bool CVehiclePartTread::Init(IVehicle* pVehicle, const SmartScriptTable &table, 
 
   m_pCharInstance->GetISkeletonPose()->SetPostProcessCallback0(	(int (*)(ICharacterInstance*,void*)) CVehiclePartTread_PostProcess, (void*)this);
   
-  char* pMaterialName = "";
+  const char* pMaterialName = "";
   subTable->GetValue("materialName", pMaterialName);
   
   if (*pMaterialName)

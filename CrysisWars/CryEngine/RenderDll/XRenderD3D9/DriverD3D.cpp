@@ -71,7 +71,7 @@ ICVar *CD3D9Renderer::CV_d3d9_texturefilter;
 IDirectBee *CRenderer::m_pDirectBee=0;		// connection to D3D9 wrapper DLL, 0 if not established
 #endif
 
-char *resourceName[] = {
+const char * const resourceName[] = {
     "UNKNOWN",
     "Surfaces",
     "Volumes",
@@ -4079,7 +4079,7 @@ void CD3D9Renderer::DrawLine(const Vec3 & vPos1, const Vec3 & vPos2)
 
 }
 
-void CD3D9Renderer::Graph(byte *g, int x, int y, int wdt, int hgt, int nC, int type, char *text, ColorF& color, float fScale)
+void CD3D9Renderer::Graph(byte *g, int x, int y, int wdt, int hgt, int nC, int type, const char *text, ColorF& color, float fScale)
 {
   ColorF col;
   Vec3* vp = (Vec3*) alloca(wdt * sizeof(Vec3));
@@ -5228,7 +5228,7 @@ void CD3D9Renderer::SetMaterialColor(float r, float g, float b, float a)
 }
 
 ///////////////////////////////////////////
-char * CD3D9Renderer::GetStatusText(ERendStats type)
+const char * CD3D9Renderer::GetStatusText(ERendStats type)
 {
   return "No status yet";
 }
@@ -5454,7 +5454,7 @@ unsigned int CD3D9Renderer::DownLoadToVideoMemory(unsigned char *data,int w, int
   }
 }
 
-char*	CD3D9Renderer::GetVertexProfile(bool bSupportedProfile)
+const char*	CD3D9Renderer::GetVertexProfile(bool bSupportedProfile)
 {
   EHWSProfile pr = eHWSP_VS_1_1;
 
@@ -5540,7 +5540,7 @@ void CD3D9Renderer::Hint_DontSync( CTexture &rTex )
 }
 
 
-char*	CD3D9Renderer::GetPixelProfile(bool bSupportedProfile)
+const char*	CD3D9Renderer::GetPixelProfile(bool bSupportedProfile)
 {
   EHWSProfile pr = eHWSP_PS_1_1;
 

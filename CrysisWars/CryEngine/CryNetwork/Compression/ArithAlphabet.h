@@ -939,10 +939,10 @@ public:
 						seg_count.UpdateAndSetFlag(false);
 						seg_low.seg.Update();
 						int seg_count_sz = seg_count.Size();
-						register const TSymCount * seg_count_elems = seg_count.Get();
-						register TLowValue * seg_low_elems = seg_low.seg.Get();
-						register TLowValue seg_tot = 0;
-						register TSymCount bits_set = 0;
+						const TSymCount * seg_count_elems = seg_count.Get();
+						TLowValue * seg_low_elems = seg_low.seg.Get();
+						TLowValue seg_tot = 0;
+						TSymCount bits_set = 0;
 						if (seg_count_sz) switch (seg_count_sz % 4)
 						{
 						case 0:

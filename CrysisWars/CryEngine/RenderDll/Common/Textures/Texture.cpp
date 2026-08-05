@@ -631,7 +631,7 @@ bool CTexture::Load(ETEX_Format eTFDst, float fAmount1, float fAmount2)
 
 bool CTexture::SaveCube(string& name)
 {
-  static char* cubefaces[6] = {"posx","negx","posy","negy","posz","negz"};
+  static const char* const cubefaces[6] = {"posx","negx","posy","negy","posz","negz"};
   int i;
   char n[256];
   char cube[256];
@@ -1968,7 +1968,7 @@ int CTexture::TextureDataSize(int nWidth, int nHeight, int nDepth, int nMips, ET
 
 const char *CTexture::NameForTextureType(ETEX_Type eTT)
 {
-  char *sETT;
+  const char *sETT;
   switch (eTT)
   {
     case eTT_1D:
@@ -1999,7 +1999,7 @@ const char *CTexture::NameForTextureType(ETEX_Type eTT)
 
 const char *CTexture::NameForTextureFormat(ETEX_Format ETF)
 {
-  char *sETF;
+  const char *sETF;
   switch (ETF)
   {
 		case eTF_Unknown:

@@ -21,7 +21,7 @@
 #include "dds/tPixel.h"
 #include "dds/ddsTypes.h"
                     
-inline char * GetDXTCVersion() { return "Version 8.30";}
+inline const char * GetDXTCVersion() { return "Version 8.30";}
 
 // max mip maps
 #define MAX_MIP_MAPS 17

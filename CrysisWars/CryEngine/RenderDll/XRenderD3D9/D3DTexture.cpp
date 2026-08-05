@@ -2806,7 +2806,7 @@ bool CTexture::SetDefTexFilter(const char *szFilter)
   bool bRes = false;
   struct textype
   {
-    char *name;
+    const char *name;
     uint filter;
   };
 

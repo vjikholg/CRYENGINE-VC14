@@ -546,7 +546,10 @@ void CLevelSystem::ScanFolder(const char *subfolder)
 
 			CLevelInfo levelInfo;
 
-			string levelFolder = (folder.empty() ? "" : (folder + "/")) + string(fd.name);
+			string levelFolder = folder;
+			if (!levelFolder.empty())
+				levelFolder += '/';
+			levelFolder += fd.name;
 			string levelPath = m_levelsFolder + "/" + levelFolder;
 			string paks = levelPath + string("/*.pak");
 

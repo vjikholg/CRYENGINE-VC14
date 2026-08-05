@@ -643,7 +643,7 @@ void CAISystem::DebugDrawDamageControlGraph(IRenderer *pRenderer) const
 					pRenderer->GetIRenderAuxGeom()->DrawPolyline(&values[0], n, false, ColorB(240,32,16,240));
 			}
 
-			char* szZone = "";
+			const char* szZone = "";
 			switch(pPuppet->m_targetZone)
 			{
 			case CPuppet::ZONE_OUT: szZone = "Out"; break;
@@ -3928,7 +3928,7 @@ void CAISystem::DebugDrawAgent(IRenderer *pRenderer, CAIObject* pAgentObj) const
 					pRenderer->GetIRenderAuxGeom()->DrawLine(pPuppet->GetFirePos(), ColorB(255,255,255), missPt, ColorB(255,255,255));
 				}*/
 
-				char* szZone = "";
+				const char* szZone = "";
 				switch(pPuppet->m_targetZone)
 				{
 				case CPuppet::ZONE_OUT: szZone = "Out"; break;

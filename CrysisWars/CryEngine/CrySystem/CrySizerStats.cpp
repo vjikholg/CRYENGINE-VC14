@@ -188,10 +188,10 @@ void CrySizerStatsRenderer::render(bool bRefreshMark)
 	float fVStep = 6;
 
 #ifdef _DEBUG
-	char *szCountStr1="count";
-	char *szCountStr2="_____";
+	const char *szCountStr1="count";
+	const char *szCountStr2="_____";
 #else // _DEBUG
-	char *szCountStr1="", *szCountStr2="";
+	const char *szCountStr1="", *szCountStr2="";
 #endif // _DEBUG
 
 	m_pRenderer->WriteXY((int)fLeft, (int)(fTop), fCharScaleX, fCharScaleY, 0.9f,0.85f,1,0.85f,

@@ -60,9 +60,7 @@ LONG WINAPI CryEngineExceptionFilterMiniDump( struct _EXCEPTION_POINTERS * pExce
 		hDll = ::LoadLibrary( "DBGHELP.DLL" );
 	}
 
-	TCHAR * szResult = NULL;
-
-	TCHAR * m_szAppName = _T("CE2Dump");
+	const TCHAR * szResult = NULL;
 	if (hDll)
 	{
 		MINIDUMPWRITEDUMP pDump = (MINIDUMPWRITEDUMP)::GetProcAddress( hDll, "MiniDumpWriteDump" );

@@ -470,7 +470,7 @@ public:
 	virtual bool WriteTGA(byte *dat, int wdt, int hgt, const char *name, int src_bits_per_pixel, int dest_bits_per_pixel );
 	virtual bool WriteJPG(byte *dat, int wdt, int hgt, char *name, int src_bits_per_pixel);
 
-	virtual char * GetStatusText(ERendStats type)=0;
+	virtual const char * GetStatusText(ERendStats type)=0;
 	virtual void GetMemoryUsage(ICrySizer* Sizer)=0;
 	virtual void GetLogVBuffers() = 0;
 
@@ -524,8 +524,8 @@ public:
   virtual int	GetColorBpp()		{ return (m_cbpp); }
   virtual int	GetDepthBpp()		{ return (m_zbpp); }
   virtual int	GetStencilBpp()		{ return (m_sbpp); }
-  virtual char*	GetVertexProfile(bool bSupportedProfile)=0;
-  virtual char*	GetPixelProfile(bool bSupportedProfile)=0;
+  virtual const char*	GetVertexProfile(bool bSupportedProfile)=0;
+  virtual const char*	GetPixelProfile(bool bSupportedProfile)=0;
 
   virtual void Set2DMode(bool enable, int ortox, int ortoy,float znear=-1e10f,float zfar=1e10f)=0;
 
@@ -540,7 +540,7 @@ public:
   FILE *m_LogFile;
   FILE *m_LogFileStr;
   FILE *m_LogFileSh;
-  _inline void Logv(int RecLevel, char *format, ...)
+  _inline void Logv(int RecLevel, const char *format, ...)
   {
     va_list argptr;
     
@@ -557,7 +557,7 @@ public:
       va_end (argptr);
     }
   }
-  _inline void LogStrv(int RecLevel, char *format, ...)
+  _inline void LogStrv(int RecLevel, const char *format, ...)
   {
     va_list argptr;
 
@@ -574,7 +574,7 @@ public:
       va_end (argptr);
     }
   }
-  _inline void LogShv(char *format, ...)
+  _inline void LogShv(const char *format, ...)
   {
     va_list argptr;
     int RecLevel = SRendItem::m_RecurseLevel;
@@ -593,11 +593,11 @@ public:
       fflush(m_LogFileSh);
     }
   }
-  _inline void Log(char *str)
+  _inline void Log(const char *str)
   {
     if (m_LogFile)
     {
-      fprintf (m_LogFile, str);
+      fprintf (m_LogFile, "%s", str);
     }
   }
   void EF_AddClientPolys2D();  

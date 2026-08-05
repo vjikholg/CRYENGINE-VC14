@@ -16,24 +16,24 @@ static char sStr[1024];
     strcat(sStr, #e);       \
 }               \
 
-static char *sHex (DWORD Value)
+static const char *sHex (DWORD Value)
 {
   sprintf(sStr, "0x%x", (uint32)Value);
   return sStr;
 }
-static char *sInt (DWORD Value)
+static const char *sInt (DWORD Value)
 {
   sprintf(sStr, "%d", (uint32)Value);
   return sStr;
 }
-static char *sDWFloat (DWORD Value)
+static const char *sDWFloat (DWORD Value)
 {
   float fVal = *((float*)(&Value));
   sprintf(sStr, "%.3f", fVal);
   return sStr;
 }
 
-static char *sBool (DWORD Value)
+static const char *sBool (DWORD Value)
 {
   switch (Value)
   {
@@ -46,7 +46,7 @@ static char *sBool (DWORD Value)
 
 #if defined (DIRECT3D9) || defined (OPENGL)
 
-static char *sD3DZB (DWORD Value)
+static const char *sD3DZB (DWORD Value)
 {
   switch (Value)
   {
@@ -57,7 +57,7 @@ static char *sD3DZB (DWORD Value)
   }
 }
 
-static char *sD3DFILL (DWORD Value)
+static const char *sD3DFILL (DWORD Value)
 {
   switch (Value)
   {
@@ -68,7 +68,7 @@ static char *sD3DFILL (DWORD Value)
   }
 }
 
-static char *sD3DSHADE (DWORD Value)
+static const char *sD3DSHADE (DWORD Value)
 {
   switch (Value)
   {
@@ -79,7 +79,7 @@ static char *sD3DSHADE (DWORD Value)
   }
 }
 
-static char *sD3DBLEND (DWORD Value)
+static const char *sD3DBLEND (DWORD Value)
 {
   switch (Value)
   {
@@ -107,7 +107,7 @@ static char *sD3DBLEND (DWORD Value)
   }
 }
 
-static char *sD3DCULL (DWORD Value)
+static const char *sD3DCULL (DWORD Value)
 {
   switch (Value)
   {
@@ -118,7 +118,7 @@ static char *sD3DCULL (DWORD Value)
   }
 }
 
-static char *sD3DCMP (DWORD Value)
+static const char *sD3DCMP (DWORD Value)
 {
   switch(Value)
   {
@@ -134,7 +134,7 @@ static char *sD3DCMP (DWORD Value)
   }
 }
 
-static char *sD3DFOG (DWORD Value)
+static const char *sD3DFOG (DWORD Value)
 {
   switch(Value)
   {
@@ -146,7 +146,7 @@ static char *sD3DFOG (DWORD Value)
   }
 }
 
-static char *sD3DSTENCILOP (DWORD Value)
+static const char *sD3DSTENCILOP (DWORD Value)
 {
   switch(Value)
   {
@@ -162,7 +162,7 @@ static char *sD3DSTENCILOP (DWORD Value)
   }
 }
 
-static char *sD3DMCS (DWORD Value)
+static const char *sD3DMCS (DWORD Value)
 {
   switch (Value)
   {
@@ -173,7 +173,7 @@ static char *sD3DMCS (DWORD Value)
   }
 }
 
-static char *sD3DVBF (DWORD Value)
+static const char *sD3DVBF (DWORD Value)
 {
   switch (Value)
   {
@@ -187,7 +187,7 @@ static char *sD3DVBF (DWORD Value)
   }
 }
 
-static char *sD3DPATCHEDGE (DWORD Value)
+static const char *sD3DPATCHEDGE (DWORD Value)
 {
   switch (Value)
   {
@@ -197,7 +197,7 @@ static char *sD3DPATCHEDGE (DWORD Value)
   }
 }
 
-static char *sD3DDMT (DWORD Value)
+static const char *sD3DDMT (DWORD Value)
 {
   switch (Value)
   {
@@ -207,7 +207,7 @@ static char *sD3DDMT (DWORD Value)
   }
 }
 
-static char *sD3DBLENDOP (DWORD Value)
+static const char *sD3DBLENDOP (DWORD Value)
 {
   switch (Value)
   {
@@ -220,7 +220,7 @@ static char *sD3DBLENDOP (DWORD Value)
   }
 }
 
-static char *sD3DDEGREE (DWORD Value)
+static const char *sD3DDEGREE (DWORD Value)
 {
   switch (Value)
   {
@@ -232,7 +232,7 @@ static char *sD3DDEGREE (DWORD Value)
   }
 }
 
-static char *sD3DTOP (DWORD Value)
+static const char *sD3DTOP (DWORD Value)
 {
   switch (Value)
   {
@@ -266,7 +266,7 @@ static char *sD3DTOP (DWORD Value)
   }
 }
 
-static char *sD3DPT (DWORD Value)
+static const char *sD3DPT (DWORD Value)
 {
   switch (Value)
   {
@@ -280,7 +280,7 @@ static char *sD3DPT (DWORD Value)
   }
 }
 
-static char *sD3DTA (DWORD Value)
+static const char *sD3DTA (DWORD Value)
 {
   switch (Value)
   {
@@ -295,7 +295,7 @@ static char *sD3DTA (DWORD Value)
   }
 }
 
-static char *sTEXCOORDINDEX (DWORD Value)
+static const char *sTEXCOORDINDEX (DWORD Value)
 {
   sprintf(sStr, "%d", Value & 0xf);
   if (Value & D3DTSS_TCI_CAMERASPACENORMAL)
@@ -315,7 +315,7 @@ static char *sTEXCOORDINDEX (DWORD Value)
   return sStr;
 }
 
-static char *sD3DTTFF (DWORD Value)
+static const char *sD3DTTFF (DWORD Value)
 {
   switch(Value & 0xf)
   {
@@ -343,7 +343,7 @@ static char *sD3DTTFF (DWORD Value)
   return sStr;
 }
 
-static char *sD3DTADDRESS (DWORD Value)
+static const char *sD3DTADDRESS (DWORD Value)
 {
   switch (Value)
   {
@@ -356,7 +356,7 @@ static char *sD3DTADDRESS (DWORD Value)
   }
 }
 
-static char *sD3DTEXF (DWORD Value)
+static const char *sD3DTEXF (DWORD Value)
 {
   switch (Value)
   {
@@ -370,7 +370,7 @@ static char *sD3DTEXF (DWORD Value)
   }
 }
 
-static char *sD3DTS (DWORD Value)
+static const char *sD3DTS (DWORD Value)
 {
   switch(Value)
   {
@@ -388,7 +388,7 @@ static char *sD3DTS (DWORD Value)
   }
 }
 
-static char *sD3DCLEARFLAGS (DWORD Value)
+static const char *sD3DCLEARFLAGS (DWORD Value)
 {
   if (!(Value & (D3DCLEAR_TARGET | D3DCLEAR_STENCIL | D3DCLEAR_ZBUFFER)))
     sprintf(sStr, "0x%x", Value);
@@ -414,7 +414,7 @@ static char *sD3DCLEARFLAGS (DWORD Value)
   return sStr;
 }
 
-static char *sFVF (DWORD Flag)
+static const char *sFVF (DWORD Flag)
 {
   sStr[0] = 0;
   eflag(D3DFVF_XYZ);
@@ -435,7 +435,7 @@ static char *sFVF (DWORD Flag)
   return sStr;
 }
 
-static char *sD3DFMT (D3DFORMAT Value)
+static const char *sD3DFMT (D3DFORMAT Value)
 {
   switch (Value)
   {
@@ -802,7 +802,7 @@ HRESULT CMyDirect3DDevice9::Clear(DWORD Count,CONST D3DRECT* pRects,DWORD Flags,
 }
 HRESULT CMyDirect3DDevice9::SetTransform(D3DTRANSFORMSTATETYPE State,CONST D3DMATRIX* pMatrix)
 {
-  char *state = sD3DTS(State);
+  const char *state = sD3DTS(State);
   gcpRendD3D->Logv(SRendItem::m_RecurseLevel, "%s (%s, 0x%x)\n", "D3DDevice::SetTransform", state, pMatrix);
   return gcpRendD3D->m_pActuald3dDevice->SetTransform(State,pMatrix);
 }
@@ -929,8 +929,8 @@ HRESULT CMyDirect3DDevice9::SetRenderState(D3DRENDERSTATETYPE State,DWORD Value)
 #define ECASE(e) case e: state = #e
   char Str[1024];
 #define EDEFAULT(e) default: sprintf(Str, "0x%x", e); state = Str;
-  char *state;
-  char *val = NULL;
+  const char *state;
+  const char *val = NULL;
   switch(State)
   {
     ECASE (D3DRS_ZENABLE);
@@ -1353,8 +1353,8 @@ HRESULT CMyDirect3DDevice9::SetTextureStageState(DWORD Stage,D3DTEXTURESTAGESTAT
 #define ECASE(e) case e: type = #e
   char Str[1024];
 #define EDEFAULT(e) default: sprintf(Str, "0x%x", e); type = Str;
-  char *type;
-  char *val = NULL;
+  const char *type;
+  const char *val = NULL;
   switch (Type)
   {
     ECASE (D3DTSS_COLOROP);
@@ -1430,8 +1430,8 @@ HRESULT CMyDirect3DDevice9::SetSamplerState(DWORD Sampler,D3DSAMPLERSTATETYPE Ty
 #define ECASE(e) case e: type = #e
   char Str[1024];
 #define EDEFAULT(e) default: sprintf(Str, "0x%x", e); type = Str;
-  char *type;
-  char *val = NULL;
+  const char *type;
+  const char *val = NULL;
   switch(Type)
   {
     ECASE (D3DSAMP_ADDRESSU);
@@ -1804,7 +1804,7 @@ HRESULT CMyDirect3DDevice9::CreateQuery(D3DQUERYTYPE Type,IDirect3DQuery9** ppQu
 //void glSetLogFuncs(bool bSet);
 #elif defined (DIRECT3D10)
 
-static char *sD3DFMT (DXGI_FORMAT Value)
+static const char *sD3DFMT (DXGI_FORMAT Value)
 {
   switch (Value)
   {
@@ -1900,7 +1900,7 @@ static char *sD3DFMT (DXGI_FORMAT Value)
   }
 }
 
-static char *sD3DPRIM_TOPLOGY(D3D10_PRIMITIVE_TOPOLOGY Topology)
+static const char *sD3DPRIM_TOPLOGY(D3D10_PRIMITIVE_TOPOLOGY Topology)
 {
   switch (Topology)
   {
@@ -1917,7 +1917,7 @@ static char *sD3DPRIM_TOPLOGY(D3D10_PRIMITIVE_TOPOLOGY Topology)
   }
 }
 
-static char *sD3DBLEND (DWORD Value)
+static const char *sD3DBLEND (DWORD Value)
 {
   switch (Value)
   {
@@ -1942,7 +1942,7 @@ static char *sD3DBLEND (DWORD Value)
   }
 }
 
-static char *sD3DCompareFunc (DWORD Value)
+static const char *sD3DCompareFunc (DWORD Value)
 {
   switch (Value)
   {
@@ -1958,7 +1958,7 @@ static char *sD3DCompareFunc (DWORD Value)
   }
 }
 
-static char *sD3DStencilOp (DWORD Value)
+static const char *sD3DStencilOp (DWORD Value)
 {
   switch (Value)
   {
@@ -1975,7 +1975,7 @@ static char *sD3DStencilOp (DWORD Value)
 }
 
 
-static char *sD3DCull (DWORD Value)
+static const char *sD3DCull (DWORD Value)
 {
   switch (Value)
   {
@@ -1986,7 +1986,7 @@ static char *sD3DCull (DWORD Value)
   }
 }
 
-static char *sD3DTAddress (D3D10_TEXTURE_ADDRESS_MODE Value)
+static const char *sD3DTAddress (D3D10_TEXTURE_ADDRESS_MODE Value)
 {
   switch (Value)
   {
@@ -1999,7 +1999,7 @@ static char *sD3DTAddress (D3D10_TEXTURE_ADDRESS_MODE Value)
   }
 }
 
-static char *sD3DTFilter (D3D10_FILTER Value)
+static const char *sD3DTFilter (D3D10_FILTER Value)
 {
   switch (Value)
   {

@@ -342,9 +342,9 @@ void AILogComment(const char *format, ...)
 #define HELPINTRO   "(Press Retry to debug the application - JIT must be enabled)\n" \
                     "AI asserts can be temporarily disabled using the ai_EnableAsserts console variable"
 
-static char * dotdotdot = "...";
-static char * newline = "\n";
-static char * dblnewline = "\n\n";
+static const char * dotdotdot = "...";
+static const char * newline = "\n";
+static const char * dblnewline = "\n\n";
 
 #define DOTDOTDOTSZ 3
 #define NEWLINESZ   1

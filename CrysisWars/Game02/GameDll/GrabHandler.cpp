@@ -1010,7 +1010,8 @@ void CMultipleGrabHandler::Update(float frameTime)
 
 void CMultipleGrabHandler::Reset()
 {
-	std::for_each (m_handlers.begin(), m_handlers.end(), std::mem_fun (&CBaseGrabHandler::Reset));
+	for (CAnimatedGrabHandler* handler : m_handlers)
+		handler->Reset();
 
 	std::vector <CAnimatedGrabHandler*>::iterator it = m_handlers.begin();
 	std::vector <CAnimatedGrabHandler*>::iterator end = m_handlers.end();

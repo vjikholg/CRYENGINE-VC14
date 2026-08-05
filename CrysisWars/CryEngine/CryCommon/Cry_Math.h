@@ -655,6 +655,16 @@ extern unsigned int cry_rand();
 extern unsigned int cry_rand32();
 // Generates random floating number in the closed interval [0,1].
 extern float cry_frand();
+
+// UniformRandomBitGenerator adapter for standard algorithms.
+struct CryRandomEngine
+{
+	using result_type = uint32;
+
+	static constexpr result_type min() { return 0; }
+	static constexpr result_type max() { return 0xFFFFFFFFu; }
+	result_type operator()() const { return cry_rand32(); }
+};
 //////////////////////////////////////////////////////////////////////////
 
 // Random float between 0 and 1 inclusive.

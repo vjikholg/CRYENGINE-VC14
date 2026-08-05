@@ -23,6 +23,8 @@ History:
 #include <IAgent.h>
 #include <IAIGroup.h>
 #include "IGame.h"
+
+#include <algorithm>
 #include "IGameFramework.h"
 #include "IActorSystem.h"
 #include "IVehicleSystem.h"
@@ -3769,7 +3771,7 @@ int CScriptBind_AI::FindObjectOfType(IFunctionHandler * pH)
 
 		if(chooseRandom && !randomObjs.empty())
 		{
-			std::random_shuffle(randomObjs.begin(), randomObjs.end());
+			std::shuffle(randomObjs.begin(), randomObjs.end(), CryRandomEngine{});
 			pFoundObject = randomObjs[0];
 		}
 

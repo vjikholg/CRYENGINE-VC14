@@ -14,7 +14,7 @@ static void utlMtx2Quat(float m[3][3], float quat[4]);
 //      Decompose a matrix to it's components, translate,
 //      rotate ( a quaternion) and scale.
 //
-static void utlDecompMatrix( const float *mat, DECOMP_MAT *dmat, char *rotOrder)
+static void utlDecompMatrix( const float *mat, DECOMP_MAT *dmat, const char *rotOrder)
 {
     int         i, j,
     order;

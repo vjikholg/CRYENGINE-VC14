@@ -5511,7 +5511,7 @@ void CD3D9Renderer::EF_FlushShadow()
       }
     }
 
-    char *str = "FlushHW";
+    const char *str = "FlushHW";
     if (pBaseTech)
       rd->Logv(SRendItem::m_RecurseLevel, "%s: '%s.%s', Id:%d, ResId:%d, Obj:%d, Cp: %d, VF:%d\n", str, pShader->GetName(), pBaseTech->m_Name.c_str(), pShader->GetID(), rd->m_RP.m_pShaderResources ? rd->m_RP.m_pShaderResources->m_Id : -1, rd->m_RP.m_pCurObject->m_VisId, rd->m_RP.m_ClipPlaneEnabled, pShader->m_VertexFormatId);
     else
@@ -5976,7 +5976,7 @@ void CD3D9Renderer::EF_Flush()
       }
     }
 
-    char *str;
+    const char *str;
     if (ef->m_HWTechniques.Num())
       str = "FlushHW";
     else

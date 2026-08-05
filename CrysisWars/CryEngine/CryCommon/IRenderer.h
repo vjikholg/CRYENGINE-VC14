@@ -1553,7 +1553,7 @@ struct IRenderer//: public IRendererCallbackServer
   virtual void SetMaterialColor(float r, float g, float b, float a)=0;
 
   virtual void DrawLine(const Vec3 & vPos1, const Vec3 & vPos2)=0;
-  virtual void Graph(byte *g, int x, int y, int wdt, int hgt, int nC, int type, char *text, ColorF& color, float fScale)=0;
+  virtual void Graph(byte *g, int x, int y, int wdt, int hgt, int nC, int type, const char *text, ColorF& color, float fScale)=0;
   virtual void FlushTextMessages()=0;
   virtual void DrawObjSprites(PodArray<struct SVegetationSpriteInfo> *pList, float fMaxViewDist, CObjManager *pObjMan, float fZoomFactor)=0;
   virtual void GenerateObjSprites(PodArray<struct SVegetationSpriteInfo> *pList, float fMaxViewDist, CObjManager *pObjMan, float fZoomFactor)=0;
@@ -1562,8 +1562,8 @@ struct IRenderer//: public IRendererCallbackServer
   virtual void ClearBuffer(uint nFlags, ColorF *vColor, float depth = 1.0f)=0;
   virtual void ReadFrameBuffer(unsigned char * pRGB, int nImageX, int nSizeX, int nSizeY, ERB_Type eRBType, bool bRGBA, int nScaledX=-1, int nScaledY=-1)=0;
 	virtual void ReadFrameBufferFast(unsigned int* pDstARGBA8, int dstWidth, int dstHeight)=0;
-  virtual char* GetVertexProfile(bool bSupportedProfile)=0;
-  virtual char* GetPixelProfile(bool bSupportedProfile)=0;
+  virtual const char* GetVertexProfile(bool bSupportedProfile)=0;
+  virtual const char* GetPixelProfile(bool bSupportedProfile)=0;
 	// Arguments:
 	//		fBrightnessMultiplier - >0, object is rendered with 1/fBrightnessMultiplier brightness so it can later be used with tex2d()*fBrightnessMultiplier (needed for HDR sprites in 8bit)
 	//		rParams used to pass SH data

@@ -110,7 +110,7 @@ protected:
 
   CImageFile ();
 
-  static void mfSet_error (EImFileError error, char* detail = NULL);
+  static void mfSet_error (EImFileError error, const char* detail = NULL);
 
   void mfSet_dimensions (int w, int h);
 
@@ -172,9 +172,9 @@ public:
   ///
   static EImFileError mfGet_error () { return m_eError; }
   ///
-  static char* mfGet_error_detail () { return m_Error_detail ? m_Error_detail : (char *)""; }
+  static const char* mfGet_error_detail () { return m_Error_detail; }
   /// Write a message describing the error on screen.
-  static void mfWrite_error (char* extra);
+  static void mfWrite_error (const char* extra);
 
   static CImageFile* mfLoad_file( const char* filename, const bool bReload, uint nFlags);
 

@@ -519,7 +519,7 @@ void CPlayerInput::OnAction( const ActionId& actionId, int activationMode, float
 
 			if (scriptOnAction)
 			{
-				char *activation = 0;
+				const char *activation = 0;
 
 				switch(activationMode)
 				{

@@ -178,7 +178,7 @@ bool CDXUTTimer::IsStopped()
 //--------------------------------------------------------------------------------------
 LPCWSTR WINAPI DXUTD3DFormatToString( D3DFORMAT format, bool bWithPrefix )
 {
-    WCHAR* pstr = NULL;
+    LPCWSTR pstr = NULL;
     switch( format )
     {
     case D3DFMT_UNKNOWN:         pstr = L"D3DFMT_UNKNOWN"; break;
@@ -256,7 +256,7 @@ LPCWSTR WINAPI DXUTD3DFormatToString( D3DFORMAT format, bool bWithPrefix )
 //--------------------------------------------------------------------------------------
 LPCWSTR WINAPI DXUTDXGIFormatToString( DXGI_FORMAT format, bool bWithPrefix )
 {
-    WCHAR* pstr = NULL;
+    LPCWSTR pstr = NULL;
     switch( format )
     {
         case DXGI_FORMAT_R32G32B32A32_TYPELESS: pstr = L"DXGI_FORMAT_R32G32B32A32_TYPELESS"; break;
@@ -733,7 +733,7 @@ void WINAPI DXUTTraceDecl( D3DVERTEXELEMENT9 decl[MAX_FVF_DECL_SIZE] )
 
 
 //--------------------------------------------------------------------------------------
-WCHAR* WINAPI DXUTTraceD3DDECLTYPEtoString( BYTE t )
+LPCWSTR WINAPI DXUTTraceD3DDECLTYPEtoString( BYTE t )
 {
     switch( t )
     {
@@ -761,7 +761,7 @@ WCHAR* WINAPI DXUTTraceD3DDECLTYPEtoString( BYTE t )
     }
 }
 
-WCHAR* WINAPI DXUTTraceD3DDECLMETHODtoString( BYTE m )
+LPCWSTR WINAPI DXUTTraceD3DDECLMETHODtoString( BYTE m )
 {
     switch( m )
     {
@@ -778,7 +778,7 @@ WCHAR* WINAPI DXUTTraceD3DDECLMETHODtoString( BYTE m )
     }
 }
 
-WCHAR* WINAPI DXUTTraceD3DDECLUSAGEtoString( BYTE u )
+LPCWSTR WINAPI DXUTTraceD3DDECLUSAGEtoString( BYTE u )
 {
     switch( u )
     {

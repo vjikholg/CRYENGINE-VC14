@@ -568,7 +568,7 @@ _inline void HeapCheck()
 
 const char* fpGetExtension (const char *in);
 void fpStripExtension (const char *in, char *out);
-void fpAddExtension (char *path, char *extension);
+void fpAddExtension (char *path, const char *extension);
 void fpConvertDOSToUnixName( char *dst, const char *src );
 void fpConvertUnixToDosName( char *dst, const char *src );
 void fpUsePath (char *name, char *path, char *dst);

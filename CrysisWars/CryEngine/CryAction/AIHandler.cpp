@@ -1316,7 +1316,7 @@ bool	CAIHandler::CallScript(IScriptTable* scriptTable, const char* funcName, flo
 				}
 				if (start.GetMilliSeconds() > CCryActionCVars::Get().aiMaxSignalDuration)
 				{
-					char* behaviour = "";
+					const char* behaviour = "";
 					scriptTable->GetValue( "Name", behaviour );
 					gEnv->pAISystem->Warning( "<CAIHandler::CallScript> ", "Handling AISIGNAL '%s' takes %g ms! (PipeUser: '%s'; Behaviour: '%s')",
 						funcName, start.GetMilliSeconds(), m_pEntity->GetName(), behaviour );
@@ -2297,7 +2297,7 @@ void CAIHandler::Serialize( TSerialize ser )
 	string prevBehaviorName;
 	if (!ser.IsReading() && m_pPreviousBehavior.GetPtr())
 	{
-		char* pBehaviorName = "";
+		const char* pBehaviorName = "";
 		m_pPreviousBehavior->GetValue("Name", pBehaviorName);
 		prevBehaviorName = pBehaviorName;
 	}

@@ -570,7 +570,7 @@ void CAnimatedCharacter::SetAnimGraphSpeedInputs(const QuatT& movement, const Qu
 		float localMoveAngleH = RAD2DEG(atan2f(-localMoveSpeed.x, localMoveSpeed.y));
 
 		const int moveDirCount = 5;
-		char* moveDirName[moveDirCount] = { "Idle", "Fwd", "Bwd", "Lft", "Rgt" };
+		const char* const moveDirName[moveDirCount] = { "Idle", "Fwd", "Bwd", "Lft", "Rgt" };
 		float moveDirAngle[moveDirCount] = { -1000, 0, 180, 90, -90 };
 		float moveDirWidth = 160.0f;
 

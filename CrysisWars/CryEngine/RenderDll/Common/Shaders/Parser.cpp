@@ -65,7 +65,7 @@ bool fxIsFirstPass(char *buf)
   return true;
 }
 
-static void fxAddMacro(char *Name, char *Macro, FXMacro& Macros)
+static void fxAddMacro(const char *Name, const char *Macro, FXMacro& Macros)
 {
   SMacroFX pr;
 
@@ -162,8 +162,8 @@ void fxParserInit(void)
     fxAddMacro("PS2X", NULL, sStaticMacros);
   if (gRenDev->GetFeatures() & RFT_HW_PS30)
     fxAddMacro("PS30", NULL, sStaticMacros);  
-  char *VPSup = gRenDev->GetVertexProfile(true);
-  char *PPSup = gRenDev->GetPixelProfile(true);
+  const char *VPSup = gRenDev->GetVertexProfile(true);
+  const char *PPSup = gRenDev->GetPixelProfile(true);
   fxAddMacro(VPSup, NULL, sStaticMacros);
   fxAddMacro(PPSup, NULL, sStaticMacros);
 
@@ -445,10 +445,10 @@ void shGetVector4(char *buf, Vec4& v)
 
 static struct SColAsc
 {
-  char *nam;
+  const char *nam;
   ColorF col;
 
-  SColAsc(char *name, const ColorF& c)
+  SColAsc(const char *name, const ColorF& c)
   {
     nam = name;
     col = c;

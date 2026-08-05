@@ -44,11 +44,11 @@ bool CVehicleSeatActionAnimation::Init(IVehicle* pVehicle, TVehicleSeatId seatId
 	if (!table->GetValue("Animation", animTable))
 		return false;
 
-	char* pAnimName = "";
+	const char* pAnimName = "";
 	if (animTable->GetValue("vehicleAnimation", pAnimName) && pAnimName[0])	
 		m_pVehicleAnim = m_pVehicle->GetAnimation(pAnimName); 
 
-  char* control = "";
+  const char* control = "";
   if (animTable->GetValue("control", control) && control[0])
   {
     if (0 == strcmp(control, "roll"))
@@ -65,7 +65,7 @@ bool CVehicleSeatActionAnimation::Init(IVehicle* pVehicle, TVehicleSeatId seatId
 
   if (m_pSoundProxy && gEnv->pSoundSystem)
   {
-    char* sound = "";
+    const char* sound = "";
     if (animTable->GetValue("sound", sound) && sound[0])
       m_pSound = gEnv->pSoundSystem->CreateSound(sound, FLAG_SOUND_DEFAULT_3D);
 
