@@ -98,6 +98,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="ComparisonCompatibilityTests.h" />
+    <ClInclude Include="MemoryAllocatorTests.h" />
     <ClInclude Include="StlHashMapAdapterTests.h" />
     <ClInclude Include="TestRunner.h" />
     <ClInclude Include="VectorMapTests.h" />
@@ -105,6 +106,7 @@
   <ItemGroup>
     <ClCompile Include="ComparisonCompatibilityTests.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="MemoryAllocatorTests.cpp" />
     <ClCompile Include="StlHashMapAdapterTests.cpp" />
     <ClCompile Include="TestRunner.cpp" />
     <ClCompile Include="VectorMapTests.cpp" />
