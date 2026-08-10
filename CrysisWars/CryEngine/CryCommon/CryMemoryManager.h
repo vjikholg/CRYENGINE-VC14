@@ -37,6 +37,7 @@
 #endif
 
 #include "platform.h"
+#include <cstddef>
 
 
 #ifndef STLALLOCATOR_CLEANUP
@@ -314,6 +315,10 @@ ILINE void* ModuleAlloc( void* ptr, size_t size )
 }
 
 // Cross-module safe allocation, stores pointer to allocating function in header.
-void* SafeAlloc( TPFAlloc allocator, void *ptr, size_t size );
+void* SafeAlloc(
+	TPFAlloc allocator,
+	void* ptr,
+	size_t size,
+	size_t alignment = alignof(std::max_align_t));
 
 #endif // __CryMemoryManager_h__

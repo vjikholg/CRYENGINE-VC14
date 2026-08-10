@@ -644,19 +644,7 @@ size_t CryCrtSize(void *p)
 
 //////////////////////////////////////////////////////////////////////////
 
-void* SafeAlloc( TPFAlloc allocator, void *ptr, size_t size )
-{
-	if (ptr)
-		// Use original allocator.
-		allocator = *--((TPFAlloc*&)ptr);
-	if (size)
-		size += sizeof(TPFAlloc);
-	ptr = (*allocator)(ptr, size);
-	if (ptr)
-		// Store allocator.
-	 	*((TPFAlloc*&)ptr)++ = allocator;
-	return ptr;
-}
+#include "CrySafeAlloc_impl.h"
 
 #endif // __CryMemoryManager_impl_h__
 

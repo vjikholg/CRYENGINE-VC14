@@ -26,6 +26,15 @@
     <ClInclude Include="VectorMapTests.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="MemoryManagerTests.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MM03BenchmarkEnvironment.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SafeAllocTests.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ComparisonCompatibilityTests.cpp">
@@ -44,6 +53,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="VectorMapTests.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MemoryManagerTests.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MM03BenchmarkEnvironment.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SafeAllocTests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

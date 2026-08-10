@@ -2,8 +2,10 @@
 
 #include "StdAfx.h"
 
+#include <new>
 #include <stdio.h>
 #include <ISystem.h>
+#include "CryAllocationHeader.h"
 #include "platform.h"
 
 #ifdef WIN32
@@ -329,6 +331,47 @@ node_alloc<eCryMallocCryFreeCRTCleanup, true, 524288> g_GlobPageBucketAllocator;
 
 #endif /*OLD_BUCKET_ALLOCATOR*/
 
+#ifdef NOT_STANDARD_CRT
+#if defined(_WIN64) && !defined(OLD_BUCKET_ALLOCATOR)
+static_assert(
+	_ALIGN % alignof(SCryAllocationHeader) == 0,
+	"The Win64 node allocator must satisfy the Cry allocation header alignment.");
+#endif
+
+static void* CryAllocateWithHeader(size_t requestedSize, size_t& allocated)
+{
+	size_t allocationSize = 0;
+	if (!CryTryCalculateAllocationSize(requestedSize, allocationSize))
+	{
+		allocated = 0;
+		return 0;
+	}
+
+	void* const rawMemory = g_GlobPageBucketAllocator.alloc(allocationSize);
+	if (!rawMemory)
+	{
+		allocated = 0;
+		g_lockMemMan = 0;
+		CryError("*** Memory allocation for %zu bytes failed ****", allocationSize);
+		return 0;
+	}
+
+	SCryAllocationHeader* const header =
+		::new (rawMemory) SCryAllocationHeader{ requestedSize, allocationSize };
+	void* const userMemory = CryGetAllocationUserMemory(header);
+
+	CryInterlockedExchangeAdd(&g_TotalAllocatedMemory, +allocationSize);
+	allocated = allocationSize;
+
+#ifdef MM_TRACE_ADDRS
+	for (int i = 0; i < CryMM_nCheckAddr; ++i)
+		if (userMemory == CryMM_CheckAddr[i]) CryMM_CheckAddrBreak(i, userMemory);
+#endif
+
+	return userMemory;
+}
+#endif
+
 static volatile bool bProcessed = false;
 
 #ifndef __MEMORY_VALIDATOR_HACK
@@ -347,13 +390,13 @@ CRYMEMORYMANAGER_API void *CryMalloc(size_t size)
 		sprintf( str,"[%6d]malloc: %d\n",(int)numAlloc,(int)size );
 		OutputDebugString( str );
 	}
-*/
+*/ 
 
 #ifdef WIN32
 	if (g_bTraceAllocations && !bProcessed) 
 	{
 		bProcessed = true;
-		CryLogAlways( "*** Memory allocation for %u bytes ****",size );
+		CryLogAlways( "*** Memory allocation for %zu bytes ****",size );
 		DebugCallStack::instance()->LogCallstack();
 		bProcessed = false;
 	}
@@ -365,72 +408,13 @@ CRYMEMORYMANAGER_API void *CryMalloc(size_t size)
 #endif
 
 #ifdef NOT_STANDARD_CRT
-	int *p;
 	if (g_bProfilerEnabled)
 	{
 		FUNCTION_PROFILER_FAST( GetISystem(),PROFILE_SYSTEM,g_bProfilerEnabled );
-
-
-		size_t sizePlus = size + sizeof(int);
-#ifdef WIN32
-		//if (sizePlus > VIRTUAL_ALLOC_SIZE)
-		//	p = (int*)VirtualAlloc(NULL,sizePlus,MEM_COMMIT,PAGE_READWRITE);
-		//else
-		p = (int *)g_GlobPageBucketAllocator.alloc(sizePlus);
-#else
-		p = (int *)g_GlobPageBucketAllocator.alloc(sizePlus);
-#endif
-
-		if(!p)
-		{
-			allocated = g_lockMemMan = 0;
-			CryError( "*** Memory allocation for %u bytes failed ****",sizePlus );
-			return 0;		// don't crash - allow caller to react
-		}
-
-		CryInterlockedExchangeAdd(&g_TotalAllocatedMemory, +sizePlus);
-		//	g_TotalAllocatedMemory += sizePlus;
-
-		*p++ = size;  // stores 2 sizes for big objects!
-
-		allocated = sizePlus;
-#ifdef MM_TRACE_ADDRS
-		for (int i = 0; i < CryMM_nCheckAddr; ++i)
-			if (p == CryMM_CheckAddr[i]) CryMM_CheckAddrBreak(i, p);
-#endif
-	}
-	else
-	{
-		size_t sizePlus = size + sizeof(int);
-#ifdef WIN32
-		//if (sizePlus > VIRTUAL_ALLOC_SIZE)
-		//	p = (int*)VirtualAlloc(NULL,sizePlus,MEM_COMMIT,PAGE_READWRITE);
-		//else
-		p = (int *)g_GlobPageBucketAllocator.alloc(sizePlus);
-#else
-		p = (int *)g_GlobPageBucketAllocator.alloc(sizePlus);
-#endif
-
-		if(!p)
-		{
-			allocated = g_lockMemMan = 0;
-			CryError( "*** Memory allocation for %u bytes failed ****",sizePlus );
-			return 0;		// don't crash - allow caller to react
-		}
-
-		CryInterlockedExchangeAdd(&g_TotalAllocatedMemory, +sizePlus);
-		//	g_TotalAllocatedMemory += sizePlus;
-
-		*p++ = size;  // stores 2 sizes for big objects!
-
-		allocated = sizePlus;
-#ifdef MM_TRACE_ADDRS
-		for (int i = 0; i < CryMM_nCheckAddr; ++i)
-			if (p == CryMM_CheckAddr[i]) CryMM_CheckAddrBreak(i, p);
-#endif
+		return CryAllocateWithHeader(size, allocated);
 	}
 
-	return p;
+	return CryAllocateWithHeader(size, allocated);
 #else /*NOT_STANDARD_CRT*/
 	void * p;
 
@@ -471,8 +455,10 @@ CRYMEMORYMANAGER_API size_t CryGetMemSize(void *memblock, size_t sourceSize)
 {
 	//	ReadLock lock(g_lockMemMan);
 #ifdef NOT_STANDARD_CRT
-	size_t oldsize = ((int *)memblock)[-1];
-	return oldsize +sizeof(int);;
+	if (!memblock)
+		return 0;
+
+	return CryGetAllocationHeader(memblock)->allocationSize;
 #else
 	//	if (sourceSize == 0)
 	return _msize(memblock);
@@ -480,6 +466,36 @@ CRYMEMORYMANAGER_API size_t CryGetMemSize(void *memblock, size_t sourceSize)
 	//		return (((sourceSize + 7) >> 3) << 3);
 #endif
 }
+
+#ifdef NOT_STANDARD_CRT
+static void* CryAllocateForReallocation(size_t requestedSize, size_t& allocated)
+{
+#ifndef __MEMORY_VALIDATOR_HACK
+	return CryMalloc(requestedSize, allocated);
+#else
+	void* const memory = CryMalloc(requestedSize);
+	allocated = memory ? CryGetMemSize(memory, requestedSize) : 0;
+	return memory;
+#endif
+}
+
+static void* CryReallocateWithHeader(void* memory, size_t requestedSize, size_t& allocated)
+{
+	if (!memory)
+		return CryAllocateForReallocation(requestedSize, allocated);
+
+	const size_t oldRequestedSize = CryGetAllocationHeader(memory)->requestedSize;
+	void* const replacement = CryAllocateForReallocation(requestedSize, allocated);
+	if (!replacement)
+		return 0;
+
+	const size_t copySize =
+		requestedSize < oldRequestedSize ? requestedSize : oldRequestedSize;
+	memcpy(replacement, memory, copySize);
+	CryFree(memory);
+	return replacement;
+}
+#endif
 
 #ifndef __MEMORY_VALIDATOR_HACK
 CRYMEMORYMANAGER_API void *CryRealloc(void *memblock, size_t size, size_t& allocated)
@@ -499,57 +515,13 @@ CRYMEMORYMANAGER_API void *CryRealloc(void *memblock, size_t size)
 		if (memblock == CryMM_CheckAddr[i]) CryMM_CheckAddrBreak(i, memblock);
 #endif
 
-	if (!g_bProfilerEnabled)
+	if (g_bProfilerEnabled)
 	{
-		// Without profiler.
-		if(memblock==NULL)
-			return CryMalloc(size, allocated);
-		else
-		{
-			void *np = CryMalloc(size, allocated);
-			size_t oldsize = ((int *)memblock)[-1];
-			memcpy(np, memblock, size>oldsize ? oldsize : size);
-			CryFree(memblock);
-			if (!np)
-			{
-				g_lockMemMan = 0;
-				CryError( "*** Memory allocation for %u bytes failed ****",size );
-				return 0;		// don't crash - allow caller to react
-			}
-
-#ifdef MM_TRACE_ADDRS
-			for (int i = 0; i < CryMM_nCheckAddr; ++i)
-				if (np == CryMM_CheckAddr[i]) CryMM_CheckAddrBreak(i, np);
-#endif
-			//CryInterlockedExchangeAdd(&g_TotalAllocatedMemory, size - oldsize);
-			//g_TotalAllocatedMemory = g_TotalAllocatedMemory + size - oldsize;
-			return np;
-		}
-	}
-	else
-	{
-		// With Profiler.
 		FUNCTION_PROFILER_FAST( GetISystem(),PROFILE_SYSTEM,g_bProfilerEnabled );
-		if(memblock==NULL)
-		{
-			return CryMalloc(size, allocated);
-			//CryInterlockedExchangeAdd(&g_TotalAllocatedMemory, g_TotalAllocatedMemory + size);
-			//g_TotalAllocatedMemory = g_TotalAllocatedMemory + size;
-		}
-		else
-		{
-			void *np = CryMalloc(size, allocated);
-			size_t oldsize = ((int *)memblock)[-1];
-			memcpy(np, memblock, size>oldsize ? oldsize : size);
-			CryFree(memblock);
-#ifdef MM_TRACE_ADDRS
-			for (int i = 0; i < CryMM_nCheckAddr; ++i)
-				if (np == CryMM_CheckAddr[i]) CryMM_CheckAddrBreak(i, np);
-#endif
-			//g_TotalAllocatedMemory = g_TotalAllocatedMemory + size - oldsize;
-			return np;
-		}
+		return CryReallocateWithHeader(memblock, size, allocated);
 	}
+
+	return CryReallocateWithHeader(memblock, size, allocated);
 #else /*NOT_STANDARD_CRT*/
 
 #ifdef MM_TRACE_ADDRS
@@ -631,20 +603,19 @@ CRYMEMORYMANAGER_API size_t CryFree(void *p)
 
 	if (p != NULL)
 	{
-		unsigned int *t = (unsigned int *)p;
-		size_t size = *--t;	
+		SCryAllocationHeader* const header = CryGetAllocationHeader(p);
+		const size_t size = header->allocationSize;
 
 #ifdef MINIMALDEBUG
 		if (size>=100000000)
 		{
 			g_lockMemMan = 0;
-			CryError("[CRYMANAGER ERROR](CryFree): illegal size 0x%X - block header was corrupted",size);
+			CryError("[CRYMANAGER ERROR](CryFree): illegal size %zu - block header was corrupted", size);
 		}
 #endif
 
-		size += sizeof(int);
 #ifdef GARBAGEMEMORY     //FIXME: *disabling* memset caused random crash???
-		memset(t, 0xBA, size); 
+		memset(header, 0xBA, size);
 #endif
 
 		long lsize = size;
@@ -655,9 +626,9 @@ CRYMEMORYMANAGER_API size_t CryFree(void *p)
 		//if (size > VIRTUAL_ALLOC_SIZE)
 		//	VirtualFree( t,0,MEM_RELEASE );
 		//else
-		g_GlobPageBucketAllocator.dealloc(t, size);
+		g_GlobPageBucketAllocator.dealloc(header, size);
 #else
-		g_GlobPageBucketAllocator.dealloc(t, size);
+		g_GlobPageBucketAllocator.dealloc(header, size);
 #endif
 
 		return size;

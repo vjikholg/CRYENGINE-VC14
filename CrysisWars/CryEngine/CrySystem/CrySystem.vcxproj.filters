@@ -362,6 +362,9 @@
     <ClInclude Include="UnixConsole.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="CryAllocationHeader.h">
+      <Filter>MemoryManager</Filter>
+    </ClInclude>
     <ClInclude Include="MemoryManager.h">
       <Filter>MemoryManager</Filter>
     </ClInclude>

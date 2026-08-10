@@ -3,6 +3,6 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">
     <LocalDebuggerCommand>$(TargetPath)</LocalDebuggerCommand>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerCommandArguments>--mm01-trace</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>--mm01-trace -mm02-trace -mm03-trace</LocalDebuggerCommandArguments>
   </PropertyGroup>
 </Project>

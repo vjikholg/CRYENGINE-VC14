@@ -1210,6 +1210,7 @@
     <ClInclude Include="ConsoleBatchFile.h" />
     <ClInclude Include="CPUDetect.h" />
     <ClInclude Include="CritSection.h" />
+    <ClInclude Include="CryAllocationHeader.h" />
     <ClInclude Include="CryPak.h" />
     <ClInclude Include="CrySizerImpl.h" />
     <ClInclude Include="CrySizerStats.h" />
