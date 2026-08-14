@@ -366,7 +366,7 @@ CSymbolDatabase::~CSymbolDatabase()
 {
 }
 
-BOOL WINAPI EnumCallcbackM( PSTR ModuleName,DWORD64 BaseOfDll,PVOID UserContext )
+BOOL WINAPI EnumCallbackM( PCSTR ModuleName,DWORD64 BaseOfDll,PVOID UserContext )
 {
 	return TRUE;
 }
@@ -421,7 +421,7 @@ bool CSymbolDatabase::Init()
 	}
 
 
-	SymEnumerateModules64( GetCurrentProcess(),EnumCallcbackM,0 );
+	SymEnumerateModules64( GetCurrentProcess(),EnumCallbackM,0 );
 	return m_bInitialized;
 }
 

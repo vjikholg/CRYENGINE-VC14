@@ -14,7 +14,13 @@
     <ClInclude Include="ComparisonCompatibilityTests.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="LegacyStdioCompatibilityTests.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="MemoryAllocatorTests.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MemoryAccountingTests.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="StlHashMapAdapterTests.h">
@@ -35,15 +41,24 @@
     <ClInclude Include="SafeAllocTests.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="MM06Tests.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ComparisonCompatibilityTests.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LegacyStdioCompatibilityTests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="MemoryAllocatorTests.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MemoryAccountingTests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="StlHashMapAdapterTests.cpp">
@@ -62,6 +77,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="SafeAllocTests.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CryCommonTestSupport.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MM06Tests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

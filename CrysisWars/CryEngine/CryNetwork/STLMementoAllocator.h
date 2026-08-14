@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include <CryAllocatorFailure.h>
+
 #include "MementoMemoryManager.h"
 
 #include <type_traits>
@@ -19,6 +21,8 @@ public:
 	typedef T&        reference;
 	typedef const T&  const_reference;
 	typedef T         value_type;
+	inline static constexpr size_type MaxElementCount =
+		CryAllocatorMaxElementCount<T>;
 	typedef std::false_type propagate_on_container_copy_assignment;
 	typedef std::false_type propagate_on_container_move_assignment;
 	typedef std::false_type propagate_on_container_swap;
@@ -60,17 +64,43 @@ public:
 
 	pointer allocate(size_type n, const void* = 0)
 	{
-		return static_cast<T*>(m_pMMM->AllocPtr(n*sizeof(T)));
+		if (n > MaxElementCount)
+		{
+			CRY_ALLOCATOR_SIZE_FAILURE(
+				"STLMementoAllocator::allocate",
+				n,
+				sizeof(T),
+				MaxElementCount,
+				alignof(T),
+				0,
+				ECryAllocatorFailureAction::WriteDumpAndTerminate);
+			return nullptr;
+		}
+
+		return static_cast<T*>(m_pMMM->AllocPtr(n * sizeof(T)));
 	}
 
 	void deallocate(pointer p, size_type n)
 	{
-		m_pMMM->FreePtr(p, n*sizeof(T));
+		if (n > MaxElementCount)
+		{
+			CRY_ALLOCATOR_SIZE_FAILURE(
+				"STLMementoAllocator::deallocate",
+				n,
+				sizeof(T),
+				MaxElementCount,
+				alignof(T),
+				0,
+				ECryAllocatorFailureAction::WriteDumpAndTerminate);
+			return;
+		}
+
+		m_pMMM->FreePtr(p, n * sizeof(T));
 	}
 
-	size_type max_size() const noexcept
+	constexpr size_type max_size() const noexcept
 	{
-		return INT_MAX;
+		return MaxElementCount;
 	}
 
 	void construct(pointer p, const T& val)

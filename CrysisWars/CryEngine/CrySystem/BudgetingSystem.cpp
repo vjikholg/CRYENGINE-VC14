@@ -6,11 +6,6 @@
 #include <IRenderAuxGeom.h>
 #include <ITimer.h>
 #include <IConsole.h>
-
-
-extern int CryMemoryGetAllocatedSize();
-
-
 const int c_yStepSizeText( 18 );
 const int c_yStepSizeTextMeter( 8 );
 const float c_fontScale( 1.3f );
@@ -414,16 +409,17 @@ CBudgetingSystem::GetColor( float scale, float* pColor )
 void 
 CBudgetingSystem::MonitorSystemMemory( float& x, float& y )
 {
-	int memUsageInMB_Engine( CryMemoryGetAllocatedSize() );
-	int memUsageInMB_SysCopyMeshes( *( (int*) m_pRenderer->EF_Query( EFQ_Alloc_APIMesh ) ) );
-	int memUsageInMB_SysCopyTextures( *( (int*) m_pRenderer->EF_Query( EFQ_Alloc_APITextures ) ) );
+	const size_t engineMemory = static_cast<size_t>(CryMemoryGetAllocatedSize64());
+	const size_t systemMeshMemory = static_cast<size_t>(
+		*static_cast<int*>(m_pRenderer->EF_Query(EFQ_Alloc_APIMesh)));
+	const size_t systemTextureMemory = static_cast<size_t>(
+		*static_cast<int*>(m_pRenderer->EF_Query(EFQ_Alloc_APITextures)));
 
-	int memUsageInMB( RoundToClosestMB( (size_t) memUsageInMB_Engine + 
-		(size_t) memUsageInMB_SysCopyMeshes + (size_t) memUsageInMB_SysCopyTextures ) );
-
-	memUsageInMB_Engine = RoundToClosestMB( memUsageInMB_Engine );
-	memUsageInMB_SysCopyMeshes = RoundToClosestMB( memUsageInMB_SysCopyMeshes );
-	memUsageInMB_SysCopyTextures = RoundToClosestMB( memUsageInMB_SysCopyTextures );
+	const int memUsageInMB = RoundToClosestMB(
+		engineMemory + systemMeshMemory + systemTextureMemory);
+	const int memUsageInMB_Engine = RoundToClosestMB(engineMemory);
+	const int memUsageInMB_SysCopyMeshes = RoundToClosestMB(systemMeshMemory);
+	const int memUsageInMB_SysCopyTextures = RoundToClosestMB(systemTextureMemory);
 
 	float scale( (float) memUsageInMB / (float) m_sysMemLimitInMB );
 

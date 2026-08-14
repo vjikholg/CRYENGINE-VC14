@@ -31,6 +31,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CrySoundSystem", "CrysisWar
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CrySystem", "CrysisWars\CryEngine\CrySystem\CrySystem.vcxproj", "{9F9FB6F5-D971-4887-B0AD-5C368DDAD90B}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pdcurses", "CrysisWars\SDKs\pdcurses\pdcurses.vcxproj", "{075A575F-1F99-4702-AE21-BF86531BC966}"
+EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Launcher", "CrysisWars\Game02\Launcher\launcher.vcxproj", "{FAC4A057-7584-48B5-8421-E1FFA3DE6ECB}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GameDll", "CrysisWars\Game02\GameDll\GameDll.vcxproj", "{2EB52047-0A81-4343-B703-DF221CA5CC2A}"
@@ -287,6 +289,18 @@ Global
 		{31B28979-E7A0-4B41-A00C-73CE39D148C4}.Release|x64.ActiveCfg = Release|x64
 		{31B28979-E7A0-4B41-A00C-73CE39D148C4}.Release|x64.Build.0 = Release|x64
 		{31B28979-E7A0-4B41-A00C-73CE39D148C4}.Release|x86.ActiveCfg = Release|x64
+		{075A575F-1F99-4702-AE21-BF86531BC966}.Debug|x64.ActiveCfg = Debug|x64
+		{075A575F-1F99-4702-AE21-BF86531BC966}.Debug|x64.Build.0 = Debug|x64
+		{075A575F-1F99-4702-AE21-BF86531BC966}.Debug|x86.ActiveCfg = Debug|Win32
+		{075A575F-1F99-4702-AE21-BF86531BC966}.Debug|x86.Build.0 = Debug|Win32
+		{075A575F-1F99-4702-AE21-BF86531BC966}.Profile|x64.ActiveCfg = Profile|x64
+		{075A575F-1F99-4702-AE21-BF86531BC966}.Profile|x64.Build.0 = Profile|x64
+		{075A575F-1F99-4702-AE21-BF86531BC966}.Profile|x86.ActiveCfg = Profile|Win32
+		{075A575F-1F99-4702-AE21-BF86531BC966}.Profile|x86.Build.0 = Profile|Win32
+		{075A575F-1F99-4702-AE21-BF86531BC966}.Release|x64.ActiveCfg = Release|x64
+		{075A575F-1F99-4702-AE21-BF86531BC966}.Release|x64.Build.0 = Release|x64
+		{075A575F-1F99-4702-AE21-BF86531BC966}.Release|x86.ActiveCfg = Release|Win32
+		{075A575F-1F99-4702-AE21-BF86531BC966}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,6 +1,9 @@
 #include "ComparisonCompatibilityTests.h"
+#include "LegacyStdioCompatibilityTests.h"
 #include "MemoryAllocatorTests.h"
+#include "MemoryAccountingTests.h"
 #include "MemoryManagerTests.h"
+#include "MM06Tests.h"
 #include "SafeAllocTests.h"
 #include "StlHashMapAdapterTests.h"
 #include "TestRunner.h"
@@ -29,6 +32,13 @@ int main(int argc, char* argv[])
 		return RunMM03Trace();
 	}
 
+	if (argc == 2 &&
+		(std::strcmp(argv[1], "-mm04-trace") == 0 ||
+		 std::strcmp(argv[1], "--mm04-trace") == 0))
+	{
+		return RunMM04DataModelTrace();
+	}
+
 	if (argc == 3 && std::strcmp(argv[1], "--mm02-trace") == 0)
 	{
 		const std::filesystem::path crySystemPath(argv[2]);
@@ -47,18 +57,43 @@ int main(int argc, char* argv[])
 		return RunMM02ReallocFailureProbe(crySystemPath.c_str());
 	}
 
+	if (argc == 3 && std::strcmp(argv[1], "--mm06-trace") == 0)
+	{
+		const std::filesystem::path crySystemPath(argv[2]);
+		return RunMM06RuntimeTrace(crySystemPath.c_str());
+	}
+
+	if (argc == 4 && std::strcmp(argv[1], "--mm06-crash-probe") == 0)
+	{
+		const std::filesystem::path crySystemPath(argv[2]);
+		const std::filesystem::path dumpDirectory(argv[3]);
+		return RunMM06CrashProbe(crySystemPath.c_str(), dumpDirectory.c_str());
+	}
+
+	if (argc == 3 &&
+		(std::strcmp(argv[1], "-mm04-trace") == 0 ||
+		 std::strcmp(argv[1], "--mm04-trace") == 0))
+	{
+		const std::filesystem::path crySystemPath(argv[2]);
+		return RunMM04AccountingTrace(crySystemPath.c_str());
+	}
+
 	if (argc != 1)
 	{
 		std::printf(
 			"Usage: CryCommonTests.exe [--mm01-trace | --mm02-layout | -mm03-trace | "
-			"--mm02-trace <CrySystem.dll>]\n");
+			"--mm02-trace <CrySystem.dll> | --mm04-trace [CrySystem.dll] | "
+			"--mm06-trace <CrySystem.dll>]\n");
 		return 2;
 	}
 
 	CryTestRunner runner;
 	RunComparisonCompatibilityTests(runner);
+	RunLegacyStdioCompatibilityTests(runner);
 	RunMemoryAllocatorDataModelTests(runner);
 	RunMemoryManagerLayoutTests(runner);
+	RunMM06SizeArithmeticTests(runner);
+	RunMM04DataModelTests(runner);
 	RunStlHashMapAdapterTests(runner);
 	RunVectorMapTests(runner);
 	return runner.ExitCode();

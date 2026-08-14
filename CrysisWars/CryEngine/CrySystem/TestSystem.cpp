@@ -11,9 +11,6 @@
 #include "../CryAction/IGameRulesSystem.h"	// IGameRulesSystem
 #include "DebugCallStack.h"									// DebugCallStack
 #include "../CryAction/ILevelSystem.h"			// ILevelSystemListener
-
-extern int CryMemoryGetAllocatedSize();
-
 CTestSystem::CTestSystem() : m_iRenderPause(0), m_fQuitInNSeconds(0.0f)
 {
 	m_bFirstUpdate = true;
@@ -134,16 +131,17 @@ void CTestSystem::LogLevelStats()
 
 	{
 		// copied from CBudgetingSystem::MonitorSystemMemory
-		int memUsageInMB_Engine( CryMemoryGetAllocatedSize() );
-		int memUsageInMB_SysCopyMeshes( *( (int*) gEnv->pRenderer->EF_Query( EFQ_Alloc_APIMesh ) ) );
-		int memUsageInMB_SysCopyTextures( *( (int*) gEnv->pRenderer->EF_Query( EFQ_Alloc_APITextures ) ) );
+		const size_t engineMemory = static_cast<size_t>(CryMemoryGetAllocatedSize64());
+		const size_t systemMeshMemory = static_cast<size_t>(
+			*static_cast<int*>(gEnv->pRenderer->EF_Query(EFQ_Alloc_APIMesh)));
+		const size_t systemTextureMemory = static_cast<size_t>(
+			*static_cast<int*>(gEnv->pRenderer->EF_Query(EFQ_Alloc_APITextures)));
 
-		int memUsageInMB( RoundToClosestMB( (size_t) memUsageInMB_Engine + 
-			(size_t) memUsageInMB_SysCopyMeshes + (size_t) memUsageInMB_SysCopyTextures ) );
-
-		memUsageInMB_Engine = RoundToClosestMB( memUsageInMB_Engine );
-		memUsageInMB_SysCopyMeshes = RoundToClosestMB( memUsageInMB_SysCopyMeshes );
-		memUsageInMB_SysCopyTextures = RoundToClosestMB( memUsageInMB_SysCopyTextures );
+		const int memUsageInMB = RoundToClosestMB(
+			engineMemory + systemMeshMemory + systemTextureMemory);
+		const int memUsageInMB_Engine = RoundToClosestMB(engineMemory);
+		const int memUsageInMB_SysCopyMeshes = RoundToClosestMB(systemMeshMemory);
+		const int memUsageInMB_SysCopyTextures = RoundToClosestMB(systemTextureMemory);
 
 		GetILog()->Log( "   System memory: %d MB [%d MB (engine), %d MB (managed textures), %d MB (managed meshes)]",
 			memUsageInMB,memUsageInMB_Engine,memUsageInMB_SysCopyTextures,memUsageInMB_SysCopyMeshes);

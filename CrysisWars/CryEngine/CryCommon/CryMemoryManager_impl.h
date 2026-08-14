@@ -18,6 +18,12 @@
 #define __CryMemoryManager_impl_h__
 #pragma once
 
+#include "CryAllocatorFailure.h"
+#include "CryMemoryByteCounter.h"
+
+#include <atomic>
+#include <limits>
+
 #ifdef _LIB
 	#include "ISystem.h"
 #endif
@@ -88,6 +94,7 @@ const int CM_MaxMemSize[eCryM_Num] =
 #define DLL_ENTRY_CRYCRTMALLOC "CrySystemCrtMalloc"
 #define DLL_ENTRY_CRYCRTFREE "CrySystemCrtFree"
 #define DLL_ENTRY_CRYCRTSIZE "CrySystemCrtSize"
+#define DLL_ENTRY_CRYALLOCATORFAILURE CryAllocatorFailureHandlerExportName
 #else
 #define DLL_ENTRY_CRYMALLOC      (LPCSTR)2
 #define DLL_ENTRY_CRYFREE        (LPCSTR)3
@@ -177,15 +184,15 @@ struct _CryMemoryManagerPoolHelper
   typedef size_t (*FNC_CryFree)(void *p);
 
 #ifndef _LIB
-  static uint64 allocatedMemory;
-  static uint64 freedMemory;
-  static uint64 requestedMemory;
-  static int numAllocations;
+	static CryMemoryByteCounter allocatedMemory;
+	static CryMemoryByteCounter freedMemory;
+	static CryMemoryByteCounter requestedMemory;
+	static std::atomic<uint64> numAllocations;
 #else
-  static uint64 allocatedMemory[eCryM_Num];
-  static uint64 freedMemory[eCryM_Num];
-  static uint64 requestedMemory[eCryM_Num];
-  static int numAllocations[eCryM_Num];
+	static CryMemoryByteCounter allocatedMemory[eCryM_Num];
+	static CryMemoryByteCounter freedMemory[eCryM_Num];
+	static CryMemoryByteCounter requestedMemory[eCryM_Num];
+	static std::atomic<uint64> numAllocations[eCryM_Num];
 #endif
 
 //	typedef size_t (*FNC_CryFree)(void);
@@ -199,6 +206,7 @@ struct _CryMemoryManagerPoolHelper
 	static FNC_CryCrtMalloc _CryCrtMalloc;
 	static FNC_CryFree _CryCrtFree;
 	static FNC_CryFree _CryCrtSize;
+	static CryAllocatorFailureHandler _CryAllocatorFailure;
 
 	static int m_bInitialized;
 
@@ -216,10 +224,10 @@ struct _CryMemoryManagerPoolHelper
 		m_bInitialized = 1;
 		
 #ifndef _LIB
-    allocatedMemory = 0;
-    freedMemory = 0;
-    requestedMemory = 0;
-    numAllocations = 0;
+		allocatedMemory.Reset();
+		freedMemory.Reset();
+		requestedMemory.Reset();
+		numAllocations.store(0, std::memory_order_relaxed);
 
 #if defined(LINUX)
 		_CryMalloc=CryMalloc;
@@ -249,6 +257,8 @@ struct _CryMemoryManagerPoolHelper
 			_CryCrtMalloc=(FNC_CryCrtMalloc)GetProcAddress((HINSTANCE)hMod,DLL_ENTRY_CRYCRTMALLOC);
 			_CryCrtFree=(FNC_CryFree)GetProcAddress((HINSTANCE)hMod,DLL_ENTRY_CRYCRTFREE);
 			_CryCrtSize=(FNC_CryFree)GetProcAddress((HINSTANCE)hMod,DLL_ENTRY_CRYCRTSIZE);
+			_CryAllocatorFailure=reinterpret_cast<CryAllocatorFailureHandler>(
+				GetProcAddress((HINSTANCE)hMod,DLL_ENTRY_CRYALLOCATORFAILURE));
 			if ((_CryMalloc && _CryRealloc && _CryFree && _CryGetMemSize && _CryCrtMalloc && _CryCrtFree && _CryCrtSize) || iter==1)
 				break;
       hMod = ::LoadLibrary("CrySystem.dll"); 
@@ -271,10 +281,10 @@ struct _CryMemoryManagerPoolHelper
 #else
     for (int i=0; i<eCryM_Num; i++)
     {
-      allocatedMemory[i] = 0;
-      freedMemory[i] = 0;
-      requestedMemory[i] = 0;
-      numAllocations[i] = 0;
+		allocatedMemory[i].Reset();
+		freedMemory[i].Reset();
+		requestedMemory[i].Reset();
+		numAllocations[i].store(0, std::memory_order_relaxed);
     }
 #if defined(PS3)
 		_CryMalloc=WrappedCryMalloc;
@@ -299,10 +309,13 @@ struct _CryMemoryManagerPoolHelper
 #ifndef _LIB
 	static void GetMemoryInfo( CryModuleMemoryInfo *pMmemInfo )
 	{
-		pMmemInfo->allocated = allocatedMemory;
-		pMmemInfo->freed = freedMemory;
-		pMmemInfo->requested = requestedMemory;
-		pMmemInfo->num_allocations = numAllocations;
+		pMmemInfo->allocated = allocatedMemory.Load();
+		pMmemInfo->freed = freedMemory.Load();
+		pMmemInfo->requested = requestedMemory.Load();
+		const uint64 allocationCount = numAllocations.load(std::memory_order_relaxed);
+		pMmemInfo->num_allocations = allocationCount > static_cast<uint64>(std::numeric_limits<int>::max())
+			? std::numeric_limits<int>::max()
+			: static_cast<int>(allocationCount);
 #ifdef CRY_STRING
 		pMmemInfo->CryString_allocated = string::_usedMemory(0) + wstring::_usedMemory(0);
 #endif
@@ -317,10 +330,13 @@ struct _CryMemoryManagerPoolHelper
 #else
   static void GetMemoryInfo( CryModuleMemoryInfo *pMmemInfo, ECryModule eCM )
   {
-    pMmemInfo->allocated = allocatedMemory[eCM];
-    pMmemInfo->freed = freedMemory[eCM];
-    pMmemInfo->requested = requestedMemory[eCM];
-    pMmemInfo->num_allocations = numAllocations[eCM];
+		pMmemInfo->allocated = allocatedMemory[eCM].Load();
+		pMmemInfo->freed = freedMemory[eCM].Load();
+		pMmemInfo->requested = requestedMemory[eCM].Load();
+		const uint64 allocationCount = numAllocations[eCM].load(std::memory_order_relaxed);
+		pMmemInfo->num_allocations = allocationCount > static_cast<uint64>(std::numeric_limits<int>::max())
+			? std::numeric_limits<int>::max()
+			: static_cast<int>(allocationCount);
   }
 #endif
 
@@ -339,22 +355,22 @@ struct _CryMemoryManagerPoolHelper
 #ifndef __MEMORY_VALIDATOR_HACK
 		void * p = _CryMalloc( size, allocated );
 # ifndef _LIB
-		allocatedMemory += allocated;
+		allocatedMemory.Add(allocated);
 # else
-    allocatedMemory[eCM] += allocated;
+		allocatedMemory[eCM].Add(allocated);
 # endif
 #else
 		void * p = _CryMalloc( size);
-		allocatedMemory += _CryGetMemSize(p);
+		allocatedMemory.Add(_CryGetMemSize(p));
 #endif
 
 #ifndef _LIB
-    requestedMemory += size;
-		numAllocations++;
+		requestedMemory.Add(size);
+		numAllocations.fetch_add(1, std::memory_order_relaxed);
 #else
-    requestedMemory[eCM] += size;
-    numAllocations[eCM]++;
-    if (CM_MaxMemSize[eCM]>0 && requestedMemory[eCM]/(1024*1024) > CM_MaxMemSize[eCM])
+		requestedMemory[eCM].Add(size);
+		numAllocations[eCM].fetch_add(1, std::memory_order_relaxed);
+		if (CM_MaxMemSize[eCM]>0 && requestedMemory[eCM].Load()/(1024*1024) > CM_MaxMemSize[eCM])
     {
       CryError("Memory usage for module '%s' exceed limit (%d Mb)", CM_Name[eCM], CM_MaxMemSize[eCM]);
     }
@@ -379,16 +395,48 @@ struct _CryMemoryManagerPoolHelper
 #ifndef _LIB
 	static __forceinline void*	Calloc(size_t num,size_t size)
 	{
-		void *p = (char*)Malloc(num*size);
-		memset(p, 0, num*size );
+		size_t allocationSize = 0;
+		if (!CryTryMultiplySize(num, size, allocationSize))
+		{
+			CRY_ALLOCATOR_SIZE_FAILURE(
+				"CryModuleCalloc",
+				num,
+				size,
+				size == 0 ? (std::numeric_limits<size_t>::max)() :
+					(std::numeric_limits<size_t>::max)() / size,
+				alignof(std::max_align_t),
+				0,
+				ECryAllocatorFailureAction::ReturnNull);
+			return nullptr;
+		}
+
+		void* const p = Malloc(allocationSize);
+		if (p != nullptr)
+			memset(p, 0, allocationSize);
 		return p;
 	}
 #else
   static __forceinline void*	Calloc(size_t num,size_t size, ECryModule eCM)
   {
-    void *p = (char*)Malloc(num*size, eCM);
-    memset(p, 0, num*size );
-    return p;
+		size_t allocationSize = 0;
+		if (!CryTryMultiplySize(num, size, allocationSize))
+		{
+			CRY_ALLOCATOR_SIZE_FAILURE(
+				"CryModuleCalloc",
+				num,
+				size,
+				size == 0 ? (std::numeric_limits<size_t>::max)() :
+					(std::numeric_limits<size_t>::max)() / size,
+				alignof(std::max_align_t),
+				0,
+				ECryAllocatorFailureAction::ReturnNull);
+			return nullptr;
+		}
+
+		void* const p = Malloc(allocationSize, eCM);
+		if (p != nullptr)
+			memset(p, 0, allocationSize);
+		return p;
   }
 #endif
 
@@ -442,24 +490,26 @@ struct _CryMemoryManagerPoolHelper
 #ifndef ___MEMORY_VALIDATOR_HACK
 		void * p=  _CryRealloc( memblock, size, allocated );
 # ifndef _LIB
-		allocatedMemory += allocated;
+		allocatedMemory.Add(allocated);
 # else
-    allocatedMemory[eCM] += allocated;
+		allocatedMemory[eCM].Add(allocated);
 # endif
 #else
 		void * p=  _CryRealloc( memblock, size);
-		allocatedMemory += _CryGetMemSize(p);
+		allocatedMemory.Add(_CryGetMemSize(p));
 #endif
 
 #ifndef _LIB
-    numAllocations++;
-    requestedMemory += size;
-    freedMemory += oldsize &= ~DEBUG_ALLOC_FLAG;
+		numAllocations.fetch_add(1, std::memory_order_relaxed);
+		requestedMemory.Add(size);
+		oldsize &= ~DEBUG_ALLOC_FLAG;
+		freedMemory.Add(oldsize);
 #else
-    numAllocations[eCM]++;
-    requestedMemory[eCM] += size;
-    freedMemory[eCM] += oldsize &= ~DEBUG_ALLOC_FLAG;
-    if (CM_MaxMemSize[eCM]>0 && requestedMemory[eCM]/(1024*1024) > CM_MaxMemSize[eCM])
+		numAllocations[eCM].fetch_add(1, std::memory_order_relaxed);
+		requestedMemory[eCM].Add(size);
+		oldsize &= ~DEBUG_ALLOC_FLAG;
+		freedMemory[eCM].Add(oldsize);
+		if (CM_MaxMemSize[eCM]>0 && requestedMemory[eCM].Load()/(1024*1024) > CM_MaxMemSize[eCM])
     {
       CryError("Memory usage for module '%s' exceed limit (%d Mb)", CM_Name[eCM], CM_MaxMemSize[eCM]);
     }
@@ -494,9 +544,9 @@ struct _CryMemoryManagerPoolHelper
 			else
 			*/
 #ifndef _LIB				
-			freedMemory += _CryFree( memblock );
+			freedMemory.Add(_CryFree(memblock));
 #else
-      freedMemory[eCM] += _CryFree( memblock );
+			freedMemory[eCM].Add(_CryFree(memblock));
 #endif
 		}
 	}
@@ -506,15 +556,15 @@ struct _CryMemoryManagerPoolHelper
 // Static variables.
 //////////////////////////////////////////////////////////////////////////
 #ifndef _LIB
-uint64 _CryMemoryManagerPoolHelper::allocatedMemory = 0;
-uint64 _CryMemoryManagerPoolHelper::freedMemory = 0;
-uint64 _CryMemoryManagerPoolHelper::requestedMemory = 0;
-int _CryMemoryManagerPoolHelper::numAllocations = 0;
+CryMemoryByteCounter _CryMemoryManagerPoolHelper::allocatedMemory;
+CryMemoryByteCounter _CryMemoryManagerPoolHelper::freedMemory;
+CryMemoryByteCounter _CryMemoryManagerPoolHelper::requestedMemory;
+std::atomic<uint64> _CryMemoryManagerPoolHelper::numAllocations{0};
 #else
-uint64 _CryMemoryManagerPoolHelper::allocatedMemory[eCryM_Num];
-uint64 _CryMemoryManagerPoolHelper::freedMemory[eCryM_Num];
-uint64 _CryMemoryManagerPoolHelper::requestedMemory[eCryM_Num];
-int _CryMemoryManagerPoolHelper::numAllocations[eCryM_Num];
+CryMemoryByteCounter _CryMemoryManagerPoolHelper::allocatedMemory[eCryM_Num];
+CryMemoryByteCounter _CryMemoryManagerPoolHelper::freedMemory[eCryM_Num];
+CryMemoryByteCounter _CryMemoryManagerPoolHelper::requestedMemory[eCryM_Num];
+std::atomic<uint64> _CryMemoryManagerPoolHelper::numAllocations[eCryM_Num] = {};
 #endif
 _CryMemoryManagerPoolHelper::FNC_CryMalloc _CryMemoryManagerPoolHelper::_CryMalloc = NULL;
 _CryMemoryManagerPoolHelper::FNC_CryGetMemSize _CryMemoryManagerPoolHelper::_CryGetMemSize = NULL;
@@ -523,8 +573,41 @@ _CryMemoryManagerPoolHelper::FNC_CryFree _CryMemoryManagerPoolHelper::_CryFree =
 _CryMemoryManagerPoolHelper::FNC_CryCrtMalloc _CryMemoryManagerPoolHelper::_CryCrtMalloc = NULL;
 _CryMemoryManagerPoolHelper::FNC_CryFree _CryMemoryManagerPoolHelper::_CryCrtFree = NULL;
 _CryMemoryManagerPoolHelper::FNC_CryFree _CryMemoryManagerPoolHelper::_CryCrtSize = NULL;
+CryAllocatorFailureHandler _CryMemoryManagerPoolHelper::_CryAllocatorFailure = nullptr;
 int _CryMemoryManagerPoolHelper::m_bInitialized = 0;
 //////////////////////////////////////////////////////////////////////////
+
+void CryAllocatorSizeFailure(const SCryAllocatorFailureContext& context) noexcept
+{
+	if (!_CryMemoryManagerPoolHelper::m_bInitialized)
+		_CryMemoryManagerPoolHelper::Init();
+
+	if (_CryMemoryManagerPoolHelper::_CryAllocatorFailure != nullptr)
+	{
+		_CryMemoryManagerPoolHelper::_CryAllocatorFailure(&context);
+		if (context.action == ECryAllocatorFailureAction::ReturnNull)
+			return;
+	}
+
+	char message[1024] = {};
+	_snprintf_s(
+		message,
+		sizeof(message),
+		_TRUNCATE,
+		"Allocator size failure: operation=%s count=%llu elementSize=%llu maxCount=%llu function=%s\n",
+		context.operation,
+		static_cast<unsigned long long>(context.count),
+		static_cast<unsigned long long>(context.elementSize),
+		static_cast<unsigned long long>(context.maximumElementCount),
+		context.function);
+	OutputDebugStringA(message);
+
+	if (context.action == ECryAllocatorFailureAction::WriteDumpAndTerminate)
+	{
+		RaiseFailFastException(nullptr, nullptr, 0);
+		TerminateProcess(GetCurrentProcess(), CryAllocatorFailureExitCode);
+	}
+}
 
 #ifndef _LIB
 //////////////////////////////////////////////////////////////////////////
@@ -548,7 +631,7 @@ void  CryModuleFree( void *ptr ) throw()
 	_CryMemoryManagerPoolHelper::Free(ptr);
 };
 //////////////////////////////////////////////////////////////////////////
-CRY_MEM_USAGE_API void CryModuleGetMemoryInfo( CryModuleMemoryInfo *pMemInfo )
+extern "C" DLL_EXPORT void CryModuleGetMemoryInfo( CryModuleMemoryInfo *pMemInfo )
 {
 	_CryMemoryManagerPoolHelper::GetMemoryInfo(pMemInfo);
 };
@@ -583,7 +666,7 @@ void  CryModuleFree( void *ptr, ECryModule eCM ) throw()
   _CryMemoryManagerPoolHelper::Free(ptr, eCM);
 };
 //////////////////////////////////////////////////////////////////////////
-CRY_MEM_USAGE_API void CryModuleGetMemoryInfo( CryModuleMemoryInfo *pMemInfo, ECryModule eCM )
+extern "C" DLL_EXPORT void CryModuleGetMemoryInfo( CryModuleMemoryInfo *pMemInfo, ECryModule eCM )
 {
   _CryMemoryManagerPoolHelper::GetMemoryInfo(pMemInfo, eCM);
 };

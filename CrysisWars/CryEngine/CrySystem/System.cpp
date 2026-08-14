@@ -13,6 +13,8 @@
 
 #include "StdAfx.h"
 #include "System.h"
+
+#include <limits>
 #include <time.h>
 //#include "ini_vars.h"
 #include "CryLibrary.h"
@@ -84,8 +86,6 @@ SSystemCVars g_cvars;
 extern CUNIXConsole g_UnixConsole;
 #endif
 
-extern int CryMemoryGetAllocatedSize();
-
 // these heaps are used by underlying System structures
 // to allocate, accordingly, small (like elements of std::set<..*>) and big (like memory for reading files) objects
 // hopefully someday we'll have standard MT-safe heap
@@ -119,7 +119,9 @@ CSystem::CSystem()
 #ifdef WIN32	
 	m_hInst = NULL;
 	m_hWnd = NULL;
-	int sbh = _set_sbh_threshold(1016);
+#if defined(_M_IX86) && _MSC_VER < 1900
+	_set_sbh_threshold(1016);
+#endif
 #endif
 
 	//////////////////////////////////////////////////////////////////////////
@@ -1607,7 +1609,10 @@ ICrySizer* CSystem::CreateSizer()
 //////////////////////////////////////////////////////////////////////////
 uint32 CSystem::GetUsedMemory()
 {
-	return CryMemoryGetAllocatedSize();
+	const uint64 bytes = CryMemoryGetAllocatedSize64();
+	const uint32 maximum32 = (std::numeric_limits<uint32>::max)();
+	const uint64 maximum = static_cast<uint64>(maximum32);
+	return bytes > maximum ? maximum32 : static_cast<uint32>(bytes);
 }
 
 //////////////////////////////////////////////////////////////////////////

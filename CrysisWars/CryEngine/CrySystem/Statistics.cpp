@@ -38,10 +38,6 @@ const struct PEHeader_DLL
 };
 #pragma pack(pop)
 #endif 
-
-
-extern int CryMemoryGetAllocatedSize();
-
 const char *g_szTestResults="TestResults";
 
 class CResourceCollector :public IResourceCollector
@@ -563,7 +559,7 @@ struct SCryEngineStats
 	uint64 nWin32_PeakPagefileUsage;
 	uint64 nWin32_PageFaultCount;
 
-	uint32 nTotalAllocatedMemory;
+	uint64 nTotalAllocatedMemory;
 
 	uint32 nSummaryScriptSize;
 	uint32 nSummaryCharactersSize;
@@ -612,6 +608,8 @@ enum EEngineStatsFlags
 {
 };
 
+static void SaveLevelStats( IConsoleCmdArgs *pArgs );
+
 class CEngineStats
 {
 public:
@@ -652,7 +650,7 @@ private: // --------------------------------------------------------------------
 	SCryEngineStats				m_stats;								//
 	int										m_nFlags;								//
 
-	friend static void SaveLevelStats( IConsoleCmdArgs *pArgs );
+	friend void SaveLevelStats( IConsoleCmdArgs *pArgs );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -665,7 +663,7 @@ void CEngineStats::Collect( int nFlags )
 
 	memset(&m_stats,0,sizeof(m_stats));
 
-	m_stats.nTotalAllocatedMemory = CryMemoryGetAllocatedSize();
+	m_stats.nTotalAllocatedMemory = CryMemoryGetAllocatedSize64();
 	m_stats.nSummaryMeshSize =  *((int*)pRenderer->EF_Query(EFQ_Alloc_Mesh_SysMem));
 	m_stats.nSummaryMeshCount =  *((int*)pRenderer->EF_Query(EFQ_Mesh_Count));
 	m_stats.nAPI_MeshSize =  *((int*)pRenderer->EF_Query(EFQ_Alloc_APIMesh));
@@ -1695,8 +1693,8 @@ private:
 	void AddCell( float number );
 	void AddCell( int number );
 	void AddCell( uint32 number );
-	void AddCell( uint64 number ) { AddCell( (uint32)number ); };
-	void AddCell( int64 number ) { AddCell( (int)number ); };
+	void AddCell( uint64 number );
+	void AddCell( int64 number );
 	void AddCell( const char *str,int flags=0 );
 	void AddCellAtIndex( int nIndex,const char *str,int flags=0 );
 	void SetCellFlags( XmlNodeRef cell,int flags );
@@ -1876,6 +1874,32 @@ void CStatsToExcelExporter::AddCell( uint32 number )
 	data->setAttr( "ss:Type","Number" );
 	char str[32];
 	sprintf( str,"%u",number );
+	data->setContent( str );
+	m_CurrCell = cell;
+}
+
+//////////////////////////////////////////////////////////////////////////
+void CStatsToExcelExporter::AddCell( uint64 number )
+{
+	XmlNodeRef cell = m_CurrRow->newChild("Cell");
+	cell->setAttr("ss:StyleID","s22"); // Centered
+	XmlNodeRef data = cell->newChild( "Data" );
+	data->setAttr( "ss:Type","Number" );
+	char str[32];
+	sprintf( str,"%I64u",number );
+	data->setContent( str );
+	m_CurrCell = cell;
+}
+
+//////////////////////////////////////////////////////////////////////////
+void CStatsToExcelExporter::AddCell( int64 number )
+{
+	XmlNodeRef cell = m_CurrRow->newChild("Cell");
+	cell->setAttr("ss:StyleID","s22"); // Centered
+	XmlNodeRef data = cell->newChild( "Data" );
+	data->setAttr( "ss:Type","Number" );
+	char str[32];
+	sprintf( str,"%I64d",number );
 	data->setContent( str );
 	m_CurrCell = cell;
 }
@@ -2205,7 +2229,7 @@ void CStatsToExcelExporter::ExportAnimationStatistics( SCryEngineStats &stats )
 		SAnimationStatistics &an = stats.animations[i];
 		AddRow();
 		AddCell( an.name );
-		AddCell( an.count );
+		AddCell( static_cast<int>(an.count) );
 	}
 }
 

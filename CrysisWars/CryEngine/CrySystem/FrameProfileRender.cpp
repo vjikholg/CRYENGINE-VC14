@@ -40,7 +40,6 @@
 #define HOT_TO_COLD_PEAK_COLOR_SPEED 8.0f
 #define MAX_DISPLAY_ROWS 80
 
-extern int CryMemoryGetAllocatedSize();
 extern int CryMemoryGetPoolSize();
 
 //////////////////////////////////////////////////////////////////////////
@@ -1200,7 +1199,7 @@ void CFrameProfileSystem::RenderMemoryInfo()
 	//////////////////////////////////////////////////////////////////////////
 	// Show memory usage.
 	//////////////////////////////////////////////////////////////////////////
-	int memUsage = CryMemoryGetAllocatedSize();
+	const uint64 memUsage = CryMemoryGetAllocatedSize64();
 	int luaMemUsage = gEnv->pScriptSystem->GetScriptAllocSize();
 //	int poolSize = CryMemoryGetPoolSize();
 	/*
@@ -1518,7 +1517,7 @@ void CFrameProfileSystem::RenderMemoryInfo()
 		pLog->Log( "Sum of %d Modules %6d Kb  (Static: %6d Kb)  (Num: %8d) (TotalAlloc: %8I64d KB)",countedMemoryModules,totalUsedInModules/1024,
 		totalUsedInModulesStatic/1024,totalNumAllocsInModules,totalAllocatedInModules/1024 );
 #endif
-	int64 totalAll = memUsage;
+	uint64 totalAll = memUsage;
 	int memUsageInMB_SysCopyMeshes = ( *( (int*) m_pRenderer->EF_Query( EFQ_Alloc_APIMesh ) ) );
 	int memUsageInMB_SysCopyTextures = ( *( (int*) m_pRenderer->EF_Query( EFQ_Alloc_APITextures ) ) );
 	totalAll += memUsageInMB_SysCopyMeshes;
@@ -1533,7 +1532,7 @@ void CFrameProfileSystem::RenderMemoryInfo()
 #elif defined(PS3)
 	sprintf( szText,"Total Allocated Memory: %lld KB (DirectX Textures: %d KB, VB: %d Kb)",totalAll/1024,memUsageInMB_SysCopyTextures/1024,memUsageInMB_SysCopyMeshes/1024 );
 #else
-	sprintf( szText,"Total Allocated Memory: %I64d KB (DirectX Textures: %d KB, VB: %d Kb)",totalAll/1024,memUsageInMB_SysCopyTextures/1024,memUsageInMB_SysCopyMeshes/1024 );
+	sprintf( szText,"Total Allocated Memory: %I64u KB (DirectX Textures: %d KB, VB: %d Kb)",totalAll/1024,memUsageInMB_SysCopyTextures/1024,memUsageInMB_SysCopyMeshes/1024 );
 #endif
 	DrawLabel( col,1,HeaderColor,0,szText,fLabelScale );
 

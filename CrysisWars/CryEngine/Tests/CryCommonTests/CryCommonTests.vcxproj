@@ -58,7 +58,7 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>$(MSBuildProjectDirectory)\..\..\CryCommon;$(MSBuildProjectDirectory)\..\..\CrySystem;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_CONSOLE;NOT_USE_CRY_MEMORY_MANAGER;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CONSOLE;NOT_USE_CRY_MEMORY_MANAGER;_ITERATOR_DEBUG_LEVEL=0;_HAS_ITERATOR_DEBUGGING=0;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <WarningLevel>Level4</WarningLevel>
       <TreatWarningAsError>false</TreatWarningAsError>
       <SDLCheck>false</SDLCheck>
@@ -98,8 +98,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="ComparisonCompatibilityTests.h" />
+    <ClInclude Include="LegacyStdioCompatibilityTests.h" />
     <ClInclude Include="MemoryAllocatorTests.h" />
+    <ClInclude Include="MemoryAccountingTests.h" />
     <ClInclude Include="MemoryManagerTests.h" />
+    <ClInclude Include="MM06Tests.h" />
     <ClInclude Include="MM03BenchmarkEnvironment.h" />
     <ClInclude Include="SafeAllocTests.h" />
     <ClInclude Include="StlHashMapAdapterTests.h" />
@@ -108,10 +111,14 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ComparisonCompatibilityTests.cpp" />
+    <ClCompile Include="CryCommonTestSupport.cpp" />
+    <ClCompile Include="LegacyStdioCompatibilityTests.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="MemoryAllocatorTests.cpp" />
+    <ClCompile Include="MemoryAccountingTests.cpp" />
     <ClCompile Include="MemoryManagerTests.cpp" />
     <ClCompile Include="MM03BenchmarkEnvironment.cpp" />
+    <ClCompile Include="MM06Tests.cpp" />
     <ClCompile Include="SafeAllocTests.cpp" />
     <ClCompile Include="StlHashMapAdapterTests.cpp" />
     <ClCompile Include="TestRunner.cpp" />

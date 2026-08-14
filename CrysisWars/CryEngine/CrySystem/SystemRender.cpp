@@ -1046,7 +1046,9 @@ void CSystem::UpdateLoadingScreen()
 			m_pProgressListener->OnLoadingProgress(0);
 		}
 
-		if (GetIRenderer()->EF_Query(EFQ_RecurseLevel) < 0)
+		const intptr_t recurseLevel = reinterpret_cast<intptr_t>(
+			GetIRenderer()->EF_Query(EFQ_RecurseLevel));
+		if (recurseLevel < 0)
 		{
 			if (m_env.pConsole->IsOpened())
 			{

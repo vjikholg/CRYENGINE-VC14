@@ -14,10 +14,10 @@
 // a list with the same allocator)
 //---------------------------------------------------------------------------
 
+#include "CryAllocatorFailure.h"
 #include "PoolAllocator.h"
 #include "STLPoolAllocator.h"
 #include <stddef.h>
-#include <climits>
 
 namespace stl
 {
@@ -31,6 +31,8 @@ namespace stl
 		typedef T&        reference;
 		typedef const T&  const_reference;
 		typedef T         value_type;
+		inline static constexpr size_type MaxElementCount =
+			CryAllocatorMaxElementCount<T>;
 		template <class U> struct rebind
 		{
 			typedef STLPoolAllocator_ManyElems<U, L> other;
@@ -64,6 +66,19 @@ namespace stl
 
 		void deallocate(pointer p, size_type n)
 		{
+			if (n > MaxElementCount)
+			{
+				CRY_ALLOCATOR_SIZE_FAILURE(
+					"STLPoolAllocator_ManyElems::deallocate",
+					n,
+					sizeof(T),
+					MaxElementCount,
+					alignof(T),
+					0,
+					ECryAllocatorFailureAction::WriteDumpAndTerminate);
+				return;
+			}
+
 			if (n == 1)
 				stl::STLPoolAllocatorKungFu<T,L>::allocator->Deallocate(p);
 			else
@@ -72,6 +87,19 @@ namespace stl
 
 		pointer allocate(size_type n, const void* hint = 0)
 		{
+			if (n > MaxElementCount)
+			{
+				CRY_ALLOCATOR_SIZE_FAILURE(
+					"STLPoolAllocator_ManyElems::allocate",
+					n,
+					sizeof(T),
+					MaxElementCount,
+					alignof(T),
+					0,
+					ECryAllocatorFailureAction::WriteDumpAndTerminate);
+				return nullptr;
+			}
+
 			if (n == 1)
 			{
 				if (!STLPoolAllocatorKungFu<T,L>::allocator)
@@ -82,9 +110,9 @@ namespace stl
 				return static_cast<T*>(CryModuleMalloc( n * sizeof(T) ));
 		}
 
-		size_type max_size() const throw()
+		constexpr size_type max_size() const noexcept
 		{
-			return INT_MAX;
+			return MaxElementCount;
 		}
 
 		void construct(pointer p, const T& val)

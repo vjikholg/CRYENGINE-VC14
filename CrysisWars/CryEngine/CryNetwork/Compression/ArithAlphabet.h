@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include <CryAllocatorFailure.h>
+
 #include "Streams/CommStream.h"
 #include "Network.h"
 #include "VectorMap.h"
@@ -514,8 +516,28 @@ public:
 private:
 	ILINE uint8* Alloc(int size)
 	{
+		const size_t elementCount = size < 0 ?
+			(std::numeric_limits<size_t>::max)() : static_cast<size_t>(size);
+		size_t elementBytes = 0;
+		size_t allocationSize = 0;
+		if (size < 0 ||
+			elementCount > MaxElementCount ||
+			!CryTryMultiplySize(elementCount, sizeof(T), elementBytes) ||
+			!CryTryAddSize(elementBytes, sizeof(SRefCnt), allocationSize))
+		{
+			CRY_ALLOCATOR_SIZE_FAILURE(
+				"CArithAlphabetRow::Alloc",
+				elementCount,
+				sizeof(T),
+				MaxElementCount,
+				alignof(T),
+				sizeof(SRefCnt),
+				ECryAllocatorFailureAction::WriteDumpAndTerminate);
+			return nullptr;
+		}
+
 		++g_objcnt.arithRow;
-		return (uint8*)MMM().AllocPtr(size * sizeof(T) + sizeof(SRefCnt));
+		return static_cast<uint8*>(MMM().AllocPtr(allocationSize));
 	}
 
 	uint8* m_ptr;
@@ -526,6 +548,9 @@ private:
 		C sz : (sizeof(C)*8-1);
 		C flag : 1;
 	};
+
+	inline static constexpr size_t MaxElementCount =
+		((std::numeric_limits<size_t>::max)() - sizeof(SRefCnt)) / sizeof(T);
 
 	ILINE SRefCnt& GetRefs()
 	{
@@ -551,8 +576,25 @@ private:
 
 	static ILINE void Free(uint8 * ptr, size_t size)
 	{
+		size_t elementBytes = 0;
+		size_t allocationSize = 0;
+		if (size > MaxElementCount ||
+			!CryTryMultiplySize(size, sizeof(T), elementBytes) ||
+			!CryTryAddSize(elementBytes, sizeof(SRefCnt), allocationSize))
+		{
+			CRY_ALLOCATOR_SIZE_FAILURE(
+				"CArithAlphabetRow::Free",
+				size,
+				sizeof(T),
+				MaxElementCount,
+				alignof(T),
+				sizeof(SRefCnt),
+				ECryAllocatorFailureAction::WriteDumpAndTerminate);
+			return;
+		}
+
 		--g_objcnt.arithRow;
-		MMM().FreePtr(ptr, size * sizeof(T) + sizeof(SRefCnt));
+		MMM().FreePtr(ptr, allocationSize);
 	}
 };
 

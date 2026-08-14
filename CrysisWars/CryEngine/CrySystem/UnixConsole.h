@@ -25,15 +25,15 @@ History:
 #include <IConsole.h>
 #include <CryThread.h>
 #include <curses.h>
+
+// Avoid naming conflicts with pdcurses before including engine headers.
+// Use werase(stdscr) and wclear(stdscr) instead.
+#undef erase
+#undef clear
+
 #include <deque>
 #include <INetwork.h>
 #include <ITextModeConsole.h>
-
-// Avoid naming conflicts with pdcurses.
-// Use werase(stdscr) instead of erase().
-#undef erase
-// Use wclear(stdscr) instead of clear().
-#undef clear
 
 // Define if you wish to enable the player count feature.
 // Note: The player count feature can not be used when building

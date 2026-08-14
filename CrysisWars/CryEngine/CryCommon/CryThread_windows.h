@@ -7,6 +7,7 @@
 #include <windows.h>
 #endif
 #include <process.h>
+#include <ISystem.h>
 
 // kernel mutex - don't use... use CryLock<> or CryCond<CryLock<> > instead
 class CryLock_WinMutex

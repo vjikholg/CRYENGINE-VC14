@@ -162,6 +162,9 @@
     <ClCompile Include="XConsoleVariable.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="AllocatorFailureReporter.cpp">
+      <Filter>MemoryManager</Filter>
+    </ClCompile>
     <ClCompile Include="CryMemoryManager.cpp">
       <Filter>MemoryManager</Filter>
     </ClCompile>
@@ -301,6 +304,9 @@
       <Filter>Localization</Filter>
     </ClCompile>
     <ClCompile Include="Scaleform\ConfigScaleform.cpp">
+      <Filter>Scaleform</Filter>
+    </ClCompile>
+    <ClCompile Include="Scaleform\LegacyMsvcStdio.cpp">
       <Filter>Scaleform</Filter>
     </ClCompile>
     <ClCompile Include="Scaleform\FlashPlayerInstance.cpp">
@@ -612,6 +618,9 @@
       <Filter>Localization</Filter>
     </ClInclude>
     <ClInclude Include="Scaleform\ConfigScaleform.h">
+      <Filter>Scaleform</Filter>
+    </ClInclude>
+    <ClInclude Include="Scaleform\LegacyMsvcStdio.h">
       <Filter>Scaleform</Filter>
     </ClInclude>
     <ClInclude Include="Scaleform\FlashPlayerInstance.h">

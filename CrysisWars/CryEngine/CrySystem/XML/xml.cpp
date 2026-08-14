@@ -237,26 +237,26 @@ void CXmlNode::setAttr( const char *key,uint64 value )
 void CXmlNode::setAttr( const char *key,const Ang3& value )
 {
 	char str[128];
-	sprintf( str,FLOAT_FMT","FLOAT_FMT","FLOAT_FMT,value.x,value.y,value.z );
+	sprintf( str,FLOAT_FMT "," FLOAT_FMT "," FLOAT_FMT,value.x,value.y,value.z );
 	setAttr( key,str );
 }
 void CXmlNode::setAttr( const char *key,const Vec3& value )
 {
 	char str[128];
-	sprintf( str,FLOAT_FMT","FLOAT_FMT","FLOAT_FMT,value.x,value.y,value.z );
+	sprintf( str,FLOAT_FMT "," FLOAT_FMT "," FLOAT_FMT,value.x,value.y,value.z );
 	setAttr( key,str );
 }
 void CXmlNode::setAttr( const char *key,const Vec2& value )
 {
 	char str[128];
-	sprintf( str,FLOAT_FMT","FLOAT_FMT,value.x,value.y );
+	sprintf( str,FLOAT_FMT "," FLOAT_FMT,value.x,value.y );
 	setAttr( key,str );
 }
 
 void CXmlNode::setAttr( const char *key,const Quat &value )
 {
 	char str[128];
-	sprintf( str,FLOAT_FMT","FLOAT_FMT","FLOAT_FMT","FLOAT_FMT,value.w,value.v.x,value.v.y,value.v.z );
+	sprintf( str,FLOAT_FMT "," FLOAT_FMT "," FLOAT_FMT "," FLOAT_FMT,value.w,value.v.x,value.v.y,value.v.z );
 	setAttr( key,str );
 }
 

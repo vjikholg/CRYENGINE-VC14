@@ -34,6 +34,7 @@
 #include <xmemory>
 #endif
 
+#include "CryAllocatorFailure.h"
 #include "TAlloc.h"
 
 namespace cry
@@ -55,6 +56,8 @@ public:
 	typedef T _FARQ& reference;
 	typedef const T _FARQ& const_reference;
 	typedef T value_type;
+	inline static constexpr size_type MaxElementCount =
+		CryAllocatorMaxElementCount<T>;
 
 	template<class _Other>
 		struct rebind
@@ -108,6 +111,18 @@ public:
 
 	pointer allocate(size_type _Count)
 		{	// allocate array of _Count elements
+		if (_Count > MaxElementCount)
+			{
+			CRY_ALLOCATOR_SIZE_FAILURE(
+				"cry::dbg_allocator::allocate",
+				_Count,
+				sizeof(T),
+				MaxElementCount,
+				alignof(T),
+				0,
+				ECryAllocatorFailureAction::WriteDumpAndTerminate);
+			return nullptr;
+			}
 		return (pointer)_malloc_dbg(_Count * sizeof(T), _NORMAL_BLOCK, m_szParentObject, m_nParentIndex);
 		}
 
@@ -126,11 +141,9 @@ public:
 		_Ptr->~T();
 		}
 
-	_SIZT max_size() const
+	constexpr size_type max_size() const noexcept
 		{	// estimate maximum array size
-		_SIZT _Count = (_SIZT)(-1) / sizeof (T);
-		return (0 < _Count ? _Count : 1);
-
+		return MaxElementCount;
 		}
 
 		// the parent object (on behalf of which to call the new operator)

@@ -1,6 +1,9 @@
 #include "StdAfx.h"
 #include "MTSafeAllocator.h"
+#include <CryAllocatorFailure.h>
 #include <IConsole.h>
+
+#include <limits>
 
 int CMTSafeHeap::m_numBigAllocationSize = 24*1024*1024;
 int CMTSafeHeap::m_numBigAllocationStartSize = 1*1024;
@@ -102,7 +105,25 @@ void CMTSafeHeap::Free (void*p)
 //////////////////////////////////////////////////////////////////////////
 void* CMTSafeHeap::StaticAlloc (void* pOpaque, unsigned nItems, unsigned nSize)
 {
-	return g_pPakHeap->Alloc(nItems*nSize,"StaticAlloc");
+	size_t allocationSize = 0;
+	if (!CryTryMultiplySize(
+			static_cast<size_t>(nItems),
+			static_cast<size_t>(nSize),
+			allocationSize))
+	{
+		CRY_ALLOCATOR_SIZE_FAILURE(
+			"CMTSafeHeap::StaticAlloc",
+			nItems,
+			nSize,
+			nSize == 0 ? (std::numeric_limits<size_t>::max)() :
+				(std::numeric_limits<size_t>::max)() / nSize,
+			alignof(std::max_align_t),
+			0,
+			ECryAllocatorFailureAction::ReturnNull);
+		return nullptr;
+	}
+
+	return g_pPakHeap->Alloc(allocationSize,"StaticAlloc");
 }
 
 //////////////////////////////////////////////////////////////////////////

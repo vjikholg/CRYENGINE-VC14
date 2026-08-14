@@ -233,6 +233,7 @@
     </Midl>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="CryAllocatorFailure.h" />
     <ClInclude Include="AABBSV.h" />
     <ClInclude Include="AgentParams.h" />
     <ClInclude Include="AIFormationDescriptor.h" />
@@ -275,6 +276,7 @@
     <ClInclude Include="CryHeaders.h" />
     <ClInclude Include="CryLibrary.h" />
     <ClInclude Include="CryMemoryAllocator.h" />
+    <ClInclude Include="CryMemoryByteCounter.h" />
     <ClInclude Include="CryMemoryManager.h" />
     <ClInclude Include="CryMemoryManager_impl.h" />
     <ClInclude Include="CryName.h" />

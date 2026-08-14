@@ -336,6 +336,11 @@
     <CodeAnalysisRules />
     <CodeAnalysisRuleAssemblies />
   </PropertyGroup>
+  <ItemDefinitionGroup>
+    <Link>
+      <AdditionalDependencies>legacy_stdio_definitions.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
@@ -758,6 +763,7 @@
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='SP_DEMO|x64'">$(IntDir)%(Filename)1.obj</ObjectFileName>
       <XMLDocumentationFileName Condition="'$(Configuration)|$(Platform)'=='SP_DEMO|x64'">$(IntDir)%(Filename)1.xdc</XMLDocumentationFileName>
     </ClCompile>
+    <ClCompile Include="AllocatorFailureReporter.cpp" />
     <ClCompile Include="CryMemoryManager.cpp" />
     <ClCompile Include="CryPak.cpp" />
     <ClCompile Include="CrySizerImpl.cpp" />
@@ -806,6 +812,7 @@
     <ClCompile Include="RefStreamEngine.cpp" />
     <ClCompile Include="Sampler.cpp" />
     <ClCompile Include="Scaleform\ConfigScaleform.cpp" />
+    <ClCompile Include="Scaleform\LegacyMsvcStdio.cpp" />
     <ClCompile Include="Scaleform\FlashPlayerInstance.cpp" />
     <ClCompile Include="Scaleform\GAllocatorCryMem.cpp" />
     <ClCompile Include="Scaleform\GFileCryPak.cpp" />
@@ -1238,6 +1245,7 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="Sampler.h" />
     <ClInclude Include="Scaleform\ConfigScaleform.h" />
+    <ClInclude Include="Scaleform\LegacyMsvcStdio.h" />
     <ClInclude Include="Scaleform\FlashPlayerInstance.h" />
     <ClInclude Include="Scaleform\GAllocatorCryMem.h" />
     <ClInclude Include="Scaleform\GFileCryPak.h" />
@@ -1305,6 +1313,12 @@
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="CrySystem.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\SDKs\pdcurses\pdcurses.vcxproj">
+      <Project>{075A575F-1F99-4702-AE21-BF86531BC966}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

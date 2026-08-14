@@ -4,6 +4,7 @@
 #include <STLMementoAllocator.h>
 
 #include <cstdlib>
+#include <cstdio>
 #include <cstring>
 #include <new>
 #include <unordered_map>
@@ -18,6 +19,18 @@ static std::unordered_map<const CMementoMemoryManager*, SMementoAllocatorTestSta
 	g_mementoManagerStats;
 static std::unordered_map<void*, SMementoAllocationRecord> g_mementoAllocations;
 static CMementoMemoryManager* g_currentMementoManager = 0;
+
+void CryAllocatorSizeFailure(const SCryAllocatorFailureContext& context) noexcept
+{
+	std::fprintf(
+		stderr,
+		"Allocator size failure: operation=%s count=%llu elementSize=%llu\n",
+		context.operation,
+		static_cast<unsigned long long>(context.count),
+		static_cast<unsigned long long>(context.elementSize));
+	if (context.action == ECryAllocatorFailureAction::WriteDumpAndTerminate)
+		std::abort();
+}
 
 long CryInterlockedIncrement(int volatile* value)
 {

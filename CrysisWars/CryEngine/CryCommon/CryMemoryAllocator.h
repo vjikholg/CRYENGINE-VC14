@@ -8,6 +8,8 @@
 // declarations and lock primitives without pulling in CryMemoryManager_impl.h.
 #include "platform.h"
 
+#include "CryMemoryByteCounter.h"
+
 #include <algorithm>
 
 #define CRY_STL_ALLOC
@@ -29,7 +31,7 @@ public:
 	_Node_alloc_obj * _M_next;
 };
 
-struct _Node_alloc_Mem_block_Huge {
+struct alignas(_ALIGN) _Node_alloc_Mem_block_Huge {
 	//Pointer to the end of the memory block
 	char *_M_end;
 	// number 
@@ -38,13 +40,20 @@ struct _Node_alloc_Mem_block_Huge {
 	_Node_alloc_Mem_block_Huge *_M_next;
 };
 
-struct _Node_alloc_Mem_block {
+struct alignas(_ALIGN) _Node_alloc_Mem_block {
 	//Pointer to the end of the memory block
 	char *_M_end;
 	//Pointer to the next memory block
 	_Node_alloc_Mem_block_Huge *_M_huge_block;
 	_Node_alloc_Mem_block *_M_next;
 };
+
+static_assert(
+	sizeof(_Node_alloc_Mem_block_Huge) % _ALIGN == 0,
+	"Node allocator chunk metadata must preserve the configured alignment.");
+static_assert(
+	sizeof(_Node_alloc_Mem_block) % _ALIGN == 0,
+	"Node allocator free-block metadata must preserve the configured alignment.");
 
 
 // Allocators!
@@ -279,10 +288,10 @@ private:
 	static _Node_alloc_Mem_block_Huge * volatile _S_chunks;
 	static _Obj * volatile _S_free_list[NFREELISTS]; 
 	static long volatile _S_freelist_counter[NFREELISTS]; 
-	// Amount of total allocated memory
-	static long volatile _S_heap_size;
-	static long volatile _S_wasted_in_allocation;
-	static long volatile _S_wasted_in_blocks;
+	// Byte totals must retain the full Win64 addressable size range.
+	static CryMemoryByteCounter _S_heap_size;
+	static CryMemoryByteCounter _S_wasted_in_allocation;
+	static CryMemoryByteCounter _S_wasted_in_blocks;
 
 	static _Mem_block* volatile _S_free_mem_blocks;
 	static _Node_alloc_Mem_block_Huge * volatile __pCurrentHugeBlock;
@@ -330,9 +339,9 @@ public:
 	/* __p may not be 0 */
 	//static void  dealloc(void *__p, size_t __n) { if (__n > (size_t)_MAX_BYTES) Node_Allocator<_alloc>.pool_free(__p); else _M_deallocate(__p, __n); }
 
-	static size_t get_heap_size() { return _S_heap_size; };
-	static size_t get_wasted_in_allocation() { return _S_wasted_in_allocation; };
-	static size_t get_wasted_in_blocks() { 	return _S_wasted_in_blocks; };
+	static size_t get_heap_size() { return static_cast<size_t>(_S_heap_size.Load()); };
+	static size_t get_wasted_in_allocation() { return static_cast<size_t>(_S_wasted_in_allocation.Load()); };
+	static size_t get_wasted_in_blocks() { return static_cast<size_t>(_S_wasted_in_blocks.Load()); };
 
 	static void cleanup();
 };
@@ -354,8 +363,9 @@ void* node_alloc<_alloc, __threads, _Size>::_M_allocate(size_t __n)
 	Node_Alloc_Lock<__threads, _Size> lock;
 
 	_Obj *__r;
-	long allocated = S_FREELIST_INDEX(__n);
-	_Obj * volatile * __my_free_list = _S_free_list + allocated;
+	const size_t freeListIndex = S_FREELIST_INDEX(__n);
+	const size_t slotSize = (freeListIndex + 1) << _ALIGN_SHIFT;
+	_Obj * volatile * __my_free_list = _S_free_list + freeListIndex;
 
 	do {
 		__r = *__my_free_list;
@@ -366,9 +376,9 @@ void* node_alloc<_alloc, __threads, _Size>::_M_allocate(size_t __n)
 	}
 	while (!Node_Alloc_Lock<__threads, _Size>::CompareExchangePointer(__my_free_list, __r->_M_next, __r));
 
-	Node_Alloc_Lock<__threads, _Size>::ATOMIC_EXCHANGE_ADD(&_S_wasted_in_allocation,((allocated + 1) << _ALIGN_SHIFT) - __n);
-	Node_Alloc_Lock<__threads, _Size>::ATOMIC_EXCHANGE_ADD(&_S_wasted_in_blocks,-((allocated + 1) << _ALIGN_SHIFT));
-	long volatile * counter = _S_freelist_counter + S_FREELIST_INDEX(__n);
+	_S_wasted_in_allocation.Add(slotSize - __n);
+	_S_wasted_in_blocks.Remove(slotSize);
+	long volatile * counter = _S_freelist_counter + freeListIndex;
 	Node_Alloc_Lock<__threads, _Size>::ATOMIC_DECREMENT(counter);
 
 	//_S_wasted_in_allocation += allocated - __n;
@@ -392,15 +402,15 @@ void node_alloc<_alloc, __threads, _Size>::_M_deallocate(void *__p, size_t __n)
 {
 	Node_Alloc_Lock<__threads, _Size> lock;
 
-	long allocated = S_FREELIST_INDEX(__n);
-	_Obj * volatile * __my_free_list = _S_free_list + allocated;
+	const size_t freeListIndex = S_FREELIST_INDEX(__n);
+	const size_t slotSize = (freeListIndex + 1) << _ALIGN_SHIFT;
+	_Obj * volatile * __my_free_list = _S_free_list + freeListIndex;
 	_Obj *__pobj = __STATIC_CAST(_Obj*, __p);
 	__cas_new_head<_Obj, __threads, _Size>(__my_free_list, __pobj);
 
-	Node_Alloc_Lock<__threads, _Size>::ATOMIC_EXCHANGE_ADD(&_S_wasted_in_allocation,-((allocated + 1) << _ALIGN_SHIFT) + __n);
-
-	Node_Alloc_Lock<__threads, _Size>::ATOMIC_EXCHANGE_ADD(&_S_wasted_in_blocks,((allocated + 1) << _ALIGN_SHIFT));
-	long volatile * counter = _S_freelist_counter + S_FREELIST_INDEX(__n);
+	_S_wasted_in_allocation.Remove(slotSize - __n);
+	_S_wasted_in_blocks.Add(slotSize);
+	long volatile * counter = _S_freelist_counter + freeListIndex;
 	Node_Alloc_Lock<__threads, _Size>::ATOMIC_INCREMENT(counter);
 
 	//_S_wasted_in_allocation -= allocated - __n;
@@ -546,8 +556,6 @@ char* node_alloc<_alloc,__threads, _Size>::_S_chunk_alloc(size_t _p_size,
 	__result = (char*)allocator.pool_alloc(__bytes_to_get);//(char*)_malloc(__bytes_to_get);
 	//++_S_allocations;
 	Node_Alloc_Lock<__threads, _Size>::ATOMIC_INCREMENT(&_S_allocations);
-	//_S_wasted_in_blocks += __bytes_to_get;
-	Node_Alloc_Lock<__threads, _Size>::ATOMIC_EXCHANGE_ADD(&_S_wasted_in_blocks,__bytes_to_get);
 	//this is gonna be optimized away in profile builds
 	if (0 == __result) 
 	{
@@ -559,13 +567,8 @@ char* node_alloc<_alloc,__threads, _Size>::_S_chunk_alloc(size_t _p_size,
 #endif
 	}
 
-	{
-		size_t newHeapSize, oldHeapSize;
-		do {
-			oldHeapSize = _S_heap_size;
-			newHeapSize = oldHeapSize + __bytes_to_get;
-		} while (!Node_Alloc_Lock<__threads, _Size>::ATOMIC_CAS(&_S_heap_size, newHeapSize, oldHeapSize));
-	}
+	_S_wasted_in_blocks.Add(__bytes_to_get);
+	_S_heap_size.Add(__bytes_to_get);
 
 	//#  ifdef DO_CLEAN_NODE_ALLOC
 	_Node_alloc_Mem_block_Huge *__pBlock = (_Node_alloc_Mem_block_Huge*)(__result);// + __total_bytes);
@@ -838,7 +841,9 @@ void node_alloc<_alloc,__threads, _Size>::_S_chunk_dealloc()
 	}
 	_S_chunks = 0;
 	_S_free_mem_blocks = 0;
-	_S_heap_size = 0;
+	_S_heap_size.Reset();
+	_S_wasted_in_allocation.Reset();
+	_S_wasted_in_blocks.Reset();
 	memset((char*)_S_free_list, 0, NFREELISTS * sizeof(_Obj*));
 }
 #endif /* DO_CLEAN_NODE_ALLOC */
@@ -850,7 +855,7 @@ long volatile node_alloc<_alloc,__threads, _Size>::_S_freelist_counter[NFREELIST
 template <EAllocFreeType _alloc, bool __threads, int _Size>
 _Node_alloc_Mem_block* volatile node_alloc<_alloc,__threads, _Size>::_S_free_mem_blocks = 0;
 template <EAllocFreeType _alloc, bool __threads, int _Size>
-long volatile node_alloc<_alloc,__threads, _Size>::_S_heap_size = 0;
+CryMemoryByteCounter node_alloc<_alloc,__threads, _Size>::_S_heap_size;
 template <EAllocFreeType _alloc, bool __threads, int _Size>
 long volatile node_alloc<_alloc,__threads, _Size>::_S_allocations = 0;
 template <EAllocFreeType _alloc, bool __threads, int _Size>
@@ -858,9 +863,9 @@ _Node_alloc_Mem_block_Huge* volatile node_alloc<_alloc,__threads, _Size>::__pCur
 template <EAllocFreeType _alloc, bool __threads, int _Size>
 _Node_alloc_Mem_block_Huge * volatile node_alloc<_alloc,__threads, _Size>::_S_chunks = 0;
 template <EAllocFreeType _alloc, bool __threads, int _Size>
-long volatile node_alloc<_alloc,__threads, _Size>::_S_wasted_in_allocation = 0;
+CryMemoryByteCounter node_alloc<_alloc,__threads, _Size>::_S_wasted_in_allocation;
 template <EAllocFreeType _alloc, bool __threads, int _Size>
-long volatile node_alloc<_alloc,__threads, _Size>::_S_wasted_in_blocks = 0;
+CryMemoryByteCounter node_alloc<_alloc,__threads, _Size>::_S_wasted_in_blocks;
 
 
 
@@ -1001,8 +1006,8 @@ void node_alloc<_alloc, __threads, _Size>::cleanup()
 				{
 					__cas_new_head<_Node_alloc_Mem_block_Huge, __threads, _Size>(&__pnext, __pfirst);
 				}
-				_S_heap_size -= _Size/*cursize*/;
-				_S_wasted_in_blocks -= _Size;
+				_S_heap_size.Remove(_Size);
+				_S_wasted_in_blocks.Remove(_Size);
 
 
 				// free memory

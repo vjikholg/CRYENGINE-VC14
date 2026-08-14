@@ -73,9 +73,6 @@
 #if defined(USE_UNIXCONSOLE)
 #include "UnixConsole.h"
 DLL_EXPORT CUNIXConsole g_UnixConsole;
-#if defined(_MSC_VER)
-#pragma comment(lib, "pdcurses.lib")
-#endif // _MSC_VER
 #endif // USE_UNIXCONSOLE
 
 #ifdef WIN32

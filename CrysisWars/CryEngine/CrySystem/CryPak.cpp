@@ -1012,11 +1012,11 @@ FILE *CCryPak::FOpen_Internal(const char *pName, const char *szMode,unsigned nFl
 	}
 
 #if defined(LINUX)
-	const int _fmode = 0;
+	const int fileMode = 0;
 #else
-	const int _fmode = _O_BINARY;
+	const int fileMode = _O_BINARY;
 #endif
-	unsigned nFlags = _fmode|_O_RDONLY;
+	unsigned nFlags = fileMode|_O_RDONLY;
 
 	//if (bDirectAccess)
 		//nFlags |= FOPEN_HINT_DIRECT_OPERATION;

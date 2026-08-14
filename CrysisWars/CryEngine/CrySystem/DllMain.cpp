@@ -43,7 +43,9 @@ BOOL APIENTRY DllMain( HANDLE hModule,
 	case DLL_PROCESS_DETACH: 
 		break;
 	}
-	int sbh = _set_sbh_threshold(1016);
+#if defined(_M_IX86) && _MSC_VER < 1900
+	_set_sbh_threshold(1016);
+#endif
 	return TRUE;
 }
 #endif

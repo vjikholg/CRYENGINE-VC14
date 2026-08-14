@@ -7,6 +7,7 @@
 #include <STLMementoAllocator.h>
 
 #include <memory>
+#include <limits>
 #include <type_traits>
 #include <utility>
 
@@ -52,6 +53,9 @@ static_assert(!TMementoMapAllocatorTraits::is_always_equal::value);
 static_assert(!TMementoMapAllocatorTraits::propagate_on_container_copy_assignment::value);
 static_assert(!TMementoMapAllocatorTraits::propagate_on_container_move_assignment::value);
 static_assert(!TMementoMapAllocatorTraits::propagate_on_container_swap::value);
+static_assert(
+	TMementoMapAllocator::MaxElementCount ==
+		(std::numeric_limits<size_t>::max)() / sizeof(TMementoMapValue));
 
 static CMementoMemoryManagerPtr CreateMementoManager()
 {
@@ -97,6 +101,24 @@ static void TestConvertingConstructorsAreNonThrowing(CryTestRunner& runner)
 		(std::is_nothrow_constructible<
 			TMementoVoidAllocator,
 			const TMementoMapAllocator&>::value));
+}
+
+static void TestMaximumSizeMatchesTheCheckedByteProduct(CryTestRunner& runner)
+{
+	CMementoMemoryManagerPtr manager = CreateMementoManager();
+	const TMementoMapAllocator allocator(manager);
+	size_t bytes = 0;
+
+	CRY_TEST_CHECK(runner, allocator.max_size() == allocator.MaxElementCount);
+	CRY_TEST_CHECK(
+		runner,
+		CryTryMultiplySize(allocator.MaxElementCount, sizeof(TMementoMapValue), bytes));
+	CRY_TEST_CHECK(
+		runner,
+		!CryTryMultiplySize(
+			allocator.MaxElementCount + 1,
+			sizeof(TMementoMapValue),
+			bytes));
 }
 
 static void TestRebindPreservesTheManager(CryTestRunner& runner)
@@ -289,6 +311,7 @@ void RunSTLMementoAllocatorTests(CryTestRunner& runner)
 {
 	runner.Run("STLMementoAllocator rebind type", TestRebindProducesTheAllocatorFamily);
 	runner.Run("STLMementoAllocator converting constructors", TestConvertingConstructorsAreNonThrowing);
+	runner.Run("STLMementoAllocator maximum size", TestMaximumSizeMatchesTheCheckedByteProduct);
 	runner.Run("STLMementoAllocator manager preservation", TestRebindPreservesTheManager);
 	runner.Run("STLMementoAllocator equality and propagation", TestEqualityAndPropagationPolicy);
 	runner.Run("STLMementoAllocator rebound allocation routing", TestDirectReboundAllocationUsesTheOriginalManager);
