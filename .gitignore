@@ -9,3 +9,5 @@ CRYENGINE-VC14.vcxproj.filters
 /CrysisWars/Bin64/Tests/
 /gitignore
 /CrysisWars/BinTemp/x64/Debug
+/CrysisWars/BinTemp
+/CrysisWars/Bin64
