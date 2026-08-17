@@ -790,7 +790,10 @@ int CSystem::AutoDetectRenderer(char *Vendor, char *Device)
   }
   else
   {
-    sprintf( strResult, TEXT("Unknown version of DirectX installed"), hr );
+		sprintf(
+			strResult,
+			TEXT("Unknown version of DirectX installed (HRESULT 0x%08lX)"),
+			static_cast<unsigned long>(hr));
     nRenderer = R_GL_RENDERER;
     strResult[127] = 0;
   }

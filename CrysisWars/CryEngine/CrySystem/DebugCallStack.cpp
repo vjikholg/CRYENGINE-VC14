@@ -436,15 +436,21 @@ void DebugCallStack::FillStackTrace()
 			}
 			else
 			{
-				DWORD64 p = (DWORD64)stack_frame.AddrPC.Offset;
 				char str[80];
-				sprintf( str,"function=0x%p",p );
+				sprintf(
+					str,
+					"function=%p",
+					reinterpret_cast<void*>(
+						static_cast<uintptr_t>(stack_frame.AddrPC.Offset)));
 				m_functions.push_back( str );
 			}
 		} else {
-			DWORD64 p = (DWORD64)stack_frame.AddrPC.Offset;
 			char str[80];
-			sprintf( str,"function=0x%p",p );
+			sprintf(
+				str,
+				"function=%p",
+				reinterpret_cast<void*>(
+					static_cast<uintptr_t>(stack_frame.AddrPC.Offset)));
 			m_functions.push_back( str );
 		}
 	}
@@ -800,18 +806,20 @@ INT_PTR CALLBACK ExceptionDialogProc(HWND hwndDlg, UINT message, WPARAM wParam, 
 			string moduleName = DebugCallStack::instance()->getExceptionModule();
 			const char *excModule = moduleName.c_str();
 
-			char desc[1024];
+			char desc[1024] = "No additional exception information is available";
 			char excDesc[1024];
 			const char *excName = TranslateExceptionCode(pex->ExceptionRecord->ExceptionCode);
 			
 			if (pex->ExceptionRecord->ExceptionCode == EXCEPTION_ACCESS_VIOLATION) {
 				if (pex->ExceptionRecord->NumberParameters > 1) {
-					int iswrite = pex->ExceptionRecord->ExceptionInformation[0];
+					const ULONG_PTR accessType = pex->ExceptionRecord->ExceptionInformation[0];
 					accessAddr = pex->ExceptionRecord->ExceptionInformation[1];
-					if (iswrite) {
-						sprintf( desc,"Attempt to write data to address 0x%08p\r\nThe memory could not be \"written\"",accessAddr );
+					void* const accessedAddress = reinterpret_cast<void*>(
+						static_cast<uintptr_t>(accessAddr));
+					if (accessType == 1) {
+						sprintf(desc,"Attempt to write data to address %p\r\nThe memory could not be \"written\"",accessedAddress);
 					} else {
-						sprintf( desc,"Attempt to read from address 0x%08p\r\nThe memory could not be \"read\"",accessAddr );
+						sprintf(desc,"Attempt to read from address %p\r\nThe memory could not be \"read\"",accessedAddress);
 					}
 				}
 			}
@@ -858,7 +866,7 @@ INT_PTR CALLBACK ExceptionDialogProc(HWND hwndDlg, UINT message, WPARAM wParam, 
 				strcpy( str,"" );
 				for (unsigned int i = 0; i < funcs.size(); i++) {
 					char temp[4096];
-					sprintf( temp,"%2d) %s",funcs.size()-i,(const char*)funcs[i].c_str() );
+					sprintf(temp,"%2zu) %s",funcs.size()-i,funcs[i].c_str());
 					strcat( str,temp );
 					strcat( str,"\r\n" );
 					strcat( errs,temp );

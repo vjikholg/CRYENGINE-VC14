@@ -30,7 +30,7 @@ void CRegularlySyncedItems::Reset()
 	std::vector<uint32>().swap(m_freeElems);
 }
 
-void CRegularlySyncedItem::AddElem( uint32 seq, uint32 data )
+void CRegularlySyncedItem::AddElem( uint32 seq, uint64 data )
 {
 	CheckValid();
 	SLinkedElem el;

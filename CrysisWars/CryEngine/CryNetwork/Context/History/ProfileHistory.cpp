@@ -67,7 +67,7 @@ bool CProfileHistory::NeedToSync( const SSyncContext& ctx, CSyncContext * pSyncC
 	return false;
 }
 
-bool CProfileHistory::SendCurrentValue( const SSendContext& ctx, CSyncContext * pSyncContext, uint32& newValue )
+bool CProfileHistory::SendCurrentValue( const SSendContext& ctx, CSyncContext * pSyncContext, uint64& newValue )
 {
 	ctx.pSender->BeginMessage( ctx.pView->GetConfig().pSetAspectProfileMsgs[ctx.index] );
 	uint8 profile = ctx.ctxObj.main->vAspectProfiles[ctx.index];

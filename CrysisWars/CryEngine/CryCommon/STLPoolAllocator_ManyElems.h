@@ -80,13 +80,14 @@ namespace stl
 			}
 
 			if (n == 1)
-				stl::STLPoolAllocatorKungFu<T,L>::allocator->Deallocate(p);
+				stl::STLPoolAllocatorKungFu<T,L>::GetAllocator().Deallocate(p);
 			else
 				CryModuleFree( p );
 		}
 
 		pointer allocate(size_type n, const void* hint = 0)
 		{
+			(void)hint;
 			if (n > MaxElementCount)
 			{
 				CRY_ALLOCATOR_SIZE_FAILURE(
@@ -102,9 +103,8 @@ namespace stl
 
 			if (n == 1)
 			{
-				if (!STLPoolAllocatorKungFu<T,L>::allocator)
-					STLPoolAllocatorKungFu<T,L>::allocator = new PoolAllocator<sizeof(T),L>;
-				return static_cast<T*>(STLPoolAllocatorKungFu<T,L>::allocator->Allocate());
+				return static_cast<T*>(
+					STLPoolAllocatorKungFu<T,L>::GetAllocator().Allocate());
 			}
 			else
 				return static_cast<T*>(CryModuleMalloc( n * sizeof(T) ));

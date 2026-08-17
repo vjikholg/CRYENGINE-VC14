@@ -257,7 +257,7 @@ void CrySizerStatsRenderer::render(bool bRefreshMark)
 		char szCount[16];
 #ifdef _DEBUG
 		if (rComp.numObjects)
-			sprintf (szCount, "%8u", rComp.numObjects);
+			sprintf(szCount, "%8zu", rComp.numObjects);
 		else
 #endif
 			szCount[0] = '\0';
@@ -348,7 +348,7 @@ void CrySizerStatsRenderer::dump(bool bUseKB)
 		char szCount[16];
 
 		if (rComp.numObjects)
-			sprintf (szCount, "%8u", rComp.numObjects);
+			sprintf(szCount, "%8zu", rComp.numObjects);
 		else
 			szCount[0] = '\0';
 

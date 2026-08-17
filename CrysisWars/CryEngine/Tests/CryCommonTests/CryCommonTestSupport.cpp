@@ -6,6 +6,20 @@
 #include <cstdarg>
 #include <cstdio>
 #include <cstdlib>
+#include <intrin.h>
+
+long CryInterlockedExchangeAdd(long volatile* addend, long value)
+{
+	return _InterlockedExchangeAdd(addend, value);
+}
+
+void* CryInterlockedCompareExchangePointer(
+	void* volatile* destination,
+	void* exchange,
+	void* comparand)
+{
+	return _InterlockedCompareExchangePointer(destination, exchange, comparand);
+}
 
 void CryAssertTrace(const char* format, ...)
 {

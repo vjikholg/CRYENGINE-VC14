@@ -376,15 +376,21 @@ public:
 	{
 		ASSERT_GLOBAL_LOCK;
 		TMemHdl hdl = MMM().AllocHdl(sizeof(CRMIMessage_Script));
-		CRMIMessage_Script * pRMI = new (MMM().PinHdl(hdl)) CRMIMessage_Script(pDef, pBody, pView, blockStateChange);
+		void* const memory = MMM().PinHdl(hdl);
+		if (memory == nullptr)
+			return nullptr;
+		CRMIMessage_Script * pRMI = new (memory) CRMIMessage_Script(pDef, pBody, pView, blockStateChange);
 		pRMI->SetMementoHandle(hdl);
 		return pRMI;
 	}
 	static ILINE CRMIMessage_UserDef * CreateUserDef( IRMIMessageBodyPtr pBody, CContextViewPtr pView, bool blockStateChange )
 	{
 		ASSERT_GLOBAL_LOCK;
-		TMemHdl hdl = MMM().AllocHdl(sizeof(CRMIMessage_Script));
-		CRMIMessage_UserDef * pRMI = new (MMM().PinHdl(hdl)) CRMIMessage_UserDef(pBody, pView, blockStateChange);
+		TMemHdl hdl = MMM().AllocHdl(sizeof(CRMIMessage_UserDef));
+		void* const memory = MMM().PinHdl(hdl);
+		if (memory == nullptr)
+			return nullptr;
+		CRMIMessage_UserDef * pRMI = new (memory) CRMIMessage_UserDef(pBody, pView, blockStateChange);
 		pRMI->SetMementoHandle(hdl);
 		return pRMI;
 	}
@@ -1296,6 +1302,8 @@ bool CContextView::ScheduleAttachment( IRMIMessageBodyPtr pMessage, const SAttac
 			pScript = CRMIMessageAllocator::CreateScript( pDef, pMessage, this, blockStateChange );
 			pSend = pScript;
 		}
+		if (!pSend)
+			return false;
 		SSendableHandle depHdl[3];
 		SSendableHandle tempMyHdlStorage;
 		SSendableHandle * myHdl = &tempMyHdlStorage;
@@ -2082,6 +2090,8 @@ void CContextView::ChangedObject( SNetObjectID id, uint32 flags, uint8 dirtyAspe
 		cfg.m_pView = this;
 		cfg.m_pStartUpdateDef = m_config.pUpdateMsg;
 		_smart_ptr<CUpdateMessage> pSend = CRegularUpdateMessage::Create(cfg, eSCF_EnsureEnabled);
+		if (!pSend)
+			return;
 		uint32 grp = m_objects[id.id].authority? ContextState()->GetContextObject(id).xtra->scheduler_owned : ContextState()->GetContextObject(id).xtra->scheduler_normal;
 		pSend->SetGroup( grp );
 		if (!(flags & eCOF_NeverSubstitute))

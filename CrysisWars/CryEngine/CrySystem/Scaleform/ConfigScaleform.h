@@ -12,7 +12,7 @@
 
 #if defined(WIN32)
 #	if defined(WIN64)
-#		ifdef _DEBUG
+#		if defined(_DEBUG) && !defined(CRY_SCALEFORM_USE_RELEASE_LIBS)
 #			pragma message (">>> include lib: GFx_win64_debug.lib")
 #			pragma comment ( lib, "GFx_win64_debug.lib" )
 #			pragma message (">>> include lib: libjpeg_win64_debug.lib")

@@ -44,6 +44,18 @@
     <ClInclude Include="MM06Tests.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="MM05Tests.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MM08Tests.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MM07Tests.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MM09Tests.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ComparisonCompatibilityTests.cpp">
@@ -83,6 +95,18 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="MM06Tests.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MM05Tests.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MM08Tests.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MM07Tests.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MM09Tests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

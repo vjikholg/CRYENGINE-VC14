@@ -11,7 +11,7 @@ public:
 	CMementoReadSyncedItems();
 
 private:
-	void Destroy(uint32 data);
+	void Destroy(uint64 data);
 };
 
 class CMementoHistory : public CHistory
@@ -34,8 +34,8 @@ private:
 
 	virtual bool NeedToSync( const SSyncContext& ctx, CSyncContext * pSyncContext, const CRegularlySyncedItem& item );
 	virtual bool CanSync( const SSyncContext& ctx, CSyncContext * pSyncContext, const CRegularlySyncedItem& item );
-	virtual bool SendCurrentValue( const SSendContext& ctx, CSyncContext * pSyncContext, uint32& newValue );
-	virtual void Destroy( uint32 data );
+	virtual bool SendCurrentValue( const SSendContext& ctx, CSyncContext * pSyncContext, uint64& newValue );
+	virtual void Destroy( uint64 data );
 
 	struct SSerializeParams
 	{
@@ -50,7 +50,7 @@ private:
 		bool isOwner;
 		TMemHdl* pAspectData;
 		// out values
-		uint32* pNewValue;
+		uint64* pNewValue;
 	};
 
 	bool Serialize( const SSerializeParams& params );

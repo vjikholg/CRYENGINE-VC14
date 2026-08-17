@@ -1358,15 +1358,21 @@ public:
 					for (int j=0; j<which; j++)
 						++it;
 					m_mmm.ResizeHdl(it->first, sz);
-					it->second = sz;
-					Init(it->first);
+					if (m_mmm.GetHdlSize(it->first) == sz)
+					{
+						it->second = sz;
+						Init(it->first);
+					}
 					//					VerifyAll();
 				}
 				else
 				{
 					TMemHdl hdl = m_mmm.AllocHdl(sz);
-					m_alloced.insert( std::make_pair(hdl, sz) );
-					Init(hdl);
+					if (hdl != CMementoMemoryManager::InvalidHdl)
+					{
+						m_alloced.insert( std::make_pair(hdl, sz) );
+						Init(hdl);
+					}
 					//					VerifyAll();
 				}
 			}

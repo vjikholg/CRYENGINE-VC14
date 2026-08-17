@@ -26,22 +26,6 @@ namespace stl
 	class PoolAllocatorSynchronizationMultithreaded
 	{
 	public:
-#if /*defined(_WIN64) || defined(WIN64) || */defined(_WIN32) || defined(WIN32) || defined(XENON) || defined(PS3)
-		// In windows the pool allocator can be lock-free.
-		class CLock
-		{
-		public:
-			CLock(PoolAllocatorSynchronizationMultithreaded& synchronizer)
-			{
-			}
-
-		private:
-			CLock( const CLock& );
-			CLock& operator=( const CLock& );
-		};
-#else
-			// Since there is currently no CryInterlockedCompareExchangePtr() we will have to use locks for non-windows
-			// environments.
 		PoolAllocatorSynchronizationMultithreaded() : m_lockCounter(0) {}
 
 		class CLock
@@ -56,7 +40,6 @@ namespace stl
 			WriteLock lock;
 		};
 		volatile int m_lockCounter;
-#endif
 
 		static void* AtomicCompareAndSwapPtr(void* volatile* dst, void* val, void* comp)
 		{
@@ -74,7 +57,7 @@ namespace stl
 		class CLock
 		{
 		public:
-			CLock(PoolAllocatorSynchronizationSinglethreaded& synchronizer)
+			CLock(PoolAllocatorSynchronizationSinglethreaded&)
 			{
 			}
 

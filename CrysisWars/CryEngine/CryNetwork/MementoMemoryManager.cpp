@@ -12,6 +12,8 @@ CMementoMemoryManager& MMM()
 }
 
 CMementoMemoryManager::CMementoMemoryManager()
+	: m_totalAllocations(0)
+	, m_handleCookie(NextHandleCookie())
 {
 	ASSERT_GLOBAL_LOCK;
 	arith_zeroSizeHdl = InvalidHdl;
@@ -28,7 +30,6 @@ CMementoMemoryManager::CMementoMemoryManager()
 	m_pools[8] = new CPool<2048>();
 	m_pools[9] = new CPool<4096>();
 	STATIC_CHECK(NPOOLS == 10, PoolsIncorrectlyInitialized);
-	m_totalAllocations = 0;
 }
 
 CMementoMemoryManager::~CMementoMemoryManager()
@@ -49,69 +50,91 @@ CMementoMemoryManager::~CMementoMemoryManager()
 CMementoMemoryManager::Hdl CMementoMemoryManager::AllocHdl( size_t sz, void * callerOverride )
 {
 	ASSERT_GLOBAL_LOCK;
-	Hdl hdl = InvalidHdl;
+	size_t updatedTotal = 0;
+	if (!TryGetUpdatedAllocationTotal(0, sz, updatedTotal))
+		return InvalidHdl;
+
+	uint32 index = 0;
 	if (m_freeHandles.empty())
 	{
-		hdl = m_handles.size();
+		if (m_handles.size() >= HandleIndexMask)
+		{
+			CryError("CMementoMemoryManager handle table exhausted");
+			return InvalidHdl;
+		}
+		index = static_cast<uint32>(m_handles.size());
 		m_handles.push_back(SHandleData());
 	}
 	else
 	{
-		hdl = m_freeHandles.back();
+		index = m_freeHandles.back();
 		m_freeHandles.pop_back();
 	}
 
-	InitHandleData( m_handles[hdl], sz );
-	m_totalAllocations += sz;
+	SHandleData& handleData = m_handles[index];
+	if (!InitHandleData(handleData, sz))
+	{
+		m_freeHandles.push_back(index);
+		return InvalidHdl;
+	}
+	m_totalAllocations = updatedTotal;
 
 #if MMM_CHECK_LEAKS
 	void * caller = callerOverride? callerOverride : UP_STACK_PTR;
-	m_hdlToAlloc[hdl] = caller;
+	m_hdlToAlloc[index] = caller;
 	m_allocAmt[caller] += sz;
 #endif
 
-	return ProtectHdl(hdl);
+	return EncodeHdl(index, handleData.generation);
 }
 
 CMementoMemoryManager::Hdl CMementoMemoryManager::CloneHdl( Hdl hdl )
 {
 	ASSERT_GLOBAL_LOCK;
-	Hdl out = AllocHdl( GetHdlSize(hdl), UP_STACK_PTR );
-	memcpy( PinHdl(out), PinHdl(hdl), GetHdlSize(hdl) );
+	const SHandleData* const source = ResolveHdl(hdl);
+	if (source == nullptr)
+		return InvalidHdl;
+
+	const size_t sourceSize = source->size;
+	const void* const sourceMemory = source->p;
+	Hdl out = AllocHdl(sourceSize, UP_STACK_PTR);
+	if (out == InvalidHdl)
+		return InvalidHdl;
+	memcpy(PinHdl(out), sourceMemory, sourceSize);
 	return out;
 }
 
 void CMementoMemoryManager::ResizeHdl( Hdl hdl, size_t sz )
 {
 	ASSERT_GLOBAL_LOCK;
-	hdl = UnprotectHdl(hdl);
-
-	NET_ASSERT(hdl != InvalidHdl);
-	SHandleData& hd = m_handles[hdl];
+	uint32 index = 0;
+	SHandleData* const resolved = ResolveHdl(hdl, &index);
+	if (resolved == nullptr)
+		return;
+	SHandleData& hd = *resolved;
 
 #ifdef CHECK_POOL_ALLOCATED_POINTERS
 	hd.pPool->CheckPtr(hd.p);
 #endif
 
-	m_totalAllocations -= hd.size;
-	m_totalAllocations += sz;
-
-#if MMM_CHECK_LEAKS
-	void * caller = m_hdlToAlloc[hdl];
-	uint32& callerAlloc = m_allocAmt[caller];
-	callerAlloc -= hd.size;
-	callerAlloc += sz;
-#endif
+	size_t updatedTotal = 0;
+	if (!TryGetUpdatedAllocationTotal(hd.size, sz, updatedTotal))
+		return;
+	const size_t previousSize = hd.size;
 
 	if (sz > hd.size) // growing
 	{
 		if (sz > hd.capacity) // growing and changing pools
 		{
 			SHandleData hdp;
-			InitHandleData( hdp, sz );
+			if (!InitHandleData(hdp, sz))
+				return;
 			memcpy( hdp.p, hd.p, hd.size );
 			hd.pPool->Free(hd.p);
-			hd = hdp;
+			hd.p = hdp.p;
+			hd.size = hdp.size;
+			hd.capacity = hdp.capacity;
+			hd.pPool = hdp.pPool;
 		}
 		else
 		{
@@ -123,16 +146,37 @@ void CMementoMemoryManager::ResizeHdl( Hdl hdl, size_t sz )
 		if (sz < hd.capacity/2) // shrinking and changing pools
 		{
 			SHandleData hdp;
-			InitHandleData( hdp, sz );
+			if (!InitHandleData(hdp, sz))
+				return;
 			memcpy( hdp.p, hd.p, sz );
 			hd.pPool->Free(hd.p);
-			hd = hdp;
+			hd.p = hdp.p;
+			hd.size = hdp.size;
+			hd.capacity = hdp.capacity;
+			hd.pPool = hdp.pPool;
 		}
 		else
 		{
 			hd.size = sz;
 		}
 	}
+
+	m_totalAllocations = updatedTotal;
+#if MMM_CHECK_LEAKS
+	const std::map<uint32, void*>::const_iterator handleCaller =
+		m_hdlToAlloc.find(index);
+	if (handleCaller != m_hdlToAlloc.end())
+	{
+		const std::map<void*, size_t>::iterator callerAllocation =
+			m_allocAmt.find(handleCaller->second);
+		if (callerAllocation != m_allocAmt.end() &&
+			callerAllocation->second >= previousSize)
+		{
+			callerAllocation->second =
+				callerAllocation->second - previousSize + sz;
+		}
+	}
+#endif
 }
 
 void CMementoMemoryManager::FreeHdl( Hdl hdl )
@@ -140,51 +184,136 @@ void CMementoMemoryManager::FreeHdl( Hdl hdl )
 	ASSERT_GLOBAL_LOCK;
 	if (hdl == InvalidHdl)
 		return;
-	hdl = UnprotectHdl(hdl);
-	SHandleData& hd = m_handles[hdl];
-	m_totalAllocations -= hd.size;
+
+	uint32 index = 0;
+	SHandleData* const resolved = ResolveHdl(hdl, &index);
+	if (resolved == nullptr)
+		return;
+	SHandleData& hd = *resolved;
+	if (m_totalAllocations >= hd.size)
+		m_totalAllocations -= hd.size;
+	else
+	{
+		CryError("CMementoMemoryManager allocation accounting underflow");
+		m_totalAllocations = 0;
+	}
 
 #if MMM_CHECK_LEAKS
-	void * caller = m_hdlToAlloc[hdl];
-	m_hdlToAlloc.erase(hdl);
-	if (!(m_allocAmt[caller] -= hd.size))
-		m_allocAmt.erase(caller);
+	const std::map<uint32, void*>::iterator handleCaller =
+		m_hdlToAlloc.find(index);
+	if (handleCaller != m_hdlToAlloc.end())
+	{
+		const std::map<void*, size_t>::iterator callerAllocation =
+			m_allocAmt.find(handleCaller->second);
+		if (callerAllocation != m_allocAmt.end())
+		{
+			if (callerAllocation->second > hd.size)
+				callerAllocation->second -= hd.size;
+			else
+				m_allocAmt.erase(callerAllocation);
+		}
+		m_hdlToAlloc.erase(handleCaller);
+	}
 #endif
 
 	hd.pPool->Free(hd.p);
-	m_freeHandles.push_back(hdl);
+	hd.p = nullptr;
+	hd.size = 0;
+	hd.capacity = 0;
+	hd.pPool = nullptr;
+	hd.allocated = false;
+	++hd.generation;
+	if (hd.generation == 0)
+		hd.generation = 1;
+	m_freeHandles.push_back(index);
 }
 
-void CMementoMemoryManager::InitHandleData( SHandleData& hd, size_t sz )
+int CMementoMemoryManager::GetPoolIndex(size_t size) noexcept
+{
+	size_t capacity = size_t{1} << FIRST_POOL;
+	for (int pool = 0; pool < NPOOLS; ++pool)
+	{
+		if (size <= capacity)
+			return pool;
+		capacity <<= 1;
+	}
+	return NPOOLS;
+}
+
+bool CMementoMemoryManager::TryGetUpdatedAllocationTotal(
+	size_t previousSize,
+	size_t newSize,
+	size_t& updatedTotal) const noexcept
+{
+	if (previousSize > m_totalAllocations)
+	{
+		CryError("CMementoMemoryManager allocation accounting underflow");
+		updatedTotal = m_totalAllocations;
+		return false;
+	}
+
+	const size_t retainedTotal = m_totalAllocations - previousSize;
+	if (CryTryAddSize(retainedTotal, newSize, updatedTotal))
+		return true;
+
+	CRY_ALLOCATOR_SIZE_FAILURE(
+		"CMementoMemoryManager allocation accounting",
+		retainedTotal,
+		1,
+		(std::numeric_limits<size_t>::max)(),
+		ALIGNMENT,
+		newSize,
+		ECryAllocatorFailureAction::ReturnNull);
+	return false;
+}
+
+bool CMementoMemoryManager::InitHandleData(SHandleData& hd, size_t sz)
 {
 	ASSERT_GLOBAL_LOCK;
-	size_t szP2 = IntegerLog2_RoundUp(sz);
-	NET_ASSERT((1u<<szP2) >= sz);
-	int pool = std::max( (int)szP2 - FIRST_POOL, 0 );
-	hd.size = sz;
+	const int pool = GetPoolIndex(sz);
+	IPool* selectedPool = nullptr;
+	void* memory = nullptr;
+	size_t capacity = 0;
 	if (pool < NPOOLS)
 	{
-		hd.pPool = m_pools[pool];
-		hd.p = hd.pPool->Allocate( hd.capacity );
+		selectedPool = m_pools[pool];
+		memory = selectedPool->Allocate(capacity);
 	}
 	else
 	{
-		hd.pPool = &m_largeObjectPool;
-		hd.p = m_largeObjectPool.AllocateSized( sz, hd.capacity );
+		selectedPool = &m_largeObjectPool;
+		memory = m_largeObjectPool.AllocateSized(sz, capacity);
 	}
+	if (memory == nullptr)
+	{
+		CryError("CMementoMemoryManager failed to allocate %zu bytes", sz);
+		return false;
+	}
+
+	hd.p = memory;
+	hd.size = sz;
+	hd.capacity = capacity;
+	hd.pPool = selectedPool;
+	hd.allocated = true;
 	NET_ASSERT(hd.capacity >= sz);
 
 #ifdef CHECK_POOL_ALLOCATED_POINTERS
 	hd.pPool->CheckPtr(hd.p);
 #endif
+	return true;
 }
 
 void * CMementoMemoryManager::AllocPtr( size_t sz, void * callerOverride )
 {
 	ASSERT_GLOBAL_LOCK;
 	SHandleData hd;
-	m_totalAllocations += sz;
-	InitHandleData( hd, sz );
+	size_t updatedTotal = 0;
+	if (!TryGetUpdatedAllocationTotal(0, sz, updatedTotal) ||
+		!InitHandleData(hd, sz))
+	{
+		return nullptr;
+	}
+	m_totalAllocations = updatedTotal;
 
 #if MMM_CHECK_LEAKS
 	void * caller = callerOverride? callerOverride : UP_STACK_PTR;
@@ -198,26 +327,45 @@ void * CMementoMemoryManager::AllocPtr( size_t sz, void * callerOverride )
 void CMementoMemoryManager::FreePtr( void * p, size_t sz )
 {
 	ASSERT_GLOBAL_LOCK;
-	int pool = std::max( (int)IntegerLog2_RoundUp(sz) - FIRST_POOL, 0 );
+	if (p == nullptr)
+		return;
+	const int pool = GetPoolIndex(sz);
 	if (pool < NPOOLS)
 		m_pools[pool]->Free(p);
 	else
 		m_largeObjectPool.Free(p);
 
 #if MMM_CHECK_LEAKS
-	void * caller = m_ptrToAlloc[p];
-	m_ptrToAlloc.erase(p);
-	if (!(m_allocAmt[caller] -= sz))
-		m_allocAmt.erase(caller);
+	const std::map<void*, void*>::iterator pointerCaller = m_ptrToAlloc.find(p);
+	if (pointerCaller != m_ptrToAlloc.end())
+	{
+		const std::map<void*, size_t>::iterator callerAllocation =
+			m_allocAmt.find(pointerCaller->second);
+		if (callerAllocation != m_allocAmt.end())
+		{
+			if (callerAllocation->second > sz)
+				callerAllocation->second -= sz;
+			else
+				m_allocAmt.erase(callerAllocation);
+		}
+		m_ptrToAlloc.erase(pointerCaller);
+	}
 #endif
 
-	m_totalAllocations -= sz;
+	if (m_totalAllocations >= sz)
+		m_totalAllocations -= sz;
+	else
+	{
+		CryError("CMementoMemoryManager allocation accounting underflow");
+		m_totalAllocations = 0;
+	}
 }
 
 void CMementoMemoryManager::AddHdlToSizer( Hdl hdl, ICrySizer * pSizer )
 {
-	if (hdl != InvalidHdl)
-		pSizer->AddObject( PinHdl(hdl), GetHdlSize(hdl) );
+	const SHandleData* const handleData = ResolveHdl(hdl);
+	if (handleData != nullptr)
+		pSizer->AddObject(handleData->p, handleData->size);
 }
 
 void CMementoMemoryManager::GetMemoryStatistics(ICrySizer* pSizer, bool countingThis /* = false */)
@@ -274,7 +422,7 @@ void CMementoMemoryManager::DebugDraw( int n )
 		if (!stats.allocated)
 			continue;
 
-		DrawDebugLine( n, 2, y++, "Pool %d (%d byte blocks): alloc=%d, used=%d, waste=%.1f%%", i, 1<<(i+FIRST_POOL), stats.allocated, stats.used, stats.GetWastePercent() );
+		DrawDebugLine( n, 2, y++, "Pool %d (%d byte blocks): alloc=%zu, used=%zu, waste=%.1f%%", i, 1<<(i+FIRST_POOL), stats.allocated, stats.used, stats.GetWastePercent() );
 
 		aggregateStats.allocated += stats.allocated;
 		aggregateStats.used += stats.used;
@@ -287,7 +435,7 @@ void CMementoMemoryManager::DebugDraw( int n )
 	if (aggregateStats.used)
 		poolWaste = 100.0f * (1.0f - float(m_totalAllocations) / float(aggregateStats.used));
 
-	DrawDebugLine( n, 2, y++, "Total: live=%d, alloc=%d, used=%d, live-waste=%.1f%%, alloc-waste=%.1f%%, pool-waste=%.1f%%", m_totalAllocations, aggregateStats.allocated, aggregateStats.used, liveWaste, aggregateStats.GetWastePercent(), poolWaste );
+	DrawDebugLine( n, 2, y++, "Total: live=%zu, alloc=%zu, used=%zu, live-waste=%.1f%%, alloc-waste=%.1f%%, pool-waste=%.1f%%", m_totalAllocations, aggregateStats.allocated, aggregateStats.used, liveWaste, aggregateStats.GetWastePercent(), poolWaste );
 #endif
 }
 
@@ -311,6 +459,8 @@ void * CMementoStreamAllocator::Realloc( void * old, size_t sz )
 {
 	NET_ASSERT(m_pPin == old && m_pPin);
 	m_mmm->ResizeHdl( m_hdl, sz );
+	if (m_mmm->GetHdlSize(m_hdl) != sz)
+		return nullptr;
 
 	return m_pPin = m_mmm->PinHdl(m_hdl);
 }

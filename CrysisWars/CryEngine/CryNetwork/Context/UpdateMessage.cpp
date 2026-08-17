@@ -571,7 +571,10 @@ CRegularUpdateMessage * CRegularUpdateMessage::Create( const SUpdateMessageConfi
 {
 	ASSERT_GLOBAL_LOCK;
 	TMemHdl hdl = MMM().AllocHdl(sizeof(CRegularUpdateMessage));
-	CRegularUpdateMessage * p = new (MMM().PinHdl(hdl)) CRegularUpdateMessage( cfg, flags );
+	void* const memory = MMM().PinHdl(hdl);
+	if (memory == nullptr)
+		return nullptr;
+	CRegularUpdateMessage * p = new (memory) CRegularUpdateMessage( cfg, flags );
 	p->m_memhdl = hdl;
 	return p;
 }

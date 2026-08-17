@@ -20,6 +20,19 @@ static std::unordered_map<const CMementoMemoryManager*, SMementoAllocatorTestSta
 static std::unordered_map<void*, SMementoAllocationRecord> g_mementoAllocations;
 static CMementoMemoryManager* g_currentMementoManager = 0;
 
+void CryAssertTrace(const char*, ...)
+{
+}
+
+bool CryAssert(const char*, const char*, unsigned int, bool*)
+{
+	return false;
+}
+
+void CryDebugBreak()
+{
+}
+
 void CryAllocatorSizeFailure(const SCryAllocatorFailureContext& context) noexcept
 {
 	std::fprintf(
@@ -83,9 +96,19 @@ void SetCurrentMementoManagerForTest(CMementoMemoryManager* manager)
 CMementoMemoryManager::CMementoMemoryManager()
 	: arith_zeroSizeHdl(InvalidHdl)
 	, m_totalAllocations(0)
+	, m_handleCookie(NextHandleCookie())
 {
 	std::memset(pThings, 0, sizeof(pThings));
-	std::memset(m_pools, 0, sizeof(m_pools));
+	m_pools[0] = new CPool<8>();
+	m_pools[1] = new CPool<16>();
+	m_pools[2] = new CPool<32>();
+	m_pools[3] = new CPool<64>();
+	m_pools[4] = new CPool<128>();
+	m_pools[5] = new CPool<256>();
+	m_pools[6] = new CPool<512>();
+	m_pools[7] = new CPool<1024>();
+	m_pools[8] = new CPool<2048>();
+	m_pools[9] = new CPool<4096>();
 
 	SMementoAllocatorTestStats stats = {};
 	stats.alive = true;
@@ -97,6 +120,164 @@ CMementoMemoryManager::~CMementoMemoryManager()
 	SMementoAllocatorTestStats& stats = g_mementoManagerStats[this];
 	stats.destroyedWithOutstandingAllocations = stats.liveAllocationCount != 0;
 	stats.alive = false;
+	for (int pool = 0; pool < NPOOLS; ++pool)
+		delete m_pools[pool];
+}
+
+CMementoMemoryManager::Hdl CMementoMemoryManager::AllocHdl(
+	size_t size,
+	void*)
+{
+	size_t updatedTotal = 0;
+	if (!TryGetUpdatedAllocationTotal(0, size, updatedTotal))
+		return InvalidHdl;
+
+	uint32 index = 0;
+	if (m_freeHandles.empty())
+	{
+		if (m_handles.size() >= HandleIndexMask)
+			return InvalidHdl;
+		index = static_cast<uint32>(m_handles.size());
+		m_handles.push_back(SHandleData());
+	}
+	else
+	{
+		index = m_freeHandles.back();
+		m_freeHandles.pop_back();
+	}
+
+	SHandleData& handleData = m_handles[index];
+	if (!InitHandleData(handleData, size))
+	{
+		m_freeHandles.push_back(index);
+		return InvalidHdl;
+	}
+	m_totalAllocations = updatedTotal;
+	return EncodeHdl(index, handleData.generation);
+}
+
+CMementoMemoryManager::Hdl CMementoMemoryManager::CloneHdl(Hdl handle)
+{
+	const SHandleData* const source = ResolveHdl(handle);
+	if (source == nullptr)
+		return InvalidHdl;
+
+	const size_t sourceSize = source->size;
+	const void* const sourceMemory = source->p;
+	const Hdl clone = AllocHdl(sourceSize);
+	if (clone != InvalidHdl)
+		std::memcpy(PinHdl(clone), sourceMemory, sourceSize);
+	return clone;
+}
+
+void CMementoMemoryManager::ResizeHdl(Hdl handle, size_t size)
+{
+	SHandleData* const resolved = ResolveHdl(handle);
+	if (resolved == nullptr)
+		return;
+	SHandleData& handleData = *resolved;
+
+	size_t updatedTotal = 0;
+	if (!TryGetUpdatedAllocationTotal(handleData.size, size, updatedTotal))
+		return;
+	if (size > handleData.capacity || size < handleData.capacity / 2)
+	{
+		SHandleData replacement;
+		if (!InitHandleData(replacement, size))
+			return;
+		std::memcpy(
+			replacement.p,
+			handleData.p,
+			size < handleData.size ? size : handleData.size);
+		handleData.pPool->Free(handleData.p);
+		handleData.p = replacement.p;
+		handleData.size = replacement.size;
+		handleData.capacity = replacement.capacity;
+		handleData.pPool = replacement.pPool;
+	}
+	else
+	{
+		handleData.size = size;
+	}
+	m_totalAllocations = updatedTotal;
+}
+
+void CMementoMemoryManager::FreeHdl(Hdl handle)
+{
+	uint32 index = 0;
+	SHandleData* const resolved = ResolveHdl(handle, &index);
+	if (resolved == nullptr)
+		return;
+
+	SHandleData& handleData = *resolved;
+	if (m_totalAllocations >= handleData.size)
+		m_totalAllocations -= handleData.size;
+	else
+		m_totalAllocations = 0;
+	handleData.pPool->Free(handleData.p);
+	handleData.p = nullptr;
+	handleData.size = 0;
+	handleData.capacity = 0;
+	handleData.pPool = nullptr;
+	handleData.allocated = false;
+	++handleData.generation;
+	if (handleData.generation == 0)
+		handleData.generation = 1;
+	m_freeHandles.push_back(index);
+}
+
+int CMementoMemoryManager::GetPoolIndex(size_t size) noexcept
+{
+	size_t capacity = size_t{1} << FIRST_POOL;
+	for (int pool = 0; pool < NPOOLS; ++pool)
+	{
+		if (size <= capacity)
+			return pool;
+		capacity <<= 1;
+	}
+	return NPOOLS;
+}
+
+bool CMementoMemoryManager::TryGetUpdatedAllocationTotal(
+	size_t previousSize,
+	size_t newSize,
+	size_t& updatedTotal) const noexcept
+{
+	if (previousSize > m_totalAllocations)
+	{
+		updatedTotal = m_totalAllocations;
+		return false;
+	}
+	return CryTryAddSize(m_totalAllocations - previousSize, newSize, updatedTotal);
+}
+
+bool CMementoMemoryManager::InitHandleData(
+	SHandleData& handleData,
+	size_t size)
+{
+	const int pool = GetPoolIndex(size);
+	IPool* selectedPool = nullptr;
+	void* memory = nullptr;
+	size_t capacity = 0;
+	if (pool < NPOOLS)
+	{
+		selectedPool = m_pools[pool];
+		memory = selectedPool->Allocate(capacity);
+	}
+	else
+	{
+		selectedPool = &m_largeObjectPool;
+		memory = m_largeObjectPool.AllocateSized(size, capacity);
+	}
+	if (memory == nullptr)
+		return false;
+
+	handleData.p = memory;
+	handleData.size = size;
+	handleData.capacity = capacity;
+	handleData.pPool = selectedPool;
+	handleData.allocated = true;
+	return true;
 }
 
 void* CMementoMemoryManager::AllocPtr(size_t size, void*)

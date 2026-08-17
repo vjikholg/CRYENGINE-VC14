@@ -3,6 +3,11 @@
 
 #include <ILog.h>
 #include <ICryPak.h> //impl of fxopen
+#include <CryAllocatorFailure.h>
+
+#include <cstdint>
+#include <limits>
+#include <new>
 
 #ifndef CLAMP
 #define CLAMP(X, mn, mx) ((X)<(mn) ? (mn) : ((X)<(mx) ? (X) : (mx)))
@@ -60,14 +65,17 @@ public:
 	typedef T&        reference;
 	typedef const T&  const_reference;
 	typedef T         value_type;
+	inline static constexpr size_type AllocationOverhead = 0x10;
+	inline static constexpr size_type MaxElementCount =
+		((std::numeric_limits<size_type>::max)() - AllocationOverhead) /
+		sizeof(T);
 
 	template <class U> 
 	struct rebind { typedef TAllocator16<U> other; };
 
-	size_type max_size() const
+	constexpr size_type max_size() const noexcept
 	{	// estimate maximum array size
-		size_type _Count = (size_type)(-1) / sizeof (T);
-		return (0 < _Count ? _Count : 1);
+		return MaxElementCount;
 	}
 
 	TAllocator16 ()
@@ -89,15 +97,36 @@ public:
 	// puts the pointer to the actually allocated block before the aligned memory block
 	pointer allocate (size_type _Count)
 	{
-		pointer p;
+		if (_Count > MaxElementCount)
+		{
+			CRY_ALLOCATOR_SIZE_FAILURE(
+				"TAllocator16::allocate",
+				_Count,
+				sizeof(T),
+				MaxElementCount,
+				16,
+				AllocationOverhead,
+				ECryAllocatorFailureAction::WriteDumpAndTerminate);
+			throw std::bad_array_new_length();
+		}
+
+		const size_type allocationSize = AllocationOverhead + _Count * sizeof(T);
+		void* allocation = nullptr;
 #if defined(_DEBUG) && defined(_INC_CRTDBG) && !defined(WIN64)
-		p = (pointer)_malloc_dbg (0x10+_Count * sizeof(T), _NORMAL_BLOCK, m_szParentObject, m_nParentIndex);
+		allocation = _malloc_dbg(allocationSize, _NORMAL_BLOCK, m_szParentObject, m_nParentIndex);
 #else
-		p = (pointer)malloc (0x10+_Count*sizeof(T));
+		allocation = malloc(allocationSize);
 #endif
-		pointer pResult = (pointer)(((UINT_PTR)p+0x10)&~0xF);
+		if (allocation == nullptr)
+			throw std::bad_alloc();
+
+		const uintptr_t alignedAddress =
+			(reinterpret_cast<uintptr_t>(allocation) + AllocationOverhead) &
+			~uintptr_t{0xF};
+		pointer pResult = reinterpret_cast<pointer>(alignedAddress);
 		// save the offset to the actual allocated address behind the useable aligned address
-		reinterpret_cast<int*>(pResult)[-1] = (char*)p - (char*)pResult;
+		reinterpret_cast<int*>(pResult)[-1] = static_cast<int>(
+			static_cast<char*>(allocation) - reinterpret_cast<char*>(pResult));
 		return pResult;
 	}
 
@@ -230,8 +259,23 @@ public:
 			m_pElements = NULL;
 		else
 		{
-			m_pElements = (T *)realloc(m_pElements, m_nAllocatedCount*sizeof(T));
-			assert (m_pElements);
+			size_t allocationSize = 0;
+			if (!CryTryMultiplySize(m_nAllocatedCount, sizeof(T), allocationSize))
+			{
+				CRY_ALLOCATOR_SIZE_FAILURE(
+					"TArray::Realloc",
+					m_nAllocatedCount,
+					sizeof(T),
+					CryAllocatorMaxElementCount<T>,
+					alignof(T),
+					0,
+					ECryAllocatorFailureAction::WriteDumpAndTerminate);
+				throw std::bad_array_new_length();
+			}
+			void* const replacement = realloc(m_pElements, allocationSize);
+			if (replacement == nullptr)
+				throw std::bad_alloc();
+			m_pElements = static_cast<T*>(replacement);
 		}
   }
 

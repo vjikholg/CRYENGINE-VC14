@@ -102,7 +102,11 @@
     <ClInclude Include="MemoryAllocatorTests.h" />
     <ClInclude Include="MemoryAccountingTests.h" />
     <ClInclude Include="MemoryManagerTests.h" />
+    <ClInclude Include="MM05Tests.h" />
     <ClInclude Include="MM06Tests.h" />
+    <ClInclude Include="MM07Tests.h" />
+    <ClInclude Include="MM08Tests.h" />
+    <ClInclude Include="MM09Tests.h" />
     <ClInclude Include="MM03BenchmarkEnvironment.h" />
     <ClInclude Include="SafeAllocTests.h" />
     <ClInclude Include="StlHashMapAdapterTests.h" />
@@ -117,8 +121,12 @@
     <ClCompile Include="MemoryAllocatorTests.cpp" />
     <ClCompile Include="MemoryAccountingTests.cpp" />
     <ClCompile Include="MemoryManagerTests.cpp" />
+    <ClCompile Include="MM05Tests.cpp" />
     <ClCompile Include="MM03BenchmarkEnvironment.cpp" />
     <ClCompile Include="MM06Tests.cpp" />
+    <ClCompile Include="MM07Tests.cpp" />
+    <ClCompile Include="MM08Tests.cpp" />
+    <ClCompile Include="MM09Tests.cpp" />
     <ClCompile Include="SafeAllocTests.cpp" />
     <ClCompile Include="StlHashMapAdapterTests.cpp" />
     <ClCompile Include="TestRunner.cpp" />

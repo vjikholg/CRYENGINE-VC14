@@ -51,7 +51,7 @@ bool CConfigurationHistory::NeedToSync( const SSyncContext& ctx, CSyncContext * 
 	return false;
 }
 
-bool CConfigurationHistory::SendCurrentValue( const SSendContext& ctx, CSyncContext * pSyncContext, uint32& newValue )
+bool CConfigurationHistory::SendCurrentValue( const SSendContext& ctx, CSyncContext * pSyncContext, uint64& newValue )
 {
 	ctx.pSender->BeginMessage( ctx.pView->GetConfig().pReconfigureMsg );
 	uint8 aspects = ctx.ctxObj.xtra->nAspectsEnabled;

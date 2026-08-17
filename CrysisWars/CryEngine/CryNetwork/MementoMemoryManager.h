@@ -5,11 +5,13 @@
 
 #include <platform.h>
 #include <smartptr.h>
+#include <CryAllocatorFailure.h>
 
 #include "STLPoolAllocator.h"
 #include "Config.h"
 #include "StreamAllocator.h"
 
+#include <atomic>
 #include <cstdint>
 #include <vector>
 
@@ -26,11 +28,16 @@ class CMementoMemoryManager : public CMultiThreadRefCount
 {
 	friend class CMementoStreamAllocator;
 
+private:
+	struct SHandleData;
+
 public:
-	static const size_t ALIGNMENT = 4; // alignment for mementos
+	static constexpr size_t ALIGNMENT = alignof(std::max_align_t);
+	using Hdl = uint64_t;
+	static constexpr Hdl InvalidHdl = ~Hdl(0);
 
 	// hack for arithmetic alphabet stuff
-	uint32 arith_zeroSizeHdl;
+	Hdl arith_zeroSizeHdl;
 	IMementoManagedThing * pThings[64];
 
 	// who's using pThings:
@@ -40,9 +47,6 @@ public:
 	CMementoMemoryManager();
 	~CMementoMemoryManager();
 
-	typedef uint32 Hdl;
-	static const Hdl InvalidHdl = ~Hdl(0);
-
 	void * AllocPtr( size_t sz, void * callerOverride = 0 );
 	void FreePtr( void * p, size_t sz );
 	Hdl AllocHdl( size_t sz, void * callerOverride = 0 );
@@ -50,42 +54,28 @@ public:
 	void ResizeHdl( Hdl hdl, size_t sz );
 	void FreeHdl( Hdl hdl );
 	void AddHdlToSizer( Hdl hdl, ICrySizer * pSizer );
-	ILINE void * PinHdl( Hdl hdl ) const
+	bool IsValidHdl(Hdl hdl) const noexcept;
+	size_t GetLiveAllocationBytes() const noexcept
 	{
-//		ASSERT_GLOBAL_LOCK;
-		hdl = UnprotectHdl(hdl);
-#ifdef CHECK_POOL_ALLOCATED_POINTERS
-		m_handles[hdl].pPool->CheckPtr(m_handles[hdl].p);
-#endif
-		return m_handles[hdl].p;
+		return m_totalAllocations;
 	}
-	ILINE size_t GetHdlSize( Hdl hdl ) const
-	{
-//		ASSERT_GLOBAL_LOCK;
-		hdl = UnprotectHdl(hdl);
-#ifdef CHECK_POOL_ALLOCATED_POINTERS
-		m_handles[hdl].pPool->CheckPtr(m_handles[hdl].p);
-#endif
-		return m_handles[hdl].size;
-	}
+	ILINE void* PinHdl(Hdl hdl) const;
+	ILINE size_t GetHdlSize(Hdl hdl) const;
 
 	void GetMemoryStatistics(ICrySizer* pSizer, bool countingThis = false);
 
 	void DebugDraw( int n );
 
 private:
-	ILINE Hdl ProtectHdl( Hdl x ) const
-	{
-		return (x + 0x80) ^ GetHandleProtectionKey();
-	}
-	ILINE Hdl UnprotectHdl( Hdl x ) const
-	{
-		return (x ^ GetHandleProtectionKey()) - 0x80;
-	}
-	ILINE uint32 GetHandleProtectionKey() const
-	{
-		return static_cast<uint32>(reinterpret_cast<std::uintptr_t>(this));
-	}
+	static constexpr uint64_t HandleIndexMask = 0xffffffffull;
+	static constexpr unsigned HandleGenerationShift = 32;
+
+	static uint32 NextHandleCookie() noexcept;
+	Hdl EncodeHdl(uint32 index, uint32 generation) const noexcept;
+	SHandleData* ResolveHdl(Hdl hdl, uint32* index = nullptr) noexcept;
+	const SHandleData* ResolveHdl(
+		Hdl hdl,
+		uint32* index = nullptr) const noexcept;
 
 	struct SPoolStats
 	{
@@ -163,30 +153,124 @@ private:
 
 	struct SHandleData
 	{
-		void * p;
+		SHandleData()
+			: p(nullptr)
+			, size(0)
+			, capacity(0)
+			, pPool(nullptr)
+			, generation(1)
+			, allocated(false)
+		{
+		}
+
+		void* p;
 		size_t size;
 		size_t capacity;
-		IPool * pPool;
+		IPool* pPool;
+		uint32 generation;
+		bool allocated;
 	};
 
 	std::vector<SHandleData> m_handles;
 	std::vector<uint32> m_freeHandles;
 	size_t m_totalAllocations;
+	const uint32 m_handleCookie;
 
-	void InitHandleData( SHandleData& hd, size_t sz );
+	static int GetPoolIndex(size_t size) noexcept;
+	bool TryGetUpdatedAllocationTotal(
+		size_t previousSize,
+		size_t newSize,
+		size_t& updatedTotal) const noexcept;
+	bool InitHandleData(SHandleData& handleData, size_t size);
 	void DrawDebugLine( int grp, int x, int y, const char * fmt, ... );
 
 #if MMM_CHECK_LEAKS
 	std::map<void*, void*> m_ptrToAlloc;
 	std::map<uint32, void*> m_hdlToAlloc;
-	std::map<void*, uint32> m_allocAmt;
+	std::map<void*, size_t> m_allocAmt;
 #endif
-
-	size_t GetLiveAllocationBytes() const noexcept
-	{
-		return m_totalAllocations;
-	}
 };
+
+inline uint32 CMementoMemoryManager::NextHandleCookie() noexcept
+{
+	static std::atomic<uint32> nextCookie{1};
+	uint32 cookie = nextCookie.fetch_add(1, std::memory_order_relaxed);
+	if (cookie == 0)
+		cookie = nextCookie.fetch_add(1, std::memory_order_relaxed);
+	return cookie;
+}
+
+inline void* CMementoMemoryManager::PinHdl(Hdl hdl) const
+{
+	const SHandleData* const handleData = ResolveHdl(hdl);
+	if (handleData == nullptr)
+		return nullptr;
+#ifdef CHECK_POOL_ALLOCATED_POINTERS
+	handleData->pPool->CheckPtr(handleData->p);
+#endif
+	return handleData->p;
+}
+
+inline size_t CMementoMemoryManager::GetHdlSize(Hdl hdl) const
+{
+	const SHandleData* const handleData = ResolveHdl(hdl);
+	if (handleData == nullptr)
+		return 0;
+#ifdef CHECK_POOL_ALLOCATED_POINTERS
+	handleData->pPool->CheckPtr(handleData->p);
+#endif
+	return handleData->size;
+}
+
+inline CMementoMemoryManager::Hdl CMementoMemoryManager::EncodeHdl(
+	uint32 index,
+	uint32 generation) const noexcept
+{
+	const uint64_t generationToken = generation ^ m_handleCookie;
+	return (generationToken << HandleGenerationShift) | index;
+}
+
+inline const CMementoMemoryManager::SHandleData*
+CMementoMemoryManager::ResolveHdl(
+	Hdl hdl,
+	uint32* resolvedIndex) const noexcept
+{
+	if (hdl == InvalidHdl)
+		return nullptr;
+
+	const uint64_t wideIndex = hdl & HandleIndexMask;
+	if (wideIndex >= m_handles.size())
+		return nullptr;
+
+	const uint32 index = static_cast<uint32>(wideIndex);
+	const SHandleData& handleData = m_handles[index];
+	const uint32 generationToken =
+		static_cast<uint32>(hdl >> HandleGenerationShift);
+	if (!handleData.allocated ||
+		generationToken != (handleData.generation ^ m_handleCookie))
+	{
+		return nullptr;
+	}
+
+	if (resolvedIndex != nullptr)
+		*resolvedIndex = index;
+	return &handleData;
+}
+
+inline CMementoMemoryManager::SHandleData* CMementoMemoryManager::ResolveHdl(
+	Hdl hdl,
+	uint32* resolvedIndex) noexcept
+{
+	return const_cast<SHandleData*>(
+		static_cast<const CMementoMemoryManager*>(this)->ResolveHdl(
+			hdl,
+			resolvedIndex));
+}
+
+inline bool CMementoMemoryManager::IsValidHdl(Hdl hdl) const noexcept
+{
+	return ResolveHdl(hdl) != nullptr;
+}
 
 typedef CMementoMemoryManager::Hdl TMemHdl;
 

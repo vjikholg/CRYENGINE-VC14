@@ -758,7 +758,13 @@ void CNetChannel::ProcessPacket( bool forceWaitForSync, const uint8 * pData, uin
 #endif
 
 	TMemHdl hdl = MMM().AllocHdl(nLength);
-	memcpy(MMM().PinHdl(hdl), pData, nLength);
+	void* const packetMemory = MMM().PinHdl(hdl);
+	if (packetMemory == nullptr)
+	{
+		NetWarning("CNetChannel::ProcessPacket failed to allocate %u bytes", nLength);
+		return;
+	}
+	memcpy(packetMemory, pData, nLength);
 
 	if (!forceWaitForSync && m_queuedForSyncPackets.empty())
 		DoProcessPacket(hdl, false);

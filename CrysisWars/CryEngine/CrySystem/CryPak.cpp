@@ -13,6 +13,7 @@
 
 #include "StdAfx.h"
 #include "CryPak.h"
+#include <CryAllocatorFailure.h>
 #include <ILog.h>
 #include <ISystem.h>
 #include <ITimer.h>
@@ -3053,8 +3054,27 @@ static char* cry_strdup(const char* szSource)
 ICryPak::PakInfo* CCryPak::GetPakInfo()
 {
 	AUTO_LOCK(m_csZips);
-	PakInfo* pResult = (PakInfo*)malloc (sizeof(PakInfo) + sizeof(PakInfo::Pak)*m_arrZips.size());
-	pResult->numOpenPaks = m_arrZips.size();
+	size_t pakArraySize = 0;
+	size_t allocationSize = 0;
+	if (m_arrZips.size() > (std::numeric_limits<unsigned>::max)() ||
+		!CryTryMultiplySize(m_arrZips.size(), sizeof(PakInfo::Pak), pakArraySize) ||
+		!CryTryAddSize(sizeof(PakInfo), pakArraySize, allocationSize))
+	{
+		CRY_ALLOCATOR_SIZE_FAILURE(
+			"CCryPak::GetPakInfo",
+			m_arrZips.size(),
+			sizeof(PakInfo::Pak),
+			CryAllocatorMaxElementCount<PakInfo::Pak>,
+			alignof(PakInfo),
+			sizeof(PakInfo),
+			ECryAllocatorFailureAction::ReturnNull);
+		return nullptr;
+	}
+
+	PakInfo* pResult = static_cast<PakInfo*>(malloc(allocationSize));
+	if (pResult == nullptr)
+		return nullptr;
+	pResult->numOpenPaks = static_cast<unsigned>(m_arrZips.size());
 	for (unsigned i = 0; i < m_arrZips.size(); ++i)
 	{
 		pResult->arrPaks[i].szBindRoot = cry_strdup(m_arrZips[i].strBindRoot.c_str());
@@ -3067,6 +3087,8 @@ ICryPak::PakInfo* CCryPak::GetPakInfo()
 //////////////////////////////////////////////////////////////////////////
 void CCryPak::FreePakInfo (PakInfo* pPakInfo)
 {
+	if (pPakInfo == nullptr)
+		return;
 	for (unsigned i = 0; i < pPakInfo->numOpenPaks; ++i)
 	{
 		free((void*)pPakInfo->arrPaks[i].szBindRoot);

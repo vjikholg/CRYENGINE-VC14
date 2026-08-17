@@ -351,6 +351,12 @@
     <ClInclude Include="CryMemoryManager.h">
       <Filter>Common_h</Filter>
     </ClInclude>
+    <ClInclude Include="CryCrtAllocationSize.h">
+      <Filter>Common_h</Filter>
+    </ClInclude>
+    <ClInclude Include="CryMemoryCoverage.h">
+      <Filter>Common_h</Filter>
+    </ClInclude>
     <ClInclude Include="CryName.h">
       <Filter>Common_h</Filter>
     </ClInclude>

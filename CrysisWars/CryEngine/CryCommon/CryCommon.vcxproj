@@ -234,6 +234,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="CryAllocatorFailure.h" />
+    <ClInclude Include="CryCrtAllocationSize.h" />
+    <ClInclude Include="CryMemoryCoverage.h" />
     <ClInclude Include="AABBSV.h" />
     <ClInclude Include="AgentParams.h" />
     <ClInclude Include="AIFormationDescriptor.h" />

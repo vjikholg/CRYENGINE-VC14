@@ -94,7 +94,7 @@ public:
 private:
 	virtual bool NeedToSync( const SSyncContext& ctx, CSyncContext * pSyncContext, const CRegularlySyncedItem& item ) = 0;
 	virtual bool CanSync( const SSyncContext& ctx, CSyncContext * pSyncContext, const CRegularlySyncedItem& item ) = 0;
-	virtual bool SendCurrentValue( const SSendContext& ctx, CSyncContext * pSyncContext, uint32& newValue ) = 0;
+	virtual bool SendCurrentValue( const SSendContext& ctx, CSyncContext * pSyncContext, uint64& newValue ) = 0;
 };
 
 #endif

@@ -31,12 +31,22 @@ namespace stl
 			inline void destruct(T *t){t->~T();}
 	}
 
-	template <size_t SZ, class L> struct STLPoolAllocatorStatic
+	template <size_t SZ, size_t ALIGNMENT, class L> struct STLPoolAllocatorStatic
 	{
-		static PoolAllocator<SZ, L> * allocator;
+		using Allocator = PoolAllocator<SZ, L, ALIGNMENT>;
+
+		static Allocator& GetAllocator()
+		{
+			// Containers may first allocate after global construction has finished.
+			// Keep the shared pool alive through process shutdown so their destructors
+			// cannot observe an already-destroyed allocator.
+			static Allocator* const allocator = new Allocator;
+			return *allocator;
+		}
 	};
 
-	template <class T, class L> struct STLPoolAllocatorKungFu : public STLPoolAllocatorStatic<sizeof(T),L>
+	template <class T, class L> struct STLPoolAllocatorKungFu
+		: public STLPoolAllocatorStatic<sizeof(T), alignof(T), L>
 	{
 	};
 
@@ -83,16 +93,18 @@ namespace stl
 
 		pointer allocate(size_type n, const void* hint = 0)
 		{
-			if (!STLPoolAllocatorKungFu<T,L>::allocator)
-				STLPoolAllocatorKungFu<T,L>::allocator = new PoolAllocator<sizeof(T),L>;
+			(void)hint;
 			assert(n == 1);
-			return static_cast<T*>(STLPoolAllocatorKungFu<T,L>::allocator->Allocate());
+			(void)n;
+			return static_cast<T*>(
+				STLPoolAllocatorKungFu<T,L>::GetAllocator().Allocate());
 		}
 
 		void deallocate(pointer p, size_type n)
 		{
 			assert(n == 1);
-			STLPoolAllocatorKungFu<T,L>::allocator->Deallocate(p);
+			(void)n;
+			STLPoolAllocatorKungFu<T,L>::GetAllocator().Deallocate(p);
 		}
 
 		size_type max_size() const throw()
@@ -129,8 +141,6 @@ namespace stl
 		struct rebind { typedef STLPoolAllocator<U> other; };
 	};    
 
-
-	template <size_t SZ, typename L> PoolAllocator<SZ,L> * STLPoolAllocatorStatic<SZ,L>::allocator;
 }
 
 #endif //__STLPOOLALLOCATOR_H__

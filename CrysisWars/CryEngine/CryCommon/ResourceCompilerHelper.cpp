@@ -185,7 +185,7 @@ void CResourceCompilerHelper::ResourceCompilerUI( HWND hParent )
 
 	HWND hWndRCPath = CreateWindowEx(WS_EX_CLIENTEDGE,"EDIT",m_sBin32Path.c_str(), WS_CHILD | WS_VISIBLE | ES_AUTOHSCROLL | ES_LEFT | WS_TABSTOP,
     10,26,590+30,22,
-	  hDialogWnd,(HMENU)IDC_hWndRCPath,GetModuleHandle(0), NULL);
+	  hDialogWnd,reinterpret_cast<HMENU>(static_cast<INT_PTR>(IDC_hWndRCPath)),GetModuleHandle(0), NULL);
 
 //	HWND hWndPickRCPath = CreateWindow("BUTTON","...", WS_CHILD | WS_VISIBLE | ES_LEFT | WS_TABSTOP,
 //    600,26+5,30,22,
@@ -193,7 +193,7 @@ void CResourceCompilerHelper::ResourceCompilerUI( HWND hParent )
 
 	HWND hWndTest = CreateWindow("BUTTON","Test", WS_CHILD | WS_VISIBLE | ES_LEFT | WS_TABSTOP,
     10,30+26,60,22,
-	  hDialogWnd,(HMENU)IDC_hWndTest,GetModuleHandle(0), NULL);
+	  hDialogWnd,reinterpret_cast<HMENU>(static_cast<INT_PTR>(IDC_hWndTest)),GetModuleHandle(0), NULL);
 
 	HWND hWndOK = CreateWindow("BUTTON","OK", WS_CHILD | BS_DEFPUSHBUTTON | WS_CHILD | WS_VISIBLE | ES_LEFT | WS_TABSTOP,
     665,16,70,22,

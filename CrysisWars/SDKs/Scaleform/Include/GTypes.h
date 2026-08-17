@@ -331,7 +331,8 @@ NOTE: Defined using the GFC_BUILD_x preprocessor
 
 // MS Visual Studio defines
 #ifdef  GFC_CC_MSVC
-# ifdef _DEBUG
+// CrySystem can use the release Scaleform ABI in an otherwise Debug engine build.
+# if defined(_DEBUG) && !defined(CRY_SCALEFORM_USE_RELEASE_LIBS)
 #  ifndef GFC_BUILD_DEBUG
 #   define GFC_BUILD_DEBUG
 #  endif

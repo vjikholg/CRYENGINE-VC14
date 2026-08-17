@@ -8,7 +8,7 @@
 class CMementoHistory::CMementoInputStream : public CByteInputStream
 {
 public:
-	CMementoInputStream( uint32 id ) : CByteInputStream( (const uint8*)MMM().PinHdl(id), MMM().GetHdlSize(id) )
+	CMementoInputStream( TMemHdl id ) : CByteInputStream( (const uint8*)MMM().PinHdl(id), MMM().GetHdlSize(id) )
 	{
 	}
 };
@@ -87,7 +87,7 @@ bool CMementoHistory::NeedToSync( const SSyncContext& ctx, CSyncContext * pSyncC
 	return (bonusByte & POLLUTION_BIT) != 0;
 }
 
-bool CMementoHistory::SendCurrentValue( const SSendContext& ctx, CSyncContext * pSyncContext, uint32& newValue )
+bool CMementoHistory::SendCurrentValue( const SSendContext& ctx, CSyncContext * pSyncContext, uint64& newValue )
 {
 	ctx.pSender->BeginMessage( ctx.pView->GetConfig().pUpdateAspectMsgs[ctx.index] );
 	ChunkID chunkID = GetChunkIDFromObject(ctx.ctxObj, ctx.index);
@@ -163,7 +163,7 @@ bool CMementoHistory::ReadCurrentValue( const SReceiveContext& ctx, bool commit 
 	}
 	bool isOwner = OwnData(false, ctx);
 
-	uint32 newHandle = CMementoMemoryManager::InvalidHdl;
+	TMemHdl newHandle = CMementoMemoryManager::InvalidHdl;
 
 	CRegularlySyncedItem item(m_receiveBuffer.GetItem(ctx.index, ctx.pViewObjEx->historyElems));
 	SElem * pElem = item.FindPrevElem(ctx.basisSeq, ctx.currentSeq);
@@ -313,7 +313,7 @@ bool CMementoHistory::Serialize( const SSerializeParams& sp )
 	return false;
 }
 
-void CMementoHistory::Destroy( uint32 data )
+void CMementoHistory::Destroy( uint64 data )
 {
 	MMM().FreeHdl(data);
 }
@@ -359,7 +359,7 @@ void CMementoHistory::HandleEvent( const SHistoricalEvent& event )
 	}
 }
 
-void CMementoReadSyncedItems::Destroy(uint32 data)
+void CMementoReadSyncedItems::Destroy(uint64 data)
 {
 	MMM().FreeHdl(data);
 }

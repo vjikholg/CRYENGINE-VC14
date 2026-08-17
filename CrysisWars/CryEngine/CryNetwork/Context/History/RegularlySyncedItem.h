@@ -30,7 +30,7 @@ public:
 			return *this;
 		}
 		uint32 seq;
-		uint32 data;
+		uint64 data;
 	};
 
 protected:
@@ -61,7 +61,7 @@ public:
 	ILINE uint32 GetResizeCount() const { return m_resizes; }
 
 private:
-	virtual void Destroy( uint32 data ) {}
+	virtual void Destroy( uint64 data ) {}
 
 	void GotCurSeq( uint32 curSeq )
 	{
@@ -88,7 +88,7 @@ public:
 
 	typedef CRegularlySyncedItems::SElem SElem;
 
-	void AddElem( uint32 seq, uint32 data );
+	void AddElem( uint32 seq, uint64 data );
 	// WARNING: returned pointer is only valid until AddElem is called on *ANY* other item
 	SElem * FindPrevElem( uint32 basisSeq, uint32 curSeq ) const;
 	void RemoveOlderThan( uint32 seq );

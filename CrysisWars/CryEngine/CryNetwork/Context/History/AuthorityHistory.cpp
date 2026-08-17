@@ -55,7 +55,7 @@ bool CAuthorityHistory::NeedToSync( const SSyncContext& ctx, CSyncContext * pSyn
 	return false;
 }
 
-bool CAuthorityHistory::SendCurrentValue( const SSendContext& ctx, CSyncContext * pSyncContext, uint32& newValue )
+bool CAuthorityHistory::SendCurrentValue( const SSendContext& ctx, CSyncContext * pSyncContext, uint64& newValue )
 {
 	ctx.pSender->BeginMessage( ctx.pView->GetConfig().pSetAuthorityMsg );
 	bool auth = ctx.pViewObj->authority;

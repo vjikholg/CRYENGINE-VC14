@@ -1,297 +1,249 @@
-
 #ifndef __MEMORYFRAGMENTATIONPROFILER_H__
 #define __MEMORYFRAGMENTATIONPROFILER_H__
 
 #pragma once
 
-// useful class to investigate memory fragmentation
-// every time you call this from the console:
-//
-// #System.DumpMemoryCoverage()
-//
-// it adds a line to "MemoryCoverage.bmp" (generated the first time, there is a max line count)
-// blue stripes mark some special positions (DLL positions)
+#include <CryMemoryCoverage.h>
 
-// Dependencies: only CryLog()
-
-
-#include <vector>			// STL vector<>
-
+#include <algorithm>
+#include <cstdint>
+#include <cstdio>
+#include <limits>
+#include <vector>
 
 #if defined(WIN32) || defined(WIN64)
 
 class CMemoryFragmentationProfiler
 {
 public:
-
-	// constructor - clean file
-	CMemoryFragmentationProfiler() :m_dwLine(0xffffffff)		// 0xffffffff means not initialized yet
+	CMemoryFragmentationProfiler()
+		: m_dwLine(UninitializedLine)
 	{
 	}
 
-	// call this if you want to add one line (on first call the file is generated)
 	void DumpMemoryCoverage()
 	{
-		if(m_dwLine==0xffffffff)
+		if (m_dwLine == UninitializedLine)
 			Init();
+		if (m_dwLine == UninitializedLine || m_dwLine >= m_nLineCount)
+			return;
 
-		const size_t nMinMemoryPerUnit = 4*1024;							// down to a few KB
-		const size_t nUnitsPerLine=1024*8;										// amount of bits, should only occupy a few KB memory
+		std::vector<SCryMemoryCoverageRange> committedRanges;
+		size_t availableMemory = 0;
+		size_t usedMemory = 0;
+		CollectMemoryRanges(committedRanges, availableMemory, usedMemory);
 
-		const size_t nMaxMemoryPerUnit = 0x100000000/nUnitsPerLine;			// 4GB in total
-
-		static std::vector<bool> vCoverage;
-
-		vCoverage.clear();
-		vCoverage.resize(nUnitsPerLine,0);									// should occupy nUnitsPerLine/8 bytes (vector<bool> is specialized)
-
-		size_t nAvailableMem=0,nUsedMem=0;
-/*
-
-		_HEAPINFO hinfo;
-		int heapstatus;
-		hinfo._pentry = NULL;
-		while( ( heapstatus = _heapwalk( &hinfo ) ) == _HEAPOK )
+		std::vector<bool> coverage;
+		uintptr_t coverageBegin = 0;
+		uintptr_t coverageEnd = 0;
+		size_t bytesPerUnit = 0;
+		if (!CryBuildMemoryCoverage(
+				committedRanges,
+				CoverageUnitCount,
+				coverage,
+				coverageBegin,
+				coverageEnd,
+				bytesPerUnit))
 		{
-//			char str[256];
-//			sprintf(str,"%6s block at %Fp of size %d\n", ( hinfo._useflag == _USEDENTRY ? "USED" : "FREE" ), hinfo._pentry, hinfo._size );
-
-//			OutputDebugString(str);
-
-			// update coverage (conservative)
-			if(hinfo._useflag == _USEDENTRY)
-			{
-				size_t nStartUnit = ((size_t)hinfo._pentry+nMaxMemoryPerUnit-1)/(nMaxMemoryPerUnit);
-				size_t nEndUnit = ((size_t)hinfo._pentry+hinfo._size-(nMaxMemoryPerUnit-1))/(nMaxMemoryPerUnit);
-
-				if(nStartUnit>nUnitsPerLine)
-					nStartUnit=nUnitsPerLine;
-
-				if(nEndUnit>nUnitsPerLine)
-					nEndUnit=nUnitsPerLine;
-
-				for(size_t i=nStartUnit;i<nEndUnit;++i)
-					vCoverage[i]=1;
-
-				nUsedMem += hinfo._size;
-			}
-			else if(hinfo._useflag == _FREEENTRY)
-					nAvailableMem += hinfo._size;
-		}
-*/
-
-		const size_t nMallocOverhead = 24;										// depends on used runtime (debug:32, release:24)
-
-		size_t nCurrentUnitSize = 256*1024*1024;						// start with 256 MB blocks
-
-		void **pMemoryBlocks = 0;														// linked list of memory blocks (to free them)
-
-		size_t nUnits=0;
-		uint32 dwAllocCnt=0,dwFreeCnt=0;
-
-		while(nCurrentUnitSize>=nMinMemoryPerUnit)
-		{
-			size_t nLocalUnits=0;
-
-			for(;;)
-			{
-				void **pMem = (void **)::malloc(nCurrentUnitSize-nMallocOverhead);	
-
-				if(!pMem)
-					break;
-
-				++dwAllocCnt;
-
-				// update coverage (conservative)
-				{
-					size_t nStartUnit = ((size_t)pMem+nMaxMemoryPerUnit-1)/(nMaxMemoryPerUnit);
-					size_t nEndUnit = ((size_t)pMem+nCurrentUnitSize)/(nMaxMemoryPerUnit);
-
-					if(nStartUnit>nUnitsPerLine)
-						nStartUnit=nUnitsPerLine;
-
-					if(nEndUnit>nUnitsPerLine)
-						nEndUnit=nUnitsPerLine;
-
-					for(size_t i=nStartUnit;i<nEndUnit;++i)
-						vCoverage[i]=1;
-				}
-
-				++nLocalUnits;
-
-				// insert in linked list
-				*pMem = pMemoryBlocks;
-				pMemoryBlocks = pMem;
-			}
-
-			nUnits += nLocalUnits;
-			nAvailableMem += nLocalUnits*nCurrentUnitSize;
-
-//			sprintf(str,"CMemoryFragmentationProfiler nCurrentUnitSize= %7d KB unit size => %6d more units allocated, resulting in %5d MB\n",
-//				(nCurrentUnitSize+1023)/1024,nLocalUnits,(nUnits*nCurrentUnitSize+1024*1024-1)/(1024*1024));
-
-//			OutputDebugString(str);
-
-			nCurrentUnitSize/=2;nUnits*=2;
+			CryLog("CMemoryFragmentationProfiler: no committed memory ranges found");
+			return;
 		}
 
-		// free all memory blocks allocated
-		while(pMemoryBlocks)
-		{
-			void *pNext = *pMemoryBlocks;
+		CryLog(
+			"CMemoryFragmentationProfiler Y=%u, available memory=%zu MB, used memory=%zu MB, range=[%p,%p), bytes/unit=%zu",
+			m_dwLine,
+			BytesToMegabytesRoundedUp(availableMemory),
+			BytesToMegabytesRoundedUp(usedMemory),
+			reinterpret_cast<void*>(coverageBegin),
+			reinterpret_cast<void*>(coverageEnd),
+			bytesPerUnit);
 
-			::free(pMemoryBlocks); ++dwFreeCnt;
-
-			pMemoryBlocks = (void **)pNext;
-		}
-
-
-//		_heapmin();
-
-		CryLog("CMemoryFragmentationProfiler  Y=%d, available memory=%d MB, used memory=%d MB",
-			m_dwLine,(nAvailableMem+1024*1024-1)/(1024*1024),(nUsedMem+1024*1024-1)/(1024*1024));
-
-		LogCoverage(vCoverage);
-
-		DumpToRAWCoverage(vCoverage);
+		LogCoverage(coverage);
+		DumpToRAWCoverage(coverage);
 	}
 
-private: // ------------------------------------------------------------------
+private:
+	static constexpr unsigned int UninitializedLine = 0xffffffffu;
+	static constexpr size_t CoverageUnitCount = 1024 * 8;
+	static constexpr size_t m_nPixelsPerLine = 1024;
+	static constexpr size_t m_nLineCount = 128;
+
+	static size_t BytesToMegabytesRoundedUp(size_t bytes) noexcept
+	{
+		constexpr size_t bytesPerMegabyte = 1024 * 1024;
+		return bytes / bytesPerMegabyte + (bytes % bytesPerMegabyte != 0 ? 1 : 0);
+	}
+
+	static void AddSaturated(size_t value, size_t& total) noexcept
+	{
+		const size_t maximum = (std::numeric_limits<size_t>::max)();
+		total = value > maximum - total ? maximum : total + value;
+	}
+
+	static void CollectMemoryRanges(
+		std::vector<SCryMemoryCoverageRange>& committedRanges,
+		size_t& availableMemory,
+		size_t& usedMemory)
+	{
+		SYSTEM_INFO systemInfo = {};
+		GetSystemInfo(&systemInfo);
+		uintptr_t address = reinterpret_cast<uintptr_t>(
+			systemInfo.lpMinimumApplicationAddress);
+		const uintptr_t maximumAddress = reinterpret_cast<uintptr_t>(
+			systemInfo.lpMaximumApplicationAddress);
+
+		while (address < maximumAddress)
+		{
+			MEMORY_BASIC_INFORMATION memoryInfo = {};
+			if (VirtualQuery(
+					reinterpret_cast<const void*>(address),
+					&memoryInfo,
+					sizeof(memoryInfo)) == 0)
+			{
+				break;
+			}
+
+			const uintptr_t rangeAddress = reinterpret_cast<uintptr_t>(
+				memoryInfo.BaseAddress);
+			const size_t rangeSize = memoryInfo.RegionSize;
+			if (memoryInfo.State == MEM_COMMIT)
+			{
+				committedRanges.push_back({ rangeAddress, rangeSize });
+				AddSaturated(rangeSize, usedMemory);
+			}
+			else if (memoryInfo.State == MEM_FREE)
+			{
+				AddSaturated(rangeSize, availableMemory);
+			}
+
+			uintptr_t nextAddress = 0;
+			if (!CryTryGetMemoryCoverageRangeEnd(
+					rangeAddress,
+					rangeSize,
+					nextAddress) ||
+				nextAddress <= address)
+			{
+				break;
+			}
+			address = nextAddress;
+		}
+	}
 
 	void Init()
 	{
-		FILE *out=fopen("MemoryCoverage.bmp","wb");
-
-		if(out)
-		{
-			BITMAPFILEHEADER pHeader;
-			BITMAPINFOHEADER pInfoHeader;
-
-			memset(&pHeader, 0, sizeof(BITMAPFILEHEADER));
-			memset(&pInfoHeader, 0, sizeof(BITMAPINFOHEADER));
-
-			pHeader.bfType = 0x4D42;
-			pHeader.bfSize = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER) + m_nPixelsPerLine * m_nLineCount * 3;
-			pHeader.bfOffBits = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER);
-
-			pInfoHeader.biSize = sizeof(BITMAPINFOHEADER);
-			pInfoHeader.biWidth = m_nPixelsPerLine;
-			pInfoHeader.biHeight = m_nLineCount;
-			pInfoHeader.biPlanes = 1;
-			pInfoHeader.biBitCount = 24;
-			pInfoHeader.biCompression = 0;
-			pInfoHeader.biSizeImage = m_nPixelsPerLine * m_nLineCount;
-
-			fwrite(&pHeader, 1, sizeof(BITMAPFILEHEADER), out);
-			fwrite(&pInfoHeader, 1, sizeof(BITMAPINFOHEADER), out);
-
-			for(int y=0;y<m_nLineCount;y++)										// amount of lines
-				for(int x=0;x<m_nPixelsPerLine;x++)
-				{
-					size_t nAddress = x * (0x100000000/m_nPixelsPerLine);
-
-					if(nAddress==0x30000000
-						|| nAddress==0x30500000
-						|| nAddress==0x31000000
-						|| nAddress==0x31500000
-						|| nAddress==0x32000000
-						|| nAddress==0x32500000
-						|| nAddress==0x33500000
-						|| nAddress==0x34000000
-						|| nAddress==0x35000000
-						|| nAddress==0x35500000
-						|| nAddress==0x36000000
-						|| nAddress==0x36500000
-						|| nAddress==0x38000000
-						|| nAddress==0x39000000)
-						putc((unsigned char)100,out);		// blue   DLL start
-					else
-						putc((unsigned char)0,out);			// black
-
-					putc((unsigned char)0,out);
-					putc((unsigned char)0,out);
-				}
-
-			fclose(out);
-			m_dwLine=0;
-		}
-	}
-
-	void LogCoverage( std::vector<bool> &vCov )
-	{
-		const size_t nCharPerLine = 128;						// readable amount
-
-		char szResult[nCharPerLine+1], *pCursor=szResult;		
-		
-		szResult[nCharPerLine]=0;		// zero termination
-
-		size_t nSize = vCov.size();
-		size_t nUnitsPerChar = nSize/nCharPerLine;
-
-		for(size_t i=0;i<nSize;)
-		{
-			unsigned int nLocalCov=0;
-
-			for(size_t e=0;e<nUnitsPerChar;++e,++i)
-				if(vCov[i])
-					++nLocalCov;
-
-			if(nLocalCov==0)
-				*pCursor++='#';							// occupied
-			else if(nLocalCov==nUnitsPerChar)
-				*pCursor++='.';							// free
-			else
-				*pCursor++='+';							// partly
-		}
-
-		CryLog("         Coverage=%s",szResult);
-	}
-
-
-	void DumpToRAWCoverage( std::vector<bool> &vCov )
-	{
-		FILE *out=fopen("MemoryCoverage.bmp","rb+");
-
-		if(!out)
+		FILE* const output = fopen("MemoryCoverage.bmp", "wb");
+		if (output == nullptr)
 			return;
 
-		if(fseek(out,sizeof(BITMAPFILEHEADER)+sizeof(BITMAPINFOHEADER)+3*(m_nLineCount-1-m_dwLine)*m_nPixelsPerLine,SEEK_SET)!=0)
-			return;
-
-		size_t nSize = vCov.size();
-		size_t nUnitsPerChar = nSize/m_nPixelsPerLine;
-
-		for(size_t i=0;i<nSize;)
+		BITMAPFILEHEADER fileHeader = {};
+		BITMAPINFOHEADER infoHeader = {};
+		size_t imageSize = 0;
+		if (!CryTryCalculateMemoryCoverageBitmapSize(
+				m_nPixelsPerLine,
+				m_nLineCount,
+				imageSize) ||
+			imageSize > (std::numeric_limits<DWORD>::max)())
 		{
-			unsigned int nLocalCov=0;
-
-			for(size_t e=0;e<nUnitsPerChar;++e,++i)
-				if(vCov[i])
-					++nLocalCov;
-
-			size_t Val = 256 - (256*nLocalCov)/nUnitsPerChar;
-
-			if(Val>0)
-				Val = 127+Val/2;
-
-			putc((unsigned char)Val,out);putc((unsigned char)Val,out);putc((unsigned char)Val,out);			// grey
+			fclose(output);
+			return;
 		}
 
-		fclose(out);
+		fileHeader.bfType = 0x4D42;
+		fileHeader.bfSize = static_cast<DWORD>(
+			sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER) + imageSize);
+		fileHeader.bfOffBits = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER);
 
+		infoHeader.biSize = sizeof(BITMAPINFOHEADER);
+		infoHeader.biWidth = static_cast<LONG>(m_nPixelsPerLine);
+		infoHeader.biHeight = static_cast<LONG>(m_nLineCount);
+		infoHeader.biPlanes = 1;
+		infoHeader.biBitCount = 24;
+		infoHeader.biCompression = BI_RGB;
+		infoHeader.biSizeImage = static_cast<DWORD>(imageSize);
+
+		fwrite(&fileHeader, 1, sizeof(fileHeader), output);
+		fwrite(&infoHeader, 1, sizeof(infoHeader), output);
+		for (size_t pixel = 0; pixel < m_nPixelsPerLine * m_nLineCount; ++pixel)
+		{
+			putc(0, output);
+			putc(0, output);
+			putc(0, output);
+		}
+
+		fclose(output);
+		m_dwLine = 0;
+	}
+
+	void LogCoverage(const std::vector<bool>& coverage)
+	{
+		constexpr size_t charactersPerLine = 128;
+		char result[charactersPerLine + 1] = {};
+		const size_t unitsPerCharacter = coverage.size() / charactersPerLine;
+		for (size_t character = 0; character < charactersPerLine; ++character)
+		{
+			const size_t begin = character * unitsPerCharacter;
+			const size_t end = begin + unitsPerCharacter;
+			const size_t covered = static_cast<size_t>(
+				std::count(coverage.begin() + begin, coverage.begin() + end, true));
+			result[character] = CryGetMemoryCoverageLabel(
+				covered,
+				unitsPerCharacter);
+		}
+		CryLog("         Coverage=%s", result);
+	}
+
+	void DumpToRAWCoverage(const std::vector<bool>& coverage)
+	{
+		if (m_dwLine >= m_nLineCount)
+			return;
+
+		FILE* const output = fopen("MemoryCoverage.bmp", "rb+");
+		if (output == nullptr)
+			return;
+
+		size_t wideOffset = 0;
+		if (!CryTryCalculateMemoryCoverageRowOffset(
+				m_nPixelsPerLine,
+				m_nLineCount,
+				m_dwLine,
+				sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER),
+				wideOffset) ||
+			wideOffset > (std::numeric_limits<long>::max)())
+		{
+			fclose(output);
+			return;
+		}
+		const long offset = static_cast<long>(wideOffset);
+		if (fseek(output, offset, SEEK_SET) != 0)
+		{
+			fclose(output);
+			return;
+		}
+
+		const size_t unitsPerPixel = coverage.size() / m_nPixelsPerLine;
+		for (size_t pixel = 0; pixel < m_nPixelsPerLine; ++pixel)
+		{
+			const size_t begin = pixel * unitsPerPixel;
+			const size_t end = begin + unitsPerPixel;
+			const size_t covered = static_cast<size_t>(
+				std::count(coverage.begin() + begin, coverage.begin() + end, true));
+			size_t value = 256 - (256 * covered) / unitsPerPixel;
+			if (value > 0)
+				value = 127 + value / 2;
+			const unsigned char color = static_cast<unsigned char>(value);
+			putc(color, output);
+			putc(color, output);
+			putc(color, output);
+		}
+
+		fclose(output);
 		++m_dwLine;
 	}
 
-
-
-	unsigned int								m_dwLine;												// [0..m_nLineCount-1], m_nLineCount means bitmap is full, 0xffffffff means not initialized yet
-	static const size_t					m_nPixelsPerLine = 1024;				// bitmap width
-	static const size_t					m_nLineCount = 128;							//
+	unsigned int m_dwLine;
 };
 
-
-#else // defined(WIN32) || defined(WIN64)
-
+#else
 
 class CMemoryFragmentationProfiler
 {
@@ -299,10 +251,6 @@ public:
 	void DumpMemoryCoverage() {}
 };
 
-#endif // defined(WIN32) || defined(WIN64)
+#endif
 
-
-
-#endif // __MEMORYFRAGMENTATIONPROFILER_H__
-
-
+#endif

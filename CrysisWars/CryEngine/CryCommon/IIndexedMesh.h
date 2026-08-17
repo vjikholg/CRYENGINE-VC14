@@ -18,6 +18,7 @@
 #pragma once
 
 #include "Cry_Color.h"
+#include <CryAllocatorFailure.h>
 #include <StlContainerUtils.h>
 
 // Description:
@@ -414,7 +415,10 @@ public:
 		void* pStream = 0;
 		int nElementSize = 0;
 		GetStreamInfo( stream,pStream,nElementSize );
-		pStream = ReAllocElements(pStream,nNewCount,nElementSize);
+		void* const replacement = ReAllocElements(pStream,nNewCount,nElementSize);
+		if (replacement == nullptr && nNewCount != 0)
+			return;
+		pStream = replacement;
 		m_streamSize[stream] = nNewCount;
 		switch (stream)
 		{
@@ -609,7 +613,39 @@ public:
 private:
 	void *ReAllocElements(void *old_ptr,int new_elem_num, int size_of_element)
 	{
-		return realloc(old_ptr,new_elem_num*size_of_element);
+		if (new_elem_num < 0 || size_of_element < 0)
+		{
+			CRY_ALLOCATOR_SIZE_FAILURE(
+				"CMesh::ReAllocElements negative element count or size",
+				new_elem_num < 0 ? 0 : static_cast<size_t>(new_elem_num),
+				size_of_element < 0 ? 0 : static_cast<size_t>(size_of_element),
+				0,
+				alignof(std::max_align_t),
+				0,
+				ECryAllocatorFailureAction::ReturnNull);
+			return nullptr;
+		}
+
+		size_t allocationSize = 0;
+		if (!CryTryMultiplySize(
+				static_cast<size_t>(new_elem_num),
+				static_cast<size_t>(size_of_element),
+				allocationSize))
+		{
+			CRY_ALLOCATOR_SIZE_FAILURE(
+				"CMesh::ReAllocElements",
+				static_cast<size_t>(new_elem_num),
+				static_cast<size_t>(size_of_element),
+				static_cast<size_t>(size_of_element) == 0
+					? (std::numeric_limits<size_t>::max)()
+					: (std::numeric_limits<size_t>::max)() /
+						static_cast<size_t>(size_of_element),
+				alignof(std::max_align_t),
+				0,
+				ECryAllocatorFailureAction::ReturnNull);
+			return nullptr;
+		}
+		return realloc(old_ptr, allocationSize);
 	}
 };
 

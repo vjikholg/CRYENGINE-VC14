@@ -489,6 +489,8 @@ struct _CryMemoryManagerPoolHelper
 		size_t allocated;
 #ifndef ___MEMORY_VALIDATOR_HACK
 		void * p=  _CryRealloc( memblock, size, allocated );
+		if (p == nullptr && size != 0)
+			return nullptr;
 # ifndef _LIB
 		allocatedMemory.Add(allocated);
 # else
@@ -496,6 +498,8 @@ struct _CryMemoryManagerPoolHelper
 # endif
 #else
 		void * p=  _CryRealloc( memblock, size);
+		if (p == nullptr && size != 0)
+			return nullptr;
 		allocatedMemory.Add(_CryGetMemSize(p));
 #endif
 
@@ -699,16 +703,12 @@ void CryCrtFree(void *p)
 size_t CryCrtSize(void *p)
 {
 #if defined(NOT_USE_CRY_MEMORY_MANAGER) || (defined(_DEBUG) && !defined(PS3))
-
-#if defined(MEM_MAN_ADD_SIZE_BLOCK)
-	return (size_t)*(uint32*)((uint8*)ptr - 16);
-#elif LINUX
+#if LINUX
 	assert(false && "need _msize");
 	return 0;
 #else
-	return _msize(p);
+	return CryGetNativeCrtAllocationSize(p);
 #endif
-
 #else
 	return _CryMemoryManagerPoolHelper::_CryCrtSize(p);
 #endif

@@ -2463,7 +2463,7 @@ void CStatsToExcelExporter::ExportDependencies( CResourceCollector &stats )
 
 			AddRow();
 
-			char szAName1[1024];		sprintf(szAName1,"A%d %s",dwAssetID,rRef.m_sFileName);
+			char szAName1[1024];		sprintf(szAName1,"A%u %s",dwAssetID,rRef.m_sFileName.c_str());
 
 			AddCell( rRef.m_dwInstanceCnt );
 			AddCell( rRef.m_dwDependencyCnt );

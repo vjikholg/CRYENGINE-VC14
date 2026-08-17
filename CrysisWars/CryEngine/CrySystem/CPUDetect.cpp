@@ -1517,7 +1517,7 @@ void CCpuFeatures::Detect(void)
     if( process_affinity_mask & ((DWORD_PTR)1 << c) )
     {
       m_NumAvailProcessors++;
-			SetProcessAffinityMask( GetCurrentProcess(), 1 << c );
+			SetProcessAffinityMask(GetCurrentProcess(), DWORD_PTR{1} << c);
 			DetectProcessor( &m_Cpu[c] );
 			m_Cpu[c].mAffinityMask = ((DWORD_PTR)1 << c);
     }

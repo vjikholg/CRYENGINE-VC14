@@ -3,7 +3,11 @@
 #include "MemoryAllocatorTests.h"
 #include "MemoryAccountingTests.h"
 #include "MemoryManagerTests.h"
+#include "MM05Tests.h"
 #include "MM06Tests.h"
+#include "MM07Tests.h"
+#include "MM08Tests.h"
+#include "MM09Tests.h"
 #include "SafeAllocTests.h"
 #include "StlHashMapAdapterTests.h"
 #include "TestRunner.h"
@@ -23,6 +27,16 @@ int main(int argc, char* argv[])
 	if (argc == 2 && std::strcmp(argv[1], "--mm02-layout") == 0)
 	{
 		return RunMM02MemoryManagementTrace();
+	}
+
+	if (argc == 2 && std::strcmp(argv[1], "--mm05-trace") == 0)
+	{
+		return RunMM05Trace();
+	}
+
+	if (argc == 2 && std::strcmp(argv[1], "--mm08-trace") == 0)
+	{
+		return RunMM08Trace();
 	}
 
 	if (argc == 2 &&
@@ -63,6 +77,18 @@ int main(int argc, char* argv[])
 		return RunMM06RuntimeTrace(crySystemPath.c_str());
 	}
 
+	if (argc == 3 && std::strcmp(argv[1], "--mm07-trace") == 0)
+	{
+		const std::filesystem::path crySystemPath(argv[2]);
+		return RunMM07RuntimeTrace(crySystemPath.c_str());
+	}
+
+	if (argc == 3 && std::strcmp(argv[1], "--mm09-trace") == 0)
+	{
+		const std::filesystem::path crySystemPath(argv[2]);
+		return RunMM09RuntimeTrace(crySystemPath.c_str());
+	}
+
 	if (argc == 4 && std::strcmp(argv[1], "--mm06-crash-probe") == 0)
 	{
 		const std::filesystem::path crySystemPath(argv[2]);
@@ -83,7 +109,9 @@ int main(int argc, char* argv[])
 		std::printf(
 			"Usage: CryCommonTests.exe [--mm01-trace | --mm02-layout | -mm03-trace | "
 			"--mm02-trace <CrySystem.dll> | --mm04-trace [CrySystem.dll] | "
-			"--mm06-trace <CrySystem.dll>]\n");
+			"--mm05-trace | --mm08-trace | "
+			"--mm06-trace <CrySystem.dll> | --mm07-trace <CrySystem.dll> | "
+			"--mm09-trace <CrySystem.dll>]\n");
 		return 2;
 	}
 
@@ -92,7 +120,11 @@ int main(int argc, char* argv[])
 	RunLegacyStdioCompatibilityTests(runner);
 	RunMemoryAllocatorDataModelTests(runner);
 	RunMemoryManagerLayoutTests(runner);
+	RunMM05ModelTests(runner);
 	RunMM06SizeArithmeticTests(runner);
+	RunMM07MemoryCoverageTests(runner);
+	RunMM08PoolAllocatorTests(runner);
+	RunMM09CrtSizeTests(runner);
 	RunMM04DataModelTests(runner);
 	RunStlHashMapAdapterTests(runner);
 	RunVectorMapTests(runner);

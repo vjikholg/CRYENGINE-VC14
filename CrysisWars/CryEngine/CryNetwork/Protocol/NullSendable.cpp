@@ -44,7 +44,10 @@ CNullSendable * CNullSendable::Alloc( uint32 flags, ENetReliabilityType reliabil
 	if (!pNullAllocator)
 		pNullAllocator = new TNullAllocatorPool;
 	TMemHdl hdl = MMM().AllocHdl(sizeof(CNullSendable));
-	CNullSendable * p = new (MMM().PinHdl(hdl)) CNullSendable(flags | eMPF_DontAwake, reliability);
+	void* const memory = MMM().PinHdl(hdl);
+	if (memory == nullptr)
+		return nullptr;
+	CNullSendable * p = new (memory) CNullSendable(flags | eMPF_DontAwake, reliability);
 	p->m_memhdl = hdl;
 	return p;
 }

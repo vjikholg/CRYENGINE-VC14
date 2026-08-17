@@ -77,7 +77,10 @@ public:
 			return nullptr;
 		}
 
-		return static_cast<T*>(m_pMMM->AllocPtr(n * sizeof(T)));
+		pointer const memory = static_cast<T*>(m_pMMM->AllocPtr(n * sizeof(T)));
+		if (memory == nullptr)
+			throw std::bad_alloc();
+		return memory;
 	}
 
 	void deallocate(pointer p, size_type n)

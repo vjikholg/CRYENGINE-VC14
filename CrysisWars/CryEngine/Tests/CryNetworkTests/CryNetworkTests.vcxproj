@@ -99,13 +99,15 @@
   <ItemGroup>
     <ClInclude Include="..\..\CryNetwork\StreamAllocator.h" />
     <ClInclude Include="CryNetworkTestPreamble.h" />
-    <ClInclude Include="MementoAllocatorTestSupport.h" />
+	<ClInclude Include="MementoAllocatorTestSupport.h" />
+	<ClInclude Include="MM05HandleTests.h" />
     <ClInclude Include="STLMementoAllocatorTests.h" />
     <ClInclude Include="..\CryCommonTests\TestRunner.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp" />
-    <ClCompile Include="MementoAllocatorTestSupport.cpp" />
+	<ClCompile Include="MementoAllocatorTestSupport.cpp" />
+	<ClCompile Include="MM05HandleTests.cpp" />
     <ClCompile Include="STLMementoAllocatorTests.cpp" />
     <ClCompile Include="..\CryCommonTests\TestRunner.cpp" />
   </ItemGroup>

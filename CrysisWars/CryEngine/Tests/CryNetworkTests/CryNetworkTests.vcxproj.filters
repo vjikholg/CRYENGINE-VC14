@@ -20,9 +20,12 @@
     <ClInclude Include="CryNetworkTestPreamble.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="MementoAllocatorTestSupport.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
+	<ClInclude Include="MementoAllocatorTestSupport.h">
+		<Filter>Header Files</Filter>
+	</ClInclude>
+	<ClInclude Include="MM05HandleTests.h">
+		<Filter>Header Files</Filter>
+	</ClInclude>
     <ClInclude Include="STLMementoAllocatorTests.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -34,9 +37,12 @@
     <ClCompile Include="Main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MementoAllocatorTestSupport.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
+	<ClCompile Include="MementoAllocatorTestSupport.cpp">
+		<Filter>Source Files</Filter>
+	</ClCompile>
+	<ClCompile Include="MM05HandleTests.cpp">
+		<Filter>Source Files</Filter>
+	</ClCompile>
     <ClCompile Include="STLMementoAllocatorTests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

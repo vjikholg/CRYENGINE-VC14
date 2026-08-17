@@ -13,6 +13,7 @@
 #pragma once
 
 #include "platform.h"
+#include "CryCrtAllocationSize.h"
 
 #include <cstddef>
 #include <malloc.h>

@@ -259,5 +259,5 @@ void CrySystemCrtFree(void* memory)
 
 size_t CrySystemCrtSize(void* memory)
 {
-	return _msize(memory);
+	return CryGetNativeCrtAllocationSize(memory);
 }
