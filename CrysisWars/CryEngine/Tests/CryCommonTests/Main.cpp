@@ -12,6 +12,7 @@
 #include "StlHashMapAdapterTests.h"
 #include "TestRunner.h"
 #include "VectorMapTests.h"
+#include "ZlibCompatibilityTests.h"
 
 #include <cstdio>
 #include <cstring>
@@ -128,5 +129,6 @@ int main(int argc, char* argv[])
 	RunMM04DataModelTests(runner);
 	RunStlHashMapAdapterTests(runner);
 	RunVectorMapTests(runner);
+	RunZlibCompatibilityTests(runner);
 	return runner.ExitCode();
 }

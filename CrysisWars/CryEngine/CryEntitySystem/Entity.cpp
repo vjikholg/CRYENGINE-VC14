@@ -1555,7 +1555,7 @@ CEntityObject* CEntity::GetSlot( int nSlot ) const
 {
 	if (GetRenderProxy())
 		return GetRenderProxy()->GetSlot(nSlot);
-	return false;
+	return nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1585,11 +1585,7 @@ const Matrix34& CEntity::GetSlotLocalTM( int nSlot, bool bRelativeToParent ) con
 //////////////////////////////////////////////////////////////////////////
 void CEntity::SetSlotLocalTM( int nSlot,const Matrix34 &localTM,int nWhyFlags )
 {
-	CHECKQNAN_VEC(localTM.GetColumn(0));
-	CHECKQNAN_VEC(localTM.GetColumn(1));
-	CHECKQNAN_VEC(localTM.GetColumn(2));
-	CHECKQNAN_VEC(localTM.GetColumn(3));
-
+	assert(localTM.IsValid());
 	if (GetRenderProxy())
 		return GetRenderProxy()->SetSlotLocalTM(nSlot,localTM);
 }

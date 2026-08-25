@@ -11,3 +11,4 @@ CRYENGINE-VC14.vcxproj.filters
 /CrysisWars/BinTemp/x64/Debug
 /CrysisWars/BinTemp
 /CrysisWars/Bin64
+/libs/zlib-1.3.2

@@ -369,6 +369,8 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <CompileAs>Default</CompileAs>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalOptions>/Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <ResourceCompile>
       <Culture>0x0409</Culture>
@@ -540,6 +542,8 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <CompileAs>Default</CompileAs>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalOptions>/Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <ResourceCompile>
       <Culture>0x0409</Culture>
@@ -549,7 +553,6 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <BaseAddress>0x32000000</BaseAddress>
       <TargetMachine>MachineX64</TargetMachine>
     </Link>
   </ItemDefinitionGroup>
@@ -739,7 +742,9 @@
     <ClCompile Include="BreakableManager.cpp" />
     <ClCompile Include="CameraProxy.cpp" />
     <ClCompile Include="CryEntityDLL.cpp" />
-    <ClCompile Include="Entity.cpp" />
+    <ClCompile Include="Entity.cpp">
+      <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">AssemblyAndSourceCode</AssemblerOutput>
+    </ClCompile>
     <ClCompile Include="EntityArchetype.cpp" />
     <ClCompile Include="EntityClass.cpp" />
     <ClCompile Include="EntityClassRegistry.cpp" />

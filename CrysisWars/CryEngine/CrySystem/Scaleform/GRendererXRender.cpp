@@ -181,14 +181,14 @@ void GRendererXRender::PopBlendMode()
 	{								
 		BlendType	newBlendMode(Blend_None);
 
-		for (int i(m_blendOpStack.size() - 1); i >= 0;  --i)
+		for (size_t i{ m_blendOpStack.size() }; i-- > 0; )
 		{
 			if (m_blendOpStack[i] > Blend_Layer)
 			{
 				newBlendMode = m_blendOpStack[i];
 				break;
 			}
-		}		
+		}
 
 		m_blendOpStack.pop_back();
 
@@ -196,7 +196,7 @@ void GRendererXRender::PopBlendMode()
 		{
 			ApplyBlendMode(newBlendMode);
 		}
-	}	
+	}
 }
 
 

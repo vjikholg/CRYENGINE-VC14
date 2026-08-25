@@ -96,7 +96,7 @@ IEntityClass* CEntityClassRegistry::RegisterStdClass( const SEntityClassDesc &en
 			EntityWarning( "EntityScript %s failed to initialize",entityClassDesc.sScriptFile );
 			pScript->Release();
 			pClass->Release();
-			return false;
+			return nullptr;
 		}
 		pClass->SetEntityScript( pScript );
 	}
