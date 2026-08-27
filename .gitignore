@@ -13,3 +13,4 @@ CRYENGINE-VC14.vcxproj.filters
 /CrysisWars/Bin64
 /libs/zlib-1.3.2
 /CrysisWars/CryEngine/CryCommon/.vs/CryCommon
+/CrysisWars/CryEngine/CryEntitySystem/Release/CryEntitySystem.pdb

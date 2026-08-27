@@ -8,6 +8,16 @@
 #include <cstdlib>
 #include <intrin.h>
 
+extern "C" void* CryModuleMalloc(size_t size) throw()
+{
+	return std::malloc(size);
+}
+
+extern "C" void CryModuleFree(void* memory) throw()
+{
+	std::free(memory);
+}
+
 long CryInterlockedExchangeAdd(long volatile* addend, long value)
 {
 	return _InterlockedExchangeAdd(addend, value);

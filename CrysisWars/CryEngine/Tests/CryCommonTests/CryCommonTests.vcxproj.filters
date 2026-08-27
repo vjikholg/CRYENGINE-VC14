@@ -14,6 +14,9 @@
     <ClInclude Include="ComparisonCompatibilityTests.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="CryStringCompatibilityTests.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="LegacyStdioCompatibilityTests.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -62,6 +65,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ComparisonCompatibilityTests.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CryStringCompatibilityTests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="LegacyStdioCompatibilityTests.cpp">
