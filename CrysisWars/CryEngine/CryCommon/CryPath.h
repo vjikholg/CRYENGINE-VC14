@@ -98,9 +98,10 @@ namespace PathUtil
 	inline const char* GetExt( const char *filepath )
 	{
 		const char *str = filepath;
-		int len = strlen(filepath);
-		for (const char* p = str + len-1; p >= str; --p)
+		size_t len{ strlen(filepath) };
+		for (const char* p{ str + len }; p != str;)
 		{
+			--p;
 			switch(*p)
 			{
 				case ':':

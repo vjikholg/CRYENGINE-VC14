@@ -1,4 +1,5 @@
 #include "ComparisonCompatibilityTests.h"
+#include "CryFileNameTests.h"
 #include "CryStringCompatibilityTests.h"
 #include "LegacyStdioCompatibilityTests.h"
 #include "MemoryAllocatorTests.h"
@@ -119,6 +120,7 @@ int main(int argc, char* argv[])
 
 	CryTestRunner runner;
 	RunComparisonCompatibilityTests(runner);
+	RunCryFileNameTests(runner);
 	RunCryStringCompatibilityTests(runner);
 	RunLegacyStdioCompatibilityTests(runner);
 	RunMemoryAllocatorDataModelTests(runner);

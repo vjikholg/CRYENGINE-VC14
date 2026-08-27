@@ -20,6 +20,8 @@
 #include <ISystem.h>
 #include <ICryPak.h>
 
+#include <cstring>
+
 //////////////////////////////////////////////////////////////////////////
 // Defines for CryEngine filetypes extensions.
 //////////////////////////////////////////////////////////////////////////
@@ -35,10 +37,10 @@
 
 inline const char* CryGetExt( const char *filepath )
 {
-	const char *str = filepath;
-	int len = strlen(filepath);
-	for (const char* p = str + len-1; p >= str; --p)
+	const char* const begin = filepath;
+	for (const char* p = begin + std::strlen(filepath); p != begin;)
 	{
+		--p;
 		switch(*p)
 		{
 		case ':':

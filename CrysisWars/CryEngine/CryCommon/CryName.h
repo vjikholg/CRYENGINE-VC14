@@ -20,6 +20,12 @@
 #include <ISystem.h>
 #include <StlAlgorithms.h>
 #include <StlHashMap.h>
+#include <CryAllocatorFailure.h>
+#include <CryCheckedArithmetic.h>
+
+#include <cstdlib>
+#include <cstring>
+#include <limits>
 
 #if defined PS3OPT
 // Define this to enable a write-only variant of the name table.
@@ -53,10 +59,31 @@ struct INameTable
 		// Here in memory starts character buffer of size nAllocSize.
 		//char data[nAllocSize]
 
-		char* GetStr() { return (char*)(this + 1); }
+		char* GetStr() { return reinterpret_cast<char*>(this + 1); }
+		const char* GetStr() const { return reinterpret_cast<const char*>(this + 1); }
 		void  AddRef() { nRefCount++; /*InterlockedIncrement(&_header()->nRefCount);*/ };
 		int   Release() { return --nRefCount; };
-		int   GetMemoryUsage() { return sizeof(SNameEntry) + strlen(GetStr()); }
+		size_t GetMemoryUsage() const { return sizeof(SNameEntry) + std::strlen(GetStr()); }
+
+		static constexpr size_t MaximumNameLength() noexcept
+		{
+			constexpr size_t maximumStoredSize =
+				static_cast<size_t>((std::numeric_limits<int>::max)());
+			return maximumStoredSize - sizeof(SNameEntry) - 1;
+		}
+
+		static constexpr bool TryGetAllocationSize(
+			size_t nameLength,
+			size_t& allocationSize) noexcept
+		{
+			allocationSize = 0;
+			if (nameLength > MaximumNameLength())
+				return false;
+
+			size_t characterBytes = 0;
+			return CryTryAddSize(nameLength, size_t{ 1 }, characterBytes) &&
+				CryTryAddSize(sizeof(SNameEntry), characterBytes, allocationSize);
+		}
 	};
 #endif
 
@@ -249,16 +276,27 @@ public:
 		SNameEntry* pEntry = stl::find_in_map(m_nameMap, str, 0);
 		if (!pEntry)
 		{
-			// Create a new entry.
-			unsigned int nLen = strlen(str);
-			unsigned int allocLen = sizeof(SNameEntry) + (nLen + 1) * sizeof(char);
-			pEntry = (SNameEntry*)malloc(allocLen);
+			const size_t nameLength = std::strlen(str);
+			size_t allocationSize = 0;
+			if (!SNameEntry::TryGetAllocationSize(nameLength, allocationSize))
+			{
+				ReportAllocationFailure("CNameTable::GetEntry invalid name length", nameLength);
+				return nullptr;
+			}
+
+			pEntry = static_cast<SNameEntry*>(malloc(allocationSize));
+			if (pEntry == nullptr)
+			{
+				ReportAllocationFailure("CNameTable::GetEntry allocation failed", nameLength);
+				return nullptr;
+			}
+
 			pEntry->nRefCount = 0;
-			pEntry->nLength = nLen;
-			pEntry->nAllocSize = allocLen;
+			pEntry->nLength = static_cast<int>(nameLength);
+			pEntry->nAllocSize = static_cast<int>(allocationSize);
 			// Copy string to the end of name entry.
 			char* pEntryStr = pEntry->GetStr();
-			memcpy(pEntryStr, str, nLen + 1);
+			std::memcpy(pEntryStr, str, nameLength + 1);
 			// put in map.
 			//m_nameMap.insert( NameMap::value_type(pEntry->GetStr(),pEntry) );
 			m_nameMap[pEntry->GetStr()] = pEntry;
@@ -275,18 +313,23 @@ public:
 	}
 	virtual int GetMemoryUsage()
 	{
-		int nSize = 0;
-		NameMap::iterator it;
-		int n = 0;
-		for (it = m_nameMap.begin(); it != m_nameMap.end(); it++)
+		constexpr size_t maximumReportedSize =
+			static_cast<size_t>((std::numeric_limits<int>::max)());
+		size_t memoryUsage = CRY_NAME_HASHTABLE_SIZE;
+
+		for (NameMap::const_iterator it = m_nameMap.begin(); it != m_nameMap.end(); ++it)
 		{
-			nSize += strlen(it->first);
-			nSize += it->second->GetMemoryUsage();
-			n++;
+			size_t entryUsage = 0;
+			if (!CryTryAddSize(std::strlen(it->first), it->second->GetMemoryUsage(), entryUsage) ||
+				!CryTryAddSize(entryUsage, size_t{ 8 }, entryUsage) ||
+				!CryTryAddSize(memoryUsage, entryUsage, memoryUsage) ||
+				memoryUsage > maximumReportedSize)
+			{
+				return (std::numeric_limits<int>::max)();
+			}
 		}
-		nSize += n * 8;
-		nSize += CRY_NAME_HASHTABLE_SIZE;
-		return nSize;
+
+		return static_cast<int>(memoryUsage);
 	}
 
 private:
@@ -297,6 +340,11 @@ private:
 #endif
 
 	NameMap m_nameMap;
+
+	static void ReportAllocationFailure(const char* operation, size_t nameLength) noexcept
+	{
+		CRY_ALLOCATOR_SIZE_FAILURE(operation, nameLength, sizeof(char), SNameEntry::MaximumNameLength(), alignof(SNameEntry), sizeof(SNameEntry) + 1, ECryAllocatorFailureAction::ReturnNull);
+	}
 };
 #endif // end else if defined USE_WRONLY_NAMETABLE
 
@@ -334,8 +382,11 @@ public:
 	static const char* create(const char* str)
 	{
 		CCryName name = CCryName(str);
-		name._addref(name.c_str());
-		return name.c_str();
+		if (name.empty())
+			return "";
+
+		name._addref(name.m_str);
+		return name.m_str;
 	}
 	static int GetMemoryUsage()
 	{
@@ -450,7 +501,11 @@ inline CCryName& CCryName::operator=(const char* s)
 	const char* pBuf = 0;
 	if (*s) // if not empty
 	{
-		pBuf = GetNameTable()->GetEntry(s)->GetStr();
+		SNameEntry* pNameEntry = GetNameTable()->GetEntry(s);
+		if (pNameEntry == nullptr)
+			return *this;
+
+		pBuf = pNameEntry->GetStr();
 	}
 	if (m_str != pBuf)
 	{

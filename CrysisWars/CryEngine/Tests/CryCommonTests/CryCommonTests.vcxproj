@@ -98,6 +98,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="ComparisonCompatibilityTests.h" />
+    <ClInclude Include="CryFileNameTests.h" />
     <ClInclude Include="CryStringCompatibilityTests.h" />
     <ClInclude Include="LegacyStdioCompatibilityTests.h" />
     <ClInclude Include="MemoryAllocatorTests.h" />
@@ -117,6 +118,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ComparisonCompatibilityTests.cpp" />
+    <ClCompile Include="CryFileNameTests.cpp" />
     <ClCompile Include="CryStringCompatibilityTests.cpp" />
     <ClCompile Include="CryCommonTestSupport.cpp" />
     <ClCompile Include="LegacyStdioCompatibilityTests.cpp" />
