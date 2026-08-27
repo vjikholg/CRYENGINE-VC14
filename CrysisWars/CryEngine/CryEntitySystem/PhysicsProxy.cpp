@@ -1826,7 +1826,7 @@ void CPhysicalProxy::RemoveCollider( EntityId id )
 		return;
 
 	// Try to remove collider from set, then compare size of set before and after erase.
-	int prevSize = m_pColliders->colliders.size();
+	const size_t prevSize = m_pColliders->colliders.size();
 	m_pColliders->colliders.erase(id);
 	if (m_pColliders->colliders.size() != prevSize)
 	{
@@ -1888,7 +1888,7 @@ void CPhysicalProxy::CheckColliders()
 			if (!pEntity)
 				continue;
 			int id = pEntity->GetId();
-			int prevSize = tempSet.size();
+			const size_t prevSize = tempSet.size();
 			tempSet.erase( id );
 			if (tempSet.size() == prevSize)
 			{

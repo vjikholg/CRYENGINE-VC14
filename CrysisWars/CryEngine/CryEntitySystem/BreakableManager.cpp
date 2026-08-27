@@ -73,13 +73,12 @@ ISurfaceType* GetSurfaceType( IRenderMesh* pMesh )
 
 	PodArray<CRenderChunk> &meshChunks = *pMesh->GetChunks();
 
-	int numChunks = meshChunks.size();
-	for (int nChunk = 0; nChunk < numChunks; nChunk++) 
+	for (PodArray<CRenderChunk>::const_iterator it = meshChunks.begin(); it != meshChunks.end(); ++it)
 	{
-		if ((meshChunks[nChunk].m_nMatFlags & MTL_FLAG_NODRAW))
+		if ((it->m_nMatFlags & MTL_FLAG_NODRAW))
 			continue;
 
-		IMaterial *pSubMtl = pMtl->GetSafeSubMtl(meshChunks[nChunk].m_nMatID);
+		IMaterial *pSubMtl = pMtl->GetSafeSubMtl(it->m_nMatID);
 		if (pSubMtl)
 		{
 			ISurfaceType *pSrfType = pSubMtl->GetSurfaceType();
@@ -259,13 +258,12 @@ bool CBreakableManager::CanShatterRenderMesh( IRenderMesh *pRenderMesh,IMaterial
 	PodArray<CRenderChunk> &meshChunks = *pRenderMesh->GetChunks();
 
 	bool bCanShatter = true;
-	int numChunks = meshChunks.size();
-	for (int nChunk = 0; nChunk < numChunks; nChunk++) 
+	for (PodArray<CRenderChunk>::const_iterator it = meshChunks.begin(); it != meshChunks.end(); ++it)
 	{
-		if ((meshChunks[nChunk].m_nMatFlags & MTL_FLAG_NODRAW))
+		if ((it->m_nMatFlags & MTL_FLAG_NODRAW))
 			continue;
 
-		IMaterial *pSubMtl = pMtl->GetSafeSubMtl(meshChunks[nChunk].m_nMatID);
+		IMaterial *pSubMtl = pMtl->GetSafeSubMtl(it->m_nMatID);
 		if (pSubMtl)
 		{
 			ISurfaceType *pSrfType = pSubMtl->GetSurfaceType();

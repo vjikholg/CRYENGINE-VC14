@@ -379,8 +379,8 @@ float	CArea::IsPointWithinDist(const Vec3& point3d) const
 		*/
 
 		// check distance to every line segment, remember the closest
-		int nSegmentSize = m_vpSegments.size();
-		for(unsigned int sIdx=0; sIdx < nSegmentSize; sIdx++)
+		const size_t nSegmentSize = m_vpSegments.size();
+		for(size_t sIdx = 0; sIdx < nSegmentSize; ++sIdx)
 		{
 			float fT;
 			a2DSegment *curSg = m_vpSegments[sIdx];
@@ -656,8 +656,8 @@ float CArea::PointNearDistSq(const Vec3 &Point3d, Vec3 &OnHull3d) const
 
 			// first find the closest edge
 			{
-				int nSegmentSize = m_vpSegments.size();
-				for(unsigned int sIdx=0; sIdx<nSegmentSize; sIdx++)
+				const size_t nSegmentSize = m_vpSegments.size();
+				for(size_t sIdx = 0; sIdx < nSegmentSize; ++sIdx)
 				{
 					float fT;
 					a2DSegment *curSg = m_vpSegments[sIdx];
@@ -1272,8 +1272,8 @@ void	CArea::AddEntity( const EntityId entId )
 void	CArea::GetEntites( std::vector<EntityId> &entIDs )
 {
 
-	int nSize = m_vEntityID.size();
-	for( unsigned int eIdx=0; eIdx<nSize; eIdx++ )
+	const size_t nSize = m_vEntityID.size();
+	for(size_t eIdx = 0; eIdx < nSize; ++eIdx)
 	{
 		entIDs.push_back(m_vEntityID[eIdx]);
 	}
@@ -1285,8 +1285,8 @@ float CArea::GetMaximumEffectRadius()
 	{
 		// recalculate
 		m_fMaximumEffectRadius = 0.0f;
-		int nSize = m_vEntityID.size();
-		for( unsigned int eIdx=0; eIdx<nSize; eIdx++ )
+		const size_t nSize = m_vEntityID.size();
+		for(size_t eIdx = 0; eIdx < nSize; ++eIdx)
 		{
 			IEntity *pEntity = GetEntitySystem()->GetEntity(m_vEntityID[eIdx]);
 			if (pEntity)
@@ -1760,8 +1760,8 @@ void	CArea::Draw( const int idx)
 		{		
 			Vec3	v0, v1;
 			float	deltaZ = 0.1f;
-			int nSize = m_vpSegments.size();
-			for(unsigned int sIdx=0; sIdx<nSize; sIdx++)
+			const size_t nSize = m_vpSegments.size();
+			for(size_t sIdx = 0; sIdx < nSize; ++sIdx)
 			{
 				if( m_vpSegments[sIdx]->k < 0 )
 				{

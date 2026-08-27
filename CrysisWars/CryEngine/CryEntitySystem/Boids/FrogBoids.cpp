@@ -70,7 +70,7 @@ void CFrogFlock::CreateBoids( SBoidsCreateContext &ctx )
 //////////////////////////////////////////////////////////////////////////
 bool CFrogFlock::CreateEntities()
 {
-	for (int i = 0,num = m_boids.size(); i < num; i++)
+	for (size_t i = 0; i < m_boids.size(); ++i)
 	{
 		CBoidObject *boid = m_boids[i];
 		boid->m_pos.z = m_bc.engine->GetTerrainElevation(boid->m_pos.x,boid->m_pos.y) + m_bc.fBoidRadius*0.5f;

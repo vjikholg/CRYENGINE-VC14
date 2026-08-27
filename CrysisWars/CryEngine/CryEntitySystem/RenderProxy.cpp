@@ -564,7 +564,7 @@ void CRenderProxy::OnEntityXForm( int nWhyFlags )
 	}
 
 	// Invalidate cached world matrices for all slots.
-	for (uint32 i = 0,num = m_slots.size(); i < num; i++)
+	for (size_t i{ 0 }, num = m_slots.size(); i < num; ++i)
 	{
 		if (m_slots[i])
 			m_slots[i]->OnXForm(m_pEntity);

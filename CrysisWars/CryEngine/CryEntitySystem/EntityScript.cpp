@@ -500,7 +500,7 @@ void CEntityScript::LoadEvents()
 		//////////////////////////////////////////////////////////////////////////
 		// Enumerate all entity class table functions and find the ones that start from the Event_
 		//////////////////////////////////////////////////////////////////////////
-		int eventLen = strlen("Event_");
+		constexpr int eventLen = static_cast<int>(sizeof("Event_") - 1);
 		IScriptTable::Iterator it = m_pEntityTable->BeginIteration(); 
 		while (m_pEntityTable->MoveNext(it))
 		{

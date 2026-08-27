@@ -298,8 +298,6 @@ void	CAreaManager::UpdatePlayer( const Vec3 &vPos,IEntity *pPlayer )
 	// Update the area grid data structure.
 	UpdateDirtyAreas();
 
-	int nSize = m_vpAreas.size();
-
 	// check all the rest areas (pPlayer was outside/far of them)
 	for (CAreaGrid::iterator itArea = m_areaGrid.BeginAreas(vPos), itAreaEnd = m_areaGrid.EndAreas(vPos); itArea != itAreaEnd; ++itArea)
 	{
@@ -677,8 +675,6 @@ void	CAreaManager::ProceedExclusiveSoundUpdate(  IEntity *pPlayer , unsigned int
 
 	if (!pAreaCache)
 		return;
-
-	int size = pAreaCache->Areas.size();
 
 	int nLowerArea = curIdx;
 	do 

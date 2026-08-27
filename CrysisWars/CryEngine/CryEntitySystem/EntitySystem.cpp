@@ -760,8 +760,8 @@ void CEntitySystem::UpdateTempActiveEntities()
 {
 	if (!m_tempActiveEntitiesValid)
 	{
-		int i = 0;
-		int numActive = m_mapActiveEntities.size();
+		size_t i = 0;
+		const size_t numActive = m_mapActiveEntities.size();
 		m_tempActiveEntities.resize( numActive );
 		for (EntitiesMap::iterator it = m_mapActiveEntities.begin(); it != m_mapActiveEntities.end(); ++it)
 		{
@@ -818,8 +818,8 @@ void CEntitySystem::DoUpdateLoop()
 	{	
 		// Copy active entity ids into temporary buffer, this is needed because some entity can be added or deleted during Update call.
 		UpdateTempActiveEntities();
-		int numActive = m_tempActiveEntities.size();
-		for (int i = 0; i < numActive; i++)
+		const size_t numActive = m_tempActiveEntities.size();
+		for (size_t i = 0; i < numActive; ++i)
 		{
 			CEntity *pEntity = GetEntityFromID( m_tempActiveEntities[i] );
 			if (pEntity)
@@ -846,10 +846,10 @@ void CEntitySystem::DoUpdateLoop()
 		int nCounter=0;
 
 		// Copy active entity ids into temporary buffer, this is needed because some entity can be added or deleted during Update call.
-		int i = 0;
+		size_t i = 0;
 		UpdateTempActiveEntities();
-		int numActive = m_tempActiveEntities.size();
-		for (i = 0; i < numActive; i++)
+		const size_t numActive = m_tempActiveEntities.size();
+		for (i = 0; i < numActive; ++i)
 		{
 			CEntity *ce = GetEntityFromID( m_tempActiveEntities[i] );
 
