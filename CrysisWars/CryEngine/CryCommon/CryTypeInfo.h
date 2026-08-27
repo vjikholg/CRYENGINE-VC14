@@ -29,7 +29,7 @@ typedef const char*	cstr;
 template<size_t SIZE>
 struct FStaticAlloc
 {
-	static inline void* Alloc( void* oldptr, int oldsize, int newsize )
+	static inline void* Alloc( void* oldptr, size_t oldsize, size_t newsize )
 	{  
 		static char		aMem[SIZE];
 		static size_t	nAlloc = 0;
@@ -38,11 +38,11 @@ struct FStaticAlloc
 		char* newptr = aMem + nAlloc - oldsize;
 		if (oldptr != 0 && oldptr != newptr)
 			// Realloc will succeed only if it was the last item alloced.
-			return 0;
+			return nullptr;
 
 		if (nAlloc + newsize-oldsize > SIZE)
 			// Out of memory
-			return 0;
+			return nullptr;
 		nAlloc += newsize-oldsize;
 		return newptr;
 	}

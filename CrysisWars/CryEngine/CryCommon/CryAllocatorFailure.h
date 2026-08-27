@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <limits>
+#include <CryCheckedArithmetic.h>
 
 enum class ECryAllocatorFailureAction : uint32_t
 {
@@ -13,8 +14,7 @@ enum class ECryAllocatorFailureAction : uint32_t
 inline constexpr uint32_t CryAllocatorFailureContextVersion = 1;
 inline constexpr uint32_t CryAllocatorFailureExceptionCode = 0xE0060006u;
 inline constexpr uint32_t CryAllocatorFailureExitCode = CryAllocatorFailureExceptionCode;
-inline constexpr char CryAllocatorFailureHandlerExportName[] =
-	"CrySystemHandleAllocatorFailure";
+inline constexpr char CryAllocatorFailureHandlerExportName[] = "CrySystemHandleAllocatorFailure";
 
 struct SCryAllocatorFailureContext
 {
@@ -32,46 +32,7 @@ struct SCryAllocatorFailureContext
 	char sourceFile[260];
 };
 
-constexpr bool CryTryMultiplySize(
-	size_t left,
-	size_t right,
-	size_t& result) noexcept
-{
-	constexpr size_t maximum = (std::numeric_limits<size_t>::max)();
-	if (left != 0 && right > maximum / left)
-	{
-		result = 0;
-		return false;
-	}
-
-	result = left * right;
-	return true;
-}
-
-constexpr bool CryTryAddSize(
-	size_t left,
-	size_t right,
-	size_t& result) noexcept
-{
-	constexpr size_t maximum = (std::numeric_limits<size_t>::max)();
-	if (right > maximum - left)
-	{
-		result = 0;
-		return false;
-	}
-
-	result = left + right;
-	return true;
-}
-
-template<class T>
-inline constexpr size_t CryAllocatorMaxElementCount =
-	(std::numeric_limits<size_t>::max)() / sizeof(T);
-
-inline void CryCopyAllocatorFailureText(
-	char* destination,
-	size_t destinationSize,
-	const char* source) noexcept
+inline void CryCopyAllocatorFailureText( char* destination, size_t destinationSize, const char* source) noexcept
 {
 	if (destinationSize == 0)
 	{

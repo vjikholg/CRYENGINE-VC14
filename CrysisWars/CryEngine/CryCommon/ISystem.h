@@ -978,7 +978,7 @@ inline void CryLogAlways( const char *format,... )
 // Allocation functor, for use in templates.
 struct FSystemAlloc
 {
-	static void* Alloc( void* oldptr, int oldsize,int newsize )
+	static void* Alloc( void* oldptr, size_t oldsize, size_t newsize )
 	{ 
 		return gEnv ? gEnv->pSystem->AllocMem( oldptr, newsize ) : 0; 
 	}

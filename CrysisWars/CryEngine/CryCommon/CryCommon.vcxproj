@@ -50,6 +50,7 @@
     <SccLocalPath>.</SccLocalPath>
     <SccProvider>MSSCCI:Perforce SCM</SccProvider>
     <Keyword>MakeFileProj</Keyword>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='CRYSIS_BETA|Win32'" Label="Configuration">
@@ -165,6 +166,7 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">stdcpp20</LanguageStandard>
     </ClCompile>
   </ItemDefinitionGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -234,6 +236,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="CryAllocatorFailure.h" />
+    <ClInclude Include="CryCheckedArithmetic.h" />
     <ClInclude Include="CryCrtAllocationSize.h" />
     <ClInclude Include="CryMemoryCoverage.h" />
     <ClInclude Include="AABBSV.h" />

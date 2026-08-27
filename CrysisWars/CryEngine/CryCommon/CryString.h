@@ -23,12 +23,18 @@
 #include <limits.h>
 #include <stdarg.h>
 #include <ctype.h>
+#include <cstddef>
+#include <cstdint>
+#include <cstdlib>
+#include <limits>
+#include <source_location>
+#include <CryCheckedArithmetic.h>
+#include <CryAllocatorFailure.h>
 
 #define CRY_STRING
 
 // forward declaration of CryStackString
 template<class T,size_t S> class CryStackStringT;
-
 
 class CConstCharWrapper;	//forward declaration for special const char * without memory allocations
 
@@ -36,9 +42,6 @@ class CConstCharWrapper;	//forward declaration for special const char * without 
 //#define CRY_STRING_DEBUG(s) { if (*s) CryDebugStr( "[%6d] %s",_usedMemory(0),(s) );}
 #define CRY_STRING_DEBUG(s)
 
-//////////////////////////////////////////////////////////////////////////
-// CryStringT class.
-//////////////////////////////////////////////////////////////////////////
 template <class T>
 class CryStringT
 {
@@ -46,20 +49,18 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	// Types compatible with STL string.
 	//////////////////////////////////////////////////////////////////////////
-	typedef CryStringT<T> _Self;
-	typedef size_t size_type;
-	typedef T value_type;
-	typedef const value_type* const_str;
-	typedef value_type* pointer;
-	typedef const value_type* const_pointer;
-	typedef value_type& reference;
-	typedef const value_type& const_reference;
-	typedef pointer iterator;
-	typedef const_pointer const_iterator;
+	using _Self = CryStringT<T>;
+	using size_type = size_t;
+	using value_type = T;
+	using const_str = const value_type*;
+	using pointer = value_type*;
+	using const_pointer = const value_type*;
+	using reference = value_type&;
+	using const_reference = const value_type&;
+	using iterator = pointer;
+	using const_iterator = const_pointer;
 
-	enum _npos_type {
-		npos = (size_type)~0
-	};
+	static constexpr size_type npos = (std::numeric_limits<size_type>::max)();
 	
 	//////////////////////////////////////////////////////////////////////////
 	// Constructors
@@ -232,10 +233,21 @@ public:
 #ifndef XENON
 	size_t GetAllocatedMemory() const
 	{
-		StrHeader* header = _header();
+		auto header = _header();
 		if (header == _emptyHeader())
 			return 0;
-		return sizeof(StrHeader) + (header->nAllocSize+1)*sizeof(value_type);
+
+		auto bytes = size_t{ 0 };
+
+		if (try_get_alloc_size(header->nAllocSize, bytes))
+		{
+			return bytes;
+		}
+
+		CryStringFailFast(
+			"CryStringT::GetAllocatedMemory invalid capacity",
+			header->nAllocSize,
+			max_size());
 	}
 #endif
 
@@ -286,10 +298,28 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	// Only used for debugging statistics.
 	//////////////////////////////////////////////////////////////////////////
-	static int _usedMemory( int size )
+	static size_t _usedMemory(
+		size_t allocatedBytes,
+		size_t releasedBytes = 0)
 	{
-		static int s_used_memory = 0;
-		s_used_memory += size;
+		static size_t s_used_memory = 0;
+		if (releasedBytes > s_used_memory)
+		{
+			CryStringFailFast(
+				"CryStringT::_usedMemory accounting underflow",
+				releasedBytes,
+				s_used_memory);
+		}
+		s_used_memory -= releasedBytes;
+		const size_t remaining = (std::numeric_limits<size_t>::max)() - s_used_memory;
+		if (allocatedBytes > remaining)
+		{
+			CryStringFailFast(
+				"CryStringT::_usedMemory accounting overflow",
+				allocatedBytes,
+				remaining);
+		}
+		s_used_memory += allocatedBytes;
 		return s_used_memory;
 	}
 
@@ -302,24 +332,62 @@ private:
 		// Reference count of this string.
 		int nRefCount;
 		// Current length of string.
-		int nLength;
+		size_t nLength;
 		// Size of memory allocated at the end of this class.
-		int nAllocSize;
-		// Here in memory starts character buffer of size nAllocSize.
-		//value_type data[nAllocSize]
+		size_t nAllocSize;
 		
-		value_type* GetChars() { return (value_type*)(this+1); }
+		// voodoo magic pointer arithmetic made readable thx
+		value_type* GetChars()
+		{
+			auto address = reinterpret_cast<std::byte*>(this) + sizeof(StrHeader);
+			return reinterpret_cast<value_type*>(address);
+		};
+
 		void  AddRef() { nRefCount++; /*InterlockedIncrement(&_header()->nRefCount);*/};
 		int   Release() { return --nRefCount; };
 	};
+
+	struct EmptyStringStorage
+	{
+		StrHeader header;
+		value_type terminator;
+	};
+
+	static_assert(
+		offsetof(EmptyStringStorage, terminator) == sizeof(StrHeader),
+		"CryString empty storage must place its terminator directly after StrHeader.");
+
 	static StrHeader* _emptyHeader()
 	{
-		static int sEmptyStringBuffer[] = { -1, 0, 0, 0 };
-		return (StrHeader*)(&sEmptyStringBuffer);
+		static EmptyStringStorage empty = { {-1, 0, 0}, 0 };
+		return &empty.header;
+	}
+
+	[[noreturn]] static void CryStringFailFast(
+		const char* operation,
+		size_type requestedCount,
+		size_type maximumCount,
+		const std::source_location& source = std::source_location::current()) noexcept
+	{
+		CryAllocatorSizeFailure(
+			CryCreateAllocatorFailureContext(
+				operation,
+				requestedCount,
+				sizeof(value_type),
+				maximumCount,
+				alignof(value_type),
+				sizeof(StrHeader),
+				ECryAllocatorFailureAction::WriteDumpAndTerminate,
+				source.function_name(),
+				source.file_name(),
+				static_cast<uint32_t>(source.line())));
+
+		std::abort();
 	}
 
 	// implementation helpers
-	StrHeader* _header() const;
+	const StrHeader* _header() const;
+	StrHeader* _header();
 	
 	void _AllocData( size_type nLen );
 	static void _FreeData( StrHeader* pData );
@@ -334,7 +402,31 @@ private:
 	static void _copy( value_type *dest,const value_type *src,size_type count );
 	static void _move( value_type *dest,const value_type *src,size_type count );
 	static void _set( value_type *dest,value_type ch,size_type count );
+
+	static bool try_get_alloc_size(size_type length, size_type& bytes) noexcept
+	{
+		bytes = 0;
+		auto charsWithTerminator = size_type { 0 };
+		auto characterBytes = size_type { 0 };
+
+		return (length <= max_size()) &&
+			CryTryAddSize(length, size_type{ 1 }, charsWithTerminator) &&
+			CryTryMultiplySize(charsWithTerminator, sizeof(value_type), characterBytes) &&
+			CryTryAddSize(sizeof(StrHeader), characterBytes, bytes);
+	}
+
+public:
+	static constexpr size_type max_size() noexcept
+	{
+		constexpr size_type maximum = (std::numeric_limits<size_type>::max)();
+		constexpr size_type availableBytes = maximum - sizeof(StrHeader);
+		constexpr size_type charSlots = availableBytes / sizeof(value_type);
+		return charSlots > 0 ? charSlots - 1 : 0;
+	}
 };
+
+template <class T>
+constexpr typename CryStringT<T>::size_type CryStringT<T>::npos;
 
 // Variant of CryStringT<T> which does not share memory with other strings.
 class CryStringLocal: public CryStringT<char>
@@ -393,24 +485,32 @@ private:
 	friend class CryStringT<char>;	//both are bidirectional friends to avoid any other accesses
 };
 
-#ifndef XENON
 //macro needed because compiler somehow cannot find the cast operator when not invoked directly
 #define CONST_TEMP_STRING(a) ((const string&)CConstCharWrapper(a))	
-#else
-// CConstCharWrapper is unsafe because it requires that the generated CCryString will never be copied.
-// Unfortunately, the Xenon std::map.find does this, so for now, disable on Xenon.
-#define CONST_TEMP_STRING(a) (a)
-#endif
+
 
 /////////////////////////////////////////////////////////////////////////////
 // CryStringT<T> Implementation
 //////////////////////////////////////////////////////////////////////////
 
 template <class T>
-inline typename CryStringT<T>::StrHeader* CryStringT<T>::_header() const
+const inline typename CryStringT<T>::StrHeader* CryStringT<T>::_header() const
 {
-	assert(m_str != NULL); return ((StrHeader*)m_str)-1;
+	assert(m_str != NULL);
+	auto address = reinterpret_cast<const std::byte*>(m_str) - sizeof(StrHeader);
+
+	return reinterpret_cast<const StrHeader*>(address);
 }
+
+template <class T>
+inline typename CryStringT<T>::StrHeader* CryStringT<T>::_header()
+{
+	assert(m_str != NULL);
+	auto address = reinterpret_cast<std::byte*>(m_str) - sizeof(StrHeader);
+
+	return reinterpret_cast<StrHeader*>(address);
+}
+
 
 template <class T>
 inline typename CryStringT<T>::size_type CryStringT<T>::_strlen( const_str str )
@@ -452,7 +552,8 @@ inline CryStringT<wchar_t>::value_type* CryStringT<wchar_t>::_strstr( value_type
 template <class T>
 inline void CryStringT<T>::_copy( value_type *dest,const value_type *src,size_type count )
 {
-	if(dest != src)
+	// Public operations validate character counts before reaching these byte-level helpers.
+	if(dest != src && count != 0)
 		memcpy( dest,src,count*sizeof(value_type) );
 }
 
@@ -460,21 +561,24 @@ inline void CryStringT<T>::_copy( value_type *dest,const value_type *src,size_ty
 template <class T>
 inline void CryStringT<T>::_move( value_type *dest,const value_type *src,size_type count )
 {
-	memmove( dest,src,count*sizeof(value_type) );
+	if (count != 0)
+		memmove( dest,src,count*sizeof(value_type) );
 }
 
 //////////////////////////////////////////////////////////////////////////
 template <class T>
 inline void CryStringT<T>::_set( value_type *dest,value_type ch,size_type count )
 {
-	memset( dest,ch,count*sizeof(value_type) );
+	if (count != 0)
+		memset( dest,ch,count*sizeof(value_type) );
 }
 
 //////////////////////////////////////////////////////////////////////////
 template <>
 inline void CryStringT<wchar_t>::_set( value_type *dest,value_type ch,size_type count )
 {
-	wmemset( dest,ch,count );
+	if (count != 0)
+		wmemset( dest,ch,count );
 }
 
 #if defined(WIN32) || defined(WIN64)
@@ -568,6 +672,14 @@ inline bool CryStringT<T>::_IsValidString( const_str  )
 template <class T>
 inline void CryStringT<T>::_Assign( const_str sStr,size_type nLen )
 {
+	if (nLen > max_size())
+	{
+		CryStringFailFast(
+			"CryStringT::_Assign invalid length",
+			nLen,
+			max_size());
+	}
+
 	// Check if this string is shared (reference count greater then 1) or not enough capacity to store new string.
 	// Then allocate new string buffer.
 	if (_header()->nRefCount > 1 || nLen > capacity())
@@ -576,7 +688,7 @@ inline void CryStringT<T>::_Assign( const_str sStr,size_type nLen )
 		_AllocData(nLen);
 	}
 	// Copy characters from new string to this buffer.
-	_copy( m_str,sStr,nLen );
+	_move( m_str,sStr,nLen );
 	// Set new length.
 	_header()->nLength = nLen;
 	// Make null terminated string.
@@ -588,18 +700,45 @@ inline void CryStringT<T>::_Assign( const_str sStr,size_type nLen )
 template <class T>
 inline void CryStringT<T>::_Concatenate( const_str sStr1,size_type nLen1,const_str sStr2,size_type nLen2 )
 {
-	size_type nLen = nLen1 + nLen2;
-	if (nLen1 * 2 > nLen)
-		nLen = nLen1 * 2;
-	if (nLen != 0)
+	const size_type maximum = max_size();
+	if (nLen1 > maximum)
 	{
-		if (nLen < 8)
-			nLen = 8;
-		_AllocData(nLen);
+		CryStringFailFast(
+			"CryStringT::_Concatenate invalid existing length",
+			nLen1,
+			maximum);
+	}
+
+	const size_type remaining = maximum - nLen1;
+
+	if (nLen2 > remaining)
+	{
+		CryStringFailFast(
+			"CryStringT::_Concatenate length overflow",
+			nLen2,
+			remaining);
+	}
+
+	const size_type requiredLength = nLen1 + nLen2;
+	size_type newCapacity = requiredLength;
+	if (nLen1 <= maximum / 2)
+	{
+		const size_type doubledCapacity = nLen1 * 2;
+		if (doubledCapacity > newCapacity)
+			newCapacity = doubledCapacity;
+	}
+
+	if (newCapacity != 0)
+	{
+		constexpr size_type minimumCapacity = 8;
+		if (newCapacity < minimumCapacity)
+			newCapacity = minimumCapacity <= maximum ? minimumCapacity : maximum;
+
+		_AllocData(newCapacity);
 		_copy( m_str,sStr1,nLen1 );
 		_copy( m_str+nLen1, sStr2,nLen2 );
-		_header()->nLength = nLen1 + nLen2;
-		m_str[nLen1 + nLen2] = 0;
+		_header()->nLength = requiredLength;
+		m_str[requiredLength] = 0;
 	}
 	CRY_STRING_DEBUG(m_str)
 }
@@ -610,19 +749,30 @@ inline void CryStringT<T>::_ConcatenateInPlace( const_str sStr,size_type nLen )
 {
 	if (nLen != 0)
 	{
+		const size_type currentLength = length();
+		const size_type currentCapacity = capacity();
+		if (currentLength > currentCapacity || currentCapacity > max_size())
+		{
+			CryStringFailFast(
+				"CryStringT::_ConcatenateInPlace invalid string capacity",
+				currentCapacity,
+				max_size());
+		}
+
 		// Check if this string is shared (reference count greater then 1) or not enough capacity to store new string.
 		// Then allocate new string buffer.
-		if (_header()->nRefCount > 1 || length()+nLen > capacity())
+		if (_header()->nRefCount > 1 || nLen > currentCapacity - currentLength)
 		{
 			StrHeader* pOldData = _header();
-			_Concatenate( m_str,length(),sStr,nLen );
+			_Concatenate( m_str,currentLength,sStr,nLen );
 			_FreeData(pOldData);
 		}
 		else
 		{
-			_copy( m_str+length(), sStr, nLen );
-			_header()->nLength += nLen;
-			m_str[_header()->nLength] = 0; // Make null terminated string.
+			const size_type requiredLength = currentLength + nLen;
+			_copy( m_str+currentLength, sStr, nLen );
+			_header()->nLength = requiredLength;
+			m_str[requiredLength] = 0; // Make null terminated string.
 		}
 	}
 }
@@ -657,15 +807,27 @@ inline void CryStringT<T>::_Initialize()
 template <class T>
 inline void CryStringT<T>::_AllocData( size_type nLen )
 {
-	assert(nLen >= 0);
-	assert(nLen <= INT_MAX-1);    // max size (enough room for 1 extra)
-
 	if (nLen == 0)
 		_Initialize();
 	else
 	{
-		size_type allocLen = sizeof(StrHeader) + (nLen+1)*sizeof(value_type);
-		StrHeader* pData = (StrHeader*)CryModuleMalloc( allocLen );
+		size_type allocLen = 0;
+		if (!try_get_alloc_size(nLen, allocLen))
+		{
+			CryStringFailFast(
+				"CryStringT::_AllocData invalid length",
+				nLen,
+				max_size());
+		}
+
+		StrHeader* pData = static_cast<StrHeader*>(CryModuleMalloc(allocLen));
+		if (pData == nullptr)
+		{
+			CryStringFailFast(
+				"CryStringT::_AllocData allocation failed",
+				nLen,
+				max_size());
+		}
 
 		_usedMemory( allocLen ); // For statistics.
 
@@ -697,8 +859,16 @@ inline void CryStringT<T>::_FreeData( StrHeader* pData )
 		assert(pData->nRefCount != 0);
 		if (pData->Release() <= 0)
 		{
-			int allocLen = sizeof(StrHeader) + (pData->nAllocSize+1)*sizeof(value_type);
-			_usedMemory( -allocLen ); // For statistics.
+			size_type allocLen = 0;
+			if (!try_get_alloc_size(pData->nAllocSize, allocLen))
+			{
+				CryStringFailFast(
+					"CryStringT::_FreeData invalid capacity",
+					pData->nAllocSize,
+					max_size());
+			}
+
+			_usedMemory(0, allocLen); // For statistics.
 
 			CryModuleFree((void*)pData);
 			//int allocLen = sizeof(StrHeader) + (pData->nAllocSize+1)*sizeof(value_type);
@@ -806,6 +976,13 @@ template <class T>
 inline CryStringT<T>::CryStringT( const_iterator _First,const_iterator _Last )
 {
 	_Initialize();
+	if (_Last < _First)
+	{
+		CryStringFailFast(
+			"CryStringT iterator constructor invalid range",
+			0,
+			max_size());
+	}
 	size_type nLength = (size_type)(_Last-_First);
 	if (nLength > 0)
 	{
@@ -908,7 +1085,7 @@ inline CryStringT<T>& CryStringT<T>::append( const CryStringT<T>& _Str, size_typ
 	size_type len = _Str.length();
 	if (off > len)
 		return *this;
-	if (off+nCount > len)
+	if (nCount > len - off)
 		nCount = len - off;
 	_ConcatenateInPlace( _Str.m_str+off,nCount );
 	return *this;
@@ -928,20 +1105,30 @@ inline CryStringT<T>& CryStringT<T>::append( size_type nCount, value_type _Ch )
 {
 	if (nCount > 0)
 	{
-		if (length()+nCount >= capacity())
+		const size_type oldLength = length();
+		const size_type remaining = oldLength <= max_size() ? max_size() - oldLength : 0;
+		if (oldLength > max_size() || nCount > remaining)
+		{
+			CryStringFailFast(
+				"CryStringT::append length overflow",
+				nCount,
+				remaining);
+		}
+		const size_type requiredLength = oldLength + nCount;
+
+		if (_header()->nRefCount > 1 || requiredLength > capacity())
 		{
 			StrHeader* pOldData = _header();
-			_AllocData( length()+nCount );
-			_copy( m_str, pOldData->GetChars(), pOldData->nLength );
-			_set( m_str+pOldData->nLength,_Ch,nCount );
+			_AllocData( requiredLength );
+			_copy( m_str, pOldData->GetChars(), oldLength );
+			_set( m_str+oldLength,_Ch,nCount );
 			_FreeData(pOldData);
 		}
 		else
 		{
-			size_type nOldLength = length();
-			_set( m_str+nOldLength,_Ch,nCount );
-			_header()->nLength = nOldLength + nCount;
-			m_str[length()] = 0; // Make null terminated string.
+			_set( m_str+oldLength,_Ch,nCount );
+			_header()->nLength = requiredLength;
+			m_str[requiredLength] = 0; // Make null terminated string.
 		}
 	}
 	CRY_STRING_DEBUG(m_str)
@@ -952,6 +1139,13 @@ inline CryStringT<T>& CryStringT<T>::append( size_type nCount, value_type _Ch )
 template <class T>
 inline CryStringT<T>& CryStringT<T>::append(  const_iterator _First,const_iterator _Last )
 {
+	if (_Last < _First)
+	{
+		CryStringFailFast(
+			"CryStringT::append invalid iterator range",
+			0,
+			max_size());
+	}
 	append( _First,(size_type)(_Last-_First) );
 	return *this;
 }
@@ -980,7 +1174,7 @@ inline CryStringT<T>& CryStringT<T>::assign( const CryStringT<T>& _Str, size_typ
 	size_type len = _Str.length();
 	if (off > len)
 		return *this;
-	if (off+nCount > len)
+	if (nCount > len - off)
 		nCount = len - off;
 	_Assign( _Str.m_str+off,nCount );
 	return *this;
@@ -998,12 +1192,28 @@ inline CryStringT<T>& CryStringT<T>::assign( const CryStringT<T>& _Str )
 template <class T>
 inline CryStringT<T>& CryStringT<T>::assign( size_type nCount, value_type _Ch )
 {
-	if (nCount >= 1)
+	if (nCount == 0)
 	{
-		_AllocData( nCount );
-		_set( m_str,_Ch,nCount );
-		CRY_STRING_DEBUG(m_str)
+		clear();
+		return *this;
 	}
+	if (nCount > max_size())
+	{
+		CryStringFailFast(
+			"CryStringT::assign invalid length",
+			nCount,
+			max_size());
+	}
+	if (_header()->nRefCount > 1 || nCount > capacity())
+	{
+		StrHeader* pOldData = _header();
+		_AllocData( nCount );
+		_FreeData(pOldData);
+	}
+	_set( m_str,_Ch,nCount );
+	_header()->nLength = nCount;
+	m_str[nCount] = 0;
+	CRY_STRING_DEBUG(m_str)
 	return *this;
 }
 
@@ -1011,6 +1221,13 @@ inline CryStringT<T>& CryStringT<T>::assign( size_type nCount, value_type _Ch )
 template <class T>
 inline CryStringT<T>& CryStringT<T>::assign( const_iterator _First,const_iterator _Last )
 {
+	if (_Last < _First)
+	{
+		CryStringFailFast(
+			"CryStringT::assign invalid iterator range",
+			0,
+			max_size());
+	}
 	assign( _First,(size_type)(_Last-_First) );
 	return *this;
 }
@@ -1066,7 +1283,13 @@ inline int CryStringT<T>::compare( size_type _Pos1,size_type _Num1,const CryStri
 template <class T>
 inline int CryStringT<T>::compare( size_type _Pos1,size_type _Num1,const CryStringT<T>& _Str,size_type nOff,size_type nCount ) const
 {
-	assert( nOff < _Str.length() );
+	if (nOff > _Str.length())
+	{
+		CryStringFailFast(
+			"CryStringT::compare invalid source offset",
+			nOff,
+			_Str.length());
+	}
 	return compare( _Pos1,_Num1,_Str.m_str+nOff,nCount );
 }
 
@@ -1085,9 +1308,17 @@ inline int CryStringT<T>::compare( size_type _Pos1,size_type _Num1,const value_t
 template <class T>
 inline int CryStringT<T>::compare( size_type _Pos1,size_type _Num1,const value_type* _Ptr,size_type _Num2 ) const
 {
-	assert( _Pos1 < length() );
-	if (length() - _Pos1 < _Num1)
-		_Num1 = length() - _Pos1; // trim to size
+	const size_type currentLength = length();
+	if (_Pos1 > currentLength)
+	{
+		CryStringFailFast(
+			"CryStringT::compare invalid offset",
+			_Pos1,
+			currentLength);
+	}
+	const size_type remaining = currentLength - _Pos1;
+	if (remaining < _Num1)
+		_Num1 = remaining; // trim to size
 
 	int res = _Num1 == 0 ? 0 : strncmp( m_str+_Pos1,_Ptr,(_Num1 < _Num2)?_Num1:_Num2);
 	return (res != 0 ? res : _Num1 < _Num2 ? -1 : _Num1 == _Num2 ? 0 : +1);
@@ -1109,7 +1340,13 @@ inline int CryStringT<T>::compareNoCase( size_type _Pos1,size_type _Num1,const C
 template <class T>
 inline int CryStringT<T>::compareNoCase( size_type _Pos1,size_type _Num1,const CryStringT<T>& _Str,size_type nOff,size_type nCount ) const
 {
-	assert( nOff < _Str.length() );
+	if (nOff > _Str.length())
+	{
+		CryStringFailFast(
+			"CryStringT::compareNoCase invalid source offset",
+			nOff,
+			_Str.length());
+	}
 	return compareNoCase( _Pos1,_Num1,_Str.m_str+nOff,nCount );
 }
 
@@ -1128,9 +1365,17 @@ inline int CryStringT<T>::compareNoCase( size_type _Pos1,size_type _Num1,const v
 template <class T>
 inline int CryStringT<T>::compareNoCase( size_type _Pos1,size_type _Num1,const value_type* _Ptr,size_type _Num2 ) const
 {
-	assert( _Pos1 < length() );
-	if (length() - _Pos1 < _Num1)
-		_Num1 = length() - _Pos1; // trim to size
+	const size_type currentLength = length();
+	if (_Pos1 > currentLength)
+	{
+		CryStringFailFast(
+			"CryStringT::compareNoCase invalid offset",
+			_Pos1,
+			currentLength);
+	}
+	const size_type remaining = currentLength - _Pos1;
+	if (remaining < _Num1)
+		_Num1 = remaining; // trim to size
 
 	int res = _Num1 == 0 ? 0 : strnicmp( m_str+_Pos1,_Ptr,(_Num1 < _Num2)?_Num1:_Num2);
 	return (res != 0 ? res : _Num1 < _Num2 ? -1 : _Num1 == _Num2 ? 0 : +1);
@@ -1140,11 +1385,12 @@ inline int CryStringT<T>::compareNoCase( size_type _Pos1,size_type _Num1,const v
 template <class T>
 inline typename CryStringT<T>::size_type CryStringT<T>::copy( value_type* _Ptr, size_type nCount,size_type nOff ) const
 {
-	assert(nOff < length());
-	if (nCount < 0)
-		nCount = 0;
-	if (nOff+nCount > length()) // trim to offset.
-		nCount = length() - nOff;
+	const size_type currentLength = length();
+	if (nOff >= currentLength)
+		return 0;
+	const size_type remaining = currentLength - nOff;
+	if (nCount > remaining)
+		nCount = remaining;
 
 	_copy( _Ptr,m_str+nOff,nCount );
 	return nCount;
@@ -1229,7 +1475,6 @@ template <class T>
 inline CryStringT<T> operator+( typename CryStringT<T>::value_type ch, const CryStringT<T>& str )
 {
 	CryStringT<T> s;
-	s.reserve(str.size()+1);
 	s.append(1,ch);
 	s.append(str);
 	return s;
@@ -1259,7 +1504,6 @@ inline CryStringT<T> operator+( const typename CryStringT<T>::value_type* str1, 
 {
 	assert(str1 == NULL || CryStringT<T>::_IsValidString(str1));
 	CryStringT<T> s;
-	s.reserve( CryStringT<T>::_strlen(str1) + str2.size() );
 	s.append(str1);
 	s.append(str2);
 	return s;
@@ -1360,25 +1604,21 @@ inline typename CryStringT<T>::size_type CryStringT<T>::find( const_str subs,siz
 template <class T> 
 inline typename CryStringT<T>::size_type CryStringT<T>::rfind( value_type ch,size_type pos ) const
 {
-	const_str str;
-	if (pos == npos) {
-		// find last single character
-		str = strrchr( m_str,ch );
-		// return -1 if not found, distance from beginning otherwise
-		return (str == NULL) ? -1 : (size_type)(str - m_str);
-	} else {
-		if (pos == npos)
-			pos = length();
-		if (!( pos >= 0 && pos <= length()) )
-			return npos;
+	const size_type currentLength = length();
+	if (currentLength == 0)
+		return npos;
+	if (pos == npos || pos >= currentLength)
+		pos = currentLength - 1;
 
-		value_type tmp = m_str[pos+1];
-		m_str[pos+1] = 0;
-		str = strrchr( m_str,ch );
-		m_str[pos+1] = tmp;
+	for (;;)
+	{
+		if (m_str[pos] == ch)
+			return pos;
+		if (pos == 0)
+			break;
+		--pos;
 	}
-	// return -1 if not found, distance from beginning otherwise
-	return (str == NULL) ? -1 : (size_type)(str - m_str);
+	return npos;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1472,14 +1712,12 @@ inline typename CryStringT<T>::size_type CryStringT<T>::find_first_not_of( const
 template <class T> 
 inline CryStringT<T> CryStringT<T>::substr( size_type pos, size_type count ) const
 {
-	if (pos >= length())
+	const size_type currentLength = length();
+	if (pos >= currentLength)
 		return CryStringT<T>();
-	if (count == npos)
-	{
-		count = length() - pos;
-	}
-	if (pos + count > length())
-		count = length() - pos;
+	const size_type remaining = currentLength - pos;
+	if (count > remaining)
+		count = remaining;
 	return CryStringT<T>( m_str+pos,count );
 }
 
@@ -1487,16 +1725,18 @@ inline CryStringT<T> CryStringT<T>::substr( size_type pos, size_type count ) con
 template <class T> 
 inline CryStringT<T>& CryStringT<T>::erase( size_type nIndex,size_type nCount )
 {
-	if (nIndex < 0)
-		nIndex = 0;
-	if (nCount < 0 || nCount > length() - nIndex)
-		nCount = length() - nIndex;
-	if (nCount > 0 && nIndex < length())
+	const size_type oldLength = length();
+	if (nIndex >= oldLength)
+		return *this;
+	const size_type remaining = oldLength - nIndex;
+	if (nCount > remaining)
+		nCount = remaining;
+	if (nCount > 0)
 	{
 		_MakeUnique();
-		size_type nNumToCopy = length() - (nIndex + nCount) + 1;
+		const size_type nNumToCopy = remaining - nCount + 1;
 		_move( m_str+nIndex,m_str+nIndex+nCount,nNumToCopy );
-		_header()->nLength = length() - nCount;
+		_header()->nLength = oldLength - nCount;
 	}
 	
 	return *this;
@@ -1513,26 +1753,33 @@ inline CryStringT<T>& CryStringT<T>::insert( size_type nIndex, value_type ch )
 template <class T> 
 inline CryStringT<T>& CryStringT<T>::insert( size_type nIndex,size_type nCount,value_type ch )
 {
+	const size_type oldLength = length();
+	if (nIndex > oldLength)
+		nIndex = oldLength;
+	if (nCount == 0)
+		return *this;
+	const size_type remaining = oldLength <= max_size() ? max_size() - oldLength : 0;
+	if (oldLength > max_size() || nCount > remaining)
+	{
+		CryStringFailFast(
+			"CryStringT::insert character length overflow",
+			nCount,
+			remaining);
+	}
+	const size_type nNewLength = oldLength + nCount;
+
 	_MakeUnique();
-
-	if (nIndex < 0)
-		nIndex = 0;
-
-	size_type nNewLength = length();
-	if (nIndex > nNewLength)
-		nIndex = nNewLength;
-	nNewLength += nCount;
 
 	if (capacity() < nNewLength)
 	{
 		StrHeader* pOldData = _header();
 		const_str pstr = m_str;
 		_AllocData(nNewLength);
-		_copy( m_str,pstr,pOldData->nLength+1 );
+		_copy( m_str,pstr,oldLength+1 );
 		_FreeData(pOldData);
 	}
 
-	_move( m_str+nIndex+nCount, m_str+nIndex, (nNewLength-nIndex) );
+	_move( m_str+nIndex+nCount, m_str+nIndex, oldLength-nIndex+1 );
 	_set( m_str+nIndex,ch,nCount );
 	_header()->nLength = nNewLength;
 	CRY_STRING_DEBUG(m_str)
@@ -1544,32 +1791,61 @@ inline CryStringT<T>& CryStringT<T>::insert( size_type nIndex,size_type nCount,v
 template <class T> 
 inline CryStringT<T>& CryStringT<T>::insert( size_type nIndex,const_str pstr,size_type nCount )
 {
-	if (nIndex < 0)
-		nIndex = 0;
-
-	size_type nInsertLength = nCount;
-	size_type nNewLength = length();
-	if (nInsertLength > 0)
+	if (nCount == 0)
+		return *this;
+	if (pstr == nullptr)
 	{
-		_MakeUnique();
-		if (nIndex > nNewLength)
-			nIndex = nNewLength;
-		nNewLength += nInsertLength;
-
-		if (capacity() < nNewLength)
-		{
-			StrHeader* pOldData = _header();
-			const_str pstr = m_str;
-			_AllocData(nNewLength);
-			_copy( m_str, pstr,(pOldData->nLength+1) );
-			_FreeData(pOldData);
-		}
-
-		_move( m_str + nIndex + nInsertLength, m_str + nIndex, (nNewLength-nIndex-nInsertLength+1) );
-		_copy( m_str + nIndex, pstr, nInsertLength );
-		_header()->nLength = nNewLength;
-		m_str[length()] = 0;
+		CryStringFailFast(
+			"CryStringT::insert null source",
+			nCount,
+			0);
 	}
+
+	const size_type oldLength = length();
+	const std::uintptr_t stringBegin = reinterpret_cast<std::uintptr_t>(m_str);
+	const std::uintptr_t stringEnd = reinterpret_cast<std::uintptr_t>(m_str + oldLength);
+	const std::uintptr_t sourceAddress = reinterpret_cast<std::uintptr_t>(pstr);
+	if (sourceAddress >= stringBegin && sourceAddress <= stringEnd)
+	{
+		const size_type sourceOffset = static_cast<size_type>(pstr - m_str);
+		const size_type sourceRemaining = oldLength - sourceOffset;
+		if (nCount > sourceRemaining)
+		{
+			CryStringFailFast(
+				"CryStringT::insert aliased source exceeds string",
+				nCount,
+				sourceRemaining);
+		}
+		CryStringT<T> sourceCopy(pstr, nCount);
+		return insert(nIndex, sourceCopy.m_str, nCount);
+	}
+
+	if (nIndex > oldLength)
+		nIndex = oldLength;
+	const size_type remaining = oldLength <= max_size() ? max_size() - oldLength : 0;
+	if (oldLength > max_size() || nCount > remaining)
+	{
+		CryStringFailFast(
+			"CryStringT::insert text length overflow",
+			nCount,
+			remaining);
+	}
+	const size_type nNewLength = oldLength + nCount;
+
+	_MakeUnique();
+	if (capacity() < nNewLength)
+	{
+		StrHeader* pOldData = _header();
+		const_str oldString = m_str;
+		_AllocData(nNewLength);
+		_copy( m_str, oldString, oldLength+1 );
+		_FreeData(pOldData);
+	}
+
+	_move( m_str + nIndex + nCount, m_str + nIndex, oldLength-nIndex+1 );
+	_copy( m_str + nIndex, pstr, nCount );
+	_header()->nLength = nNewLength;
+	m_str[nNewLength] = 0;
 	CRY_STRING_DEBUG(m_str)
 
 	return *this;
@@ -1593,8 +1869,9 @@ inline CryStringT<T>& CryStringT<T>::replace( size_type pos,size_type count,cons
 template <class T> 
 inline CryStringT<T>& CryStringT<T>::replace( size_type pos,size_type count,const_str strNew,size_type count2 )
 {
+	CryStringT<T> replacement(strNew, count2);
 	erase( pos,count );
-	insert( pos,strNew,count2 );
+	insert( pos,replacement.m_str,replacement.length() );
 	return *this;
 }
 
@@ -1630,56 +1907,81 @@ inline CryStringT<T>& CryStringT<T>::replace( value_type chOld,value_type chNew 
 template <class T> 
 inline CryStringT<T>& CryStringT<T>::replace( const_str strOld,const_str strNew )
 {
-	size_type nSourceLen = _strlen(strOld);
+	const size_type nSourceLen = _strlen(strOld);
 	if (nSourceLen == 0)
 		return *this;
-	size_type nReplacementLen = _strlen(strNew);
+	const size_type nReplacementLen = _strlen(strNew);
 
 	size_type nCount = 0;
 	value_type* strStart = m_str;
-	value_type* strEnd = m_str + length();
 	value_type* strTarget;
-	while (strStart < strEnd)
+	while ((strTarget = _strstr(strStart, strOld)) != NULL)
 	{
-		while ((strTarget = _strstr(strStart, strOld)) != NULL)
-		{
-			nCount++;
-			strStart = strTarget + nSourceLen;
-		}
-		strStart += _strlen(strStart) + 1;
+		++nCount;
+		strStart = strTarget + nSourceLen;
 	}
 
 	if (nCount > 0)
 	{
-		_MakeUnique();
-
-		size_type nOldLength = length();
-		size_type nNewLength =  nOldLength + (nReplacementLen-nSourceLen)*nCount;
-		if (capacity() < nNewLength || _header()->nRefCount > 1)
+		const size_type nOldLength = length();
+		size_type nNewLength = nOldLength;
+		if (nReplacementLen >= nSourceLen)
 		{
-			StrHeader* pOldData = _header();
-			const_str pstr = m_str;
-			_AllocData(nNewLength);
-			_copy( m_str, pstr, pOldData->nLength );
-			_FreeData(pOldData);
-		}
-		strStart = m_str;
-		strEnd = m_str + length();
-
-		while (strStart < strEnd)
-		{
-			while ( (strTarget = _strstr(strStart, strOld)) != NULL)
+			const size_type growthPerMatch = nReplacementLen - nSourceLen;
+			size_type totalGrowth = 0;
+			if (!CryTryMultiplySize(growthPerMatch, nCount, totalGrowth))
 			{
-				size_type nBalance = nOldLength - ((size_type)( strTarget - m_str) + nSourceLen);
-				_move( strTarget + nReplacementLen, strTarget + nSourceLen, nBalance );
-				_copy( strTarget, strNew, nReplacementLen );
-				strStart = strTarget + nReplacementLen;
-				strStart[nBalance] = 0;
-				nOldLength += (nReplacementLen - nSourceLen);
+				CryStringFailFast(
+					"CryStringT::replace growth multiplication overflow",
+					nCount,
+					max_size());
 			}
-			strStart += _strlen(strStart) + 1;
+			const size_type remaining = nOldLength <= max_size() ? max_size() - nOldLength : 0;
+			if (nOldLength > max_size() || totalGrowth > remaining)
+			{
+				CryStringFailFast(
+					"CryStringT::replace length overflow",
+					totalGrowth,
+					remaining);
+			}
+			nNewLength = nOldLength + totalGrowth;
 		}
-		_header()->nLength = nNewLength;
+		else
+		{
+			const size_type shrinkPerMatch = nSourceLen - nReplacementLen;
+			size_type totalShrink = 0;
+			if (!CryTryMultiplySize(shrinkPerMatch, nCount, totalShrink) ||
+				totalShrink > nOldLength)
+			{
+				CryStringFailFast(
+					"CryStringT::replace invalid shrink",
+					totalShrink,
+					nOldLength);
+			}
+			nNewLength = nOldLength - totalShrink;
+		}
+
+		CryStringT<T> replacement;
+		if (nNewLength != 0)
+			replacement._AllocData(nNewLength);
+
+		const_str readPosition = m_str;
+		value_type* writePosition = replacement.m_str;
+		while ((strTarget = _strstr(const_cast<value_type*>(readPosition), strOld)) != NULL)
+		{
+			const size_type prefixLength = static_cast<size_type>(strTarget - readPosition);
+			_copy(writePosition, readPosition, prefixLength);
+			writePosition += prefixLength;
+			_copy(writePosition, strNew, nReplacementLen);
+			writePosition += nReplacementLen;
+			readPosition = strTarget + nSourceLen;
+		}
+		const size_type tailLength = static_cast<size_type>((m_str + nOldLength) - readPosition);
+		_copy(writePosition, readPosition, tailLength);
+		assert(static_cast<size_type>((writePosition + tailLength) - replacement.m_str) == nNewLength);
+		replacement._header()->nLength = nNewLength;
+		replacement.m_str[nNewLength] = 0;
+		swap(replacement);
 	}
 	CRY_STRING_DEBUG(m_str)
 
@@ -1788,8 +2090,9 @@ inline CryStringT<T>& CryStringT<T>::TrimRight( const value_type *sCharSet )
 	if (!sCharSet || !(*sCharSet) || length() < 1)
 		return *this;
 
-	const value_type *last = m_str + length()-1;
+	const value_type* last = m_str + length() - 1;
 	const value_type *str = last;
+
 	while( (str != m_str) && (_strchr(sCharSet,*str) != 0))
 		str--;
 
@@ -1810,17 +2113,17 @@ template <class T>
 inline CryStringT<T>& CryStringT<T>::TrimRight()
 {
 	if (length() < 1)
-		return *this;
+		return* this;
 
-	const value_type *last = m_str + length() - 1;
-	const value_type *str = last;
-	while( (str != m_str) && (isspace(*str) != 0) )
-		str--;
+	const_pointer last = m_str + length() - 1;
+	const_pointer right = last;
+	while( (right != m_str) && (isspace(*right) != 0) )
+		right--;
 
-	if(str != last)		// something changed?
+	if(right != last)		// something changed?
 	{
 		// Just shrink length of the string.
-		size_type nNewLength = (size_type)(str - m_str) + 1; // m_str can change in _MakeUnique
+		size_type nNewLength = (size_type)(right - m_str) + 1; // m_str can change in _MakeUnique
 		_MakeUnique();
 		_header()->nLength = nNewLength;
 		m_str[nNewLength] = 0;
@@ -1932,18 +2235,30 @@ inline CryStringT<T> CryStringT<T>::Tokenize( const_str charSet, int &nStart ) c
 	if (!charSet)
 		return *this;
 
-	const_str sPlace = m_str + nStart;
-	const_str sEnd = m_str + length();
+	const size_type currentLength = length();
+	const size_type start = static_cast<size_type>(nStart);
+	if (start >= currentLength)
+	{
+		nStart = -1;
+		return CryStringT<T>();
+	}
+
+	const_str sPlace = m_str + start;
+	const_str sEnd = m_str + currentLength;
 	if (sPlace < sEnd)
 	{
-		int nIncluding = (int)strspn(sPlace,charSet);
+		const size_type nIncluding = static_cast<size_type>(strspn(sPlace,charSet));
 
 		if ((sPlace+nIncluding) < sEnd)
 		{
 			sPlace += nIncluding;
-			int nExcluding = (int)strcspn(sPlace,charSet);
-			int nFrom = nStart+nIncluding;
-			nStart = nFrom + nExcluding + 1;
+			const size_type nExcluding = static_cast<size_type>(strcspn(sPlace,charSet));
+			const size_type nFrom = start + nIncluding;
+			const size_type nextStart = nFrom + nExcluding + 1;
+			if (nextStart > static_cast<size_type>((std::numeric_limits<int>::max)()))
+				nStart = -1;
+			else
+				nStart = static_cast<int>(nextStart);
 
 			return substr( nFrom,nExcluding );
 		}

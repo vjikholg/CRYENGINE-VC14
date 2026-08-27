@@ -4,7 +4,11 @@
 
 #include <platform.h>
 #include <algorithm>
+#include <limits>
+#include "CryAllocatorFailure.h"
 #include "CryPodArray.h"
+#include <stddef.h>
+#include <CryCheckedArithmetic.h>
 
 //---------------------------------------------------------------------------
 // Very simple array class, suitable as universal class for array access, 
@@ -24,9 +28,9 @@ struct Array
 	{}
 
 	// Base storage.
-	typedef T						value_type;
-	typedef T*					iterator;
-	typedef const T*		const_iterator;
+	using value_type = T;
+	using iterator = T*; 
+	using const_iterator = const T*;
 
 	// Accessors.
 	inline size_t size() const			{ return m_nCount; }
@@ -77,13 +81,14 @@ template<class T, class A = FModuleAlloc>
 struct DynArray
 {
 	// Base storage.
-	typedef DynArray<T,A> self_type;
-	typedef T						value_type;
-	typedef T*					iterator;
-	typedef const T*		const_iterator;
-	typedef int					size_type;
-	typedef T&					reference_type;
-	typedef const T&		const_reference_type;
+	using self_type = DynArray<T, A>;
+
+	using value_type = T;
+	using iterator = T*;
+	using const_iterator = const T*;
+	using size_type = int;
+	using reference_type = T&;
+	using const_reference_type = const T&;
 
 	// Construction.
 	inline DynArray()
@@ -119,23 +124,23 @@ struct DynArray
 	}
 
 	// Conversion.
-	operator Array<T>()											{ return Array<T>( size(), begin() ); }
+	operator Array<T>()							{ return Array<T>( size(), begin() ); }
 
 	// Accessors.
-	inline bool empty() const								{ return size() == 0; }
-	inline size_type size() const						{ return header()->nSize; }
-	inline size_type capacity() const				{ return header()->nCapacity; }
+	inline bool empty() const					{ return size() == 0; }
+	inline size_type size() const				{ return header()->nSize; }
+	inline size_type capacity() const			{ return header()->nCapacity; }
 
-	inline T* begin()												{ return m_aElems; }
-	inline const T* begin() const						{ return m_aElems; }
+	inline T* begin()							{ return m_aElems; }
+	inline const T* begin() const				{ return m_aElems; }
 
-	inline value_type front()								{ return *m_aElems; }
+	inline value_type front()					{ return *m_aElems; }
 	inline const value_type front() const		{ return *m_aElems; }
 
-	inline T* end()													{ return begin()+size(); }
-	inline const T* end() const							{ return begin()+size(); }
+	inline T* end()								{ return begin()+size(); }
+	inline const T* end() const					{ return begin()+size(); }
 
-	inline reference_type back()							{ return *(begin()+(size()-1)); }
+	inline reference_type back()				{ return *(begin()+(size()-1)); }
 	inline const_reference_type back() const	{ return *(begin()+(size()-1)); }
 
 	inline T const& operator [] (int i) const
@@ -247,7 +252,7 @@ struct DynArray
 		if (capacity())
 		{
 			destroy(begin(), end());
-			A::Alloc(header(), get_alloc_size(), 0);
+			A::Alloc(mem(), get_alloc_size(), 0);
 			m_aElems = null();
 		}
 	}
@@ -257,19 +262,73 @@ struct DynArray
 		std::swap(m_aElems, other.m_aElems);
 	}
 
-  size_t get_alloc_size()
-  {
-    return capacity() ? (sizeof(Header) + capacity()*sizeof(T)) : 0;
-  }
+	static bool try_get_alloc_size(size_type nCapacity, size_t& allocationSize) noexcept
+	{
+		if (nCapacity < 0)
+		{
+			allocationSize = 0;
+			return false;
+		}
+
+		const size_t elementCount = static_cast<size_t>(nCapacity);
+		const size_t maximum = (std::numeric_limits<size_t>::max)();
+		if (elementCount > (maximum - sizeof(Header)) / sizeof(T))
+		{
+			allocationSize = 0;
+			return false;
+		}
+
+		allocationSize = sizeof(Header) + elementCount * sizeof(T);
+		return true;
+	}
+
+	static size_t maximum_capacity() noexcept
+	{
+		const size_t maximum = (std::numeric_limits<size_t>::max)();
+		const size_t byteLimitedCapacity = (maximum - sizeof(Header)) / sizeof(T);
+		const size_t countLimitedCapacity =
+			static_cast<size_t>((std::numeric_limits<size_type>::max)());
+		return std::min(byteLimitedCapacity, countLimitedCapacity);
+	}
+
+	static void report_allocation_failure(const char* operation, size_type nCapacity) noexcept
+	{
+		const size_t elementCount = nCapacity >= 0 ? static_cast<size_t>(nCapacity) : 0;
+		CRY_ALLOCATOR_SIZE_FAILURE(
+			operation,
+			elementCount,
+			sizeof(T),
+			maximum_capacity(),
+			alignof(T),
+			sizeof(Header),
+			ECryAllocatorFailureAction::WriteDumpAndTerminate);
+	}
+
+	size_t get_alloc_size() const noexcept
+	{
+		size_t allocationSize = 0;
+		const bool isValid = try_get_alloc_size(capacity(), allocationSize);
+		assert(isValid);
+		if (!isValid)
+			report_allocation_failure("DynArray::get_alloc_size", capacity());
+
+		return allocationSize;
+	}
+
+	static bool try_get_alloc_size(size_type length, size_type& bytes) noexcept
+	{
+		size_type charWithTerminator = 0;
+		size_type charBytes = 0;
+	}
 
 protected:
 
 	T*				m_aElems;
 
   struct Header
-  {
-    size_type	nCapacity, nSize;
-  };
+	{
+		size_type	nCapacity, nSize;
+	};
 
 	static T* null()
 	{
@@ -324,7 +383,13 @@ protected:
 	void resize_raw(size_type nCount, size_type nAlloc)
 	{
 		// Set new size and allocation count.
-		assert(nCount <= nAlloc);
+		assert(nCount >= 0 && nAlloc >= nCount);
+		if (nCount < 0 || nAlloc < nCount)
+		{
+			report_allocation_failure("DynArray::resize_raw", nAlloc);
+			return;
+		}
+
 		if (nAlloc != capacity())
 		{
 			if (nAlloc == 0)
@@ -334,8 +399,23 @@ protected:
 			}
 			else
 			{
-				size_t nSize = sizeof(Header) + nAlloc * sizeof(T);
+				size_t nSize = 0;
+				const bool isValidSize = try_get_alloc_size(nAlloc, nSize);
+				assert(isValidSize);
+				if (!isValidSize)
+				{
+					report_allocation_failure("DynArray::resize_raw", nAlloc);
+					return;
+				}
+
 				void* newMem = A::Alloc(mem(), get_alloc_size(), nSize);
+				assert(newMem != nullptr);
+				if (newMem == nullptr)
+				{
+					report_allocation_failure("DynArray::resize_raw", nAlloc);
+					return;
+				}
+
 				Header* head = (Header*)newMem;
 				head->nCapacity = nAlloc;
 				m_aElems = (T*)(head+1);

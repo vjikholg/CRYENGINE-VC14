@@ -178,10 +178,10 @@ size_t WrappedCrySystemCrtSize(void *memblock)
 struct _CryMemoryManagerPoolHelper
 {
 
-  typedef void *(*FNC_CryMalloc)(size_t size, size_t& allocated);
+	typedef void *(*FNC_CryMalloc)(size_t size, size_t& allocated);
 	typedef void *(*FNC_CryCrtMalloc)(size_t size);
-  typedef void *(*FNC_CryRealloc)(void *memblock, size_t size, size_t& allocated);
-  typedef size_t (*FNC_CryFree)(void *p);
+	typedef void *(*FNC_CryRealloc)(void *memblock, size_t size, size_t& allocated);
+	typedef size_t (*FNC_CryFree)(void *p);
 
 #ifndef _LIB
 	static CryMemoryByteCounter allocatedMemory;

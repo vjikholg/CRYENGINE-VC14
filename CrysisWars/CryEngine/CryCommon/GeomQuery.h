@@ -134,12 +134,12 @@ struct GeomQuery
 	}
 
 private:
-	void const*					m_pOwner;
-	EGeomForm						m_eForm;
-	float								m_fExtent;						// Cached total extent.
-	int									m_nParts;							// Number of parts.
-	DynArray<float,FSystemAlloc>				m_aCumExtents;				// Per-part extent (optional).
-	DynArray<GeomQuery,FSystemAlloc>		m_aParts;							// Per-part full info (optional).
+	void const*	m_pOwner;
+	EGeomForm m_eForm;
+	float m_fExtent;							// Cached total extent.
+	int	m_nParts;								// Number of parts.
+	DynArray<float,FSystemAlloc> m_aCumExtents;	// Per-part extent (optional).
+	DynArray<GeomQuery,FSystemAlloc> m_aParts;	// Per-part full info (optional).
 };
 
 // Other random/extent functions
