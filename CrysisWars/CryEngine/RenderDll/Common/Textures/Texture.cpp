@@ -1318,7 +1318,7 @@ void CTexture::MergeNormalMaps(STexData Data[6])
         vN[1].y = (pSrc1[n*4+2]/255.0f-0.5f)*2.0f;
         vN[1].z = (pSrc1[n*4+3]/255.0f-0.5f)*2.0f;
 #endif
-        float fLen = min(vN[nIndexNM].GetLength(), 1.0f);
+        float fLen = std::min(vN[nIndexNM].GetLength(), 1.0f);
 
         vN[0].x /= vN[0].z;
         vN[0].y /= vN[0].z;
@@ -1393,7 +1393,7 @@ void CTexture::MergeNormalMaps(STexData Data[6])
         vN[1].y = (pSrc1[(i&mwdt)*4+(j&mhgt)*wdt1*4+2]/255.0f-0.5f)*2.0f;
         vN[1].z = (pSrc1[(i&mwdt)*4+(j&mhgt)*wdt1*4+3]/255.0f-0.5f)*2.0f;
 #endif
-        float fLen = min(vN[nIndexNM].GetLength(), 1.0f);
+        float fLen = std::min(vN[nIndexNM].GetLength(), 1.0f);
 
         vN[0].x /= vN[0].z;
         vN[0].y /= vN[0].z;
@@ -1464,16 +1464,16 @@ void CTexture::ImagePreprocessing(STexData Data[6])
     int nComps = ComponentsForFormat(eTF);
     if (!(m_nStreamed & 1) && !(m_nFlags & FT_DONT_RESIZE))
     {
-      int minSize = max(CRenderer::CV_r_texminsize, 16);
+      int minSize = std::max(CRenderer::CV_r_texminsize, 16);
       if (m_nFlags & FT_TEX_NORMAL_MAP)
       {
         if (CRenderer::CV_r_texbumpresolution > 0)
         {
           if (nNewWidth >= minSize || nNewHeight >= minSize)
           {
-            int nRes = min(CRenderer::CV_r_texbumpresolution, 4);
-            int nNWidth = max(nNewWidth>>nRes, 1);
-            int nNHeight = max(nNewHeight>>nRes, 1);
+            int nRes = std::min(CRenderer::CV_r_texbumpresolution, 4);
+            int nNWidth = std::max(nNewWidth>>nRes, 1);
+            int nNHeight = std::max(nNewHeight>>nRes, 1);
 						if (m_eTFDst!=eTF_3DC || nMips>1)
 						{
 							if (m_eTFDst!=eTF_3DC || (nNWidth>=4 && nNHeight>=4))
@@ -1492,9 +1492,9 @@ void CTexture::ImagePreprocessing(STexData Data[6])
         {
           if (nNewWidth >= minSize || nNewHeight >= minSize)
           {
-            int nRes = min(CRenderer::CV_r_texskyresolution, 4);
-            nNewWidth = max(nNewWidth>>nRes, 1);
-            nNewHeight = max(nNewHeight>>nRes, 1);
+            int nRes = std::min(CRenderer::CV_r_texskyresolution, 4);
+            nNewWidth = std::max(nNewWidth>>nRes, 1);
+            nNewHeight = std::max(nNewHeight>>nRes, 1);
           }
         }
       }
@@ -1505,9 +1505,9 @@ void CTexture::ImagePreprocessing(STexData Data[6])
         {
           if (nNewWidth >= minSize || nNewHeight >= minSize)
           {
-            int nRes = min(CRenderer::CV_r_texlmresolution, 4);
-            nNewWidth = max(nNewWidth>>nRes, 1);
-            nNewHeight = max(nNewHeight>>nRes, 1);
+            int nRes = std::min(CRenderer::CV_r_texlmresolution, 4);
+            nNewWidth = std::max(nNewWidth>>nRes, 1);
+            nNewHeight = std::max(nNewHeight>>nRes, 1);
           }
         }
       }
@@ -1517,9 +1517,9 @@ void CTexture::ImagePreprocessing(STexData Data[6])
         {
           if (nNewWidth >= minSize || nNewHeight >= minSize)
           {
-            int nRes = min(CRenderer::CV_r_texresolution, 4);
-            nNewWidth = max(nNewWidth>>nRes, 1);
-            nNewHeight = max(nNewHeight>>nRes, 1);
+            int nRes = std::min(CRenderer::CV_r_texresolution, 4);
+            nNewWidth = std::max(nNewWidth>>nRes, 1);
+            nNewHeight = std::max(nNewHeight>>nRes, 1);
           }
         }
       }
@@ -1528,8 +1528,8 @@ void CTexture::ImagePreprocessing(STexData Data[6])
       {
         CRenderer::CV_r_texmaxsize = 1<<LogBaseTwo(CRenderer::CV_r_texmaxsize);
 
-        nNewWidth = min(nNewWidth, CRenderer::CV_r_texmaxsize);
-        nNewHeight = min(nNewHeight, CRenderer::CV_r_texmaxsize);
+        nNewWidth = std::min(nNewWidth, CRenderer::CV_r_texmaxsize);
+        nNewHeight = std::min(nNewHeight, CRenderer::CV_r_texmaxsize);
       }
     }
 
@@ -1537,11 +1537,11 @@ void CTexture::ImagePreprocessing(STexData Data[6])
     int nMaxSize;
     if ((nMaxSize=GetMaxTextureSize()) > 0)
     {
-      nNewWidth = min(nNewWidth, nMaxSize);
-      nNewHeight = min(nNewHeight, nMaxSize);
+      nNewWidth = std::min(nNewWidth, nMaxSize);
+      nNewHeight = std::min(nNewHeight, nMaxSize);
     }
-    nNewWidth = max(nNewWidth, 1);
-    nNewHeight = max(nNewHeight, 1);
+    nNewWidth = std::max(nNewWidth, 1);
+    nNewHeight = std::max(nNewHeight, 1);
 
     if (!bPowerOfTwo)
     {
@@ -2850,7 +2850,7 @@ SEnvTexture *CTexture::FindSuitableEnvLCMap(Vec3& Pos, bool bMustExist, int Rend
 	float curTime = iTimer->GetCurrTime();
   int nUpdate = -2;
   dist = sqrtf(dist);
-  fDistToCam = max(1.0f, fDistToCam);
+  fDistToCam = std::max(1.0f, fDistToCam);
   if (bMustExist)
     nUpdate = -2;
   else
@@ -2863,7 +2863,7 @@ SEnvTexture *CTexture::FindSuitableEnvLCMap(Vec3& Pos, bool bMustExist, int Rend
   }
   else
   {
-    float fTimeInterval = max(fDistToCam, 1.0f) * CRenderer::CV_r_envlcmupdateinterval;
+    float fTimeInterval = std::max(fDistToCam, 1.0f) * CRenderer::CV_r_envlcmupdateinterval;
     float fDelta = curTime - CTexture::m_EnvLCMaps[firstForUse].m_TimeLastUpdated;
     if (fDelta > fTimeInterval)
       nUpdate = firstForUse;
@@ -3664,9 +3664,9 @@ void CDynTextureSource::CalcSize(int& width, int& height, float distToCamera) co
 	{
 		int x(0), y(0), width(1), height(1);
 		gRenDev->GetViewport(&x, &y, &width, &height);
-		float lod = logf(max(distToCamera * 1024.0f / (float) max(width, height), 1.0f));
+		float lod = logf(std::max(distToCamera * 1024.0f / (float) std::max(width, height), 1.0f));
 		int lodFixed = fastround_positive(lod);
-		size = 1 << max(logSize - lodFixed, 5);
+		size = 1 << std::max(logSize - lodFixed, 5);
 	}
 
 	width = size;

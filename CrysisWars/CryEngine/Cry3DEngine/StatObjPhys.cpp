@@ -76,8 +76,13 @@ void CStatObj::PhysicalizeCompiled( CNodeCGF *pNode )
 		std::vector<char> &physData = pNode->physicalGeomData[nPhysGeomType];
 		if (!physData.empty())
 		{
+			if (physData.size() > std::numeric_limits<int>::max())
+			{
+				FileWarning(0, GetFilePath(), "Physical geometry stream exceeds the physics API limit (%s)", GetFilePath());
+				return;
+			}
 			// We have physical geometry for this node.
-			CMemStream stm( &physData.front(), physData.size(), true );
+			CMemStream stm(&physData.front(), static_cast<int>(physData.size()), true);
 			phys_geometry *pPhysGeom = GetPhysicalWorld()->GetGeomManager()->LoadPhysGeometry(stm,mesh.m_pPositions,mesh.m_pIndices,&faceMaterials[0]);
 			if (!pPhysGeom)
 			{
@@ -133,6 +138,12 @@ bool CStatObj::PhysicalizeGeomType( int nGeomType,CMesh &mesh )
 
 	if (nVerts > 2)
 	{
+		const size_t triangleCount = indices.size() / 3;
+		if (triangleCount > std::numeric_limits<int>::max())
+		{
+			FileWarning(0, GetFilePath(), "Physical mesh triangle count exceeds the physics API limit (%s)", GetFilePath());
+			return false;
+		}
 		Vec3 ptmin = mesh.m_bbox.max;
 		Vec3 ptmax = mesh.m_bbox.min;
 
@@ -172,7 +183,7 @@ bool CStatObj::PhysicalizeGeomType( int nGeomType,CMesh &mesh )
 			&indices[0],
 			&faceMaterials[0],
 			0,
-			indices.size()/3,
+			static_cast<int>(triangleCount),
 			flags, tol, nMinTrisPerNode,nMaxTrisPerNode, 2.5f );
 
 		phys_geometry *pPhysGeom = pGeoman->RegisterGeometry( pGeom,faceMaterials[0] );
@@ -1550,7 +1561,8 @@ inline bool IsDigitChar( char c )
 
 void CStatObj::PhysicalizeSubobjects(IPhysicalEntity *pent, const Matrix34 *pMtx, float mass,float density, int id0)
 {
-	int i,j,i0,i1,len,len1,nObj=GetSubObjectCount(),ipart[2],nparts,bHasPlayerOnlyGeoms=0;
+	int i,j,i0,i1,nObj=GetSubObjectCount(),ipart[2],nparts,bHasPlayerOnlyGeoms=0;
+	size_t len = 0, len1 = 0;
 	float V[2],M,scale,jointsz;
 	const char *pval;
 	Matrix34 mtxLoc;
@@ -1928,7 +1940,9 @@ void SerializeData(TSerialize ser, const char *name, void *pdata, int size)
 	if (ser.IsReading())
 	{
 		ser.Value(name, str);
-		n = ascii2bin((const unsigned char*)(const char*)str, str.length(), (unsigned char*)pdata, size);
+		if (str.length() > std::numeric_limits<int>::max())
+			return;
+		n = ascii2bin((const unsigned char*)(const char*)str, static_cast<int>(str.length()), (unsigned char*)pdata, size);
 		assert(n == size);
 	}	else
 	{
@@ -2651,12 +2665,12 @@ int CStatObj::PhysicalizeFoliage(IPhysicalEntity *pTrunk, const Matrix34 &mtxWor
 			//--------------------------------------------------------------------------------------
 			//--- this code is checking if all bone-mappings in the subsets are in a valid range ---
 			//--------------------------------------------------------------------------------------
-			uint32 numSubsets = meshChunks.size();
-			for (uint32 s=0; s<numSubsets; s++)
+			const int numSubsets = meshChunks.Count();
+			for (int s = 0; s < numSubsets; ++s)
 			{
 				uint32 nStartIndex		= meshChunks[s].nFirstVertId;
 				uint32 nNumVertices		= meshChunks[s].nNumVerts;
-				uint32 BonesPerSubset = meshChunks[s].m_arrChunkBoneIDs.size();
+				const int BonesPerSubset = meshChunks[s].m_arrChunkBoneIDs.Count();
 
 				//	assert(BonesPerSubset);
 				if (BonesPerSubset)

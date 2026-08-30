@@ -461,7 +461,14 @@ bool CMeshCompiler::Compile( CMesh &mesh,int flags )
 			return false;
 		}
 
-		uint32 dwCnt = tangents.GetBaseCount();
+		const size_t baseCount = tangents.GetBaseCount();
+		if (baseCount > static_cast<size_t>(std::numeric_limits<uint16>::max()) + 1)
+		{
+			m_LastError = "Compiled tangent-basis count exceeds the 16-bit mesh format limit";
+			SAFE_DELETE_ARRAY(vertexMatId);
+			return false;
+		}
+		const uint32 dwCnt = static_cast<uint32>(baseCount);
 		// for every triangle
 		uint32 dwTris = Input.GetTriangleCount();
 
@@ -633,9 +640,14 @@ bool CMeshCompiler::Compile( CMesh &mesh,int flags )
 	//////////////////////////////////////////////////////////////////////////
 
 	// Index the mesh (Compact Vertices): detect and delete duplicate vertices
-	CompactBuffer( outMesh,vertexMatId, flags );
-	if (!m_pVertexMap)
-		DeleteDegenerateFaces( outMesh );
+	if (!CompactBuffer(outMesh, vertexMatId, flags) ||
+		(!m_pVertexMap && !DeleteDegenerateFaces(outMesh)))
+	{
+		SAFE_DELETE_ARRAY(vertexMatId);
+		SAFE_DELETE_ARRAY(pBasises);
+		SAFE_DELETE_ARRAY(pBasisIndices);
+		return false;
+	}
 
 //#ifndef _DEBUG
 	if (flags & MESH_COMPILE_OPTIMIZE)
@@ -808,10 +820,10 @@ inline int FindInBuffer( CMesh &mesh,int nIndex,int nMatInfo,uint16 *hash,int nH
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CMeshCompiler::CompactBuffer( CMesh &mesh,uint8 *vertexMatId, int flags )
+bool CMeshCompiler::CompactBuffer(CMesh& mesh, uint8* vertexMatId, int flags)
 {
 	if (!mesh.GetVertexCount())
-		return;
+		return true;
 
 	int vert_num_before = mesh.GetVertexCount();
 
@@ -842,7 +854,7 @@ void CMeshCompiler::CompactBuffer( CMesh &mesh,uint8 *vertexMatId, int flags )
 		uint8 nHashInd = (uint8)((p.x + p.y + p.z)*fHashScale);
 		int nMatId = vertexMatId[v];
 		uint16 *hash = 0;
-		int nHashSize = m_index_hash_table[nHashInd].size();
+		const int nHashSize = static_cast<int>(m_index_hash_table[nHashInd].size());
 		if (nHashSize > 0)
 			hash = &m_index_hash_table[nHashInd][0];
 		uint8 *pNewVertexMatId = 0;
@@ -884,17 +896,23 @@ void CMeshCompiler::CompactBuffer( CMesh &mesh,uint8 *vertexMatId, int flags )
 		mesh.SetTexCoordsCount( newMesh.GetVertexCount() );
 
 	// Copy indices.
-	newMesh.SetIndexCount( m_tempIndices.size() );
+	if (m_tempIndices.size() > std::numeric_limits<int>::max())
+	{
+		m_LastError = "Compacted mesh index count exceeds the mesh API limit";
+		return false;
+	}
+	newMesh.SetIndexCount(static_cast<int>(m_tempIndices.size()));
 	memcpy( newMesh.m_pIndices,&m_tempIndices[0],m_tempIndices.size()*sizeof(m_tempIndices[0]) );
 
 	mesh.Copy( newMesh );
+	return true;
 
 	//int ratio = 100*(newMesh.GetVertexCound())/vert_num_before;
 	//Log("  Size after compression = %d %s ( %d -> %d )", ratio, "%", vert_num_before, newMesh.GetVertexCount());
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CMeshCompiler::DeleteDegenerateFaces( CMesh &mesh )
+bool CMeshCompiler::DeleteDegenerateFaces(CMesh& mesh)
 {
 	int nFacesRemoved = 0;
 	// Remove degenerated triangles in the generated mesh.
@@ -904,7 +922,7 @@ void CMeshCompiler::DeleteDegenerateFaces( CMesh &mesh )
 	{
 		SMeshSubset &subset = mesh.m_subsets[i];
 
-		int nFirstInd = m_tempIndices.size();
+		const size_t firstIndex = m_tempIndices.size();
 		for (int j = subset.nFirstIndexId; j < subset.nFirstIndexId+subset.nNumIndices; j+=3)
 		{
 			// the face in material #i consists of vertices i0,i1,i2:
@@ -922,14 +940,21 @@ void CMeshCompiler::DeleteDegenerateFaces( CMesh &mesh )
 			else
 				nFacesRemoved ++;
 		}
-		subset.nFirstIndexId = nFirstInd;
-		subset.nNumIndices = m_tempIndices.size() - nFirstInd;
+		const size_t subsetIndexCount = m_tempIndices.size() - firstIndex;
+		if (firstIndex > std::numeric_limits<int>::max() || subsetIndexCount > std::numeric_limits<int>::max())
+		{
+			m_LastError = "Compiled mesh index range exceeds the mesh API limit";
+			return false;
+		}
+		subset.nFirstIndexId = static_cast<int>(firstIndex);
+		subset.nNumIndices = static_cast<int>(subsetIndexCount);
 	}
 	if (nFacesRemoved)
 	{
-		mesh.SetIndexCount( m_tempIndices.size() );
+		mesh.SetIndexCount(static_cast<int>(m_tempIndices.size()));
 		memcpy( mesh.m_pIndices,&m_tempIndices[0],m_tempIndices.size()*sizeof(uint16) );
 	}
+	return true;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -998,7 +1023,7 @@ void CMeshCompiler::UpdateFaces( CMesh &mesh )
 
 inline int FindInPosBuffer(const Vec3 & vPosToFind, const Vec3 * pVertBuff, std::vector<int> *pHash,float fEpsilon )
 { 
-	for(uint32 i=0,num = pHash->size(); i<num; i++) 
+	for (size_t i = 0, count = pHash->size(); i < count; ++i)
 		if(CMeshCompiler::IsEquivalentVec3dCheckYFirst(pVertBuff[(*pHash)[i]], vPosToFind, fEpsilon)) 
 			return (*pHash)[i];
 
@@ -1104,8 +1129,8 @@ public:
 	// Standart constructors.
 	PList() {};
 
-	void	add( const T& t ) { push_back( t ); };
-	void	addUnique( const T& t ) { if (!isContain(t)) push_back( t ); };
+	void	add( const T& t ) { this->push_back( t ); };
+	void	addUnique( const T& t ) { if (!isContain(t)) this->push_back( t ); };
 	void	del( int i ) { this->erase( this->begin() + i ); }
 	void	del( const T& t ) {
 		int i = find( t );
@@ -1622,8 +1647,8 @@ void CProgMeshBuilder::collapseVertex( PVertex *u )	{
 	}
 
 	// update remaining triangles to have v instead of u
-	for (i = u->tris.size()-1; i >= 0; i--) {
-		u->tris[i]->replace( u,v );
+	for (size_t triIndex = u->tris.size(); triIndex-- > 0;) {
+		u->tris[triIndex]->replace( u,v );
 	}
 
 	// Remove vertex u.

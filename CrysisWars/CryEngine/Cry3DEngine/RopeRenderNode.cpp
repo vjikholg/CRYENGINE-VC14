@@ -1128,7 +1128,12 @@ void CRopeRenderNode::Physicalize( bool bInstant )
 		pe_action_remove_all_parts removeall;
 		m_pPhysicalEntity->Action( &removeall );
 
-		int numSplinePoints = m_points.size();
+		if (m_points.size() > std::numeric_limits<int>::max())
+		{
+			Error("Rope point count exceeds the spline API limit");
+			return;
+		}
+		const int numSplinePoints = static_cast<int>(m_points.size());
 		m_spline.resize(numSplinePoints);
 		for (int pnt = 0; pnt < numSplinePoints; pnt++)
 		{
@@ -1375,7 +1380,12 @@ void CRopeRenderNode::SyncWithPhysicalRope( bool bForce )
 	if (m_bStaticPhysics)
 	{
 		m_physicsPoints = m_points;
-		int numPoints = m_points.size();
+		if (m_points.size() > std::numeric_limits<int>::max())
+		{
+			Error("Rope point count exceeds the spline API limit");
+			return;
+		}
+		const int numPoints = static_cast<int>(m_points.size());
 		for (int i = 0; i < numPoints; i++)
 		{
 			Vec3 point = m_points[i];
@@ -1490,7 +1500,12 @@ void CRopeRenderNode::UpdateRenderMesh()
 	//////////////////////////////////////////////////////////////////////////
 	// Tesselate.  
 	//////////////////////////////////////////////////////////////////////////
-	int numSplinePoints = m_physicsPoints.size();
+	if (m_physicsPoints.size() > std::numeric_limits<int>::max())
+	{
+		Error("Physical rope point count exceeds the spline API limit");
+		return;
+	}
+	const int numSplinePoints = static_cast<int>(m_physicsPoints.size());
 	m_spline.resize(numSplinePoints);
 	for (int pnt = 0; pnt < numSplinePoints; pnt++)
 	{

@@ -24,19 +24,26 @@ extern byte sSkipChars[256];
 
 void fxParserInit(void);
 
-void SkipCharacters(char **buf, const char *toSkip);
+void SkipCharacters(const char*& buf, const char* toSkip);
+void SkipCharacters(char*& buf, const char* toSkip);
 void RemoveCR(char *buf);
 void SkipComments(char **buf, bool bSkipWhiteSpace);
 
-bool fxIsFirstPass(char *buf);
+bool fxIsFirstPass(const char* buf);
 void fxRegisterEnv(const char *szStr);
 
-int shFill(char **buf, char *dst, int nSize=-1);
-int fxFill(char **buf, char *dst, int nSize=-1);
-char *fxFillPr (char **buf, char *dst);
-char *fxFillPrC (char **buf, char *dst);
-char *fxFillParam (char **buf, char *dst);
-int fxFillCR(char **buf, char *dst);
+int shFill(const char*& buf, char* dst, int nSize=-1);
+int shFill(char*& buf, char* dst, int nSize=-1);
+int fxFill(const char*& buf, char* dst, int nSize=-1);
+int fxFill(char*& buf, char* dst, int nSize=-1);
+const char* fxFillPr(const char*& buf, char* dst);
+char* fxFillPr(char*& buf, char* dst);
+const char* fxFillPrC(const char*& buf, char* dst);
+char* fxFillPrC(char*& buf, char* dst);
+const char* fxFillParam(const char*& buf, char* dst);
+char* fxFillParam(char*& buf, char* dst);
+int fxFillCR(const char*& buf, char* dst);
+int fxFillCR(char*& buf, char* dst);
 
 bool shGetBool(char *buf);
 float shGetFloat(const char *buf);

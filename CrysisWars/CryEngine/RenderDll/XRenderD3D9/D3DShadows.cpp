@@ -162,7 +162,7 @@ void CD3D9Renderer::DrawAllShadowsOnTheScreen()
 
 	int nMaxCount = 16;
 
-	float fArrDim = max(4.f, sqrtf((float)nMaxCount));
+	float fArrDim = std::max(4.f, sqrtf((float)nMaxCount));
 	float fPicDimX = width/fArrDim;
 	float fPicDimY = height/fArrDim;
 	int nShadowId=0;
@@ -487,7 +487,7 @@ void CD3D9Renderer::PrepareDepthMap(CDLight* pLightSource)
 
   ETEX_Type eTT = lof->bOmniDirectionalShadow ? eTT_Cube : eTT_2D;
 
-  lof->nTexSize = max(lof->nTexSize, 32);
+  lof->nTexSize = std::max(lof->nTexSize, 32);
   int nTextureSize = lof->nTexSize;
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -809,7 +809,7 @@ void CD3D9Renderer::PrepareDepthMap(CDLight* pLightSource)
         vZRange.w = 0;*/
         EF_Commit();
 
-        int nBorder = max(4,nTextureSize/64);
+        int nBorder = std::max(4,nTextureSize/64);
         //if (eTT == eTT_2D)
         //  EF_Scissor(true,nBorder,nBorder,nTextureSize-nBorder*2,nTextureSize-nBorder*2);
         //FIX !!! why CULL_NONE is setting here
@@ -1038,7 +1038,7 @@ void CD3D9Renderer::PrepareDepthMap(ShadowMapFrustum* lof, CDLight* pLight)
   //////////////////////////////////////////////////////////////////////////
 
   //calc texture resolution and frustum resolotion
-  lof->nTexSize = max(lof->nTexSize, 32);
+  lof->nTexSize = std::max(lof->nTexSize, 32);
   lof->nTextureWidth = lof->nTexSize;
   lof->nTextureHeight = lof->nTexSize;
   lof->nShadowMapSize = lof->nTexSize;
@@ -1608,7 +1608,7 @@ void CD3D9Renderer::PrepareDepthMap(ShadowMapFrustum* lof, CDLight* pLight)
           }
           else*/
           {
-            CShadowUtils::GetCubemapFrustum(FTYP_SHADOWOMNIPROJECTION, lof, nS, m_matProj->GetTop(), m_matView->GetTop(), false);
+            CShadowUtils::GetCubemapFrustum(FTYP_SHADOWOMNIPROJECTION, lof, nS, m_matProj->GetTop(), m_matView->GetTop());
           }
 
           //enable back facing for omni lights for now
@@ -1782,7 +1782,7 @@ void CD3D9Renderer::PrepareDepthMap(ShadowMapFrustum* lof, CDLight* pLight)
       EF_Commit(true);
 
 
-	    int nBorder = max(4,lof->nShadowMapSize/64);
+	    int nBorder = std::max(4,lof->nShadowMapSize/64);
       //if (eTT == eTT_2D)
 	    //  EF_Scissor(true,nBorder,nBorder,nTextureSize-nBorder*2,nTextureSize-nBorder*2);
       //FIX !!! why CULL_NONE is setting here
@@ -2443,7 +2443,7 @@ void CD3D9Renderer::FX_DrawShadowPasses(CShader *ef, SShaderTechnique *pTech, in
     for (i=0; i<pTech->m_Passes.Num(); i++, slw++)
     {
       bool bUseLight = false;
-      nDeltaCasters = min(nCasters-nCaster, 4U);
+      nDeltaCasters = std::min(nCasters-nCaster, 4U);
       m_RP.m_FlagsShader_RT &= ~(g_HWSR_MaskBit[HWSR_SAMPLE0] | g_HWSR_MaskBit[HWSR_SAMPLE1] | g_HWSR_MaskBit[HWSR_SAMPLE2] | g_HWSR_MaskBit[HWSR_SAMPLE3] | g_HWSR_MaskBit[HWSR_CUBEMAP0] |
                                  g_HWSR_MaskBit[HWSR_POINT_LIGHT] | g_HWSR_MaskBit[HWSR_HW_PCF_COMPARE]);
       if( bHasShadow )

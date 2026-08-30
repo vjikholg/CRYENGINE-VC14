@@ -57,7 +57,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(MSBuildProjectDirectory)\..\..\CryCommon;$(MSBuildProjectDirectory)\..\..\CrySystem;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(MSBuildProjectDirectory)\..\..\CryCommon;$(MSBuildProjectDirectory)\..\..\CrySystem;$(MSBuildProjectDirectory)\..\..\RenderDll\Common\Textures\Image\Squish;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CONSOLE;NOT_USE_CRY_MEMORY_MANAGER;_ITERATOR_DEBUG_LEVEL=0;_HAS_ITERATOR_DEBUGGING=0;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <WarningLevel>Level4</WarningLevel>
       <TreatWarningAsError>false</TreatWarningAsError>
@@ -100,6 +100,7 @@
     <ClInclude Include="ComparisonCompatibilityTests.h" />
     <ClInclude Include="CryFileNameTests.h" />
     <ClInclude Include="CryStringCompatibilityTests.h" />
+    <ClInclude Include="DxtCompatibilityTests.h" />
     <ClInclude Include="LegacyStdioCompatibilityTests.h" />
     <ClInclude Include="MemoryAllocatorTests.h" />
     <ClInclude Include="MemoryAccountingTests.h" />
@@ -120,6 +121,7 @@
     <ClCompile Include="ComparisonCompatibilityTests.cpp" />
     <ClCompile Include="CryFileNameTests.cpp" />
     <ClCompile Include="CryStringCompatibilityTests.cpp" />
+    <ClCompile Include="DxtCompatibilityTests.cpp" />
     <ClCompile Include="CryCommonTestSupport.cpp" />
     <ClCompile Include="LegacyStdioCompatibilityTests.cpp" />
     <ClCompile Include="Main.cpp" />
@@ -137,6 +139,15 @@
     <ClCompile Include="TestRunner.cpp" />
     <ClCompile Include="VectorMapTests.cpp" />
     <ClCompile Include="ZlibCompatibilityTests.cpp" />
+    <ClCompile Include="..\..\RenderDll\Common\Textures\Image\Squish\alpha.cpp" />
+    <ClCompile Include="..\..\RenderDll\Common\Textures\Image\Squish\clusterfit.cpp" />
+    <ClCompile Include="..\..\RenderDll\Common\Textures\Image\Squish\colourblock.cpp" />
+    <ClCompile Include="..\..\RenderDll\Common\Textures\Image\Squish\colourfit.cpp" />
+    <ClCompile Include="..\..\RenderDll\Common\Textures\Image\Squish\colourset.cpp" />
+    <ClCompile Include="..\..\RenderDll\Common\Textures\Image\Squish\maths.cpp" />
+    <ClCompile Include="..\..\RenderDll\Common\Textures\Image\Squish\rangefit.cpp" />
+    <ClCompile Include="..\..\RenderDll\Common\Textures\Image\Squish\singlecolourfit.cpp" />
+    <ClCompile Include="..\..\RenderDll\Common\Textures\Image\Squish\squish.cpp" />
     <ClCompile Include="..\..\CrySystem\zlib\adler32.c">
       <CompileAs>CompileAsC</CompileAs>
     </ClCompile>
@@ -173,6 +184,33 @@
     <ClCompile Include="..\..\CrySystem\zlib\zutil.c">
       <CompileAs>CompileAsC</CompileAs>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="TestData\DxtCompatibility\mwll_dot_dxt3.dds">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>TestData\DxtCompatibility\mwll_dot_dxt3.dds</TargetPath>
+    </None>
+    <None Include="TestData\DxtCompatibility\mwll_dot_dxt3.nvdxt.rgba">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>TestData\DxtCompatibility\mwll_dot_dxt3.nvdxt.rgba</TargetPath>
+    </None>
+    <None Include="TestData\DxtCompatibility\mwll_light_color_dxt5.dds">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>TestData\DxtCompatibility\mwll_light_color_dxt5.dds</TargetPath>
+    </None>
+    <None Include="TestData\DxtCompatibility\mwll_light_color_dxt5.nvdxt.rgba">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>TestData\DxtCompatibility\mwll_light_color_dxt5.nvdxt.rgba</TargetPath>
+    </None>
+    <None Include="TestData\DxtCompatibility\mwll_tankcolor_dxt1.dds">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>TestData\DxtCompatibility\mwll_tankcolor_dxt1.dds</TargetPath>
+    </None>
+    <None Include="TestData\DxtCompatibility\mwll_tankcolor_dxt1.nvdxt.rgba">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>TestData\DxtCompatibility\mwll_tankcolor_dxt1.nvdxt.rgba</TargetPath>
+    </None>
+    <None Include="TestData\DxtCompatibility\README.md" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

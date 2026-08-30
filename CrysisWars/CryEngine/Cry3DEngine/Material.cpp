@@ -296,8 +296,8 @@ const IMaterialLayer* CMatInfo::GetLayer( uint8 nLayersMask, uint8 nLayersUsageM
     //if( m_nActiveLayerMask == nLayersMask)
     //  return m_pActiveLayer;
     
-    int nSlotCount = m_pMaterialLayers->size();
-    for( int nSlot = 0; nSlot < nSlotCount; ++nSlot )
+    const size_t slotCount = min(m_pMaterialLayers->size(), sizeof(nLayersMask) * 8);
+    for (size_t nSlot = 0; nSlot < slotCount; ++nSlot)
     {
       CMaterialLayer *pLayer = static_cast< CMaterialLayer *>((* m_pMaterialLayers)[nSlot] );
 
@@ -650,18 +650,17 @@ void CMatInfo::LoadFromMatEntity( MAT_ENTITY *me,const char *szFolderName )
 	if(mName[0]==0)
 		strcpy(mName,"nodraw");
 
-	if(!templName || !templName[0])
-		templName = "nodraw";
+	const char* shaderTemplateName = templName && templName[0] ? templName : "nodraw";
 
-	if (stricmp(templName,"nodraw") == 0)
+	if (stricmp(shaderTemplateName,"nodraw") == 0)
 		m_Flags |= MTL_FLAG_NODRAW;
 
 
-	if (stricmp(templName,"TemplPlants") == 0 || stricmp(templName,"TemplPlants1") == 0)
+	if (stricmp(shaderTemplateName,"TemplPlants") == 0 || stricmp(shaderTemplateName,"TemplPlants1") == 0)
 		Res.m_AlphaRef = 0.5f;
 
   Res.m_szMaterialName = m_sMaterialName;
-	m_shaderItem = GetRenderer()->EF_LoadShaderItem(templName, true, 0, &Res);
+	m_shaderItem = GetRenderer()->EF_LoadShaderItem(shaderTemplateName, true, 0, &Res);
 }
 
 //////////////////////////////////////////////////////////////////////////

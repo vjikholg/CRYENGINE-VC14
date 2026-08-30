@@ -111,21 +111,22 @@ CMatMan::~CMatMan()
 const char* CMatMan::UnifyName( const char *sMtlName ) const
 {
 	static char name[260];
-	int n = strlen(sMtlName);
+	const size_t length = strlen(sMtlName);
 
 	//TODO: change this code to not use a statically allocated buffer and return it ...
 	//TODO: provide a general name unification function, which can be used in other places as well and remove this thing
-	if (n>=260)
+	if (length >= sizeof(name))
 		Error("Static buffer size exceeded by material name!");
 
-	for (int i = 0; i < n && i < sizeof(name); i++)
+	const size_t copiedLength = min(length, sizeof(name) - 1);
+	for (size_t i = 0; i < copiedLength; ++i)
 	{
 		if (sMtlName[i] != '\\')
 			name[i] = __ascii_tolower(sMtlName[i]);
 		else
 			name[i] = '/';
 	}
-	name[n] = '\0';
+	name[copiedLength] = '\0';
 	return name;
 }
 
@@ -1085,7 +1086,14 @@ IMaterial* CMatMan::GetDefaultHelperMaterial()
 //////////////////////////////////////////////////////////////////////////
 void CMatMan::GetLoadedMaterials( IMaterial **pData, uint32 &nObjCount ) const
 {
-	nObjCount = m_mtlNameMap.size();
+	const size_t materialCount = m_mtlNameMap.size();
+	if (materialCount > std::numeric_limits<uint32>::max())
+	{
+		Error("Loaded material count exceeds the 32-bit material API limit");
+		nObjCount = 0;
+		return;
+	}
+	nObjCount = static_cast<uint32>(materialCount);
 
 	if(!pData)
 		return;
@@ -1281,9 +1289,16 @@ IMaterial* CMatMan::LoadCGFMaterial( CMaterialCGF *pMaterialCGF,const char *sCgf
 		}
 		else
 		{
+			const size_t subMaterialCount = pMaterialCGF->subMaterials.size();
+			if (subMaterialCount > std::numeric_limits<int>::max())
+			{
+				Error("CGF sub-material count exceeds the material API limit");
+				return GetDefaultMaterial();
+			}
+			const int subMaterialCount32 = static_cast<int>(subMaterialCount);
 			pMaterial = CreateMaterial( sMtlName,MTL_FLAG_MULTI_SUBMTL );
-			pMaterial->SetSubMtlCount( pMaterialCGF->subMaterials.size() );
-			for (int i = 0; i < (int)pMaterialCGF->subMaterials.size(); i++)
+			pMaterial->SetSubMtlCount(subMaterialCount32);
+			for (int i = 0; i < subMaterialCount32; ++i)
 			{
 				CMaterialCGF *pChildMtlCGF = pMaterialCGF->subMaterials[i];
 				if (pChildMtlCGF && pChildMtlCGF->pMatEntity)

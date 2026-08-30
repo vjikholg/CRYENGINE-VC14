@@ -738,6 +738,9 @@
     <ClInclude Include="..\CrtOverrides.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\RenderD3DPrerequisites.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\RenderPCH.h">
       <Filter>Header Files</Filter>
     </ClInclude>

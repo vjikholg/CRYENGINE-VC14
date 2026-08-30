@@ -79,7 +79,7 @@ foundbox:
 			pOverlap->pEntity[0]->GetParams(&pfd);
 			if ((i=(pfd.iForeignFlags>>8&255)-1)<0)
 			{
-				if ((i=pEngine->m_arrEntsInFoliage.size())<255)
+				if ((i = pEngine->m_arrEntsInFoliage.Count()) < 255)
 				{
 					SEntInFoliage eif;
 					eif.id = gEnv->pPhysicalWorld->GetPhysicalEntityId(pOverlap->pEntity[0]);

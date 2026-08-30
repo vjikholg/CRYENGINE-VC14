@@ -52,9 +52,8 @@
 	{
 		char strElem[4096];
 		this->resize(0);
-		int nStrlen = strlen(str);
-		if (nStrlen >= sizeof(strElem)-1)
-			nStrlen = sizeof(strElem)-1;
+		const size_t sourceLength = strlen(str);
+		const int nStrlen = static_cast<int>(min(sourceLength, sizeof(strElem) - 1));
 		int nCur = 0;
 		while (nCur < nStrlen)
 		{

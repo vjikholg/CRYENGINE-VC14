@@ -834,10 +834,10 @@ bool C3DEngine::LoadUsedShadersList()
 	CCryFile file;
 	if (file.Open( GetLevelFilePath(SHADER_LIST_FILE),"rb" ))
 	{
-		int nSize = file.GetLength();
-		char *pShaderData = new char[nSize+1];
-		file.ReadRaw( pShaderData,nSize );
-		pShaderData[nSize] = '\0'; // Make null terminted string.
+		const size_t dataSize = file.GetLength();
+		char *pShaderData = new char[dataSize + 1];
+		file.ReadRaw(pShaderData, dataSize);
+		pShaderData[dataSize] = '\0'; // Make null terminated string.
 
 		gEnv->pRenderer->EF_Query(EFQ_SetShaderCombinations, (INT_PTR)pShaderData );
 

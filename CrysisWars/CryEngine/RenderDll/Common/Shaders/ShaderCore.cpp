@@ -2227,37 +2227,37 @@ float CShaderMan::EvalWaveForm2(SWaveForm *wf, float frac)
 
     case eWF_Sin:
       val = QRound((frac*wf->m_Freq+wf->m_Phase)*1024.0f);
-      val = min(val, 1023);
+      val = std::min(val, 1023);
       return wf->m_Amp*gRenDev->m_RP.m_tSinTable[val]+wf->m_Level;
 
     case eWF_SawTooth:
       val = QRound((frac*wf->m_Freq+wf->m_Phase)*1024.0f);
-      val = min(val, 1023);
+      val = std::min(val, 1023);
       return wf->m_Amp*gRenDev->m_RP.m_tSawtoothTable[val]+wf->m_Level;
 
     case eWF_InvSawTooth:
       val = QRound((frac*wf->m_Freq+wf->m_Phase)*1024.0f);
-      val = min(val, 1023);
+      val = std::min(val, 1023);
       return wf->m_Amp*gRenDev->m_RP.m_tInvSawtoothTable[val]+wf->m_Level;
 
     case eWF_Square:
       val = QRound((frac*wf->m_Freq+wf->m_Phase)*1024.0f);
-      val = min(val, 1023);
+      val = std::min(val, 1023);
       return wf->m_Amp*gRenDev->m_RP.m_tSquareTable[val]+wf->m_Level;
 
     case eWF_Triangle:
       val = QRound((frac*wf->m_Freq+wf->m_Phase)*1024.0f);
-      val = min(val, 1023);
+      val = std::min(val, 1023);
       return wf->m_Amp*gRenDev->m_RP.m_tTriTable[val]+wf->m_Level;
 
     case eWF_Hill:
       val = QRound((frac*wf->m_Freq+wf->m_Phase)*1024.0f);
-      val = min(val, 1023);
+      val = std::min(val, 1023);
       return wf->m_Amp*gRenDev->m_RP.m_tHillTable[val]+wf->m_Level;
 
     case eWF_InvHill:
       val = QRound((frac*wf->m_Freq+wf->m_Phase)*1024.0f);
-      val = min(val, 1023);
+      val = std::min(val, 1023);
       return wf->m_Amp*(1.0f-gRenDev->m_RP.m_tHillTable[val])+wf->m_Level;
 
     default:
@@ -2520,7 +2520,7 @@ static int sEOF(bool bFromFile, char *pPtr, FILE *fp)
     nStatus = iSystem->GetIPak()->FEof(fp);
   else
   {
-    SkipCharacters(&pPtr, kWhiteSpace);
+    SkipCharacters(pPtr, kWhiteSpace);
     if (!*pPtr)
       nStatus = 1;
     else
@@ -2608,7 +2608,7 @@ void CShaderMan::mfInitShadersCache(FXShaderCacheCombinations *Combinations, con
       if (bFromFile)
         iSystem->GetIPak()->FGets(str, 2047, m_FPCacheCombinations);
       else
-        fxFillCR(&pPtr, str);
+        fxFillCR(pPtr, str);
       if (!str[0])
         continue;
 
@@ -2620,7 +2620,7 @@ void CShaderMan::mfInitShadersCache(FXShaderCacheCombinations *Combinations, con
         str[size-1] = 0;
       SCacheCombination cmb;
       char *s = str;
-      SkipCharacters(&s, kWhiteSpace);
+      SkipCharacters(s, kWhiteSpace);
       if (s[0] != '<')
         continue;
       int nVer = atoi(&s[1]);
@@ -3521,11 +3521,11 @@ void CShaderMan::_PrecacheShaders(FXShaderCacheCombinations *Combinations, bool 
       for (jj=0; jj<pCmbs->size(); jj++)
       {
         SCacheCombination *cmba = &(*pCmbs)[jj];
-        c = (char *)strchr(cmba->Name.c_str(), '@');
-        assert(c);
-        if (!c)
+        const char* separator = strchr(cmba->Name.c_str(), '@');
+        assert(separator);
+        if (!separator)
           continue;
-        m_szShaderPrecache = &c[1];
+        m_szShaderPrecache = &separator[1];
         /*if (!stricmp(m_szShaderPrecache, "IlluminationPS"))
         {
         //if (!stricmp(pSH->GetName(), "ParticlesNoMat"))

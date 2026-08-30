@@ -67,7 +67,7 @@ void CCloudsManager::ParseCloudFromXml( XmlNodeRef root,SCloudDescription* pClou
 	pCloud->m_bounds.max = Vec3(0,0,0);
 	pCloud->m_pMaterial = 0;
 	const char *sMtlName = root->getAttr( "Material" );
-	if (sMtlName != '\0')
+	if (sMtlName != nullptr && sMtlName[0] != '\0')
 	{
 		pCloud->m_pMaterial = GetMatMan()->LoadMaterial( sMtlName );
 		
@@ -159,8 +159,8 @@ void CCloudsManager::AddCloudRenderNode(CCloudRenderNode * pNode)
 //////////////////////////////////////////////////////////////////////////
 void CCloudsManager::RemoveCloudRenderNode(CCloudRenderNode * pNode)
 {
-	int size = m_cloudNodes.size();
-	for(int i=0; i<size; i++)
+	const size_t size = m_cloudNodes.size();
+	for (size_t i = 0; i < size; ++i)
 	{
 		if(m_cloudNodes[i]==pNode)
 		{

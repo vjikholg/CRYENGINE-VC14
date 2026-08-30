@@ -654,7 +654,7 @@ void SScreenParticles::ParticleUpdate( SScreenParticle *&pParticle)
   pParticle->m_pVelocity *= (pParticle->m_fWeight * 0.75f);
 
   // update position - limit position update to half particle size
-  pParticle->m_pPos += pParticle->m_pVelocity * min( pParticle->m_fWeight, 0.5f * pParticle->m_fSize);      
+  pParticle->m_pPos += pParticle->m_pVelocity * std::min( pParticle->m_fWeight, 0.5f * pParticle->m_fSize);
 }
  
 void SScreenParticles::Update()

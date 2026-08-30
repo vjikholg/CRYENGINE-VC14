@@ -1200,7 +1200,7 @@ bool CMotionBlur::Preprocess()
     m_pPrevView = GetUtils().m_pView;
   }
 
-  m_fRotationAcc *= max(1.f - CRenderer::CV_r_motionblurdynamicquality_rotationacc_stiffness * iSystem->GetITimer()->GetFrameTime(), 0.f);    
+  m_fRotationAcc *= std::max(1.f - CRenderer::CV_r_motionblurdynamicquality_rotationacc_stiffness * iSystem->GetITimer()->GetFrameTime(), 0.f);
   if (CTexture::m_Text_SceneTarget == NULL || !bActive)
     return false;
 
@@ -1269,10 +1269,10 @@ bool CMotionBlur::MotionDetection( float fCurrFrameTime, const Matrix44 &pCurrVi
     const float fMedDotDiferenceThreshold = 0.045f* CRenderer::CV_r_motionblurdynamicquality_rotationthreshold; 
     const float fMaxDotDiferenceThreshold = 0.1f* CRenderer::CV_r_motionblurdynamicquality_rotationthreshold;
     if( m_fRotationAcc > fMaxDotDiferenceThreshold )
-      nQuality = max( nQuality , 2);
+      nQuality = std::max( nQuality , 2);
     else
       if( m_fRotationAcc > fMedDotDiferenceThreshold ) 
-        nQuality = max( nQuality , 1); 
+        nQuality = std::max( nQuality , 1);
   }
 
   // No movement, skip motion blur
@@ -1331,7 +1331,7 @@ void CMotionBlur::Render()
   float fTimeScale = gEnv->pTimer->GetTimeScale();
   if (fTimeScale < 1.0f)
   {
-    fTimeScale = max(0.0001f, fTimeScale);
+    fTimeScale = std::max(0.0001f, fTimeScale);
     fCurrFrameTime /= fTimeScale;
   }
 
@@ -1341,7 +1341,7 @@ void CMotionBlur::Render()
   float fAlpha = iszero(fCurrFrameTime) ? 0.0f : fExposureTime /fCurrFrameTime;
   if( CRenderer::CV_r_motionblurframetimescale )
   {
-    float fAlphaScale = iszero(fCurrFrameTime) ? 1.0f : min(1.0f, (1.0f / fCurrFrameTime) / ( 32.0f)); // attenuate motion blur for lower frame rates
+    float fAlphaScale = iszero(fCurrFrameTime) ? 1.0f : std::min(1.0f, (1.0f / fCurrFrameTime) / ( 32.0f)); // attenuate motion blur for lower frame rates
     fAlpha *= fAlphaScale;
   }
 
@@ -1363,7 +1363,7 @@ void CMotionBlur::Render()
   if( nShaderQuality < eSQ_High )
     nQuality = 0;
 
-  nQuality = min(nQuality, 1);
+  nQuality = std::min(nQuality, 1);
 
   // First generate motion blur mask 
   if( nShaderQuality == eSQ_High )
@@ -1462,7 +1462,7 @@ void CMotionBlur::RenderHDR()
   if( CRenderer::s_MotionBlurMode < 3 || (iSystem->IsEditorMode() && CRenderer::s_MotionBlurMode !=5))
     return;
 
-  m_fRotationAcc *= max(1.f - CRenderer::CV_r_motionblurdynamicquality_rotationacc_stiffness  * iSystem->GetITimer()->GetFrameTime(), 0.f);    
+  m_fRotationAcc *= std::max(1.f - CRenderer::CV_r_motionblurdynamicquality_rotationacc_stiffness  * iSystem->GetITimer()->GetFrameTime(), 0.f);
 
   m_nQualityInfo = 0;
   m_nSamplesInfo = 0;
@@ -1498,7 +1498,7 @@ void CMotionBlur::RenderHDR()
   float fTimeScale = gEnv->pTimer->GetTimeScale();
   if (fTimeScale < 1.0f)
   {
-    fTimeScale = max(0.0001f, fTimeScale);
+    fTimeScale = std::max(0.0001f, fTimeScale);
     fCurrFrameTime /= fTimeScale;
   }
 
@@ -1507,7 +1507,7 @@ void CMotionBlur::RenderHDR()
   float fAlpha = iszero(fCurrFrameTime) ? 0.0f : fExposureTime /fCurrFrameTime;
   if( CRenderer::CV_r_motionblurframetimescale )
   {
-    float fAlphaScale = iszero(fCurrFrameTime) ? 1.0f : min(1.0f, (1.0f / fCurrFrameTime) / ( 32.0f)); // attenuate motion blur for lower frame rates
+    float fAlphaScale = iszero(fCurrFrameTime) ? 1.0f : std::min(1.0f, (1.0f / fCurrFrameTime) / ( 32.0f)); // attenuate motion blur for lower frame rates
     fAlpha *= fAlphaScale;
   }
 
@@ -3030,10 +3030,10 @@ void CFilterDepthEnhancement::Render()
 void CFilterChromaShift::Render()
 {
   float fAmount = m_pAmount->GetParam();
-  fAmount = max(fAmount, 0.0f);
+  fAmount = std::max(fAmount, 0.0f);
 
   float fUserAmount = m_pUserAmount->GetParam();
-  fUserAmount = max(fUserAmount, 0.0f);
+  fUserAmount = std::max(fUserAmount, 0.0f);
 
   static CCryName pTechName("ChromaShift");
   GetUtils().ShBeginPass(CShaderMan::m_shPostEffects, pTechName, FEF_DONTSETTEXTURES | FEF_DONTSETSTATES);   
@@ -3057,7 +3057,7 @@ void CFilterChromaShift::Render()
 void CFilterGrain::Render()
 {
   float fAmount = m_pAmount->GetParam();
-  fAmount = max(fAmount, 0.0f);
+  fAmount = std::max(fAmount, 0.0f);
 
   static CCryName pTechName("GrainFilter");
   GetUtils().ShBeginPass(CShaderMan::m_shPostEffects, pTechName, FEF_DONTSETSTATES);   
@@ -3080,7 +3080,7 @@ void CFilterGrain::Render()
 void CFilterStylized::Render()
 {
   float fAmount = m_pAmount->GetParam();
-  fAmount = max(fAmount, 0.0f);
+  fAmount = std::max(fAmount, 0.0f);
 
   GetUtils().StretchRect(CTexture::m_Text_BackBuffer, CTexture::m_Text_BackBufferScaled[0]);    
   GetUtils().TexBlurGaussian(CTexture::m_Text_BackBufferScaled[0], 1, 1.0f, 1, false);             
@@ -3107,7 +3107,7 @@ void CColorGrading::Render()
 {
   uint64 nSaveFlagsShader_RT = gRenDev->m_RP.m_FlagsShader_RT;
 
-  float fSharpenAmount = max(m_pSharpenAmount->GetParam(), 0.0f);
+  float fSharpenAmount = std::max(m_pSharpenAmount->GetParam(), 0.0f);
   if( fSharpenAmount && CRenderer::CV_r_colorgrading_filters )
     GetUtils().StretchRect(CTexture::m_Text_BackBuffer, CTexture::m_Text_BackBufferScaled[0]); 
 
@@ -3126,7 +3126,7 @@ void CColorGrading::Render()
   float fSaturation = m_pSaturation->GetParam() + m_pSaturationOffset->GetParam();
   Vec4  pFilterColor = m_pPhotoFilterColor->GetParamVec4() + m_pPhotoFilterColorOffset->GetParamVec4();
   float fFilterColorDensity = clamp_tpl<float>(m_pPhotoFilterColorDensity->GetParam() + m_pPhotoFilterColorDensityOffset->GetParam(), 0.0f, 1.0f);
-  float fGrain = min(m_pGrainAmount->GetParam()+m_pGrainAmountOffset->GetParam(), 1.0f);
+  float fGrain = std::min(m_pGrainAmount->GetParam()+m_pGrainAmountOffset->GetParam(), 1.0f);
 
   Vec4 pSelectiveColor = m_pSelectiveColor->GetParamVec4();
   float fSelectiveColorCyans = clamp_tpl<float>(m_pSelectiveColorCyans->GetParam()*0.01f, -1.0f, 1.0f);
@@ -3569,7 +3569,7 @@ void CWaterDroplets::Render()
   float fUserAmount = m_pAmount->GetParam();
 
   float fAtten = clamp_tpl<float>(fabs( gRenDev->GetRCamera().Orig.z - SPostEffectsUtils::m_fWaterLevel ), 0.0f, 1.0f);
-  Vec4 vParams=Vec4(1, 1, 1, min(fUserAmount + (1.0f - clamp_tpl<float>(m_fCurrLifeTime, 0.0f, 1.0f)), 1.0f) * fAtten);    
+  Vec4 vParams=Vec4(1, 1, 1, std::min(fUserAmount + (1.0f - clamp_tpl<float>(m_fCurrLifeTime, 0.0f, 1.0f)), 1.0f) * fAtten);
   static CCryName pParamName("waterDropletsParams");
   CShaderMan::m_shPostEffectsGame->FXSetPSFloat(pParamName, &vParams, 1);
 
@@ -3825,7 +3825,7 @@ void CBloodSplats::Render()
   float fScale = m_pScale->GetParam();
 
   fScale *= 2.0;
-  fScale = min(fScale, 1.0f);
+  fScale = std::min(fScale, 1.0f);
 
   static uint nCount = 0;
 
@@ -3884,7 +3884,7 @@ void CBloodSplats::Render()
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // Apply flow
   float fTimeDif = GetUtils().m_pTimer->GetCurrTime() - m_fSpawnTime;
-  Vec4 vParams=Vec4(1, 1, min(fTimeDif, 2.0f), (fTimeDif < 0.5f)?1 : 0 );               
+  Vec4 vParams=Vec4(1, 1, std::min(fTimeDif, 2.0f), (fTimeDif < 0.5f)?1 : 0 );
 
   static CCryName pParamName("bloodSplatsParams");
 
@@ -4160,10 +4160,10 @@ void CRainDrops::UpdateParticles()
 
     // add gravity
     pCurr->m_pPos.y += m_pVelocityProj.y * ((Random() *2.0f - 1.0f)*0.6f+0.4f); 
-    pCurr->m_pPos.y += fCurrFrameTime * fGravity * min( pCurr->m_fWeight, 0.5f * pCurr->m_fSize);
+    pCurr->m_pPos.y += fCurrFrameTime * fGravity * std::min( pCurr->m_fWeight, 0.5f * pCurr->m_fSize);
     // random horizontal movement and size + camera horizontal velocity    
     pCurr->m_pPos.x += m_pVelocityProj.x * ((Random() *2.0f - 1.0f)*0.6f+0.4f); 
-    pCurr->m_pPos.x += fCurrFrameTime * (min(pCurr->m_fWeight, 0.25f * pCurr->m_fSize) * fGravity * ( (Random() *2.0f - 1.0f)));  
+    pCurr->m_pPos.x += fCurrFrameTime * (std::min(pCurr->m_fWeight, 0.25f * pCurr->m_fSize) * fGravity * ( (Random() *2.0f - 1.0f)));
 
     // Increase/decrease weight randomly 
     pCurr->m_fWeight = clamp_tpl<float>(pCurr->m_fWeight + fCurrFrameTime * pCurr->m_fWeightVar * (Random()*2.0f-1.0f)*4.0f, 0.0f, 1.0f );                    

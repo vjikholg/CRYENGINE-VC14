@@ -18,10 +18,7 @@
 # pragma once
 #endif
 
-#if defined __GNUC__
-# include <vector>
-#endif
-
+#include <array>
 #include <Cry_Geo.h>
 
 namespace Distance
@@ -260,11 +257,7 @@ namespace Overlap {
 			return true;
 
 		// check the poly points against the triangle
-		static std::vector<Vec3> triangle;
-		triangle.clear();
-		triangle.push_back(p0);
-		triangle.push_back(p1);
-		triangle.push_back(p2);
+		const std::array<Vec3_tpl<F>, 3> triangle = { p0, p1, p2 };
 
 		typename VecContainer::const_iterator it;
 		for (it = polygon.begin() ; it != polygon.end() ; ++it)

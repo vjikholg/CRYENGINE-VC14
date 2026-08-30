@@ -1937,7 +1937,7 @@ bool CD3D9Renderer::FX_SetRenderTarget(int nTarget, D3DSurface *pTargetSurf, SD3
   pCur->m_bClearOnResolve = bClearOnResolve;
   pCur->m_ClearFlags = 0;
   m_pNewTarget[nTarget] = pCur;
-  m_nMaxRT2Commit = max(m_nMaxRT2Commit, nTarget);
+  m_nMaxRT2Commit = std::max(m_nMaxRT2Commit, nTarget);
 #ifdef XENON
   D3DSURFACE_DESC dtdsdRT;
   pTargetSurf->GetDesc(&dtdsdRT);
@@ -2072,7 +2072,7 @@ bool CD3D9Renderer::FX_SetRenderTarget(int nTarget, CTexture *pTarget, SD3DSurfa
       SetViewport(0, 0, pCur->m_Width, pCur->m_Height);
     }
     m_pNewTarget[nTarget] = pCur;
-    m_nMaxRT2Commit = max(m_nMaxRT2Commit, nTarget);
+    m_nMaxRT2Commit = std::max(m_nMaxRT2Commit, nTarget);
 
     return true;
 }
@@ -2149,7 +2149,7 @@ bool CD3D9Renderer::FX_RestoreRenderTarget(int nTarget)
   pCur->m_bWasSetD = false;
   pCur->m_bWasSetRT = false;
   m_pNewTarget[nTarget] = pCur;
-  m_nMaxRT2Commit = max(m_nMaxRT2Commit, nTarget);
+  m_nMaxRT2Commit = std::max(m_nMaxRT2Commit, nTarget);
 
   return true;
 }
@@ -3025,7 +3025,7 @@ int CD3D9Renderer::FX_SetupLightPasses(SShaderTechnique *pTech)
   i = 0;
   sFillLP(&m_RP.m_LPasses[0], i, DirLights,  nDirLights,  nMaxLights, nMaxAmbLights, bHasAmb);
   sFillLP(&m_RP.m_LPasses[0], i, OmniLights, nOmniLights, nMaxLights, nMaxAmbLights, bHasAmb);
-  sFillLP(&m_RP.m_LPasses[0], i, ProjLights, nProjLights, min(nMaxLights,1U), min(nMaxAmbLights,1U), bHasAmb);
+  sFillLP(&m_RP.m_LPasses[0], i, ProjLights, nProjLights, std::min(nMaxLights,1U), std::min(nMaxAmbLights,1U), bHasAmb);
 
   //no lightpass for ambient light, we need to cre6ate one
   if (bHasAmb)
@@ -6494,7 +6494,7 @@ bool CD3D9Renderer::FX_DrawToRenderTarget(CShader *pShader, SRenderShaderResourc
       m_RP.m_fCurrUpdateFactor = fWaterUpdateFactor;
       m_RP.m_fCurrUpdateDistance = fWaterUpdateDistance;
 
-      float fTimeUpd = min(0.3f, eng->GetDistanceToSectorWithWater());
+      float fTimeUpd = std::min(0.3f, eng->GetDistanceToSectorWithWater());
       fTimeUpd *= fWaterUpdateFactor;
       //if (fTimeUpd > 1.0f)
       //fTimeUpd = 1.0f; 
@@ -6588,7 +6588,7 @@ bool CD3D9Renderer::FX_DrawToRenderTarget(CShader *pShader, SRenderShaderResourc
     bOceanRefl = true;
 
     m_RP.m_pIgnoreObject = pObj;
-    float fMinDist = min(SKY_BOX_SIZE*0.5f, eng->GetDistanceToSectorWithWater()); // 16 is half of skybox size
+    float fMinDist = std::min(SKY_BOX_SIZE*0.5f, eng->GetDistanceToSectorWithWater()); // 16 is half of skybox size
     float fMaxDist = eng->GetMaxViewDistance();
 
     Vec3 vPrevPos = tmp_cam.GetPosition();
@@ -6629,7 +6629,7 @@ bool CD3D9Renderer::FX_DrawToRenderTarget(CShader *pShader, SRenderShaderResourc
     float fDistOffset = fMinDist;
     if( CV_r_waterreflections_use_min_offset )
     {
-      fDistOffset = max( fMinDist, 2.0f * iSystem->GetI3DEngine()->GetDistanceToSectorWithWater() );
+      fDistOffset = std::max( fMinDist, 2.0f * iSystem->GetI3DEngine()->GetDistanceToSectorWithWater() );
       if ( fDistOffset  >= fMaxDist ) // engine returning bad value
         fDistOffset = fMinDist; 
     }
@@ -6866,7 +6866,7 @@ bool CD3D9Renderer::FX_DrawToRenderTarget(CShader *pShader, SRenderShaderResourc
 
   // Very Hi specs get anisotropic reflections
   if( gRenDev->m_RP.m_eQuality >= eRQ_VeryHigh && m_RP.m_bLastWaterAnisotropicRefl)
-    TexBlurAnisotropicVertical(Tex, 1, 8 * max( 1.0f - min( fAnisoScale / 100.0f, 1.0f), 0.2f), 1, false);
+    TexBlurAnisotropicVertical(Tex, 1, 8 * std::max( 1.0f - std::min( fAnisoScale / 100.0f, 1.0f), 0.2f), 1, false);
 
   if (m_LogFile)
     Logv(SRendItem::m_RecurseLevel, "*** End RT for Water reflections ***\n");

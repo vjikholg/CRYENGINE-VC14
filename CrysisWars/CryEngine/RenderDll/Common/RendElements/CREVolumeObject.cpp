@@ -79,9 +79,9 @@ bool CVolumeTexture::Update(unsigned int width, unsigned int height, unsigned in
 	D3DLOCKED_BOX box;
 	if (SUCCEEDED(pVolTex->LockBox(0, &box, 0, 0)))
 	{
-		unsigned int cpyWidth = min(width, m_width);
-		unsigned int cpyHeight = min(height, m_height);
-		unsigned int cpyDepth = min(depth, m_depth);
+		unsigned int cpyWidth = std::min(width, m_width);
+		unsigned int cpyHeight = std::min(height, m_height);
+		unsigned int cpyDepth = std::min(depth, m_depth);
 
 		for (int d=0; d<cpyDepth; ++d)	
 		{
@@ -105,9 +105,9 @@ bool CVolumeTexture::Update(unsigned int width, unsigned int height, unsigned in
 	if (!m_pTex || !m_pTex->GetDeviceTexture())
 		return false;
 
-	unsigned int cpyWidth = min(width, m_width);
-	unsigned int cpyHeight = min(height, m_height);
-	unsigned int cpyDepth = min(depth, m_depth);
+	unsigned int cpyWidth = std::min(width, m_width);
+	unsigned int cpyHeight = std::min(height, m_height);
+	unsigned int cpyDepth = std::min(depth, m_depth);
 
 	D3D10_BOX box;
 	box.left = 0;

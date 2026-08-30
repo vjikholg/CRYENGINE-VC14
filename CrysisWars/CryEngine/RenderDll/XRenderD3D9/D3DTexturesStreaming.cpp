@@ -111,7 +111,7 @@ bool CTexture::StreamCopyMips(int nStartMip, int nEndMip, bool bToDevice)
     int SizeToLoad = 0;
     if (m_pPoolItem)
     {
-      m_nMinMipVidUploaded = min(nStartMip, nMips-1);
+      m_nMinMipVidUploaded = std::min(nStartMip, nMips-1);
       for (i=nStartMip; i<=nEndMip; i++)
       {
         int nLod = i-nStartMip;
@@ -204,7 +204,7 @@ bool CTexture::StreamCopyMips(int nStartMip, int nEndMip, bool bToDevice)
 #endif
       if (nEndMip > nMips-1)
       {
-        int n = max(nStartMip, nMips);
+        int n = std::max(nStartMip, nMips);
         for (i=n; i<m_nMips3DC; i++)
         {
           SMipData *mp = &mh[i].m_Mips[0];
@@ -597,7 +597,7 @@ bool CTexture::StreamCopyMips(int nStartMip, int nEndMip, bool bToDevice)
       StreamSetLod(nStartMip, false);
       if (nEndMip > nMips-1)
       {
-        int n = max(nStartMip, nMips);
+        int n = std::max(nStartMip, nMips);
         for (i=n; i<m_nMips3DC; i++)
         {
           SMipData *mp = &mh[i].m_Mips[0];
@@ -1112,7 +1112,7 @@ void CTexture::StreamCheckTexLimits(CTexture *pExclude)
   for (int i=n+1; (i&7)!=n; i++)
   {
     i &= 7;
-    nMinTexSize = min(m_TexSizeHistory[i], nMinTexSize);
+    nMinTexSize = std::min(m_TexSizeHistory[i], nMinTexSize);
   }
   bool bStreamReleaseMode = false;
   int nPoolSize = CRenderer::CV_r_texturesstreampoolsize*1024*1024;

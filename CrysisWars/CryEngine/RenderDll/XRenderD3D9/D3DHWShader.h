@@ -10,6 +10,9 @@
 #ifndef __D3DHWSHADER_H__
 #define __D3DHWSHADER_H__
 
+#include "RenderD3DPrerequisites.h"
+#include "Common/Shaders/Shader.h"
+
 #if !defined(OPENGL)
 	#define MERGE_SHADER_PARAMETERS 1
 #endif
@@ -41,7 +44,6 @@
   #define MAX_CONSTANTS 512
 #endif
 #endif
-
 //==============================================================================
 
 int D3DXGetSHParamHandle(void *pSH, SCGBind *pParam);
@@ -989,27 +991,48 @@ public:
   }
   static _inline void mfCommitCB(int nCBufSlot, EHWShaderClass eSH)
   {
-    if (!m_pDataCB[eSH][nCBufSlot])
+    const bool validSlot = nCBufSlot >= 0 && nCBufSlot < CB_MAX;
+    const bool validShaderClass = eSH >= eHWSC_Vertex && eSH < eHWSC_Max;
+    assert(validSlot && validShaderClass);
+    if (!validSlot || !validShaderClass)
       return;
-    int cbUpdateMethod(gcpRendD3D->CV_d3d10_CBUpdateMethod);
-    ID3D10Device* dv = gcpRendD3D->GetD3DDevice();
-    assert(m_pCurReqCB[eSH][nCBufSlot]);
-    if ((int)m_pDataCB[eSH][nCBufSlot] != 1)
+
+    float*& pData = m_pDataCB[eSH][nCBufSlot];
+    if (!pData)
+      return;
+
+    ID3D10Buffer* pBuffer = m_pCurReqCB[eSH][nCBufSlot];
+    assert(pBuffer);
+    if (!pBuffer)
     {
-      if (cbUpdateMethod)
+      pData = nullptr;
+      if (iLog)
+        iLog->Log("ERROR: Constant buffer commit has no requested buffer (slot: %d, shader class: %d)", nCBufSlot, eSH);
+      return;
+    }
+
+    int cbUpdateMethod(gcpRendD3D->CV_d3d10_CBUpdateMethod);
+    if (cbUpdateMethod)
+    {
+      ID3D10Device* pDevice = gcpRendD3D->GetD3DDevice();
+      assert(pDevice);
+      if (!pDevice)
       {
-        dv->UpdateSubresource(m_pCurReqCB[eSH][nCBufSlot], 0, 0, m_pDataCB[eSH][nCBufSlot], 0, 0);
-        m_pDataCB[eSH][nCBufSlot] = NULL;
+        pData = nullptr;
+        if (iLog)
+          iLog->Log("ERROR: Constant buffer commit has no D3D10 device (slot: %d, shader class: %d)", nCBufSlot, eSH);
+        return;
       }
-      else
-      {
-        m_pDataCB[eSH][nCBufSlot] = NULL;
-        m_pCurReqCB[eSH][nCBufSlot]->Unmap();
-      }
+
+      pDevice->UpdateSubresource(pBuffer, 0, nullptr, pData, 0, 0);
     }
     else
-      m_pDataCB[eSH][nCBufSlot] = NULL;
-    mfSetCB(eSH, nCBufSlot, m_pCurReqCB[eSH][nCBufSlot]);
+    {
+      pBuffer->Unmap();
+    }
+
+    pData = nullptr;
+    mfSetCB(eSH, nCBufSlot, pBuffer);
   }
   static _inline void mfSetCBConst(int nReg, int nCBufSlot, EHWShaderClass eSH, const float *vData, int nFloats, int nMaxVecs)
   {
@@ -1023,7 +1046,12 @@ public:
 			int a=0;
 		}
 #endif
-    assert(nCBufSlot >= 0 || nCBufSlot < CB_MAX);
+    const bool validSlot = nCBufSlot >= 0 && nCBufSlot < CB_MAX;
+    const bool validShaderClass = eSH >= eHWSC_Vertex && eSH < eHWSC_Max;
+    assert(validSlot && validShaderClass);
+    if (!validSlot || !validShaderClass)
+      return;
+
     assert(m_pCB[eSH][nCBufSlot]);
 		assert(m_pCBShadow[eSH][nCBufSlot]);
 		//assert((nReg>>2)+(nFloats>>2) <= nMaxVecs);
@@ -1046,32 +1074,70 @@ public:
       {
         D3D10_BUFFER_DESC bd;
         ZeroStruct(bd);
-        HRESULT hr;
-
 				bd.Usage = cbUpdateMethod ? D3D10_USAGE_DEFAULT : D3D10_USAGE_DYNAMIC;
         bd.BindFlags = D3D10_BIND_CONSTANT_BUFFER;
 				bd.CPUAccessFlags = cbUpdateMethod ? 0 : D3D10_CPU_ACCESS_WRITE;
         bd.MiscFlags = 0;
         bd.ByteWidth = nMaxVecs * sizeof(Vec4);
-        hr = gcpRendD3D->m_pd3dDevice->CreateBuffer(&bd, NULL, &m_pCB[eSH][nCBufSlot][nMaxVecs]);
-        assert(SUCCEEDED(hr));
+        ID3D10Buffer*& pBuffer = m_pCB[eSH][nCBufSlot][nMaxVecs];
+        const HRESULT createResult = gcpRendD3D->m_pd3dDevice->CreateBuffer(&bd, nullptr, &pBuffer);
+        assert(SUCCEEDED(createResult) && pBuffer);
+        if (FAILED(createResult) || !pBuffer)
+        {
+          if (iLog)
+            iLog->Log("ERROR: Failed to create D3D10 constant buffer (slot: %d, shader class: %d, vectors: %d, HRESULT: 0x%08x)", nCBufSlot, eSH, nMaxVecs, static_cast<unsigned int>(createResult));
+          return;
+        }
 
 				if (cbUpdateMethod)
 				{
 					m_pCBShadow[eSH][nCBufSlot][nMaxVecs] = new char[bd.ByteWidth];
 					assert(m_pCBShadow[eSH][nCBufSlot][nMaxVecs]);
+					if (!m_pCBShadow[eSH][nCBufSlot][nMaxVecs])
+					{
+						pBuffer->Release();
+						pBuffer = nullptr;
+						if (iLog)
+							iLog->Log("ERROR: Failed to allocate constant buffer shadow data (slot: %d, shader class: %d, bytes: %u)", nCBufSlot, eSH, bd.ByteWidth);
+						return;
+					}
 				}
       }
 
+			ID3D10Buffer* pBuffer = m_pCB[eSH][nCBufSlot][nMaxVecs];
+			assert(pBuffer);
+			if (!pBuffer)
+			{
+				if (iLog)
+					iLog->Log("ERROR: Constant buffer cache contains no buffer (slot: %d, shader class: %d, vectors: %d)", nCBufSlot, eSH, nMaxVecs);
+				return;
+			}
+
+			m_pCurReqCB[eSH][nCBufSlot] = pBuffer;
 			if (cbUpdateMethod)
 			{
-				m_pCurReqCB[eSH][nCBufSlot] = m_pCB[eSH][nCBufSlot][nMaxVecs];
-				m_pDataCB[eSH][nCBufSlot] = (float*) m_pCBShadow[eSH][nCBufSlot][nMaxVecs];
+				void* pShadowData = m_pCBShadow[eSH][nCBufSlot][nMaxVecs];
+				assert(pShadowData);
+				if (!pShadowData)
+				{
+					if (iLog)
+						iLog->Log("ERROR: Constant buffer has no shadow data (slot: %d, shader class: %d, vectors: %d)", nCBufSlot, eSH, nMaxVecs);
+					return;
+				}
+				m_pDataCB[eSH][nCBufSlot] = static_cast<float*>(pShadowData);
 			}
 			else
 			{
-				m_pCurReqCB[eSH][nCBufSlot] = m_pCB[eSH][nCBufSlot][nMaxVecs];
-				m_pCurReqCB[eSH][nCBufSlot]->Map(D3D10_MAP_WRITE_DISCARD, NULL, (void **)&m_pDataCB[eSH][nCBufSlot]);
+				void* pMappedData = nullptr;
+				const HRESULT mapResult = pBuffer->Map(D3D10_MAP_WRITE_DISCARD, 0, &pMappedData);
+				assert(SUCCEEDED(mapResult) && pMappedData);
+				if (FAILED(mapResult) || !pMappedData)
+				{
+					if (iLog)
+						iLog->Log("ERROR: Failed to map D3D10 constant buffer (slot: %d, shader class: %d, vectors: %d, HRESULT: 0x%08x)", nCBufSlot, eSH, nMaxVecs, static_cast<unsigned int>(mapResult));
+					return;
+				}
+				m_pDataCB[eSH][nCBufSlot] = static_cast<float*>(pMappedData);
 			}
 
       if (CD3D9Renderer::CV_d3d10_CBUpdateStats)
@@ -1107,8 +1173,8 @@ public:
 				else
 				{
 					++s_numCalls;
-					s_minUpdateBytes = min(updateBytes, s_minUpdateBytes);
-					s_maxUpdateBytes = max(updateBytes, s_maxUpdateBytes);
+					s_minUpdateBytes = std::min(updateBytes, s_minUpdateBytes);
+					s_maxUpdateBytes = std::max(updateBytes, s_maxUpdateBytes);
 					s_totalUpdateBytes += updateBytes;
 				}
 			}

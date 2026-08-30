@@ -342,12 +342,12 @@ void C3DEngine::RemoveEntInFoliage(int i)
 		pfd.iForeignFlags &= 255;
 		pent->SetParams(&pfd,1);
 	}
-	int j = m_arrEntsInFoliage.size()-1;
-	if (i<j)
+	const int lastIndex = m_arrEntsInFoliage.Count() - 1;
+	if (i < lastIndex)
 	{
-		m_arrEntsInFoliage[i] = m_arrEntsInFoliage[j];
+		m_arrEntsInFoliage[i] = m_arrEntsInFoliage[lastIndex];
 		if ((pent=m_pPhysicalWorld->GetPhysicalEntityById(m_arrEntsInFoliage[i].id)) && pent->GetParams(&pfd) && 
-			(pfd.iForeignFlags>>8&255)==j+1)
+			(pfd.iForeignFlags>>8&255)==lastIndex+1)
 		{
 			MARK_UNUSED pfd.pForeignData,pfd.iForeignData;
       pfd.iForeignFlags = pfd.iForeignFlags & 255 | (i+1)<<8;
@@ -496,8 +496,11 @@ void C3DEngine::Update()
 		pFoliageNext = pFoliage->m_next;
 		pFoliage->Update(dt);
 	}
-	for(int i=m_arrEntsInFoliage.size()-1;i>=0;i--) if ((m_arrEntsInFoliage[i].timeIdle+=dt)>0.3f)
-		RemoveEntInFoliage(i);
+	for (int i = m_arrEntsInFoliage.Count() - 1; i >= 0; --i)
+	{
+		if ((m_arrEntsInFoliage[i].timeIdle += dt) > 0.3f)
+			RemoveEntInFoliage(i);
+	}
 
 	pe_params_area pa;
 	IPhysicalEntity *pArea;

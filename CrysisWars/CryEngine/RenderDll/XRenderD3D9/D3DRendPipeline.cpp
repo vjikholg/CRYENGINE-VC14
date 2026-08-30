@@ -664,7 +664,7 @@ void CD3D9Renderer::EF_Init()
   int nSizeV = 0;
   /*for (int i=0; i<VERTEX_FORMAT_NUMS; i++)
   {
-    nSizeV = max(nSizeV, m_VertexSize[i]);
+    nSizeV = std::max(nSizeV, m_VertexSize[i]);
   }*/
   nSizeV = sizeof(struct_VERTEX_FORMAT_P3F_COL4UB_RES4UB_TEX2F_PS4F);
 
@@ -947,9 +947,9 @@ void CD3D9Renderer::EF_SetFogColor(ColorF Color)
   {
     if(IsHDRModeEnabled())
     {
-      Color.r += min( pSkyLightRenderParams->m_hazeColor.x, 64.0f );
-      Color.g += min( pSkyLightRenderParams->m_hazeColor.y, 64.0f );
-      Color.b += min( pSkyLightRenderParams->m_hazeColor.z, 64.0f );
+      Color.r += std::min( pSkyLightRenderParams->m_hazeColor.x, 64.0f );
+      Color.g += std::min( pSkyLightRenderParams->m_hazeColor.y, 64.0f );
+      Color.b += std::min( pSkyLightRenderParams->m_hazeColor.z, 64.0f );
     }
     else
     {			
@@ -3505,10 +3505,10 @@ bool CD3D9Renderer::SF_UpdateTexture(int texId, int mipLevel, int numRects, cons
 	RECT rc = {pRects[0].dstX, pRects[0].dstY, pRects[0].dstX + pRects[0].width, pRects[0].dstY + pRects[0].height};
 	for (int i(1); i<numRects; ++i)
 	{
-		rc.left = min(rc.left, pRects[i].dstX);
-		rc.top = min(rc.top, pRects[i].dstY);
-		rc.right = max(rc.right, pRects[i].dstX + pRects[i].width);
-		rc.bottom = max(rc.bottom, pRects[i].dstY + pRects[i].height);
+		rc.left = std::min(rc.left, pRects[i].dstX);
+		rc.top = std::min(rc.top, pRects[i].dstY);
+		rc.right = std::max(rc.right, pRects[i].dstX + pRects[i].width);
+		rc.bottom = std::max(rc.bottom, pRects[i].dstY + pRects[i].height);
 	}
 
 	// lock surface and update all rects

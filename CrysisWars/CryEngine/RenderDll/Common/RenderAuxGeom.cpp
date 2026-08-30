@@ -1274,7 +1274,7 @@ void CRenderAuxGeom::DrawCone( const Vec3& pos, const Vec3& dir, float radius, f
 
 	pDrawParams->m_matWorld = Matrix34::CreateTranslationMat( pos ) * matRot * Matrix33::CreateScale( Vec3( radius, height, radius ) );
 	pDrawParams->m_color = PackColor( col );
-	pDrawParams->m_size = max( radius, height * 0.5f );
+	pDrawParams->m_size = std::max( radius, height * 0.5f );
 	pDrawParams->m_shaded = drawShaded;
 }
 
@@ -1295,7 +1295,7 @@ void CRenderAuxGeom::DrawCylinder( const Vec3& pos, const Vec3& dir, float radiu
 
 	pDrawParams->m_matWorld = Matrix34::CreateTranslationMat( pos ) * matRot * Matrix33::CreateScale( Vec3( radius, height, radius ) );
 	pDrawParams->m_color = PackColor( col );
-	pDrawParams->m_size = max( radius, height * 0.5f );
+	pDrawParams->m_size = std::max( radius, height * 0.5f );
 	pDrawParams->m_shaded = drawShaded;
 }
 

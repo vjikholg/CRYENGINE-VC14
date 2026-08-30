@@ -596,7 +596,7 @@ void CRenderMeshMerger::TryMergingChunks( SMergeInfo &info )
 {
 	PodArray<SMergedChunk> &lstChunksMerged = m_lstChunksMergedTemp;
 	lstChunksMerged.clear();
-	lstChunksMerged.reserve( m_lstChunks.size() );
+	lstChunksMerged.reserve(m_lstChunks.Count());
 
 	int nCurrVertFormat = -1;
 	for(int nChunkId=0; nChunkId<m_lstChunks.Count(); nChunkId++)

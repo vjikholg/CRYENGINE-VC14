@@ -55,10 +55,13 @@ namespace
 	template< typename T >
 	float Area( const VertexAccess<T>& contour )
 	{
-		int n = contour.GetNumVertices();
+		const size_t n = contour.GetNumVertices();
+		if (n < 3)
+			return 0.0f;
+
 		float area = 0.0f;
 
-		for( int p = n-1, q = 0; q < n; p = q++ ) 
+		for (size_t p = n - 1, q = 0; q < n; p = q++)
 			area += contour[p].x * contour[q].y - contour[q].x * contour[p].y;
 
 		return area * 0.5f;
@@ -120,7 +123,9 @@ namespace
 		result.resize( 0 );
 
 		// allocate and initialize list of vertices in polygon
-		int n = contour.GetNumVertices();
+		if (contour.GetNumVertices() > std::numeric_limits<int>::max())
+			return false;
+		const int n = static_cast<int>(contour.GetNumVertices());
 		if ( n < 3 ) 
 			return false;
 
@@ -675,10 +680,17 @@ void CWaterVolumeRenderNode::Physicalize( bool bInstant )
 	//assert( m_pPhysAreaInput->m_contour.size() >= 3 && ( !pFlow || m_pPhysAreaInput->m_contour.size() == m_pPhysAreaInput->m_flowContour.size() ) && m_pPhysAreaInput->m_indices.size() >= 3 && m_pPhysAreaInput->m_indices.size() % 3 == 0 );
 	if( m_pPhysAreaInput->m_contour.size() < 3 || ( pFlow && m_pPhysAreaInput->m_contour.size() != m_pPhysAreaInput->m_flowContour.size() ) || m_pPhysAreaInput->m_indices.size() < 3  || m_pPhysAreaInput->m_indices.size() % 3 != 0 )
 		return;
+	const size_t triangleCount = m_pPhysAreaInput->m_indices.size() / 3;
+	if (m_pPhysAreaInput->m_contour.size() > std::numeric_limits<int>::max() ||
+		triangleCount > std::numeric_limits<int>::max())
+	{
+		Error("Water-volume geometry exceeds the physics API limit");
+		return;
+	}
 
 	// setup physical area
-	m_pPhysArea = GetPhysicalWorld()->AddArea( &m_pPhysAreaInput->m_contour[0], m_pPhysAreaInput->m_contour.size(), min( 0.0f, -m_volumeDepth ), 10.0f, 
-		Vec3(ZERO), Quat(IDENTITY), 1.0f, Vec3(ZERO), &m_pPhysAreaInput->m_indices[0], m_pPhysAreaInput->m_indices.size() / 3, pFlow );
+	m_pPhysArea = GetPhysicalWorld()->AddArea(&m_pPhysAreaInput->m_contour[0], static_cast<int>(m_pPhysAreaInput->m_contour.size()), min(0.0f, -m_volumeDepth), 10.0f,
+		Vec3(ZERO), Quat(IDENTITY), 1.0f, Vec3(ZERO), &m_pPhysAreaInput->m_indices[0], static_cast<int>(triangleCount), pFlow);
 	if( m_pPhysArea )
 	{
 		pe_status_pos sp;

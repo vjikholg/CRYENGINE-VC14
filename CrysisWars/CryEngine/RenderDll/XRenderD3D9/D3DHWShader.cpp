@@ -916,7 +916,7 @@ void CHWShader_D3D::mfGatherFXParameters(SHWSInstance *pInst, std::vector<SCGBin
           if (!stricmp(sm->m_Name.c_str(), param))
           {
             int nSampler = bn->m_dwBind & 0xf;
-            nMaxSampler = max(nSampler, nMaxSampler);
+            nMaxSampler = std::max(nSampler, nMaxSampler);
             samps[nSampler].fxSampler = sm;
 #if defined (DIRECT3D10)
             sm->m_nSamplerSlot = bn->m_dwCBufSlot;
@@ -951,7 +951,7 @@ void CHWShader_D3D::mfGatherFXParameters(SHWSInstance *pInst, std::vector<SCGBin
 #endif
               for (int nS=0; nS<bn->m_nParameters; nS++)
               {
-                nMaxSampler = max(nSampler+nS, nMaxSampler);
+                nMaxSampler = std::max(nSampler+nS, nMaxSampler);
                 samps[nSampler+nS].fxSampler = sm;
                 samps[nSampler+nS].NameINT = paramINT;
               }
@@ -1011,7 +1011,7 @@ void CHWShader_D3D::mfGatherFXParameters(SHWSInstance *pInst, std::vector<SCGBin
       }
       //cgi->m_nMaxVecs[CB_PER_BATCH] = max((pB->m_dwBind>>2)+((pB->m_nParameters+3)>>2), cgi->m_nMaxVecs[CB_PER_BATCH]);
       if(pB->m_dwCBufSlot<3)
-				pInst->m_nMaxVecs[pB->m_dwCBufSlot] = max(((pB->m_dwBind + pB->m_nParameters + 3) >> 2), pInst->m_nMaxVecs[pB->m_dwCBufSlot]);
+				pInst->m_nMaxVecs[pB->m_dwCBufSlot] = std::max(((pB->m_dwBind + pB->m_nParameters + 3) >> 2), pInst->m_nMaxVecs[pB->m_dwCBufSlot]);
     }
   }
 #endif
@@ -1037,7 +1037,7 @@ void CHWShader_D3D::mfGatherFXParameters(SHWSInstance *pInst, std::vector<SCGBin
       {
         SCGParam *pr = &(*pInst->m_pParams[i])[j];
         //cgi->m_nMaxVecs[i] = max((pr->m_dwBind>>2)+((pr->m_nParameters+3)>>2), cgi->m_nMaxVecs[i]);
-				pInst->m_nMaxVecs[i] = max(((pr->m_dwBind + pr->m_nParameters + 3) >> 2), pInst->m_nMaxVecs[i]);
+				pInst->m_nMaxVecs[i] = std::max(((pr->m_dwBind + pr->m_nParameters + 3) >> 2), pInst->m_nMaxVecs[i]);
       }
     }
   }
@@ -1355,8 +1355,8 @@ static bool sGetStr(char *& sS, char *szDst)
     return false;
   if (!sS[0])
     return false;
-  shFill(&sS, szDst, 32);
-  SkipCharacters(&sS, kWhiteSpace);
+  shFill(sS, szDst, 32);
+  SkipCharacters(sS, kWhiteSpace);
   return true;
 }
 
@@ -1414,7 +1414,7 @@ int CHWShader_D3D::mfVertexFormat(SHWSInstance *pInst, CHWShader_D3D *pSH, LPD3D
     {
       char sSrc[256], sC[8], sName[32], sIndex[8], sMask[8], sReg[8], sSys[8], sFormat[8], sUsed[8];
       char *pS = sSrc;
-      fxFillCR(&sS, sSrc);
+      fxFillCR(sS, sSrc);
       sGetStr(pS, sC);
       if (!sGetStr(pS, sName))
         break;
@@ -1758,7 +1758,7 @@ namespace
     if( (r->m_RP.m_pCurObject->m_nMaterialLayers&MTL_LAYER_BLEND_CLOAK) && !(nResourcesNoDrawFlags&MTL_LAYER_CLOAK) )
     {
       fMaterialLayersOpacity = ((float)((r->m_RP.m_pCurObject->m_nMaterialLayers&MTL_LAYER_BLEND_CLOAK)>> 8) / 255.0f);
-      fMaterialLayersOpacity = min(1.0f, 4.0f * max( 1.0f - fMaterialLayersOpacity, 0.0f) ); 
+      fMaterialLayersOpacity = std::min(1.0f, 4.0f * std::max( 1.0f - fMaterialLayersOpacity, 0.0f) );
     }
 
     return fMaterialLayersOpacity;
@@ -2082,7 +2082,7 @@ namespace
       float fTimeScale = gEnv->pTimer->GetTimeScale();
       if (fTimeScale < 1.0f)
       {
-        fTimeScale = max(0.0001f, fTimeScale);
+        fTimeScale = std::max(0.0001f, fTimeScale);
         fCurrFrameTime /= fTimeScale; 
       }
 
@@ -2092,7 +2092,7 @@ namespace
 
       if( CRenderer::CV_r_motionblurframetimescale )
       {
-        float fAlphaScale = iszero(fCurrFrameTime) ? 1.0f : min(1.0f, (1.0f / fCurrFrameTime) / ( 32.0f)); // attenuate motion blur for lower frame rates
+        float fAlphaScale = iszero(fCurrFrameTime) ? 1.0f : std::min(1.0f, (1.0f / fCurrFrameTime) / ( 32.0f)); // attenuate motion blur for lower frame rates
         fAlpha *= fAlphaScale;
       }
 
@@ -2226,7 +2226,7 @@ namespace
 			float fTimeScale = gEnv->pTimer->GetTimeScale();
 			if (fTimeScale < 1.0f)
 			{
-				fTimeScale = max(0.0001f, fTimeScale);
+				fTimeScale = std::max(0.0001f, fTimeScale);
 				fCurrFrameTime /= fTimeScale; 
 			}
 
@@ -2237,7 +2237,7 @@ namespace
 			mCamObjPrev = mCamObjCurr * (1.0f - fAlpha) + mCamObjPrev * fAlpha; 
 
 			Vec3 pVelocity = mCamObjCurr.GetRow(3) - mCamObjPrev.GetRow(3);
-			float fCurrSpeed = max( pVelocity.GetLength() - 0.01f, 0.0f);
+			float fCurrSpeed = std::max( pVelocity.GetLength() - 0.01f, 0.0f);
 
 			pCloakParams.x = pCloakParams.y = fCurrSpeed;
       pCloakParams.z = fLightAmount;
@@ -2387,10 +2387,10 @@ namespace
     SCGParamsPF::pCloudShadingColorSky =  (fSkyColorMul * SCGParamsPF::pSkyColor);
 
     // ECGP_PB_SunSkyConstants
-    float fMaxSunSky = max(SCGParamsPF::pSunColor.x+SCGParamsPF::pSkyColor.x,max(SCGParamsPF::pSunColor.y+SCGParamsPF::pSkyColor.y,SCGParamsPF::pSunColor.z+SCGParamsPF::pSkyColor.z));
+    float fMaxSunSky = std::max(SCGParamsPF::pSunColor.x+SCGParamsPF::pSkyColor.x,std::max(SCGParamsPF::pSunColor.y+SCGParamsPF::pSkyColor.y,SCGParamsPF::pSunColor.z+SCGParamsPF::pSkyColor.z));
 		float fInvMaxSunSky = 1.0f/(fMaxSunSky+0.0001f);		// +small bias to avoid FP exeception
 
-		float fMaxSun = max(SCGParamsPF::pSunColor.x,max(SCGParamsPF::pSunColor.y,SCGParamsPF::pSunColor.z));	
+		float fMaxSun = std::max(SCGParamsPF::pSunColor.x,std::max(SCGParamsPF::pSunColor.y,SCGParamsPF::pSunColor.z));
 
     SCGParamsPF::pSunSkyConstants = Vec4( fInvMaxSunSky * SCGParamsPF::pSkyColor.x,
                                           fInvMaxSunSky * SCGParamsPF::pSkyColor.y,
@@ -3144,7 +3144,7 @@ float *CHWShader_D3D::mfSetParameters(SCGParam *pParams, int nINParams, float *p
           sData[0].f[0] = pLM->m_Specular[0];
           sData[0].f[1] = pLM->m_Specular[1];
           sData[0].f[2] = pLM->m_Specular[2];
-          sData[0].f[3] = max(r->m_RP.m_pCurLightMaterial->m_SpecShininess, 0.1f);
+          sData[0].f[3] = std::max(r->m_RP.m_pCurLightMaterial->m_SpecShininess, 0.1f);
         }
         break;
       case ECGP_PM_MatReflectColor:
@@ -3303,9 +3303,9 @@ float *CHWShader_D3D::mfSetParameters(SCGParam *pParams, int nINParams, float *p
             AABB Box;
             pRM->GetBBox(Box.min,Box.max);
             Box.SetTransformedAABB(r->m_RP.m_pCurObject->m_II.m_Matrix,Box);
-            sData[0].f[0]	=	1.f/max(Box.max.x-Box.min.x,FLT_EPSILON);
-            sData[0].f[1]	=	1.f/max(Box.max.y-Box.min.y,FLT_EPSILON);
-            sData[0].f[2]	=	1.f/max(Box.max.z-Box.min.z,FLT_EPSILON);
+            sData[0].f[0]	=	1.f/std::fmax(Box.max.x-Box.min.x,FLT_EPSILON);
+            sData[0].f[1]	=	1.f/std::fmax(Box.max.y-Box.min.y,FLT_EPSILON);
+            sData[0].f[2]	=	1.f/std::fmax(Box.max.z-Box.min.z,FLT_EPSILON);
             sData[0].f[3]	=	0;
           }
         }
@@ -3320,9 +3320,9 @@ float *CHWShader_D3D::mfSetParameters(SCGParam *pParams, int nINParams, float *p
             AABB Box;
             pRM->GetBBox(Box.min,Box.max);
             Box.SetTransformedAABB(r->m_RP.m_pCurObject->m_II.m_Matrix,Box);
-            sData[0].f[0]	=	-Box.min.x/max(Box.max.x-Box.min.x,FLT_EPSILON);
-            sData[0].f[1]	=	-Box.min.y/max(Box.max.y-Box.min.y,FLT_EPSILON);
-            sData[0].f[2]	=	-Box.min.z/max(Box.max.z-Box.min.z,FLT_EPSILON);
+            sData[0].f[0]	=	-Box.min.x/std::fmax(Box.max.x-Box.min.x,FLT_EPSILON);
+            sData[0].f[1]	=	-Box.min.y/std::fmax(Box.max.y-Box.min.y,FLT_EPSILON);
+            sData[0].f[2]	=	-Box.min.z/std::fmax(Box.max.z-Box.min.z,FLT_EPSILON);
             sData[0].f[3]	=	0;
           } 
         }
@@ -3481,7 +3481,7 @@ float *CHWShader_D3D::mfSetParameters(SCGParam *pParams, int nINParams, float *p
             sData[0].f[0] = ((pObj->m_nMaterialLayers&0x000000ff))/255.0f;
             sData[0].f[1] = ((pObj->m_nMaterialLayers&0x00ff0000)>>16)/255.0f;
             // Apply attenuation
-            sData[0].f[1] *= 1.0f - min(1.0f, pObj->m_fDistance / CRenderer::CV_r_rain_maxviewdist);
+            sData[0].f[1] *= 1.0f - std::min(1.0f, pObj->m_fDistance / CRenderer::CV_r_rain_maxviewdist);
 
             sData[0].f[2] = ((pObj->m_nMaterialLayers&0x0000ff00)>>8)/255.0f;
 
@@ -4630,7 +4630,7 @@ void CHWShader_D3D::CorrectScriptEnums(CParserBin& Parser, SHWSInstance *pInst, 
 #else
       EToken eT = (pTokens[nTN]==eT_TEXCOORDN) ? eT_TEXCOORD0 : eT_TEXCOORD0_centroid;
 #endif
-      n = min(n, 15); 
+      n = std::min(n, 15);
 
       pTokens[nTN] = n+eT;
       n += nArrSize;
@@ -6111,7 +6111,7 @@ bool CHWShader::mfOpenCacheFile(const char *szName, float fVersion, SShaderCache
     {
       SDirEntry *pE = Dir[i];
       if (pE->typeID >= SH_SHARED_ID && pE->typeID < SH_UNIQ_ID)
-        nMaxRef = max(nMaxRef, pE->typeID+1);
+        nMaxRef = std::max(nMaxRef, pE->typeID+1);
     }
   }
   if (bValidUser)
@@ -6122,7 +6122,7 @@ bool CHWShader::mfOpenCacheFile(const char *szName, float fVersion, SShaderCache
     {
       SDirEntry *pE = Dir[i];
       if (pE->typeID >= SH_SHARED_ID && pE->typeID < SH_UNIQ_ID)
-        nMaxRef = max(nMaxRef, pE->typeID+1);
+        nMaxRef = std::max(nMaxRef, pE->typeID+1);
     }
   }
   pCache->m_nDeviceShadersCounterShared = nMaxRef;
@@ -6409,7 +6409,7 @@ bool CHWShader_D3D::mfCreateCacheItem(SHWSInstance *pInst, DynArray<SCGBind>& In
     while(true)
     {
       char val[16];
-      shFill(&sS, val, 16);
+      shFill(sS, val, 16);
       if (val[0] != '0' && val[1] != 'x')
         break;
       DWORD dw = shGetHex(&val[2]);
@@ -6960,7 +6960,7 @@ int CHWShader_D3D::mfAsyncCompileReady(SHWSInstance *pInst)
       string Errors = pAsync->m_Errors;
       string Text = pAsync->m_Text;
       int nRefCount = pAsync->m_pFXShader ? pAsync->m_pFXShader->GetRefCounter() : 0;
-      nRefCount = min(nRefCount, pAsync->m_pShader ? pAsync->m_pShader->GetRefCounter() : 0);
+      nRefCount = std::min(nRefCount, pAsync->m_pShader ? pAsync->m_pShader->GetRefCounter() : 0);
       SAFE_DELETE (pInst->m_pAsync);
       if (nRefCount <= 1) // Don't try to compile next combination if shader was deleted
         return -1;
@@ -7008,7 +7008,7 @@ int CHWShader_D3D::mfAsyncCompileReady(SHWSInstance *pInst)
     }
 
     int nRefCount = pAsync->m_pFXShader ? pAsync->m_pFXShader->GetRefCounter() : 0;
-    nRefCount = min(nRefCount, pAsync->m_pShader ? pAsync->m_pShader->GetRefCounter() : 0);
+    nRefCount = std::min(nRefCount, pAsync->m_pShader ? pAsync->m_pShader->GetRefCounter() : 0);
     SAFE_DELETE (pInst->m_pAsync);
     if (nRefCount <= 1) // Just exit if shader was deleted
       return -1;
@@ -8224,7 +8224,7 @@ void CHWShader_D3D::mfSetLightParams(int nPass)
     {
       if (!rd->m_RP.m_nShaderQuality)
         rd->m_RP.m_FlagsShader_RT |= g_HWSR_MaskBit[HWSR_SPECULAR];
-      sData[3].f[3] = max( 0.001f, pRes->m_Constants[eHWSC_Pixel][PS_SPECULAR_COL][3]);
+      sData[3].f[3] = std::max( 0.001f, pRes->m_Constants[eHWSC_Pixel][PS_SPECULAR_COL][3]);
     }
 
 #ifndef DIRECT3D10
@@ -8588,7 +8588,7 @@ bool CHWShader_D3D::mfAddGlobalParameter(SCGParam& Param, EHWShaderClass eSH, bo
     {
       m_CM_Params[eSH].push_back(Param);
 #if defined (DIRECT3D10)
-      m_nMax_PF_Vecs[eSH] = max((Param.m_dwBind>>2)+((Param.m_nParameters+3)>>2), m_nMax_PF_Vecs[eSH]);
+      m_nMax_PF_Vecs[eSH] = std::max((Param.m_dwBind>>2)+((Param.m_nParameters+3)>>2), m_nMax_PF_Vecs[eSH]);
 #endif
       return true;
     }
@@ -8606,7 +8606,7 @@ bool CHWShader_D3D::mfAddGlobalParameter(SCGParam& Param, EHWShaderClass eSH, bo
     {
       m_PF_Params[eSH].push_back(Param);
   #if defined (DIRECT3D10)
-      m_nMax_PF_Vecs[eSH] = max((Param.m_dwBind>>2)+((Param.m_nParameters+3)>>2), m_nMax_PF_Vecs[eSH]);
+      m_nMax_PF_Vecs[eSH] = std::max((Param.m_dwBind>>2)+((Param.m_nParameters+3)>>2), m_nMax_PF_Vecs[eSH]);
   #endif
       return true;
     }
@@ -8623,7 +8623,7 @@ bool CHWShader_D3D::mfAddGlobalParameter(SCGParam& Param, EHWShaderClass eSH, bo
     {
       m_SG_Params[eSH].push_back(Param);
 #if defined (DIRECT3D10)
-      m_nMax_SG_Vecs[eSH] = max((Param.m_dwBind>>2)+((Param.m_nParameters+3)>>2), m_nMax_SG_Vecs[eSH]);
+      m_nMax_SG_Vecs[eSH] = std::max((Param.m_dwBind>>2)+((Param.m_nParameters+3)>>2), m_nMax_SG_Vecs[eSH]);
 #endif
       return true;
     }

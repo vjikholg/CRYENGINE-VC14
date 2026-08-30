@@ -115,7 +115,7 @@ CMaterialSurfaceType *g_pDefaultSurfaceType = NULL;
 //////////////////////////////////////////////////////////////////////////
 CMaterialSurfaceType::SBreakageParticles* CMaterialSurfaceType::GetBreakageParticles( const char *sType,bool bLookInDefault )
 {
-	for (int i = 0,num = m_breakageParticles.size(); i < num; i++)
+	for (size_t i = 0, count = m_breakageParticles.size(); i < count; ++i)
 	{
 		if (strcmp(sType,m_breakageParticles[i].type) == 0)
 		{
@@ -124,7 +124,7 @@ CMaterialSurfaceType::SBreakageParticles* CMaterialSurfaceType::GetBreakageParti
 	}
 	if (bLookInDefault && g_pDefaultSurfaceType)
 	{
-		for (int i = 0,num = g_pDefaultSurfaceType->m_breakageParticles.size(); i < num; i++)
+		for (size_t i = 0, count = g_pDefaultSurfaceType->m_breakageParticles.size(); i < count; ++i)
 		{
 			if (strcmp(sType,g_pDefaultSurfaceType->m_breakageParticles[i].type) == 0)
 			{

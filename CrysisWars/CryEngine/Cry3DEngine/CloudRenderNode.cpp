@@ -95,12 +95,19 @@ void CCloudRenderNode::SetCloudDesc( SCloudDescription *pCloud )
 	m_pCloudDesc = pCloud;
 	if (m_pCloudDesc != NULL && m_pCloudDesc->m_particles.size() > 0)
 	{
+		const size_t particleCount = m_pCloudDesc->m_particles.size();
+		if (particleCount > std::numeric_limits<int>::max())
+		{
+			Error("Cloud particle count exceeds the renderer API limit");
+			return;
+		}
+
 		m_vOffset = m_pCloudDesc->m_offset;
 		m_bounds.min = m_pCloudDesc->m_bounds.min - m_pCloudDesc->m_offset;
 		m_bounds.max = m_pCloudDesc->m_bounds.max - m_pCloudDesc->m_offset;
 		if (m_pCloudDesc->m_pMaterial)
 			m_pMaterial = m_pCloudDesc->m_pMaterial;
-		m_pCloudRenderElement->SetParticles( &m_pCloudDesc->m_particles[0],m_pCloudDesc->m_particles.size() );
+		m_pCloudRenderElement->SetParticles(&m_pCloudDesc->m_particles[0], static_cast<int>(particleCount));
 
 		m_WSBBox.SetTransformedAABB( m_matrix,m_bounds );
 		m_fScale = m_matrix.GetColumn(0).GetLength();

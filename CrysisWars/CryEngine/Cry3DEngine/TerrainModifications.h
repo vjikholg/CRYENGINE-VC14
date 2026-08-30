@@ -62,10 +62,10 @@ private: // -------------------------------------------------------------------
 
 	// ---------------------------------------------------------------------------
 
-	void MakeCrater( const STerrainMod &ref, const uint32 dwCheckExistingMods );
+	void MakeCrater(const STerrainMod& ref, size_t checkExistingMods);
 
 	// O(n), n=registered modifications and that should not be a huge number but that might need improvement
-	float ComputeMaxDepthAt( const float fX, const float fY, const uint32 dwCheckExistingMods ) const;
+	float ComputeMaxDepthAt(float x, float y, size_t checkExistingMods) const;
 };
 
 #endif // __ENGINETERRAINMODIFICATIONS_H__

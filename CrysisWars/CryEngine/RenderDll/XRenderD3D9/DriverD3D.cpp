@@ -1777,7 +1777,7 @@ void CD3D9Renderer::DebugPrintShader(CHWShader_D3D *pSH, void *pI, int nX, int n
   int nM = 0;
   while (szAsm[0])
   {
-    fxFillCR(&szAsm, str);
+    fxFillCR(szAsm, str);
     Draw2dLabel(nX, nY, 1.2f, &colSH.r, false, "%s", str);
     nY += 11;
     if (nY+12 > nMaxY)
@@ -2318,7 +2318,7 @@ void CD3D9Renderer::RenderDebug()
 
 		float fMaxInLum = 0.01f;		// to normalize histogram height
 		for (i=0; i<256; i++)
-			fMaxInLum = max(fMaxInLum,pHG->Lum[i]/(1+LogMap(pHG->MaxVal*i/255.0f)));
+			fMaxInLum = std::max(fMaxInLum,pHG->Lum[i]/(1+LogMap(pHG->MaxVal*i/255.0f)));
 
 		// Display Ruler
 		for(float fRulerVal=1.0f/32.0f;fRulerVal<=128.0f;fRulerVal*=2.0f)
@@ -2956,9 +2956,9 @@ void CD3D9Renderer::EndFrame()
   }
 
   /*if (CTexture::m_LoadBytes > 3.0f*1024.0f*1024.0f)
-    CTexture::m_fStreamDistFactor = min(2048.0f, CTexture::m_fStreamDistFactor*1.2f);
+    CTexture::m_fStreamDistFactor = std::min(2048.0f, CTexture::m_fStreamDistFactor*1.2f);
   else
-    CTexture::m_fStreamDistFactor = max(1.0f, CTexture::m_fStreamDistFactor/1.2f);*/
+    CTexture::m_fStreamDistFactor = std::max(1.0f, CTexture::m_fStreamDistFactor/1.2f);*/
   CTexture::m_UploadBytes = 0;
   CTexture::m_LoadBytes = 0;
 
@@ -4360,7 +4360,7 @@ void CD3D9Renderer::SetViewport(int x, int y, int width, int height)
 	m_RP.m_PersFlags2 |= RBPF2_COMMIT_PF;
   float fResolution = (float)((width + height) >> 1);
 	if (fResolution != 0)
-		CTexture::m_fResolutionRatio = log(max(1024.0f / fResolution, 1.0f));
+		CTexture::m_fResolutionRatio = log(std::max(1024.0f / fResolution, 1.0f));
 	else
 		CTexture::m_fResolutionRatio = 1.0f;
   m_bViewportDirty = true;

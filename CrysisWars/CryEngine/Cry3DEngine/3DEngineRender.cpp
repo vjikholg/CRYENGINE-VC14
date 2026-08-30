@@ -792,7 +792,7 @@ void C3DEngine::RenderWorld(const int nRenderFlags, const CCamera &_cam, const c
 
 		GetRenderer()->Draw2dLabel(8.0f,fYLine+=fYStep,2.0f,fColor,false,"e_debug_draw = %d",GetCVars()->e_debug_draw);
 
-		char *szMode = "";
+		const char *szMode = "";
 
 		switch(GetCVars()->e_debug_draw)
 		{
@@ -1677,19 +1677,21 @@ void C3DEngine::DisplayInfo(float & fTextPosX, float & fTextPosY, float & fTextS
 
 	*szLevelName=0;
 	{
-		int i;
-		for(i=strlen(m_szLevelFolder)-2; i>0; i--)
-			if(m_szLevelFolder[i] == '\\' || m_szLevelFolder[i] == '/')
-				break;
-
-		if(i>=0)
+		const size_t folderLength = strlen(m_szLevelFolder);
+		if (folderLength > 1)
 		{
+			size_t i = folderLength - 2;
+			while (i > 0 && m_szLevelFolder[i] != '\\' && m_szLevelFolder[i] != '/')
+				--i;
+
 			strncpy(szLevelName,&m_szLevelFolder[i+1],sizeof(szLevelName));
 			szLevelName[sizeof(szLevelName)-1] = 0;
 
-			for(int i=strlen(szLevelName)-1; i>0; i--)
-				if(szLevelName[i] == '\\' || szLevelName[i] == '/')
-					szLevelName[i]=0;
+			for (size_t nameIndex = strlen(szLevelName); nameIndex-- > 1;)
+			{
+				if (szLevelName[nameIndex] == '\\' || szLevelName[nameIndex] == '/')
+					szLevelName[nameIndex] = 0;
+			}
 		}
 	}
 
@@ -2542,7 +2544,7 @@ void C3DEngine::SetupClearColor()
 
 void C3DEngine::FillDebugFPSInfo(SDebugFPSInfo& info) 
 {
-	size_t c = 0;
+	int c = 0;
 	SFrameRenderRecord average;
 	SFrameRenderRecord minData;
 	SFrameRenderRecord maxData;
@@ -2559,7 +2561,7 @@ void C3DEngine::FillDebugFPSInfo(SDebugFPSInfo& info)
 
 	if(c > 0)
 	{
-		average.fps /= (float)c;
+		average.fps /= static_cast<float>(c);
 		average.drawCalls /= c;
 		average.polys /= c;
 	}

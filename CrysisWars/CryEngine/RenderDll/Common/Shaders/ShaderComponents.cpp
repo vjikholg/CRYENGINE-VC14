@@ -567,7 +567,9 @@ bool CShaderMan::mfParseFXParameter(DynArray<SFXParam>& Params, SFXParam *pr, Dy
   if (nComps)
   {
     uint nOffs = pParams->size();
-    bool bRes = mfParseCGParam((char *)Semantic.c_str(), pr->m_Annotations.c_str(), Params, pSamplers, ef, pParams, nComps, nParamFlags, eSHClass, bExpressionOperand);
+    char semanticBuffer[512];
+    memcpy(semanticBuffer, Semantic.c_str(), Semantic.length() + 1);
+    bool bRes = mfParseCGParam(semanticBuffer, pr->m_Annotations.c_str(), Params, pSamplers, ef, pParams, nComps, nParamFlags, eSHClass, bExpressionOperand);
     assert(bRes);
     if (pParams->size() > nOffs)
     {

@@ -230,7 +230,7 @@ byte *CTexture::Convert(byte *pSrc, int nWidth, int nHeight, int nMips, ETEX_For
 			}
 			if ((nOutMips>1 && nOutMips != nMips) || (eTFDst != eTF_A8R8G8B8 && eTFDst != eTF_X8R8G8B8))
 			{
-				byte *pDstNew = Convert(pDst, nWidth, nHeight, min(nMips, nOutMips), eTF_A8R8G8B8, eTFDst, nOutMips, nOutSize, true);
+				byte *pDstNew = Convert(pDst, nWidth, nHeight, std::min(nMips, nOutMips), eTF_A8R8G8B8, eTFDst, nOutMips, nOutSize, true);
 				delete [] pDst;
 				return pDstNew;
 			}
@@ -1383,7 +1383,7 @@ bool CTexture::CreateDeviceTexture(byte *pData[6])
         w >>= 1;
         h >>= 1;
       }
-			nMips = min(nM, nMips);
+			nMips = std::min(nM, nMips);
 #endif
       if (FAILED(hr=dv->CreateTexture(nWdt, nHgt, nMips, D3DUsage, D3DFormat, D3DPool, (D3DTexture**)&pID3DTexture, NULL)))
       {
@@ -2586,16 +2586,16 @@ bool STexState::SetFilterMode(int nFilter)
         m_nMagFilter = D3DTEXF_LINEAR;
       m_nMipFilter = D3DTEXF_LINEAR;
       if (nFilter == FILTER_ANISO2X)
-        m_nAnisotropy = min(gcpRendD3D->m_MaxAnisotropyLevel, 2);
+        m_nAnisotropy = std::min(gcpRendD3D->m_MaxAnisotropyLevel, 2);
       else
       if (nFilter == FILTER_ANISO4X)
-        m_nAnisotropy = min(gcpRendD3D->m_MaxAnisotropyLevel, 4);
+        m_nAnisotropy = std::min(gcpRendD3D->m_MaxAnisotropyLevel, 4);
       else
       if (nFilter == FILTER_ANISO8X)
-        m_nAnisotropy = min(gcpRendD3D->m_MaxAnisotropyLevel, 8);
+        m_nAnisotropy = std::min(gcpRendD3D->m_MaxAnisotropyLevel, 8);
       else
       if (nFilter == FILTER_ANISO16X)
-        m_nAnisotropy = min(gcpRendD3D->m_MaxAnisotropyLevel, 16);
+        m_nAnisotropy = std::min(gcpRendD3D->m_MaxAnisotropyLevel, 16);
       break;
     default:
       assert(0);
@@ -2641,16 +2641,16 @@ bool STexState::SetFilterMode(int nFilter)
       m_nMagFilter = nFilter;
       m_nMipFilter = nFilter;
 			if (nFilter == FILTER_ANISO2X)
-				m_nAnisotropy = min(gcpRendD3D->m_MaxAnisotropyLevel, 2);
+				m_nAnisotropy = std::min(gcpRendD3D->m_MaxAnisotropyLevel, 2);
 			else
 			if (nFilter == FILTER_ANISO4X)
-				m_nAnisotropy = min(gcpRendD3D->m_MaxAnisotropyLevel, 4);
+				m_nAnisotropy = std::min(gcpRendD3D->m_MaxAnisotropyLevel, 4);
 			else
 			if (nFilter == FILTER_ANISO8X)
-				m_nAnisotropy = min(gcpRendD3D->m_MaxAnisotropyLevel, 8);
+				m_nAnisotropy = std::min(gcpRendD3D->m_MaxAnisotropyLevel, 8);
 			else
 			if (nFilter == FILTER_ANISO16X)
-				m_nAnisotropy = min(gcpRendD3D->m_MaxAnisotropyLevel, 16);
+				m_nAnisotropy = std::min(gcpRendD3D->m_MaxAnisotropyLevel, 16);
       break;
     default:
       assert(0);
@@ -4236,7 +4236,7 @@ CTexture *CTexture::GenerateMipsColorMap(int nWidth, int nHeight)
   pTex = CTexture::CreateTextureObject(str, nWidth, nHeight, 1, eTT_2D, FT_DONT_ANISO | FT_DONT_RELEASE, eTF);
   CMipsColorMap *pMap = new CMipsColorMap(nWidth, nHeight, (D3DFORMAT)CTexture::DeviceFormatFromTexFormat(eTF), pTex, true);
   pMap->m_nLevelMips = LogBaseTwo(nWidth);
-  pMap->m_nLevelMips = max(LogBaseTwo(nHeight), pMap->m_nLevelMips);
+  pMap->m_nLevelMips = std::max(LogBaseTwo(nHeight), pMap->m_nLevelMips);
   pMap->Initialize();
   pTex->SetTexStates();
 
@@ -4664,7 +4664,7 @@ void CD3D9Renderer::DrawAllDynTextures(const char *szFilter, const bool bLogName
 
   float width = 800;
   float height = 600;
-  float fArrDim = max(4.f, sqrtf((float)nMaxCount));
+  float fArrDim = std::max(4.f, sqrtf((float)nMaxCount));
   float fPicDimX = width/fArrDim;
   float fPicDimY = height/fArrDim;
   float x = 0;
@@ -4926,7 +4926,7 @@ bool CFlashTextureSource::Update(float distToCamera)
 #endif
 		ColorF clearCol(0, 0, 0, 0);
 		gcpRendD3D->EF_ClearBuffers(clearFlags, &clearCol);
-		m_pFlashPlayer->Advance(max(currentTime - m_lastUpdateTime, 0.0f));
+		m_pFlashPlayer->Advance(std::max(currentTime - m_lastUpdateTime, 0.0f));
 		m_pFlashPlayer->Render();
 		m_pDynTexture->RestoreRT(0, true);
 

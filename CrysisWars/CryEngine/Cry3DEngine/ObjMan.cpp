@@ -672,7 +672,14 @@ void CObjManager::GetLoadedStatObjArray( IStatObj** pObjectsArray,int &nCount )
 {
 	if (!pObjectsArray)
 	{
-		nCount = m_lstLoadedObjects.size();
+		const size_t objectCount = m_lstLoadedObjects.size();
+		if (objectCount > std::numeric_limits<int>::max())
+		{
+			Error("Loaded static-object count exceeds the object API limit");
+			nCount = 0;
+			return;
+		}
+		nCount = static_cast<int>(objectCount);
 		return;
 	}
 
@@ -846,7 +853,7 @@ void CObjManager::CheckForGarbage( CStatObj *pStatObj,bool bAdd )
 //////////////////////////////////////////////////////////////////////////
 void CObjManager::ClearStatObjGarbage()
 {
-	for (int i = 0,num = m_checkForGarbage.size(); i < num; i++)
+	for (size_t i = 0, count = m_checkForGarbage.size(); i < count; ++i)
 	{
 		CStatObj *pStatObj = m_checkForGarbage[i];
 		pStatObj->m_bCheckGarbage = false;

@@ -316,7 +316,7 @@ void CD3D9Renderer::MakeSprites(TArray<SSpriteGenInfo>& SGI)
 	  CCamera tmpCam = origCam;
 	  Matrix33 matRot = Matrix33::CreateOrientation(vAt-vEye, vUp, 0);
 	  tmpCam.SetMatrix(Matrix34(matRot, Vec3(0,0,0)));
-	  tmpCam.SetFrustum(nSpriteResInt, nSpriteResInt, fFOV, max(0.1f, fDrawDist-fRadiusHors), fDrawDist+fRadiusHors);
+	  tmpCam.SetFrustum(nSpriteResInt, nSpriteResInt, fFOV, std::max(0.1f, fDrawDist-fRadiusHors), fDrawDist+fRadiusHors);
 	  SetCamera(tmpCam);
 
     Matrix44 *m = m_matProj->GetTop();
@@ -686,7 +686,7 @@ void CD3D9Renderer::GenerateSpritesList (PodArray<struct SVegetationSpriteInfo> 
       }*/
       if (!*ppTex)
       {
-        char *szName;
+        const char* szName;
 #ifdef _DEBUG
         char Name[128];
         sprintf(Name, "$SpriteTex_(%1.f %1.f %1.f)_%d_%d", pSP->m_vPos.x, pSP->m_vPos.y, pSP->m_vPos.z, bAngle2Below35, nSlotId);
@@ -707,7 +707,7 @@ void CD3D9Renderer::GenerateSpritesList (PodArray<struct SVegetationSpriteInfo> 
           (*ppTex)->ResetUpdateMask();
         pLightInfo->SetLightingData(pEngine->GetSunDir(), pEngine->GetSunColor(), pEngine->GetSkyColor());
       }
-      float fGenDist = 18.f*max(0.5f, vegetGroup.fSpriteDistRatio*fCustomDistRatio);
+      float fGenDist = 18.f*std::max(0.5f, vegetGroup.fSpriteDistRatio*fCustomDistRatio);
       if (*ppTex)
         (*ppTex)->SetUpdateMask();
       SSpriteGenInfo SGI;

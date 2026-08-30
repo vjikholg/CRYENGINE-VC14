@@ -276,13 +276,13 @@ void CREOcean::mfPrepare()
         pVertices[n].xyz.y = m_Pos[vy][vx][1];
         float fZ = -m_HX[y][x] * fHScale;
         pVertices[n].xyz.z = fZ;
-        m_MinBound.x = min(m_Pos[vy][vx][0], m_MinBound.x);
-        m_MinBound.y = min(m_Pos[vy][vx][1], m_MinBound.y);
-        m_MinBound.z = min(fZ, m_MinBound.z);
+        m_MinBound.x = std::min(m_Pos[vy][vx][0], m_MinBound.x);
+        m_MinBound.y = std::min(m_Pos[vy][vx][1], m_MinBound.y);
+        m_MinBound.z = std::min(fZ, m_MinBound.z);
 
-        m_MaxBound.x = max(m_Pos[vy][vx][0], m_MaxBound.x);
-        m_MaxBound.y = max(m_Pos[vy][vx][1], m_MaxBound.y);
-        m_MaxBound.z = max(fZ, m_MaxBound.z);
+        m_MaxBound.x = std::max(m_Pos[vy][vx][0], m_MaxBound.x);
+        m_MaxBound.y = std::max(m_Pos[vy][vx][1], m_MaxBound.y);
+        m_MaxBound.z = std::max(fZ, m_MaxBound.z);
 
         m_Normals[vy][vx] = Vec3(m_NX[y][x], m_NY[y][x], 64.0f);
         m_Normals[vy][vx].NormalizeFast();

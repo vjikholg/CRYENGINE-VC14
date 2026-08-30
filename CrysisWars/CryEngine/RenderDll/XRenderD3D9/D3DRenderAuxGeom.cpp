@@ -1006,7 +1006,7 @@ CD3DRenderAuxGeom::DrawAuxObjects( AuxSortedPushBuffer::const_iterator itBegin, 
 			}
 			else
 			{
-				scale = ( ( v1.x - v0.x ) / v0.w ) * (float) max( m_wndXRes, m_wndYRes ) / 500.0f;
+				scale = ( ( v1.x - v0.x ) / v0.w ) * (float) std::max( m_wndXRes, m_wndYRes ) / 500.0f;
 			}			
 
 			// map scale to detail level

@@ -62,9 +62,16 @@ void SRenderShaderResources::ExportModificators(IRenderShaderResources *pT, CRen
   if (m_Constants[eHWSC_Vertex].size() > PS_SPECULAR_COL)
   {
     SRenderObjData *pD = pObj->GetObjData(true);
-    int nSize = max(m_Constants[eHWSC_Vertex].size(), pTrg->m_Constants[eHWSC_Vertex].size());
+    const size_t requiredSize = std::max(m_Constants[eHWSC_Vertex].size(), pTrg->m_Constants[eHWSC_Vertex].size());
+    if (requiredSize > static_cast<size_t>((std::numeric_limits<int>::max)()))
+    {
+      assert(!"Shader constant count exceeds the renderer API limit");
+      return;
+    }
+
+    const int nSize = static_cast<int>(requiredSize);
     pD->m_Constants.resize(nSize);
-    for (int i=0; i<nSize; i++)
+    for (int i = 0; i < nSize; ++i)
     {
       if ((i <= PS_SPECULAR_COL || i >= 4) && i < pTrg->m_Constants[eHWSC_Vertex].size())
         pD->m_Constants[i] = pTrg->m_Constants[eHWSC_Vertex][i];

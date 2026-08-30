@@ -749,7 +749,13 @@ void CIndexedMesh::RebuildMesh(Vec3 * pVertsShared, SMeshTexCoord * pCoordShared
 															 SMeshColor * pColorShared0, SMeshColor * pColorShared1, 
 															 std::vector<int> &lstIndices, int nVertCountShared, int * pVertMatsShared)
 {
-	SetFacesCount( lstIndices.size()/3 );
+	const size_t faceCount = lstIndices.size() / 3;
+	if (faceCount > std::numeric_limits<int>::max())
+	{
+		Error("Indexed-mesh face count exceeds the mesh API limit");
+		return;
+	}
+	SetFacesCount(static_cast<int>(faceCount));
 //	memset(m_pFaces,0,lstIndices.size()/3*sizeof(SMeshFace)); // flags should stay
 
 	int nFaceId = 0;

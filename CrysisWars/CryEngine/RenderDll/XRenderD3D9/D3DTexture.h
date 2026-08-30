@@ -888,7 +888,7 @@ public:
   {
     // input is p->x = (Distance^2/Attenuation^2)
     FLOAT fx = (float)1-p->x;
-    FLOAT fi = min(1.0f, max(0.0f, min(fx*fx+.1f, 1-fx*fx*fx) ) );
+    FLOAT fi = std::min(1.0f, std::max(0.0f, std::min(fx*fx+.1f, 1-fx*fx*fx) ) );
     return D3DXCOLOR(fi, fi, fi, fi);
   }
 };

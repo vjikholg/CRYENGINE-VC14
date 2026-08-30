@@ -175,13 +175,17 @@ public:
 
   static CMemoryBlock * CompressToMemBlock(void * pData, int nSize, ISystem * pSystem)
   { 
+    if (nSize < 0 || nSize > std::numeric_limits<int>::max() - 4)
+      return NULL;
+
     CMemoryBlock * pMemBlock = NULL;
     uchar * pTmp = new uchar[nSize+4];
     size_t nComprSize = nSize;
     *(uint*)pTmp = nSize;
     if( pSystem->CompressDataBlock(pData, nSize, pTmp+4, nComprSize ))
     {
-      pMemBlock = new CMemoryBlock(pTmp, nComprSize+4);
+      if (nComprSize <= static_cast<size_t>(std::numeric_limits<int>::max() - 4))
+        pMemBlock = new CMemoryBlock(pTmp, static_cast<int>(nComprSize + 4));
     }
 
     delete [] pTmp;
@@ -190,9 +194,14 @@ public:
 
   static CMemoryBlock * DecompressFromMemBlock(CMemoryBlock * pMemBlock, ISystem * pSystem)
   { 
+    if (!pMemBlock || !pMemBlock->GetData() || pMemBlock->GetSize() < 4)
+      return NULL;
+
     size_t nUncompSize = *(uint*)pMemBlock->GetData();
+    if (nUncompSize > static_cast<size_t>(std::numeric_limits<int>::max()))
+      return NULL;
     CMemoryBlock * pResult = new CMemoryBlock;
-    pResult->Allocate(nUncompSize);
+    pResult->Allocate(static_cast<int>(nUncompSize));
     if(!pSystem->DecompressDataBlock((byte*)pMemBlock->GetData()+4, pMemBlock->GetSize()-4, pResult->GetData(), nUncompSize))
     {
       delete pResult;
@@ -236,7 +245,7 @@ struct CRNTmpData
     float fLastFrameDistance;
   } userData;
 
-  CRNTmpData() { memset(this,0,sizeof(*this)); assert((uint)this == (uint)&(this->userData)); }
+  CRNTmpData() { memset(this,0,sizeof(*this)); assert((uintptr_t)this == (uintptr_t)&(this->userData)); }
   CRNTmpData *pNext, *pPrev;
   CRNTmpData ** pOwnerRef;
   int nLastUsedFrameId;

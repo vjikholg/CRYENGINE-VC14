@@ -717,7 +717,7 @@ bool CVisAreaManager::IsValidVisAreaPointer(CVisArea * pVisArea)
 
 bool CVisAreaManager::DeleteVisArea(CVisArea * pVisArea)
 {
-	for (int i = 0,num = m_lstCallbacks.size(); i < num; i++)
+	for (int i = 0, count = m_lstCallbacks.Count(); i < count; ++i)
 	{
 		m_lstCallbacks[i]->OnVisAreaDeleted(pVisArea);
 	}
@@ -1656,7 +1656,7 @@ void CVisAreaManager::AddLightSource(CDLight * pLight)
 
 int CVisAreaManager::GetNumberOfVisArea() const
 {
-	return m_lstPortals.size() + m_lstVisAreas.size();
+	return m_lstPortals.Count() + m_lstVisAreas.Count();
 }
 
 IVisArea* CVisAreaManager::GetVisAreaById( int nID ) const
@@ -1664,12 +1664,12 @@ IVisArea* CVisAreaManager::GetVisAreaById( int nID ) const
 	if( nID < 0 )
 		return NULL;
 
-	if( nID < m_lstPortals.size() )
+	if (nID < m_lstPortals.Count())
 	{
 		return m_lstPortals[ nID ];
 	}
-	nID -= m_lstPortals.size();
-	if( nID < m_lstVisAreas.size() )
+	nID -= m_lstPortals.Count();
+	if (nID < m_lstVisAreas.Count())
 	{
 		return m_lstVisAreas[ nID ];
 	}

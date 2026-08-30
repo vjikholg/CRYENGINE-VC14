@@ -531,7 +531,7 @@ bool CD3D9Renderer::FX_ProcessAOTarget()
   if(pTempRT) // blur tmp target into final AO mask
   {
     PROFILE_SHADER_START;
-    FX_ShadowBlur(CV_r_SSAO_blurriness, pTempRT, CTexture::m_Text_AOTarget, max(2, CV_r_SSAO_blur));
+    FX_ShadowBlur(CV_r_SSAO_blurriness, pTempRT, CTexture::m_Text_AOTarget, std::max(2, CV_r_SSAO_blur));
     PROFILE_SHADER_END
   }
 
@@ -753,11 +753,11 @@ void CheckTriangle(Vec3 * pVerts3d, int i1, int i2, int i3, const Plane & nearPl
     Vec4 vScreenPoint = Vec4(arrTriangle[i], 1.0) * mViewProj;
 
     //projection space clamping
-    vScreenPoint.w = max(vScreenPoint.w, 0.00000000000001f);
-    vScreenPoint.x = max(vScreenPoint.x, -(vScreenPoint.w));
-    vScreenPoint.x = min(vScreenPoint.x, vScreenPoint.w);
-    vScreenPoint.y = max(vScreenPoint.y, -(vScreenPoint.w));
-    vScreenPoint.y = min(vScreenPoint.y, vScreenPoint.w);
+    vScreenPoint.w = std::max(vScreenPoint.w, 0.00000000000001f);
+    vScreenPoint.x = std::max(vScreenPoint.x, -(vScreenPoint.w));
+    vScreenPoint.x = std::min(vScreenPoint.x, vScreenPoint.w);
+    vScreenPoint.y = std::max(vScreenPoint.y, -(vScreenPoint.w));
+    vScreenPoint.y = std::min(vScreenPoint.y, vScreenPoint.w);
 
     //NDC
     vScreenPoint /= vScreenPoint.w;
@@ -772,13 +772,13 @@ void CheckTriangle(Vec3 * pVerts3d, int i1, int i2, int i3, const Plane & nearPl
     assert(vWin.x>=0.0f && vWin.x<=1.0f);
     assert(vWin.y>=0.0f && vWin.y<=1.0f);
 
-    vMin.x = min( vMin.x,vWin.x );
-    vMin.y = min( vMin.y,vWin.y );
-    vMin.z = min( vMin.z,vWin.z );
+    vMin.x = std::min( vMin.x,vWin.x );
+    vMin.y = std::min( vMin.y,vWin.y );
+    vMin.z = std::min( vMin.z,vWin.z );
     
-    vMax.x = max( vMax.x,vWin.x );
-    vMax.y = max( vMax.y,vWin.y );
-    vMax.z = max( vMax.z,vWin.z );
+    vMax.x = std::max( vMax.x,vWin.x );
+    vMax.y = std::max( vMax.y,vWin.y );
+    vMax.z = std::max( vMax.z,vWin.z );
   }
 }
 

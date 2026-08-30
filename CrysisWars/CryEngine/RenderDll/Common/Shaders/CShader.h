@@ -316,7 +316,7 @@ public:
   int m_nCombinations;
   bool m_bActivatePhase;
   int m_nCombination;
-  char *m_szShaderPrecache;
+  const char* m_szShaderPrecache;
   FXShaderCacheCombinations m_ShaderCacheCombinations;
   SShaderProfile m_ShaderProfiles[eST_Max];
   SShaderProfile m_ShaderFixedProfiles[eSQ_Max];

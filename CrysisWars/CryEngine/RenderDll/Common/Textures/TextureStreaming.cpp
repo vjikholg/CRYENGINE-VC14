@@ -443,16 +443,16 @@ void CTexture::StreamUpdateMip(float fDist)
   else
     return;
 
-  int nMip = fastround_positive(log(max(fDist, 1.0f)));
+  int nMip = fastround_positive(log(std::max(fDist, 1.0f)));
 
   int nResMip = 0;
   if ((m_nWidth > 64 || m_nHeight > 64) && !CRenderer::CV_r_texturesstreamingsync)
   {
-    nResMip = min(m_nMips3DC-1, nResMip);
+    nResMip = std::min(m_nMips3DC-1, nResMip);
     if (0 != nResMip)
       ReleaseDeviceTexture(true);
   }
-  nMip = min(m_nMips3DC-1, nMip+nResMip);
+  nMip = std::min(m_nMips3DC-1, nMip+nResMip);
   m_nMinMipCur = nMip;
 }
 
@@ -490,7 +490,7 @@ bool CTexture::StreamLoadFromCache(int Flags, float fDist)
   else
   {
     // Always stream lowest nMipsPersistent mips synchronously
-    int nStartLowestM = max(m_nMinMipCur, nEndMip-m_CacheFileHeader.m_nMipsPersistent+1);
+    int nStartLowestM = std::max(m_nMinMipCur, nEndMip-m_CacheFileHeader.m_nMipsPersistent+1);
     for (i=nStartLowestM; i<=nEndMip; i++)
     {
       if (!mh[i].m_Mips[0].m_bUploaded)
@@ -645,7 +645,7 @@ bool CTexture::StreamPrepare(bool bReload, ETEX_Format eTFDst)
       int i, j;
       fh.m_SizeOf = sizeof(STexCacheFileHeader);
       nMips = pIM->mfGet_numMips();
-      fh.m_nMipsPersistent = min(4, nMips);
+      fh.m_nMipsPersistent = std::min(4, nMips);
       fh.m_Version = TEXCACHE_VERSION;
       m_eTFSrc = pIM->mfGetSrcFormat();
       m_eTFDst = pIM->mfGetFormat();
@@ -728,7 +728,7 @@ bool CTexture::StreamPrepare(bool bReload, ETEX_Format eTFDst)
     int nSyncStartMip = -1;
     int nSyncEndMip = -1;
     int nEndMip = m_nMips-1;
-    int nStartLowestM = max(0, nEndMip-fh->m_nMipsPersistent+1);
+    int nStartLowestM = std::max(0, nEndMip-fh->m_nMipsPersistent+1);
     for (i=nStartLowestM; i<=nEndMip; i++)
     {
       if (!mh[i].m_Mips[0].m_bUploaded)

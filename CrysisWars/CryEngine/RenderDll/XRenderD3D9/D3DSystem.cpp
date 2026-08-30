@@ -2292,7 +2292,7 @@ void CD3D9Renderer::InitNVAPI()
 		{ 
 			// we have an sli system 
 			iLog->Log("NVAPI: System configured as SLI: %d logical GPUs and %d physical GPUs",logicalGPUCount,physicalGPUCount);
-      m_nGPUs = min(physicalGPUCount, 31);
+      m_nGPUs = static_cast<int>(std::min(physicalGPUCount, NvU32{31}));
 
 			m_bDriverHasActiveMultiGPU=true;
 
@@ -3448,7 +3448,7 @@ HRESULT CALLBACK CD3D9Renderer::OnD3D9CreateDevice(LPDIRECT3DDEVICE9 pd3dDevice,
     iLog->Log ("D3D Driver: Supports MaxAnisotropy level %d", rd->m_MaxAnisotropyLevel); 
     rd->m_Features |= RFT_ALLOWANISOTROPIC;
   }
-  rd->m_MaxAnisotropyLevel = min(rd->m_MaxAnisotropyLevel, CRenderer::CV_r_texmaxanisotropy);
+  rd->m_MaxAnisotropyLevel = std::min(rd->m_MaxAnisotropyLevel, CRenderer::CV_r_texmaxanisotropy);
 
   if(pd3dCaps->StencilCaps & (D3DSTENCILCAPS_KEEP|D3DSTENCILCAPS_INCR|D3DSTENCILCAPS_DECR))
   {
@@ -3591,7 +3591,7 @@ HRESULT CALLBACK CD3D9Renderer::OnD3D9CreateDevice(LPDIRECT3DDEVICE9 pd3dDevice,
   if (CRenderer::CV_r_texturesstreampoolsize <= 0)
     CRenderer::CV_r_texturesstreampoolsize = (int)(rd->m_MaxTextureMemory/1024.0f/1024.0f*0.75f);
 
-  rd->m_MaxTextureSize = min(pd3dCaps->MaxTextureHeight, pd3dCaps->MaxTextureWidth); //min(wdt, hgt);
+  rd->m_MaxTextureSize = std::min(pd3dCaps->MaxTextureHeight, pd3dCaps->MaxTextureWidth); //std::min(wdt, hgt);
 
   rd->m_Features &= ~RFT_DEPTHMAPS;
   if (pd3dCaps->MaxSimultaneousTextures <= 2)
@@ -4332,7 +4332,7 @@ HRESULT CALLBACK CD3D9Renderer::OnD3D10CreateDevice( ID3D10Device* pd3dDevice, c
 
   rd->m_numtmus = 16;
 	rd->m_MaxAnisotropyLevel = 16;
-  rd->m_MaxAnisotropyLevel = min(rd->m_MaxAnisotropyLevel, CRenderer::CV_r_texmaxanisotropy);
+  rd->m_MaxAnisotropyLevel = std::min(rd->m_MaxAnisotropyLevel, CRenderer::CV_r_texmaxanisotropy);
 
   CTexture::m_CurStage = 0;
   CTexture::SetDefTexFilter(CV_d3d9_texturefilter->GetString());

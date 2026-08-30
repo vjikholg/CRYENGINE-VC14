@@ -1536,6 +1536,7 @@
     <ClInclude Include="..\Common\VideoPlayerInstance.h" />
     <ClInclude Include="..\Common\WaterUtils.h" />
     <ClInclude Include="..\CrtOverrides.h" />
+    <ClInclude Include="..\RenderD3DPrerequisites.h" />
     <ClInclude Include="..\RenderPCH.h" />
     <ClInclude Include="D3DCubeMaps.h" />
     <ClInclude Include="D3DHWShader.h" />

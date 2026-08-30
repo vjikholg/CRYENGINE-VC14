@@ -780,7 +780,7 @@ uint32 CLoaderCGF::ReadBoneMesh ( IChunkFile::ChunkDesc* pChunkDesc )
 
 	//check if faces are valid
 	uint32 ValidateFaceIndices=1;
-	uint32 numVertices = pbm.m_arrPoints.size();
+	const size_t numVertices = pbm.m_arrPoints.size();
 	for (int i=0; i<pMeshChunk->nFaces; i++)
 	{
 		if (pbm.m_arrIndices[i*3+0] >= numVertices) { assert(0); ValidateFaceIndices=0; }
@@ -1165,6 +1165,18 @@ bool CLoaderCGF::ReadCompiledBreakablePhysics (  IChunkFile::ChunkDesc *pChunkDe
 
 uint32 CLoaderCGF::ProcessSkinning() 
 {
+	const auto tryCount32 = [this](size_t count, const char* description, uint32& result) -> bool
+	{
+		if (count > std::numeric_limits<uint32>::max())
+		{
+			m_LastError.Format("CLoaderCGF::ProcessSkinning: %s count exceeds the 32-bit mesh limit (%llu)",
+				description, static_cast<unsigned long long>(count));
+			return false;
+		}
+		result = static_cast<uint32>(count);
+		return true;
+	};
+
 	std::vector<ExtSkinVertexTemp> arrExtSkinTemp; 
 	std::vector<SMeshSubset> arrMaterialGroups;  //materials of the mesh as they appear in video-mem
 	std::vector<SMeshSubset> arrSubsets;         //subsets of the mesh as they appear in video-mem
@@ -1172,8 +1184,11 @@ uint32 CLoaderCGF::ProcessSkinning()
 
 	CSkinningInfo* pSkinningInfo = m_pCGF->GetSkinningInfo();
 
-	uint32 numBonenames	=	m_arrBoneNameTable.size();
-	uint32 numIPos			=	m_arrInitPose34.size();
+	uint32 numBonenames = 0;
+	uint32 numIPos = 0;
+	if (!tryCount32(m_arrBoneNameTable.size(), "bone name", numBonenames) ||
+		!tryCount32(m_arrInitPose34.size(), "initial pose", numIPos))
+		return 0;
 	uint32 numBones			=	pSkinningInfo->m_arrBonesDesc.size();
 
 	//do we have a initiallised skeletton?
@@ -1282,16 +1297,22 @@ uint32 CLoaderCGF::ProcessSkinning()
 			//--------------------------------------------------------------
 			//---        copy the links into geometry info               ---
 			//--------------------------------------------------------------
-			uint32 numLinks = m_arrLinksTmp.size();
+			uint32 numLinks = 0;
+			if (!tryCount32(m_arrLinksTmp.size(), "vertex link array", numLinks))
+				return 0;
 			assert(numIntVertices==numLinks);
-			uint32 Id2Index = m_arrIdToIndex.size();
+			uint32 Id2Index = 0;
+			if (!tryCount32(m_arrIdToIndex.size(), "bone ID remap", Id2Index))
+				return 0;
 			assert(Id2Index);
 			for(uint32 i=0; i<numIntVertices; i++) 
 			{
 				CryVertexBinding& rLinks_source = m_arrLinksTmp[i];
-				uint32 numVertexLinks = rLinks_source.size(); // the number of links for this vertex
+				uint32 numVertexLinks = 0;
+				if (!tryCount32(rLinks_source.size(), "vertex influence", numVertexLinks))
+					return 0;
 				assert(numVertexLinks); 
-				rLinks_source.remapBoneIds (0, &m_arrIdToIndex[0], m_arrIdToIndex.size());
+				rLinks_source.remapBoneIds(0, &m_arrIdToIndex[0], Id2Index);
 			}
 
 			//---------------------------------------------------------------------
@@ -1303,7 +1324,9 @@ uint32 CLoaderCGF::ProcessSkinning()
 
 				// the number of links for this vertex
 				const CryVertexBinding& rLinks_base = m_arrLinksTmp[nVert];
-				uint32 numVertexLinks = rLinks_base.size();
+				uint32 numVertexLinks = 0;
+				if (!tryCount32(rLinks_base.size(), "vertex influence", numVertexLinks))
+					return 0;
 				assert(numVertexLinks); 
 
 				//vertex-position of model.0
@@ -1505,18 +1528,19 @@ uint32 CLoaderCGF::ProcessSkinning()
 				mapMtlFace[GeomMtlID].push_back( TFace(pMesh->m_pFaces[i].v[0],pMesh->m_pFaces[i].v[1],pMesh->m_pFaces[i].v[2]) );
 				arrMaterialUsage[GeomMtlID] = true;
 			}
-			uint32 test = mapMtlFace.size();
 			//--------------------------------------------------------------------------
 			//---     create array with internal faces (sorted by materials)           ---
 			//--------------------------------------------------------------------------
 			uint32 nNewFace = 0;
 			pSkinningInfo->m_arrIntFaces.resize(numIntFaces);
-			uint32 numMaterials=mapMtlFace.size();
+			uint32 numMaterials = 0;
+			if (!tryCount32(mapMtlFace.size(), "material", numMaterials))
+				return 0;
 	//		nMaxSubsetID=numMaterials;
 			for (IntFaceMtlMap::iterator itMtl=mapMtlFace.begin(); itMtl!=mapMtlFace.end(); ++itMtl)
 			{
-				uint32 num = itMtl->second.size();
-				for (uint32 f=0; f<num; f++,nNewFace++)
+				const size_t num = itMtl->second.size();
+				for (size_t f = 0; f < num; ++f, ++nNewFace)
 					pSkinningInfo->m_arrIntFaces[nNewFace] = itMtl->second[f];
 			}
 			assert (nNewFace==numIntFaces);
@@ -1528,8 +1552,13 @@ uint32 CLoaderCGF::ProcessSkinning()
 			m_pCompiledCGF = MakeCompiledCGF( m_pCGF, &arrVRemapping, &arrIRemapping  );
 			if (!m_pCompiledCGF)
 				return false;
-			uint32 numIRemapping = arrIRemapping.size();	assert(numIRemapping);
-			uint32 numVRemapping = arrVRemapping.size();	assert(numVRemapping);
+			uint32 numIRemapping = 0;
+			uint32 numVRemapping = 0;
+			if (!tryCount32(arrIRemapping.size(), "index remap", numIRemapping) ||
+				!tryCount32(arrVRemapping.size(), "vertex remap", numVRemapping))
+				return 0;
+			assert(numIRemapping);
+			assert(numVRemapping);
 
 			//allocates the external to internal map entries
 			pSkinningInfo->m_arrExt2IntMap.resize( numVRemapping);//, ~0 );
@@ -1702,7 +1731,8 @@ uint32 CLoaderCGF::ProcessSkinning()
 							rbatch.numBonesPerBatch=lCount;
 							rbatch.m_arrBoneIDs.clear();
 							for (uint32 b=0; b<numBones; b++)	if (arrUsedBonesLast[b]) rbatch.m_arrBoneIDs.push_back(b);
-							rbatch.startFace	= arrExtFaces.size();
+							if (!tryCount32(arrExtFaces.size(), "external face", rbatch.startFace))
+								return 0;
 							rbatch.numFaces		=	PushIntoNewBuffer(arrExtSkinTemp,arrExtFaces,pIndices,numIndices,arrUsedBonesLast);
 							rbatch.MaterialID	=	arrMaterialGroups[m].nMatID;
 						//	assert(rbatch.MaterialID<nMaxSubsetID);
@@ -1723,7 +1753,8 @@ uint32 CLoaderCGF::ProcessSkinning()
 						rbatch.numBonesPerBatch=iCount;
 						rbatch.m_arrBoneIDs.clear();
 						for (uint32 b=0; b<numBones; b++)	if (arrUsedBones[b]) rbatch.m_arrBoneIDs.push_back(b);
-						rbatch.startFace	= arrExtFaces.size();
+						if (!tryCount32(arrExtFaces.size(), "external face", rbatch.startFace))
+							return 0;
 						rbatch.numFaces		=	PushIntoNewBuffer(arrExtSkinTemp,arrExtFaces,pIndices,numIndices,arrUsedBones);
 						rbatch.MaterialID	=	arrMaterialGroups[m].nMatID;
 					//	assert(rbatch.MaterialID<nMaxSubsetID);
@@ -1742,7 +1773,8 @@ uint32 CLoaderCGF::ProcessSkinning()
 						rbatch.numBonesPerBatch=iCount;
 						rbatch.m_arrBoneIDs.clear();
 						for (uint32 b=0; b<numBones; b++)	if (arrUsedBones[b]) rbatch.m_arrBoneIDs.push_back(b);
-						rbatch.startFace	=	arrExtFaces.size();
+						if (!tryCount32(arrExtFaces.size(), "external face", rbatch.startFace))
+							return 0;
 						rbatch.numFaces		=	PushIntoNewBuffer(arrExtSkinTemp,arrExtFaces,pIndices,numIndices,arrUsedBones);
 						rbatch.MaterialID	=	arrMaterialGroups[m].nMatID;
 						//if (rbatch.MaterialID>=nMaxSubsetID) rbatch.MaterialID=(numMaterials-1);
@@ -1805,8 +1837,11 @@ uint32 CLoaderCGF::ProcessSkinning()
 
 			//FILE* stream = fopen( "c:\\bones.txt", "w+b" );
 
-			uint32 numBatches=m_arrBatches.size();
-			uint32 numMaterialSplits=arrMaterialSplit.size();
+			uint32 numBatches = 0;
+			uint32 numMaterialSplits = 0;
+			if (!tryCount32(m_arrBatches.size(), "render batch", numBatches) ||
+				!tryCount32(arrMaterialSplit.size(), "material split", numMaterialSplits))
+				return 0;
 
 			uint32 base=0;
 			for(uint32 m=0; m<numMaterialSplits; m++)
@@ -1863,7 +1898,9 @@ uint32 CLoaderCGF::ProcessSkinning()
 					//----------------------------------------------------
 					//---              BoneColumn Sorter               ---
 					//----------------------------------------------------
-					uint32 numIDs=m_arrBatches[base].m_arrBoneIDs.size();
+					uint32 numIDs = 0;
+					if (!tryCount32(m_arrBatches[base].m_arrBoneIDs.size(), "batch bone ID", numIDs))
+						return 0;
 					for (uint32 comp=1; comp<numIDs; comp++)
 					{
 						for (uint32 dest=0; dest<comp; dest++)
@@ -1895,7 +1932,9 @@ uint32 CLoaderCGF::ProcessSkinning()
 					for (uint32 s=0; s<numSplits; s++)
 					{
 						//find maximum used ammout of boneIDs for this batch
-						uint32 numBoneIDs=m_arrBatches[s+base].m_arrBoneIDs.size();
+						uint32 numBoneIDs = 0;
+						if (!tryCount32(m_arrBatches[s + base].m_arrBoneIDs.size(), "batch bone ID", numBoneIDs))
+							return 0;
 						for(uint32 i=(numBoneIDs-1); i!=0; i--)
 						{
 							if (m_arrBatches[s+base].m_arrBoneIDs[i] != 0xffff) 
@@ -1923,7 +1962,9 @@ uint32 CLoaderCGF::ProcessSkinning()
 				else 
 				{
 					//find maximum used amout of boneIDs for this batch
-					uint32 numIDs=m_arrBatches[base].m_arrBoneIDs.size();
+					uint32 numIDs = 0;
+					if (!tryCount32(m_arrBatches[base].m_arrBoneIDs.size(), "batch bone ID", numIDs))
+						return 0;
 					assert (numIDs); 
 					for(uint32 i=(numIDs-1); i!=0; i--)
 					{
@@ -1946,7 +1987,9 @@ uint32 CLoaderCGF::ProcessSkinning()
 					//fprintf(stream, "\r\n");
 				}
 
-				uint32 numRemaps=arrMaterialSplit[m].arrRemapIDs.size();
+				uint32 numRemaps = 0;
+				if (!tryCount32(arrMaterialSplit[m].arrRemapIDs.size(), "material bone remap", numRemaps))
+					return 0;
 				//fprintf(stream, "RemapArray:   ");
 				for(uint32 i=0; i<numRemaps; i++)
 				{
@@ -1969,7 +2012,9 @@ uint32 CLoaderCGF::ProcessSkinning()
 			uint32 rbcounter=0;
 			for (uint32 m=0; m<numMaterialSplits; m++) 
 			{
-				uint32 numRemapIDs= arrMaterialSplit[m].arrRemapIDs.size();
+				uint32 numRemapIDs = 0;
+				if (!tryCount32(arrMaterialSplit[m].arrRemapIDs.size(), "material bone remap", numRemapIDs))
+					return 0;
 				uint32 numSplits	= arrMaterialSplit[m].numSplits;
 				for (uint32 s=0; s<numSplits; s++)
 				{
@@ -1981,7 +2026,9 @@ uint32 CLoaderCGF::ProcessSkinning()
 
 
 			uint32 testcheck = pMesh->m_subsets.size();
-			uint32 numBatches2 = m_arrBatches.size();
+			uint32 numBatches2 = 0;
+			if (!tryCount32(m_arrBatches.size(), "render batch", numBatches2))
+				return 0;
 			arrSubsets.resize(numBatches2);
 
 			for (uint32 m=0; m<numBatches2; m++)
@@ -2032,8 +2079,8 @@ uint32 CLoaderCGF::ProcessSkinning()
 				//arrSubsets[m].m_arrGlobalBonesPerSubset	= m_arrBatches[m].m_arrBoneIDs;
 				{
 					arrSubsets[m].m_arrGlobalBonesPerSubset.resize(m_arrBatches[m].m_arrBoneIDs.size());
-					for (uint32 i=0,num = m_arrBatches[m].m_arrBoneIDs.size(); i < num; i++)
-						arrSubsets[m].m_arrGlobalBonesPerSubset[i] = m_arrBatches[m].m_arrBoneIDs[i];
+					for (size_t i = 0, count = m_arrBatches[m].m_arrBoneIDs.size(); i < count; ++i)
+						arrSubsets[m].m_arrGlobalBonesPerSubset.begin()[i] = m_arrBatches[m].m_arrBoneIDs[i];
 				}
 			}
 
@@ -2080,7 +2127,9 @@ uint32 CLoaderCGF::ProcessSkinning()
 			int m_nIndexCount	=pMesh->m_nIndexCount;
 
 			//	free(pMesh->m_pIndices);
-			uint32 numExtFaces2 = arrExtFaces.size();
+			uint32 numExtFaces2 = 0;
+			if (!tryCount32(arrExtFaces.size(), "external face", numExtFaces2))
+				return 0;
 			for (uint32 f=0; f<numExtFaces2; f++)
 			{
 				pMesh->m_pIndices[f*3+0]=arrExtFaces[f].i0;
@@ -2146,7 +2195,9 @@ uint32 CLoaderCGF::ProcessSkinning()
 			{
 				//init internal morph-targets
 				MorphTargets* pMorphtarget = pSkinningInfo->m_arrMorphTargets[it];
-				uint32 numMorphVerts =pMorphtarget->m_arrIntMorph.size();
+				uint32 numMorphVerts = 0;
+				if (!tryCount32(pMorphtarget->m_arrIntMorph.size(), "morph vertex", numMorphVerts))
+					return 0;
 				for (uint32 i=0; i<numMorphVerts; i++)
 				{
 					uint32 idx		= pMorphtarget->m_arrIntMorph[i].nVertexId;
@@ -3173,7 +3224,7 @@ CMaterialCGF* CLoaderCGF::LoadMaterialFromChunk( int nChunkId )
 
 	IChunkFile::ChunkDesc *pChunkDesc = m_pChunkFile->FindChunkById(nChunkId);
 	if (!pChunkDesc)
-		return false;
+		return nullptr;
 
 	if (pChunkDesc->hdr.ChunkType == ChunkType_MtlName)
 	{

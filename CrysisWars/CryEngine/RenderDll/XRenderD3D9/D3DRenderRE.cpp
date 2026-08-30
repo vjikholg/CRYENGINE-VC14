@@ -140,18 +140,18 @@ bool CRESky::mfDraw(CShader *ef, SShaderPass *sfm)
 		}
 
 		Vec3 camera = iSystem->GetViewCamera().GetPosition();
-		camera.z = max(0.f,camera.z);
+		camera.z = std::max(0.f,camera.z);
 
-		float fWaterCamDiff = max(0.f,camera.z-m_fTerrainWaterLevel);
+		float fWaterCamDiff = std::max(0.f,camera.z-m_fTerrainWaterLevel);
 
 		float fMaxDist = iSystem->GetI3DEngine()->GetMaxViewDistance()/1024.f;
-		float P = (fWaterCamDiff)/128 + max(0.f,(fWaterCamDiff)*0.03f/fMaxDist);
+		float P = (fWaterCamDiff)/128 + std::max(0.f,(fWaterCamDiff)*0.03f/fMaxDist);
 
 		P *= m_fSkyBoxStretching;
 
 		float D = (fWaterCamDiff)/10.0f*fSkyBoxSize/124.0f - /*P*/0 + 8;
 
-		D = max(0.f,D);
+		D = std::max(0.f,D);
 
 		if(m_fTerrainWaterLevel>camera.z && SRendItem::m_RecurseLevel==1)
 		{
@@ -546,7 +546,7 @@ void CStars::Render()
 
 		int vpX(0), vpY(0), vpWidth(0), vpHeight(0);
 		rd->GetViewport(&vpX, &vpY, &vpWidth, &vpHeight);
-		float size((float)max(3, (int) (8.0f * min(vpWidth, vpHeight) / 768.0f)));
+		float size((float)std::max(3, (int) (8.0f * std::min(vpWidth, vpHeight) / 768.0f)));
     float flickerTime(gEnv->pTimer->GetCurrTime());
 #if defined (DIRECT3D9) || defined(OPENGL)
 		Vec4 paramStarSize(size, 0, 0, flickerTime * 0.5f);
@@ -2239,7 +2239,7 @@ bool CREFlare::mfCheckVis(CRenderObject *obj)
 
     float nX = fabsf(ProjV[0].x - ProjV[2].x);
     float nY = fabsf(ProjV[0].y - ProjV[2].y);  
-    float area = max(0.1f, nX * nY);          
+    float area = std::max(0.1f, nX * nY);
 
     float fIntens = (float)pREOcclQuery->GetVisSamplesCount()/ (area);   
 
@@ -2334,7 +2334,7 @@ void CREFlare::mfDrawCorona(CShader *ef, ColorF &col)
     }
 
     ColorF c(1,1,1,1);
-    float fMax = max(col.r, max(col.b, col.g));
+    float fMax = std::max(col.r, std::max(col.b, col.g));
     if(fMax > 1.0f)
       col.NormalizeCol(c);
     else
@@ -2555,18 +2555,18 @@ bool CREBeam::mfDraw(CShader *ef, SShaderPass *sl)
     {
       Vec3 vProj = Vec3(0,0,0);
       mathVec3Project(&vProj, &vPoints[p], vp, &mProjMatrix, &mCameraMatrix, &sIdentityMatrix);  	  
-      pMin.x = min(pMin.x, vProj.x);
-      pMin.y = min(pMin.y, vProj.y);
-      pMax.x = max(pMax.x, vProj.x);
-      pMax.y = max(pMax.y, vProj.y);
+      pMin.x = std::min(pMin.x, vProj.x);
+      pMin.y = std::min(pMin.y, vProj.y);
+      pMax.x = std::max(pMax.x, vProj.x);
+      pMax.y = std::max(pMax.y, vProj.y);
     }
 
     Vec2 pMed = (pMax + pMin) *0.5f;
     /*
-    pMin.x = max(pMin.x, 0.0f);
-    pMin.y = max(pMin.y, 0.0f);
-    pMax.x = min(pMax.x, (float)vWidth);
-    pMax.y = min(pMax.y, (float)vHeight);*/
+    pMin.x = std::max(pMin.x, 0.0f);
+    pMin.y = std::max(pMin.y, 0.0f);
+    pMax.x = std::min(pMax.x, (float)vWidth);
+    pMax.y = std::min(pMax.y, (float)vHeight);*/
 
     // Set orthogonal ViewProj matrix
     rd->Set2DMode(true, rd->GetWidth(), rd->GetHeight());
@@ -2586,10 +2586,10 @@ bool CREBeam::mfDraw(CShader *ef, SShaderPass *sl)
 
     // Adjudst radius scale according to volume size on screen
     float fRadScale = (pMed - pMax).GetLength();
-    fRadScale = min(fRadScale, (float) vWidth);
+    fRadScale = std::min(fRadScale, (float) vWidth);
 
     // Adjust amount of planes according to light size
-    int nNumPlanes = max( 10, int_round( floorf(pLight->m_fRadius*0.5f) ) );  
+    int nNumPlanes = std::max( 10, int_round( floorf(pLight->m_fRadius*0.5f) ) );
     float fPlaneStep = pLight->m_fRadius ;
 
     float fSizeStep = 1.0f / (float)nNumPlanes;
@@ -2623,12 +2623,12 @@ bool CREBeam::mfDraw(CShader *ef, SShaderPass *sl)
       // Get normalized distance  
       float fD = v.GetLength();
       float fP = rd->GetRCamera().Far;
-      float fDist =   min(100.0f*fD / fP, 1.0f);
+      float fDist =   std::min(100.0f*fD / fP, 1.0f);
 
       // compute size and attenuation factors
-      float fShaftSliceSize = fRadScale* (min(pLight->m_fLightFrustumAngle * 2.0f, 60.0f)/90.0f) * 0.5f;
+      float fShaftSliceSize = fRadScale* (std::min(pLight->m_fLightFrustumAngle * 2.0f, 60.0f)/90.0f) * 0.5f;
       float fDistSizeFactor = fShaftSliceSize/fDist; 
-      float fNearPlaneSoftIsec = min(fD/2.0f, 1.0f); 
+      float fNearPlaneSoftIsec = std::min(fD/2.0f, 1.0f);
       
       pParams= Vec4(pColor.r, pColor.g, pColor.b, 1.0f)* fSizeStep * fNearPlaneSoftIsec * fAttenuation;
       pParams.w = fAttenuation;

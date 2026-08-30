@@ -1259,7 +1259,7 @@ void CRenderMesh::SortTris()
       float d2 = (*v2).GetSquaredDistance(vCam);
       SSortTri st;
       st.nTri = n;
-      st.fDist = max(d2, max(d1, d0));
+      st.fDist = std::max(d2, std::max(d1, d0));
       sSortTris.AddElem(st);
     }
     std::sort(&sSortTris[nStart], &sSortTris[nStart+nTris], Compare);
@@ -1552,7 +1552,7 @@ void CRenderMesh::UpdateSysVertices(void * pNewVertices, int nNewVerticesCount, 
 	int size = GetStride(nStream);
   if (m_pSysVertBuffer->m_VS[nStream].m_VData && pNewVertices)
 	{
-		int nVerts = min(m_nVertCount,nNewVerticesCount);
+		int nVerts = std::min(m_nVertCount,nNewVerticesCount);
     cryMemcpy(m_pSysVertBuffer->m_VS[nStream].m_VData, pNewVertices, size*nVerts);
 	}
 	MEM_CHECK
@@ -1809,9 +1809,9 @@ void CRenderMesh::SetChunk( int nIndex,CRenderChunk &inChunk,bool bForceInitChun
   assert(!pMat->pRE || pMat->pRE->m_pChunk->nFirstIndexId<60000);
 
   pMat->nFirstIndexId	= inChunk.nFirstIndexId;
-  pMat->nNumIndices		= max(inChunk.nNumIndices,0);
+  pMat->nNumIndices		= std::max(inChunk.nNumIndices,0);
   pMat->nFirstVertId	= inChunk.nFirstVertId;
-  pMat->nNumVerts			= max(inChunk.nNumVerts,0);
+  pMat->nNumVerts			= std::max(inChunk.nNumVerts,0);
 
 	assert(pMat->nFirstIndexId + pMat->nNumIndices <= m_SysIndices.Num());
 
@@ -2461,8 +2461,8 @@ void CRenderMesh::CreateDepthChunks()
     PrevSI = SI;
     nPrevMatId = inputZChunks.Get(i)->m_nMatID;
 
-		nFirstRealIndex = min(nFirstRealIndex, chunk.nFirstIndexId);
-		nLastRealIndex = max(nLastRealIndex, chunk.nFirstIndexId + chunk.nNumIndices);
+		nFirstRealIndex = std::min(nFirstRealIndex, chunk.nFirstIndexId);
+		nLastRealIndex = std::max(nLastRealIndex, chunk.nFirstIndexId + chunk.nNumIndices);
 	}
 
 	if(nLastRealIndex-nFirstRealIndex>0)

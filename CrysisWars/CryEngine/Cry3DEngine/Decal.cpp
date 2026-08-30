@@ -261,7 +261,8 @@ void CDecal::Render( const float fCurTime, int nAfterWater, uint nDLMask, float 
                 CRenderChunk *pCH = &(*pCS)[i];
                 if (pCH->m_nMatID == m_ownerInfo.nMatID)
                 {
-                  (*pChunks)[0].m_arrChunkBoneIDs.AddList(pCH->m_arrChunkBoneIDs.begin(), pCH->m_arrChunkBoneIDs.size());
+                  (*pChunks)[0].m_arrChunkBoneIDs.AddList(
+                    pCH->m_arrChunkBoneIDs.begin(), pCH->m_arrChunkBoneIDs.Count());
                   break;
                 }
               }

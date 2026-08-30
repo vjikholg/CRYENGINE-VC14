@@ -109,7 +109,7 @@ uint32 CCryDXPSShaderReflection::SizeOf(CGprogram Program,const CGparameter Seek
 		{
 			const char* pName	=	cellGcmCgGetParameterName(Program,Param);
 			if(strncmp(pName,pSeekName,SeekL)==0 && pName[SeekL]=='[')
-				ConstCount	=	max(ConstCount,CCryDXPSShaderReflection::ParseIndex(pName));
+				ConstCount	=	std::max(ConstCount,CCryDXPSShaderReflection::ParseIndex(pName));
 		}
 	}
 	return ConstCount+1;

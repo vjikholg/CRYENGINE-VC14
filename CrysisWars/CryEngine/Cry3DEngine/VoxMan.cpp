@@ -971,7 +971,12 @@ void CVoxelObject::Physicalize(CMesh * pMesh, std::vector<char> * physData)
 
   if(physData && physData->size())
   {
-    CMemStream stm( &physData->front(), physData->size(), true );
+    if (physData->size() > std::numeric_limits<int>::max())
+    {
+      Error("Voxel physical geometry stream exceeds the physics API limit");
+      return;
+    }
+    CMemStream stm(&physData->front(), static_cast<int>(physData->size()), true);
     m_pPhysGeom = GetPhysicalWorld()->GetGeomManager()->LoadPhysGeometry(stm,
       pMesh->m_pPositions,pMesh->m_pIndices,&lstMatIndices[0]);
   }
@@ -2030,7 +2035,7 @@ void CVoxelObject::SetCompiledData(void * pData, int nSize, unsigned char ucChil
 
 void CVoxelObject::SetObjectName( const char * pName )
 {
-  int nLen = strlen(pName)+1;
+  const size_t nLen = strlen(pName) + 1;
   SAFE_DELETE(m_pObjectName);
   m_pObjectName = new char[nLen];
   strcpy(m_pObjectName,pName);

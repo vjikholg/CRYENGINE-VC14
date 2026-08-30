@@ -83,22 +83,22 @@ bool CShaderGraph::ParseNode_Properties(char *buf, SShaderGraphNode *pND)
   if (!pND || !buf)
     return false;
 
-  SkipCharacters(&buf, kWhiteSpace);
+  SkipCharacters(buf, kWhiteSpace);
   while (*buf)
   {
     szName[0] = 0;
     szValue[0] = 0;
     szType[0] = 0;
-    shFill(&buf, szType, 32);
-    SkipCharacters(&buf, kWhiteSpace);
-    shFill(&buf, szName, 32);
-    SkipCharacters(&buf, kWhiteSpace);
+    shFill(buf, szType, 32);
+    SkipCharacters(buf, kWhiteSpace);
+    shFill(buf, szName, 32);
+    SkipCharacters(buf, kWhiteSpace);
     assert (*buf == '=');
     if (*buf != '=')
       return false;
     buf++;
-    SkipCharacters(&buf, kWhiteSpace);
-    fxFill(&buf, szValue, 128);
+    SkipCharacters(buf, kWhiteSpace);
+    fxFill(buf, szValue, 128);
     assert (szName[0] && szValue[0] && szType[0]);
     SShaderParam pr;
     strncpy(pr.m_Name, szName, 32);
@@ -114,7 +114,7 @@ bool CShaderGraph::ParseNode_Properties(char *buf, SShaderGraphNode *pND)
       iLog->Log("Error: Unknown property '%s' type '%s' for node '%s'", szName, szType, pND->m_Name.c_str());
     }
     pND->m_Properties.push_back(pr);
-    SkipCharacters(&buf, kWhiteSpace);
+    SkipCharacters(buf, kWhiteSpace);
   }
   return true;
 }
@@ -280,28 +280,28 @@ bool CShaderGraph::ParseNode(char *szCode, SShaderGraphNode *pND)
           strncpy(strF, data, nLen);
           strF[nLen] = 0;
           char *s = strF;
-          shFill(&s, strFunc, 1024);
+          shFill(s, strFunc, 1024);
           if (strcmp(strFunc, "void"))
           {
             assert(0);
           }
           else
           {
-            fxFillPr(&s, strFunc);
+            fxFillPr(s, strFunc);
             pFunc->m_Name = strFunc;
             while(*s != '(') {s++;}
             s++;
             while(true)
             {
-              char *ss = fxFillPr(&s, stIType);
+              char* ss = fxFillPr(s, stIType);
               if (!*ss)
                 break;
-              fxFillPr(&s, stType);
+              fxFillPr(s, stType);
               if (strncmp(stType, "float", 5) && strncmp(stType, "sampler", 7))
               {
                 assert (0);
               }
-              fxFillPr(&s, st);
+              fxFillPr(s, st);
               if (!strcmp(stIType, "in"))
               {
                 pFunc->szInTypes.push_back(stType);
@@ -519,19 +519,19 @@ bool CShaderGraph::ParseShBlock_ConnectionProperties(char *buf, CShader *ef, SSh
   if (!pCN || !buf || !pBL)
     return false;
 
-  SkipCharacters(&buf, kWhiteSpace);
+  SkipCharacters(buf, kWhiteSpace);
   while (*buf)
   {
     name[0] = 0;
     value[0] = 0;
-    shFill(&buf, name, 32);
-    SkipCharacters(&buf, kWhiteSpace);
+    shFill(buf, name, 32);
+    SkipCharacters(buf, kWhiteSpace);
     assert (*buf == '=');
     if (*buf != '=')
       return false;
     buf++;
-    SkipCharacters(&buf, kWhiteSpace);
-    fxFill(&buf, value, 128);
+    SkipCharacters(buf, kWhiteSpace);
+    fxFill(buf, value, 128);
     assert (name[0] && value[0]);
     SShaderGraphNode *pND = GetGraphNode(pBL->m_ClassName, pCN->m_ClassName);
     assert(pND);
@@ -562,7 +562,7 @@ bool CShaderGraph::ParseShBlock_ConnectionProperties(char *buf, CShader *ef, SSh
       bool bRes = SShaderParam::SetParam(name, &pCN->m_Properties, prv);
       assert (bRes);
     }
-    SkipCharacters(&buf, kWhiteSpace);
+    SkipCharacters(buf, kWhiteSpace);
   }
   return true;
 }

@@ -576,7 +576,7 @@ void CParticleEffect::SetName( const char *sFullName )
 			strFullName += ".";
 
 		// Ensure unique name.
-		int nBaseOffset = strFullName.length();
+		const string::size_type nBaseOffset = strFullName.length();
 
 		string sNewBase;
 		for_array (i, m_parent->m_childs)
@@ -609,7 +609,7 @@ void CParticleEffect::SetName( const char *sFullName )
 
 const char* CParticleEffect::GetBaseName() const
 {
-	int nBase = m_parent ? m_strFullName.rfind('.') 	// For child effects, return only last component.
+	string::size_type nBase = m_parent ? m_strFullName.rfind('.') 	// For child effects, return only last component.
 		: m_strFullName.find('.');											// For top effects, return everything after lib name.
 	if (nBase == string::npos)
 		nBase = 0;

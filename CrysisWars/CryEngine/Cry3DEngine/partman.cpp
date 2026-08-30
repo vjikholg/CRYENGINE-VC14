@@ -10,7 +10,7 @@
 //  Description: manage particles and sprites
 // -------------------------------------------------------------------------
 //  History:
-//	- 03:2006				 : Modified by Jan Müller (Serialization)
+//	- 03:2006				 : Modified by Jan Muller (Serialization)
 //
 ////////////////////////////////////////////////////////////////////////////
 
@@ -822,14 +822,14 @@ bool CPartManager::LoadLibrary( const char *sParticlesLibrary, const char *sPart
 		CCryFile file;
 		if (file.Open( sFilename, "r" ))
 		{
-			int nLen = file.GetLength();
+			const size_t fileLength = file.GetLength();
 			string sAllText;
-			sAllText.assign(nLen, '\n');
-			file.ReadRaw( sAllText.begin(), nLen );
+			sAllText.assign(fileLength, '\n');
+			file.ReadRaw(sAllText.begin(), fileLength);
 
-			nLen = 0;
+			int tokenOffset = 0;
 			string sLine;
-			while (!(sLine = sAllText.Tokenize("\r\n", nLen)).empty())
+			while (!(sLine = sAllText.Tokenize("\r\n", tokenOffset)).empty())
 			{
 				if (m_pPartManager->LoadLibrary( sLine, NULL, bLoadResources ))
 					nCount++;
@@ -873,8 +873,8 @@ bool CPartManager::LoadLibrary( const char *sParticlesLibrary, const char *sPart
 
 	// Load all nodes from the particle libaray.
 	string sLibName = sParticlesLibrary;
-	int dot = sLibName.find('.');
-	if (dot >= 0)
+	const string::size_type dot = sLibName.find('.');
+	if (dot != string::npos)
 		sLibName.erase(dot+1);
 	else
 		sLibName += ".";

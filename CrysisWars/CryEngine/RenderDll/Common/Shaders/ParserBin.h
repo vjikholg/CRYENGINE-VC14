@@ -780,7 +780,8 @@ public:
   static uint32 fxToken(const char *szToken, bool* bKey=NULL);
   static uint32 fxTokenKey(const char *szToken, EToken eT=eT_unknown);
   static uint32 GetCRC32(const char *szStr);
-  static uint32 NextToken(char*& buf, char *com, bool& bKey);
+  static uint32 NextToken(const char*& buf, char* com, bool& bKey);
+  static uint32 NextToken(char*& buf, char* com, bool& bKey);
   static void Init();
   static void SetupForPS3();
   static void SetupForD3D9();
@@ -791,7 +792,8 @@ public:
   static bool m_bNewLightSetup;
 };
 
-char *fxFillPr (char **buf, char *dst);
+const char* fxFillPr(const char*& buf, char* dst);
+char* fxFillPr(char*& buf, char* dst);
 
 #endif
 

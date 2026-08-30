@@ -340,6 +340,10 @@
     <CodeAnalysisRules />
     <CodeAnalysisRuleAssemblies />
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Platform)'=='x64'">
+    <OutDir>$(ProjectDir)..\..\..\Bin64\</OutDir>
+    <TargetName>CryRenderD3D10</TargetName>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Midl>
       <MkTypLibCompatible>true</MkTypLibCompatible>
@@ -803,6 +807,12 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <BaseAddress>0x38000000</BaseAddress>
       <TargetMachine>MachineX64</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Platform)'=='x64' and '$(Configuration)'!='DebugPS3' and '$(Configuration)'!='ProfilePS3'">
+    <Link>
+      <AdditionalDependencies>legacy_stdio_definitions.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -1957,6 +1967,7 @@
     <ClInclude Include="..\Common\Textures\Texture.h" />
     <ClInclude Include="..\Common\WaterUtils.h" />
     <ClInclude Include="..\CrtOverrides.h" />
+    <ClInclude Include="..\RenderD3DPrerequisites.h" />
     <ClInclude Include="..\RenderPCH.h" />
     <ClInclude Include="D3DCubeMaps.h" />
     <ClInclude Include="D3DHWShader.h" />
@@ -2032,8 +2043,12 @@
     <None Include="..\Common\Textures\Image\Squish\singlecolourlookup.inl" />
   </ItemGroup>
   <ItemGroup>
-    <Library Include="Libraries\CompressATI.lib" />
-    <Library Include="Libraries\ijl15.lib" />
+    <Library Include="Libraries\CompressATI.lib">
+      <ExcludedFromBuild Condition="'$(Platform)'=='x64'">true</ExcludedFromBuild>
+    </Library>
+    <Library Include="Libraries\ijl15.lib">
+      <ExcludedFromBuild Condition="'$(Platform)'=='x64'">true</ExcludedFromBuild>
+    </Library>
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\Workarounds.txt" />

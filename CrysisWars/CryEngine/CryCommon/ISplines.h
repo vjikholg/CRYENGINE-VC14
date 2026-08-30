@@ -857,7 +857,8 @@ namespace spline
 			if (this->m_keys.size() > 1)
 			{
 				// If active spline range less than 1, reduce table entries.
-				int table_size = min<int>(nENTRIES_PER_KEY * (this->m_keys.size()-1), nMAX_ENTRIES);
+				const size_t requestedTableSize = nENTRIES_PER_KEY * (this->m_keys.size() - 1);
+				const int table_size = static_cast<int>(min(requestedTableSize, static_cast<size_t>(nMAX_ENTRIES)));
 				this->SetRange( this->m_keys[0].time, this->m_keys.end()[-1].time * 0.999f );
 				float active_range = this->m_keys.end()[-1].time - this->m_keys[0].time;
 				m_indexScale = (table_size-1) / active_range;

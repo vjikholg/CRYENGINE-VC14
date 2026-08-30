@@ -36,7 +36,7 @@ static float CalcDepth( const float fDamage )
 }
 
 
-float CTerrainModifications::ComputeMaxDepthAt( const float fX, const float fY, const uint32 dwCheckExistingMods ) const
+float CTerrainModifications::ComputeMaxDepthAt(float fX, float fY, size_t checkExistingMods) const
 {
 	float fRet = 0;
 
@@ -44,8 +44,8 @@ float CTerrainModifications::ComputeMaxDepthAt( const float fX, const float fY, 
 
 	float fGroundPos = m_pTerrain->GetZ((int)fX, (int)fY);
 
-	uint32 dwI=0;
-	for(it=m_TerrainMods.begin();it!=end && dwI<dwCheckExistingMods;++it,++dwI)
+	size_t modificationIndex = 0;
+	for (it = m_TerrainMods.begin(); it != end && modificationIndex < checkExistingMods; ++it, ++modificationIndex)
 	{
 		const STerrainMod &ref = *it;
 
@@ -63,7 +63,7 @@ float CTerrainModifications::ComputeMaxDepthAt( const float fX, const float fY, 
 }
 
 
-void CTerrainModifications::MakeCrater( const STerrainMod &ref, const uint32 dwCheckExistingMod )
+void CTerrainModifications::MakeCrater(const STerrainMod& ref, size_t checkExistingMods)
 {
   if(!GetCVars()->e_terrain_deformations)
     return;
@@ -90,7 +90,7 @@ void CTerrainModifications::MakeCrater( const STerrainMod &ref, const uint32 dwC
 	float fInvExplRadius = 1.0f/ref.m_fRadius;
 
 	// to limit the height modifications to a reasonable value
-	float fMaxDepth = ComputeMaxDepthAt(ref.m_vPos.x,ref.m_vPos.y,dwCheckExistingMod);
+	float fMaxDepth = ComputeMaxDepthAt(ref.m_vPos.x, ref.m_vPos.y, checkExistingMods);
 
 	// modify height map
 	for(int x=x1; x<=x2; x+=nUnitSize)

@@ -511,7 +511,7 @@ CStructInfo::CStructInfo( cstr name, size_t size, size_t num_vars, CVarInfo* var
 	if (Vars.size() > 0)
 	{
 		size = 0;
-		int bitoffset = 0;
+		size_t bitoffset = 0;
 
 		for (int i = 0; i < (int)Vars.size(); i++)
 		{
@@ -596,7 +596,7 @@ CStructInfo::CStructInfo( cstr name, size_t size, size_t num_vars, CVarInfo* var
 
 static void StripCommas(string& str)
 {
-	int nLast = str.size();
+	size_t nLast = str.size();
 	while (nLast > 0 && str[nLast-1] == ',')
 		nLast--;
 	str.resize(nLast);
@@ -760,7 +760,7 @@ CEnumInfo::CEnumInfo( cstr name, size_t size, size_t num_elems, CEnumElem* elems
 	// Analyse names and values.
 	if (num_elems)
 	{
-		int nPrefixLength = 0;
+		size_t nPrefixLength = 0;
 		MinValue = MaxValue = Elems[0].Value;
 		nPrefixLength = strlen(Elems[0].FullName);
 		for (int i = 0; i < (int)Elems.size(); i++)
@@ -771,7 +771,7 @@ CEnumInfo::CEnumInfo( cstr name, size_t size, size_t num_elems, CEnumElem* elems
 			MaxValue = max(MaxValue, Elems[i].Value);
 
 			// Find common prefix.
-			int p = 0;
+			size_t p = 0;
 			while (p < nPrefixLength && Elems[i].FullName[p] == Elems[0].FullName[p])
 				p++;
 			nPrefixLength = p;
@@ -908,7 +908,7 @@ void SwapEndian(void* pData, size_t nCount, const CTypeInfo& info, size_t nSize)
 				if (pVar->bBitfield && NeedBitfieldSwap())
 				{
 					// Reverse location of all bitfields in word.
-					int nWordBits = pVar->GetElemSize()*8;
+					size_t nWordBits = pVar->GetElemSize() * 8;
 					assert(nWordBits <= 64);
 					if (pVar->BitOffset == 0)
 					{

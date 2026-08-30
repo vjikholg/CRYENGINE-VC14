@@ -30,7 +30,7 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	// ITimeOfDay 
 	//////////////////////////////////////////////////////////////////////////
-	virtual int GetVariableCount() { return m_vars.size(); };
+	virtual int GetVariableCount() { return PARAM_TOTAL; };
 	virtual bool GetVariableInfo( int nIndex,SVariableInfo &varInfo );
 	virtual void SetVariableValue( int nIndex,float fValue[3] );
 

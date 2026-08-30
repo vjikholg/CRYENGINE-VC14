@@ -237,7 +237,7 @@ int CTimeOfDay::AddVar( const char *group,const char *displayName,const char *na
 	//m_vars.push_back(var);
 	m_vars[nParamId] = var;
 	m_varsMap[var.name] = nParamId;
-	return m_vars.size()-1;
+	return static_cast<int>(m_vars.size() - 1);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -794,9 +794,9 @@ void CTimeOfDay::Serialize( TSerialize ser )
 
 	ser.Value("time", m_fTime);
 	ser.Value("mode", m_bEditMode);
-	int size = m_vars.size();
+	const size_t size = m_vars.size();
 	ser.BeginGroup("VariableValues");
-	for(int v = 0; v < size; v++)
+	for (size_t v = 0; v < size; ++v)
 	{
 		tempName = m_vars[v].name;
 		tempName.replace( ' ','_' );

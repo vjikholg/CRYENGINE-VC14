@@ -270,7 +270,7 @@ bool CVisArea::ClipToVisArea(bool bInside, Sphere& sphere, Vec3 const& vNormal)
 	{
 		if (Overlap::Point_AABB(sphere.center, m_boxArea))
 		{
-			if (InsidePolygon(m_lstShapePoints.begin(), m_lstShapePoints.size(), sphere.center))
+			if (InsidePolygon(m_lstShapePoints.begin(), m_lstShapePoints.Count(), sphere.center))
 			{
 				sphere.radius = 0.f;
 				return true;
@@ -278,7 +278,7 @@ bool CVisArea::ClipToVisArea(bool bInside, Sphere& sphere, Vec3 const& vNormal)
 			else
 				bClipXY = true;
 		}
-		else if (InsidePolygon(m_lstShapePoints.begin(), m_lstShapePoints.size(), sphere.center))
+		else if (InsidePolygon(m_lstShapePoints.begin(), m_lstShapePoints.Count(), sphere.center))
 			bClipZ = true;
 		else
 			bClipXY = true;

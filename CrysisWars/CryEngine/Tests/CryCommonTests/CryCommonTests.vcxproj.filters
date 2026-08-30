@@ -9,6 +9,18 @@
       <UniqueIdentifier>{EA4D318E-8C37-45AA-962E-49E54E5120AF}</UniqueIdentifier>
       <Extensions>h;hpp;hxx</Extensions>
     </Filter>
+    <Filter Include="Source Files\DXT Compatibility">
+      <UniqueIdentifier>{F62B9490-DFDA-45D4-9AC7-3207F583639B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\DXT Compatibility\Squish">
+      <UniqueIdentifier>{4E283B31-5664-4F12-A781-A2B2D494BBF7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\DXT Compatibility">
+      <UniqueIdentifier>{74CF4E5C-E564-471A-8A5F-A0B0435F3054}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Test Data\DXT Compatibility">
+      <UniqueIdentifier>{95A38909-0F7D-4452-8291-3D087BF5B3D8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ComparisonCompatibilityTests.h">
@@ -19,6 +31,9 @@
     </ClInclude>
     <ClInclude Include="CryStringCompatibilityTests.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DxtCompatibilityTests.h">
+      <Filter>Header Files\DXT Compatibility</Filter>
     </ClInclude>
     <ClInclude Include="LegacyStdioCompatibilityTests.h">
       <Filter>Header Files</Filter>
@@ -76,6 +91,9 @@
     <ClCompile Include="CryStringCompatibilityTests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="DxtCompatibilityTests.cpp">
+      <Filter>Source Files\DXT Compatibility</Filter>
+    </ClCompile>
     <ClCompile Include="LegacyStdioCompatibilityTests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -127,6 +145,33 @@
     <ClCompile Include="ZlibCompatibilityTests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\RenderDll\Common\Textures\Image\Squish\alpha.cpp">
+      <Filter>Source Files\DXT Compatibility\Squish</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\RenderDll\Common\Textures\Image\Squish\clusterfit.cpp">
+      <Filter>Source Files\DXT Compatibility\Squish</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\RenderDll\Common\Textures\Image\Squish\colourblock.cpp">
+      <Filter>Source Files\DXT Compatibility\Squish</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\RenderDll\Common\Textures\Image\Squish\colourfit.cpp">
+      <Filter>Source Files\DXT Compatibility\Squish</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\RenderDll\Common\Textures\Image\Squish\colourset.cpp">
+      <Filter>Source Files\DXT Compatibility\Squish</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\RenderDll\Common\Textures\Image\Squish\maths.cpp">
+      <Filter>Source Files\DXT Compatibility\Squish</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\RenderDll\Common\Textures\Image\Squish\rangefit.cpp">
+      <Filter>Source Files\DXT Compatibility\Squish</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\RenderDll\Common\Textures\Image\Squish\singlecolourfit.cpp">
+      <Filter>Source Files\DXT Compatibility\Squish</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\RenderDll\Common\Textures\Image\Squish\squish.cpp">
+      <Filter>Source Files\DXT Compatibility\Squish</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\CrySystem\zlib\adler32.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -163,5 +208,28 @@
     <ClCompile Include="..\..\CrySystem\zlib\zutil.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="TestData\DxtCompatibility\mwll_dot_dxt3.dds">
+      <Filter>Test Data\DXT Compatibility</Filter>
+    </None>
+    <None Include="TestData\DxtCompatibility\mwll_dot_dxt3.nvdxt.rgba">
+      <Filter>Test Data\DXT Compatibility</Filter>
+    </None>
+    <None Include="TestData\DxtCompatibility\mwll_light_color_dxt5.dds">
+      <Filter>Test Data\DXT Compatibility</Filter>
+    </None>
+    <None Include="TestData\DxtCompatibility\mwll_light_color_dxt5.nvdxt.rgba">
+      <Filter>Test Data\DXT Compatibility</Filter>
+    </None>
+    <None Include="TestData\DxtCompatibility\mwll_tankcolor_dxt1.dds">
+      <Filter>Test Data\DXT Compatibility</Filter>
+    </None>
+    <None Include="TestData\DxtCompatibility\mwll_tankcolor_dxt1.nvdxt.rgba">
+      <Filter>Test Data\DXT Compatibility</Filter>
+    </None>
+    <None Include="TestData\DxtCompatibility\README.md">
+      <Filter>Test Data\DXT Compatibility</Filter>
+    </None>
   </ItemGroup>
 </Project>

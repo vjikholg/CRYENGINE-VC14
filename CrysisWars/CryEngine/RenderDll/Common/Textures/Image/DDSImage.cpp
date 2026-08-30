@@ -248,7 +248,7 @@ CImageDDSFile::CImageDDSFile (byte* ptr, FILE *fp, int filesize, uint nFlags) : 
   if (nFlags & FIM_LAST4MIPS)
   {
     assert(fp);
-    int nMips = min(4, numMips);
+    int nMips = std::min(4, numMips);
     ETEX_Format eTFDst = m_eFormat;
 #ifdef DIRECT3D10
     if (eTFDst == eTF_L8)
@@ -274,7 +274,7 @@ CImageDDSFile::CImageDDSFile (byte* ptr, FILE *fp, int filesize, uint nFlags) : 
 #endif
     int nMipsDst = numMips;
     if (nFlags & FIM_LAST4MIPS)
-      nMipsDst = min(4, numMips);
+      nMipsDst = std::min(4, numMips);
     int sizeSrc = mfSizeWithMips(filesize, nWdt, nHgt, 1, nMipsDst, m_eFormat);
     int sizeSrcIncr = mfSizeWithMips(filesize, m_Width, m_Height, 1, numMips, m_eFormat);
     int sizeImg = mfSizeWithMips(filesize, nWdt, nHgt, nDepth, nMipsDst, eTFDst);
@@ -563,7 +563,7 @@ byte *WriteDDS(byte*dat, int wdt, int hgt, int dpth, const char*name, ETEX_Forma
   {
     fp = iSystem->GetIPak()->FOpen(name, "wb");
     if (!fp)
-      return false;
+      return nullptr;
 
     iSystem->GetIPak()->FWrite(&dwMagic, 1, sizeof(DWORD), fp);
   }
@@ -653,7 +653,7 @@ byte *WriteDDS(byte*dat, int wdt, int hgt, int dpth, const char*name, ETEX_Forma
       break;
     default:
       assert(0);
-      return false;
+      return nullptr;
   }
   ddsh.dwPitchOrLinearSize = CTexture::TextureDataSize(wdt, 1, 1, 1, eTF);
   if (!bToMemory)

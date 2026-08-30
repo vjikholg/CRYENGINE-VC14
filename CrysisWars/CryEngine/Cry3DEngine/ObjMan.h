@@ -179,9 +179,18 @@ public:
   template <class T>
 	static int GetItemId(std::vector<T*> * pArray, T * pItem, bool bAssertIfNotFound = true)
 	{
-    for (uint32 i =0, end = pArray->size() ; i < end; ++i)
+    for (size_t i = 0, end = pArray->size(); i < end; ++i)
+    {
       if ((*pArray)[i] == pItem)
-        return i;
+      {
+        if (i > std::numeric_limits<int>::max())
+        {
+          assert(!"Item index exceeds the object API limit");
+          return -1;
+        }
+        return static_cast<int>(i);
+      }
+    }
 
     if(bAssertIfNotFound)
       assert(!"Item not found");

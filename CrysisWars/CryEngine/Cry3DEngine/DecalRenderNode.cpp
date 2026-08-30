@@ -81,16 +81,16 @@ void CDecalRenderNode::CreateDecalOnStaticObjects( IMaterial* pMaterial )
 		pVisAreaManager->GetObjectsAround( m_decalProperties.m_pos, m_decalProperties.m_radius, &decalReceivers, true);
 
   // delete vegetations
-  for( size_t i( 0 ); i < decalReceivers.Count(); ++i )
+  for (int i = 0; i < decalReceivers.Count(); ++i)
   {
     if( decalReceivers[i].pNode->GetRenderNodeType() == eERType_Vegetation )
     {
       decalReceivers.DeleteFastUnsorted(i);
-      i--;
+      --i;
     }
   }
 
-	for( size_t i( 0 ); i < decalReceivers.Count(); ++i )
+  for (int i = 0; i < decalReceivers.Count(); ++i)
 	{
 		CryEngineDecalInfo decalInfo;
 

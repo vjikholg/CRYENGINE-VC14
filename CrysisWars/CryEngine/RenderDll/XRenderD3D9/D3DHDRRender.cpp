@@ -76,7 +76,7 @@ void SetHDRParams(CShader *pSH)
 	v[2] = 0;
 //	v[3] = CRenderer::CV_r_eyeadaptionclamp;				// old
 //	v[3] = gEnv->p3DEngine->GetGlobalParameter(E3DPARAM_EYEADAPTIONCLAMP);			// future
-	v[3] = min(CRenderer::CV_r_eyeadaptionclamp,gEnv->p3DEngine->GetGlobalParameter(E3DPARAM_EYEADAPTIONCLAMP));		// intermediate
+	v[3] = std::min(CRenderer::CV_r_eyeadaptionclamp,gEnv->p3DEngine->GetGlobalParameter(E3DPARAM_EYEADAPTIONCLAMP));		// intermediate
 	pSH->FXSetPSFloat(Param2Name, &v, 1);
 }
 
@@ -411,8 +411,8 @@ void DrawFullScreenQuad(float fLeftU, float fTopV, float fRightU, float fBottomV
   int nHeight = dtdsdRT.Height;
 	if(bClampToScreenRes)
 	{
-		nWidth = min(nWidth, rd->GetWidth());
-		nHeight = min(nHeight, rd->GetHeight());
+		nWidth = std::min(nWidth, rd->GetWidth());
+		nHeight = std::min(nHeight, rd->GetHeight());
 	}
 
   float fWidth5 = (float)nWidth;
@@ -1903,7 +1903,7 @@ bool HDR_RenderFinalScene(CShader *pSH)
   if (CRenderer::CV_r_hdrhistogram)
   {
 	  Vec4 v;
-		v[0] = max(0.0f,rd->m_LumGamma.LowPercentil - rd->m_LumGamma.HighPercentil*g_fEyeAdaptionLowerPercent);	// extrapolate 0% from 5%
+		v[0] = std::max(0.0f,rd->m_LumGamma.LowPercentil - rd->m_LumGamma.HighPercentil*g_fEyeAdaptionLowerPercent);	// extrapolate 0% from 5%
     v[1] = rd->m_LumGamma.MidPercentil;
     v[2] = rd->m_LumGamma.HighPercentil / g_fEyeAdaptionUpperPercent;	// extrapolate 95% from 100%
     v[3] = rd->m_LumGamma.Bias;

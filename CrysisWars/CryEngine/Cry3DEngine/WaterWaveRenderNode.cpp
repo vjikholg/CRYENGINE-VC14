@@ -570,22 +570,28 @@ IRenderMesh *CWaterWaveManager::CreateRenderMeshInstance( CWaterWaveRenderNode *
 
     // Finally, make render mesh
 
-    if( pRenderMesh )
+    if (pWaveVertices.size() > std::numeric_limits<int>::max() ||
+        pWaveIndices.size() > std::numeric_limits<int>::max())
     {
-      GetRenderer()->DeleteRenderMesh( pRenderMesh );
+      Error("Water-wave geometry exceeds the renderer API limit");
+      return 0;
     }
+    const int vertexCount = static_cast<int>(pWaveVertices.size());
+    const int indexCount = static_cast<int>(pWaveIndices.size());
 
-    pRenderMesh = GetRenderer()->CreateRenderMeshInitialized( &pWaveVertices[0], 
-                                                              pWaveVertices.size(), 
+    pRenderMesh = GetRenderer()->CreateRenderMeshInitialized(&pWaveVertices[0],
+                                                              vertexCount,
                                                               VERTEX_FORMAT_P3F_COL4UB_TEX2F, 
                                                               &pWaveIndices[0],
-                                                              pWaveIndices.size(), 
+                                                              indexCount,
                                                               R_PRIMV_TRIANGLE_STRIP,
                                                               "WaterWave",
                                                               "WaterWave",
                                                               eBT_Static  );
+    if (!pRenderMesh)
+      return 0;
 
-    pRenderMesh->SetChunk(pWave->GetMaterial( 0 ) , 0, pWaveVertices.size(), 0, pWaveIndices.size());  
+    pRenderMesh->SetChunk(pWave->GetMaterial(0), 0, vertexCount, 0, indexCount);
 
     // And add it to out instanced list
     m_pInstancedWaves.insert( InstancedWavesMap::value_type( fWaveKey, pRenderMesh ) );

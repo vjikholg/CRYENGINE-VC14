@@ -133,7 +133,7 @@ SShaderBin *CShaderManBin::SaveBinShader(const char *szName, bool bInclude, FILE
 
   while (buf[0])
   {
-    SkipCharacters (&buf, kWhiteSpace);
+    SkipCharacters(buf, kWhiteSpace);
     SkipComments (&buf, true);
     if (!buf || !buf[0])
       break;
@@ -146,7 +146,7 @@ SShaderBin *CShaderManBin::SaveBinShader(const char *szName, bool bInclude, FILE
     if (dwToken == eT_include)
     {
       assert(bKey);
-      SkipCharacters(&buf, kWhiteSpace);
+      SkipCharacters(buf, kWhiteSpace);
       assert(*buf == '"' || *buf == '<');
       char brak = *buf;
       ++buf;
@@ -193,7 +193,7 @@ SShaderBin *CShaderManBin::SaveBinShader(const char *szName, bool bInclude, FILE
     else
     if (dwToken == eT_define)
     {
-      shFill(&buf, com);
+      shFill(buf, com);
       if (com[0] == '%')
         pBin->m_Tokens[pBin->m_Tokens.size()-1] = eT_define_2;
       dwToken = Parser.NewUserToken(eT_unknown, com, false);
@@ -223,7 +223,7 @@ SShaderBin *CShaderManBin::SaveBinShader(const char *szName, bool bInclude, FILE
       char *b = &macro[0];
       while (*b)
       {
-        SkipCharacters (&b, kWhiteSpace);
+        SkipCharacters(b, kWhiteSpace);
         SkipComments (&b, true);
         if (!b[0])
           break;
@@ -1458,12 +1458,12 @@ bool CShaderManBin::ParseBinFX_Sampler(CParserBin& Parser, SParserFrame& Frame, 
 char *CShaderManBin::AddAffectedOperand(CParserBin& Parser, DynArray<SFXParam>& AffectedParams, DynArray<int>& AffectedFunc, char *szE, int& nCB)
 {
   char temp[256];
-  SkipCharacters(&szE, kWhiteSpace);
+  SkipCharacters(szE, kWhiteSpace);
   if (*szE == '(')
     szE = AddAffectedParametersForExpression(Parser, AffectedParams, AffectedFunc, szE, nCB);
   else
   {
-    fxFillParam(&szE, temp);
+    fxFillParam(szE, temp);
     if (temp[0] != '.' && (temp[0]<'0' || temp[0]>'9'))
     {
       SFXParam *pr = gRenDev->m_cEF.mfGetFXParameter(Parser.m_Parameters, temp);
@@ -1528,9 +1528,9 @@ char *CShaderManBin::AddAffectedParametersForExpression(CParserBin& Parser, DynA
 
   char *szE = expr;
   szE = AddAffectedOperand(Parser, AffectedParams, AffectedFunc, szE, nCB);
-  SkipCharacters(&szE, kWhiteSpace);
+  SkipCharacters(szE, kWhiteSpace);
   szE++;
-  SkipCharacters(&szE, kWhiteSpace);
+  SkipCharacters(szE, kWhiteSpace);
   szE = AddAffectedOperand(Parser, AffectedParams, AffectedFunc, szE, nCB);
   return (char *)szExpr;
 }
@@ -1763,7 +1763,7 @@ static void sFlushRegs(CParserBin& Parser, int nReg, SFXRegisterBin *MergedRegs[
       if (MergedRegs[j]->m_nFlags & PF_TWEAKABLE_MASK)
         p.m_nFlags |= (PF_TWEAKABLE_0 << j);
       p.m_nFlags |= MergedRegs[j]->m_nFlags & ~(PF_TWEAKABLE_MASK | PF_SCALAR | PF_SINGLE_COMP);
-      nMaxComp = max(nMaxComp, j);
+      nMaxComp = std::max(nMaxComp, j);
       pN.dwName[j] = MergedRegs[j]->dwName;
       if (nCompMerged)
         p.m_Values += ", ";
@@ -1812,22 +1812,22 @@ bool CShaderManBin::ParseBinFX_Technique_Pass_PackParameters (CParserBin& Parser
     if (pr->m_bWasMerged & bMergeMask)
       continue;
     pr->m_bWasMerged |= bMergeMask;
-    char *src = (char *)pr->m_Annotations.c_str();
+    const char* src = pr->m_Annotations.c_str();
     char annot[256];
     while (true)
     {
-      fxFill(&src, annot);
+      fxFill(src, annot);
       if (!annot[0])
         break;
       if (strncmp(&annot[1], "sregister", 9)) 
         break;
       if ((eSHClass == eHWSC_Pixel && annot[0] != 'p') || (eSHClass == eHWSC_Vertex && annot[0] != 'v') || (eSHClass == eHWSC_Geometry && annot[0] != 'g'))
         continue;
-      char *b = &annot[10];
-      SkipCharacters (&b, kWhiteSpace);
+      const char* b = &annot[10];
+      SkipCharacters(b, kWhiteSpace);
       assert(b[0] == '=');
       b++;
-      SkipCharacters (&b, kWhiteSpace);
+      SkipCharacters(b, kWhiteSpace);
       assert(b[0] == 'c');
       if (b[0] == 'c')
       {
@@ -3711,25 +3711,25 @@ string SFXParam::GetParamComp(uint nOffset)
 
 uint SFXParam::GetComponent(EHWShaderClass eSHClass)
 {
-  char *src = (char *)m_Annotations.c_str();
+  const char* src = m_Annotations.c_str();
   char annot[256];
   int nComp = 0;
-  fxFill(&src, annot);
+  fxFill(src, annot);
   if (!strncmp(&annot[1], "sregister", 9)) 
   {
     if ((eSHClass == eHWSC_Pixel && annot[0] =='v') || (eSHClass == eHWSC_Vertex && annot[0] =='p'))
     {
-      fxFill(&src, annot);
+      fxFill(src, annot);
       if (strncmp(&annot[1], "sregister", 9)) 
         return 0;
       if ((eSHClass == eHWSC_Pixel && annot[0] =='v') || (eSHClass == eHWSC_Vertex && annot[0] =='p'))
         return 0;
     }
-    char *b = &annot[10];
-    SkipCharacters (&b, kWhiteSpace);
+    const char* b = &annot[10];
+    SkipCharacters(b, kWhiteSpace);
     assert(b[0] == '=');
     b++;
-    SkipCharacters (&b, kWhiteSpace);
+    SkipCharacters(b, kWhiteSpace);
     assert(b[0] == 'c');
     if (b[0] == 'c')
     {
@@ -3771,14 +3771,14 @@ string SFXParam::GetValueForName(const char *szName, EParamType& eType)
 
   char buf[256];
   char tok[128];
-  char *szA = (char *)m_Annotations.c_str();
-  SkipCharacters(&szA, kWhiteSpace);
+  const char* szA = m_Annotations.c_str();
+  SkipCharacters(szA, kWhiteSpace);
   while (true)
   {
-    if (!fxFill(&szA, buf))
+    if (!fxFill(szA, buf))
       break;
     char *b = buf;
-    fxFillPr(&b, tok);
+    fxFillPr(b, tok);
     eType = eType_UNKNOWN;
     if (!stricmp(tok, "string"))
       eType = eType_STRING;
@@ -3787,15 +3787,15 @@ string SFXParam::GetValueForName(const char *szName, EParamType& eType)
       eType = eType_FLOAT;
     if (eType != eType_UNKNOWN)
     {
-      if (!fxFillPr(&b, tok))
+      if (!fxFillPr(b, tok))
         continue;
       if (stricmp(tok, szName))
         continue;
-      SkipCharacters(&b, kWhiteSpace);
+      SkipCharacters(b, kWhiteSpace);
       if (b[0] == '=')
       {
         b++;
-        if (!fxFillPrC(&b, tok))
+        if (!fxFillPrC(b, tok))
           break;
       }
       return tok;
@@ -3805,11 +3805,11 @@ string SFXParam::GetValueForName(const char *szName, EParamType& eType)
       if (stricmp(tok, szName))
         continue;
       eType = eType_STRING;
-      if (!fxFillPr(&b, tok))
+      if (!fxFillPr(b, tok))
         continue;
       if (tok[0] == '=')
       {
-        if (!fxFillPr(&b, tok))
+        if (!fxFillPr(b, tok))
           break;
       }
       return tok;

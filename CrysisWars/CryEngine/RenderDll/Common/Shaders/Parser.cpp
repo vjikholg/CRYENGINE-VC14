@@ -12,16 +12,16 @@
 const char *kWhiteSpace = " ,";
 char *pCurCommand;
 
-void SkipCharacters (char** buf, const char *toSkip)
+void SkipCharacters(const char*& buf, const char* toSkip)
 {
   char theChar;
-  char *skip;
+  const char* skip;
 
-  while ((theChar = **buf) != 0)
+  while ((theChar = *buf) != 0)
   {
     if (theChar >= 0x20) 
     {
-      skip = (char *) toSkip;
+      skip = toSkip;
       while (*skip)
       {
         if (theChar == *skip)
@@ -31,8 +31,15 @@ void SkipCharacters (char** buf, const char *toSkip)
       if (*skip == 0)           
         return;                 
     }
-    ++*buf;                     
+    ++buf;
   }
+}
+
+void SkipCharacters(char*& buf, const char* toSkip)
+{
+  const char* readCursor = buf;
+  SkipCharacters(readCursor, toSkip);
+  buf += readCursor - buf;
 }
 
 void RemoveCR(char *pbuf)
@@ -50,15 +57,15 @@ byte sSkipChars[256];
 std::vector<string> g_EnvVars;
 
 // Determine is this preprocessor directive belongs to first pass or second one
-bool fxIsFirstPass(char *buf)
+bool fxIsFirstPass(const char* buf)
 {
   char com[1024];
   char tok[256];
-  fxFillCR(&buf, com);
-  char *s = com;
+  fxFillCR(buf, com);
+  const char* s = com;
   while (*s != 0)
   {
-    char *pStart = fxFillPr(&s, tok);
+    const char* pStart = fxFillPr(s, tok);
     if (tok[0] == '%' && tok[1] == '_')
       return false;
   }
@@ -205,81 +212,108 @@ void fxRegisterEnv(const char *szStr)
   g_EnvVars.push_back(szStr);
 }
 
-char *fxFillPr (char **buf, char *dst)
+const char* fxFillPr(const char*& buf, char* dst)
 {
   int n = 0;
   char ch;
-  while ((ch=**buf) != 0)
+  while ((ch=*buf) != 0)
   {
     if (sSkipChars[ch] == 0)
       break;
-    ++*buf;
+    ++buf;
   }
-  char *pStart = *buf;
-  while ((ch=**buf) != 0)
+  const char* pStart = buf;
+  while ((ch=*buf) != 0)
   {
     if (sSkipChars[ch] == 1)
       break;
     dst[n++] = ch;
-    ++*buf;
+    ++buf;
   }
   dst[n] = 0;
   return pStart;
 }
 
-char *fxFillPrC (char **buf, char *dst)
+char* fxFillPr(char*& buf, char* dst)
+{
+  char* originalCursor = buf;
+  const char* readCursor = buf;
+  const char* start = fxFillPr(readCursor, dst);
+  buf = originalCursor + (readCursor - originalCursor);
+  return originalCursor + (start - originalCursor);
+}
+
+const char* fxFillPrC(const char*& buf, char* dst)
 {
   int n = 0;
   char ch;
-  while ((ch=**buf) != 0)
+  while ((ch=*buf) != 0)
   {
     if (sSkipChars[ch] == 0)
       break;
-    ++*buf;
+    ++buf;
   }
-  char *pStart = *buf;
-  while ((ch=**buf) != 0)
+  const char* pStart = buf;
+  while ((ch=*buf) != 0)
   {
     if (ch != ',' && sSkipChars[ch] == 1)
       break;
     dst[n++] = ch;
-    ++*buf;
+    ++buf;
   }
   dst[n] = 0;
   return pStart;
 }
 
-char *fxFillParam (char **buf, char *dst)
+char* fxFillPrC(char*& buf, char* dst)
+{
+  char* originalCursor = buf;
+  const char* readCursor = buf;
+  const char* start = fxFillPrC(readCursor, dst);
+  buf = originalCursor + (readCursor - originalCursor);
+  return originalCursor + (start - originalCursor);
+}
+
+const char* fxFillParam(const char*& buf, char* dst)
 {
   int n = 0;
   char ch;
-  while ((ch=**buf) != 0)
+  while ((ch=*buf) != 0)
   {
     if (sSkipChars[ch] == 0)
       break;
-    ++*buf;
+    ++buf;
   }
-  char *pStart = *buf;
-  while ((ch=**buf) != 0)
+  const char* pStart = buf;
+  while ((ch=*buf) != 0)
   {
     if (ch != '.' && sSkipChars[ch] == 1)
       break;
     dst[n++] = ch;
-    ++*buf;
+    ++buf;
   }
   dst[n] = 0;
   return pStart;
 }
 
-int shFill(char **buf, char *dst, int nSize)
+char* fxFillParam(char*& buf, char* dst)
+{
+  char* originalCursor = buf;
+  const char* readCursor = buf;
+  const char* start = fxFillParam(readCursor, dst);
+  buf = originalCursor + (readCursor - originalCursor);
+  return originalCursor + (start - originalCursor);
+}
+
+int shFill(const char*& buf, char* dst, int nSize)
 {
   int n = 0;
-  SkipCharacters (buf, kWhiteSpace);
+  SkipCharacters(buf, kWhiteSpace);
 
-  while (**buf > 0x20)
+  while (*buf > 0x20)
   {
-    dst[n++] = **buf;
-    ++*buf;
+    dst[n++] = *buf;
+    ++buf;
 
     if(nSize > 0 && n == nSize)
     {
@@ -290,17 +324,26 @@ int shFill(char **buf, char *dst, int nSize)
   dst[n] = 0;
   return n;
 }
-int fxFill(char **buf, char *dst, int nSize)
+
+int shFill(char*& buf, char* dst, int nSize)
+{
+  const char* readCursor = buf;
+  const int result = shFill(readCursor, dst, nSize);
+  buf += readCursor - buf;
+  return result;
+}
+
+int fxFill(const char*& buf, char* dst, int nSize)
 {
   int n = 0;
-  SkipCharacters (buf, kWhiteSpace);
+  SkipCharacters(buf, kWhiteSpace);
 
-  while (**buf != ';')
+  while (*buf != ';')
   {
-    if (**buf == 0)
+    if (*buf == 0)
       break;
-    dst[n++] = **buf;
-    ++*buf;
+    dst[n++] = *buf;
+    ++buf;
 
     if(nSize > 0 && n == nSize)
     {
@@ -310,24 +353,41 @@ int fxFill(char **buf, char *dst, int nSize)
   }
 
   dst[n] = 0;
-  if (**buf == ';')
-    ++*buf;
+  if (*buf == ';')
+    ++buf;
   return n;
 }
 
-int fxFillCR(char **buf, char *dst)
+
+int fxFill(char*& buf, char* dst, int nSize)
+{
+  const char* readCursor = buf;
+  const int result = fxFill(readCursor, dst, nSize);
+  buf += readCursor - buf;
+  return result;
+}
+
+int fxFillCR(const char*& buf, char* dst)
 {
   int n = 0;
-  SkipCharacters (buf, kWhiteSpace);
-  while (**buf != 0xa)
+  SkipCharacters(buf, kWhiteSpace);
+  while (*buf != 0xa)
   {
-    if (**buf == 0)
+    if (*buf == 0)
       break;
-    dst[n++] = **buf;
-    ++*buf;
+    dst[n++] = *buf;
+    ++buf;
   }
   dst[n] = 0;
   return n;
+}
+
+int fxFillCR(char*& buf, char* dst)
+{
+  const char* readCursor = buf;
+  const int result = fxFillCR(readCursor, dst);
+  buf += readCursor - buf;
+  return result;
 }
 
 //================================================================================
@@ -594,7 +654,7 @@ void shGetColor(const char *buf, ColorF& v)
       break;
     char par[64];
     par[0] = 0;
-    fxFillPr((char **)&buf, par);
+    fxFillPr(buf, par);
     if (!par[0])
       break;
     v[n++] = atof(par);
@@ -688,7 +748,7 @@ void shGetColor(char *buf, float v[4])
 
 char *GetAssignmentText (char **buf)
 {
-  SkipCharacters (buf, kWhiteSpace);
+  SkipCharacters(*buf, kWhiteSpace);
   char *result = *buf;
 
   char theChar;
@@ -772,7 +832,7 @@ void SkipComments(char **buf, bool bSkipWhiteSpace)
       // skip comment lines.
       *buf = strchr (*buf, '\n');
       if (*buf && bSkipWhiteSpace)
-        SkipCharacters (buf, kWhiteSpace);
+        SkipCharacters(*buf, kWhiteSpace);
       break;
 
     case 3:
@@ -803,7 +863,7 @@ void SkipComments(char **buf, bool bSkipWhiteSpace)
         break;
       }
       if (bSkipWhiteSpace)
-        SkipCharacters (buf, kWhiteSpace);
+        SkipCharacters(*buf, kWhiteSpace);
       break;
     }
   }
@@ -814,7 +874,7 @@ int shGetObject (char **buf, STokenDesc *tokens, char **name, char **data)
   if (!*buf)
     return 0;
 
-  SkipCharacters (buf, kWhiteSpace);
+  SkipCharacters(*buf, kWhiteSpace);
   SkipComments(buf, true);
 
   if (!(*buf))
@@ -859,10 +919,10 @@ int shGetObject (char **buf, STokenDesc *tokens, char **name, char **data)
     return 0;       
   }
   *buf += strlen (tokens->token);
-  SkipCharacters (buf, kWhiteSpace);
+  SkipCharacters(*buf, kWhiteSpace);
 
   *name = GetSubText (buf, 0x27, 0x27);
-  SkipCharacters (buf, kWhiteSpace);
+  SkipCharacters(*buf, kWhiteSpace);
 
   if (**buf == '=')     
   {

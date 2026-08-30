@@ -22,6 +22,7 @@
 #include "CREParticleGPU.h"
 #endif
 #include "ImageExtensionHelper.h"											// CImageExtensionHelper
+#include "Textures/Image/dds.h"
 #include "Textures/Image/Squish/squish.h"							// CompressImage
 #include "ResourceCompilerHelper.h"                   // CResourceCompilerHelper
 
@@ -31,17 +32,6 @@
 
 #include "3Dc/CompressorLib.h"
 
-#ifndef NULL_RENDERER
-# ifdef WIN32
-#	 pragma message (">>> include lib: nvDXTlib")
-#	  ifdef WIN64
-#		  pragma comment ( lib, "nvDXTlibMTDLL.vc8.x64.lib" )
-#	  else // WIN64
-#		  pragma comment ( lib, "nvDXTlibMTDLL.vc8.lib" )
-#	  endif // WIN64
-# endif // WIN32
-#endif // NULL_RENDERER
-//
 //////////////////////////////////////////////////////////////////////////
 // Globals.
 //////////////////////////////////////////////////////////////////////////
@@ -1532,9 +1522,9 @@ CRenderer::CRenderer()
   iConsole->AddCommand("r_FixMaterials", &FixMaterials);
 
 	iConsole->Register("r_TextureCompressor", &CV_r_TextureCompressor, 1, VF_DUMPTODISK,
-		"Defines which texture compressor is used (fallback is DirectX)\n"
+		"Selects Squish texture compression before the DirectX fallback\n"
 		"Usage: r_TextureCompressor [0/1]\n"
-		"0 uses nvDXT, 1 uses Squish if possible");
+		"0 disables the Squish fast path, 1 enables it when supported");
 
 	// ----------------------------------------------------------------
 
@@ -2567,7 +2557,7 @@ uint CRenderer::EF_BatchFlags(SShaderItem& SH, CRenderObject *pObj)
         if( !(pObj->m_ObjFlags & FOB_DECAL) && !(pS->m_Flags & EF_DECAL) )
         {
           // Skip if beyond rain max view dist
-          if( 1.0f - min(1.0f, pObj->m_fDistance / CRenderer::CV_r_rain_maxviewdist) > 0.01f )
+          if( 1.0f - std::min(1.0f, pObj->m_fDistance / CRenderer::CV_r_rain_maxviewdist) > 0.01f )
             nFlags |= FB_RAIN;
         }
       }
@@ -4334,37 +4324,11 @@ bool CRenderer::EF_PrecacheResource(IShader *pSH, float fDist, float fTimeToRead
   return true;
 }
 
-#if !defined(XENON) && !defined(PS3) && !defined(LINUX)
-
-#include "Textures/Image/NVDXT/dxtlib.h"
-#include "Textures/Image/dds.h"
-#define DDSD_CAPS		0x00000001l	// default
-#define DDSD_PIXELFORMAT	0x00001000l
-#define DDSD_WIDTH		0x00000004l
-#define DDSD_HEIGHT		0x00000002l
-#define DDSD_LINEARSIZE		0x00080000l
-
-#define FOURCC_DXT1  (MAKEFOURCC('D','X','T','1'))
-#define FOURCC_DXT2  (MAKEFOURCC('D','X','T','2'))
-#define FOURCC_DXT3  (MAKEFOURCC('D','X','T','3'))
-#define FOURCC_DXT4  (MAKEFOURCC('D','X','T','4'))
-#define FOURCC_DXT5  (MAKEFOURCC('D','X','T','5'))
-
-extern  byte *sDDSData;
-
-NV_ERROR_CODE ReadDTXnFile(void *buffer, size_t count, void * userData)
-{
-	cryMemcpy(buffer, sDDSData, count);
-	sDDSData += count;
-
-	return NV_OK;
-}
-#endif
-
 bool CRenderer::DXTDecompress(byte *srcData,const size_t srcFileSize,byte *dstData,int nWidth,int nHeight,int nMips,ETEX_Format eSrcTF, bool bUseHW, int nDstBytesPerPix)
 {
 #if !defined(NULL_RENDERER) && !defined(PS3) && !defined(LINUX) && !defined(XENON)
-  if (nDstBytesPerPix != 3 && nDstBytesPerPix != 4)
+  if (!srcData || !dstData || nWidth <= 0 || nHeight <= 0 ||
+      (nDstBytesPerPix != 3 && nDstBytesPerPix != 4))
     return false;
 
 	if (eSrcTF == eTF_3DC)
@@ -4423,104 +4387,39 @@ bool CRenderer::DXTDecompress(byte *srcData,const size_t srcFileSize,byte *dstDa
 		return true;
 	}
 
-  // NOTE: AMD64 port: implement
   if (!bUseHW)
   {
-    CRY_DDS_HEADER *ddsh;
-    int blockSize = (eSrcTF == eTF_DXT1) ? 8 : 16;
-    int DXTSize = ((nWidth+3)/4)*((nHeight+3)/4)*blockSize;
-    byte *dd = new byte [DXTSize + sizeof(CRY_DDS_HEADER) + sizeof(DWORD)];
-
-    DWORD dwMagic = MAKEFOURCC('D','D','S',' ');
-    *(DWORD *)dd = dwMagic;
-    ddsh = (CRY_DDS_HEADER *)&dd[sizeof(DWORD)];
-    memset(ddsh, 0, sizeof(CRY_DDS_HEADER));
-    cryMemcpy(&dd[sizeof(DWORD)+sizeof(CRY_DDS_HEADER)], srcData, DXTSize);
-
-    ddsh->dwSize = sizeof(CRY_DDS_HEADER);
-    ddsh->dwWidth = nWidth;
-    ddsh->dwHeight = nHeight;
-    ddsh->dwHeaderFlags = DDSD_CAPS | DDSD_PIXELFORMAT | DDSD_WIDTH | DDSD_HEIGHT | DDSD_LINEARSIZE;
-    ddsh->dwPitchOrLinearSize = nWidth*nHeight*4/blockSize;
-    if (eSrcTF == eTF_DXT1)
-      ddsh->ddspf.dwFourCC = FOURCC_DXT1;
-    else
-    if (eSrcTF == eTF_DXT3)
-      ddsh->ddspf.dwFourCC = FOURCC_DXT3;
-    else
-    if (eSrcTF == eTF_DXT5)
-      ddsh->ddspf.dwFourCC = FOURCC_DXT5;
-    ddsh->ddspf.dwSize = sizeof(ddsh->ddspf);
-    ddsh->ddspf.dwFlags = DDS_FOURCC;
-    ddsh->dwSurfaceFlags = DDS_SURFACE_FLAGS_TEXTURE;
-
-    sDDSData = dd;
-//    int planes;
-//    int lTotalWidth;
-//    int rowBytes;
-//    int width;
-//    int height;
-//    int src_format;
-
-		//byte *_data = nvDXTdecompress(width, height, planes, lTotalWidth, rowBytes, src_format);
-
-		nvImageContainer imageData;
-		int readMIPMapCount=1;
-
-		imageData.rgbaMIPImage.resize(1);
-		imageData.rgbaMIPImage[0].realloc(nWidth,nHeight);		// to alloc memory in our DLL
-
-		if(nvDDS::nvDXTdecompress(imageData,PF_RGBA,readMIPMapCount,ReadDTXnFile,0)!=NV_OK)
-		{
-			delete []dd;
-			return false;
-		}
-
-		RGBAImage &mip = imageData.rgbaMIPImage[0];
-
-		byte *_data = (byte *)mip.pixels();
-
-		if (imageData.nPlanes != nDstBytesPerPix)
+    int squishFlags = 0;
+    switch (eSrcTF)
     {
-      int n = imageData.width * imageData.height;
-      if (imageData.nPlanes == 4)
-      {
-        assert (nDstBytesPerPix == 3);
-        byte *data1 = _data;
-        byte *dd1 = dstData;
+    case eTF_DXT1: squishFlags = squish::kDxt1; break;
+    case eTF_DXT3: squishFlags = squish::kDxt3; break;
+    case eTF_DXT5: squishFlags = squish::kDxt5; break;
+    default: return false;
+    }
 
-        for (int i=0; i<n; i++)
-        {
-          dd1[0] = data1[2];
-          dd1[1] = data1[1];
-          dd1[2] = data1[0];
-          dd1   += 3;
-          data1 += 4;
-        }
-      }
-      else
-      if (imageData.nPlanes == 3)
-      {
-        assert (nDstBytesPerPix == 4);
-        byte *data1 = _data;
-        byte *dd1 = dstData;
+    const int compressedSize = squish::GetStorageRequirements(nWidth, nHeight, squishFlags);
+    if (compressedSize <= 0 || static_cast<size_t>(compressedSize) > srcFileSize)
+      return false;
 
-        for (int i=0; i<n; i++)
-        {
-          dd1[0] = data1[2];
-          dd1[1] = data1[1];
-          dd1[2] = data1[0];
-          dd1[3] = 255;
-          dd1   += 4;
-          data1 += 3;
-        }
-      }
+    if (nDstBytesPerPix == 4)
+    {
+      squish::DecompressImage(dstData, nWidth, nHeight, srcData, squishFlags);
     }
     else
-      cryMemcpy(dstData, _data, imageData.width*imageData.height*imageData.nPlanes);
+    {
+      const size_t pixelCount = static_cast<size_t>(nWidth) * static_cast<size_t>(nHeight);
+      std::unique_ptr<byte[]> rgba(new byte[pixelCount * 4]);
+      squish::DecompressImage(rgba.get(), nWidth, nHeight, srcData, squishFlags);
 
-		delete []dd;
-//		CRTDeleteArray(_data);
+      for (size_t i = 0; i < pixelCount; ++i)
+      {
+        dstData[i * 3 + 0] = rgba[i * 4 + 2];
+        dstData[i * 3 + 1] = rgba[i * 4 + 1];
+        dstData[i * 3 + 2] = rgba[i * 4 + 0];
+      }
+    }
+
     return true;
   }
   else
@@ -4529,43 +4428,6 @@ bool CRenderer::DXTDecompress(byte *srcData,const size_t srcFileSize,byte *dstDa
     return false;
   }
 }
-
-#if !defined(XENON) && !defined(PS3) && !defined(LINUX)
-
-// wrapper used to remove DDS header from the NVDXT callback
-static void *g_pNVDXT_UserData=0;
-static MIPDXTcallback g_pNVDXT_Callback=0;
-static size_t g_NVDXT_HeaderToRead = 4+sizeof(CRY_DDS_HEADER);		// magic word+struct
-
-static NV_ERROR_CODE NVIDIA_DXTWriteCallback(const void *buffer,size_t count, const MIPMapData * mipMapData, void * userData)
-{
-	assert(g_pNVDXT_UserData);
-	assert(g_pNVDXT_Callback);
-
-	uint8 *newbuffer=(uint8 *)buffer;
-	size_t newcount=count;
-
-	// ignore the first few bytes (dds header)
-	if(newcount>g_NVDXT_HeaderToRead)
-	{
-		newbuffer+=g_NVDXT_HeaderToRead;
-		newcount-=g_NVDXT_HeaderToRead;
-		g_NVDXT_HeaderToRead=0;
-	}
-	else
-	{
-		g_NVDXT_HeaderToRead-=count;
-		newbuffer+=count;
-		newcount=0;
-	}
-
-	if(newcount)
-		g_pNVDXT_Callback(newbuffer,newcount,userData);
-
-	return NV_OK;
-}
-
-#endif
 
 bool CRenderer::DXTCompress( byte *raw_data,int nWidth,int nHeight,ETEX_Format eTF, bool bUseHW, bool bGenMips,
 	int nSrcBytesPerPix, const Vec3 vLumWeight, MIPDXTcallback callback)
@@ -4640,71 +4502,6 @@ bool CRenderer::DXTCompress( byte *raw_data,int nWidth,int nHeight,ETEX_Format e
 	}
 #endif // NULL_RENDERER
 
-#if !defined(WIN64) && !defined(NULL_RENDERER) && !defined(PS3) && !defined(LINUX) && !defined(XENON)
-	// NOTE: AMD64 port: implement
-  if (!bUseHW)
-  {
-    nvCompressionOptions opt;
-
-		if(vLumWeight.x>0)
-		{
-			opt.weight[0]=vLumWeight.x;
-			opt.weight[1]=vLumWeight.y;
-			opt.weight[2]=vLumWeight.z;
-			opt.weightType=kUserDefinedWeighting;
-		}
-
-    switch(eTF)
-    {
-			case eTF_A4R4G4B4:
-				opt.textureFormat = k4444;
-				break;
-			case eTF_A8R8G8B8:
-        opt.textureFormat = k8888;
-				break;
-      case eTF_DXT1:
-        opt.textureFormat = kDXT1;
-    	  break;
-      case eTF_DXT3:
-        opt.textureFormat = kDXT3;
-        break;
-      case eTF_DXT5:
-        opt.textureFormat = kDXT5;
-        break;
-			case eTF_A8:
-				opt.textureFormat = kA8;
-				break;
-			case eTF_L8:
-				opt.textureFormat = kL8;
-				break;
-      default:
-        assert(0);
-        return false;
-    }
-    opt.mipFilterType = kMipFilterQuadratic;
-    if (bGenMips)
-      opt.mipMapGeneration = kGenerateMipMaps;
-    else
-      opt.mipMapGeneration = kNoMipMaps;
-#if defined(XENON) || defined(PS3) || defined(LINUX)
-
-		// not implemented
-
-#else
-		g_pNVDXT_UserData=0;							// not utilized yet
-		g_pNVDXT_Callback=callback;
-		g_NVDXT_HeaderToRead = 4+sizeof(CRY_DDS_HEADER);		// magic word+struct
-
-		nvDDS::nvDXTcompress(raw_data,nWidth,nHeight,nWidth*nSrcBytesPerPix,nvBGRA,&opt,NVIDIA_DXTWriteCallback);
-
-		g_pNVDXT_UserData=0;
-		g_pNVDXT_Callback=0;
-		g_NVDXT_HeaderToRead=0;
-
-#endif
-  }
-  else
-#endif
 #if !defined(XENON) && !defined(PS3) && !defined(LINUX)
   {
     int i;

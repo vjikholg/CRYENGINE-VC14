@@ -10,7 +10,7 @@
 //  Description: 
 // -------------------------------------------------------------------------
 //  History:
-//	- 03:2006				 : Modified by Jan Müller (Serialization)
+//	- 03:2006				 : Modified by Jan Muller (Serialization)
 //
 ////////////////////////////////////////////////////////////////////////////
 
@@ -36,26 +36,6 @@ class CParticleContainer;
 #define AUTO_LOCK(lock)		CryAutoLock< CryLock<CRYLOCK_RECURSIVE> > _AutoLock(lock)
 
 #if bPROFILE_LOCKS
-
-	template <class T>
-  class CAutoLockProfile
-  {
-	  T& m_lock;
-  public:
-	  CAutoLockProfile(T& lock, CFrameProfiler* pProfiler, const CParticleContainer* pCont = 0)
-		  : m_lock(lock)
-	  {
-			if (lock.TryLock())
-				return;
-			// Profile only when waiting needed.
-			CEventProfilerSection ProfilerSection( pProfiler, pCont );
-			lock.Lock();
-	  }
-	  ~CAutoLockProfile()
-	  {
-		  m_lock.Unlock();
-	  }
-  };
 
 	#define AUTO_LOCK_PROFILE_T(TYPE, lock, cont) \
 		static CFrameProfiler _staticFrameProfiler( GetSystem(), __FUNCTION__ ":LOCK", PROFILE_SYNC); \
@@ -328,6 +308,37 @@ protected:
 #else
 
 	#define FUNCTION_PROFILER_CONTAINER(pCont)	FUNCTION_PROFILER_SYS(PARTICLE)
+
+#endif
+
+#if bPROFILE_LOCKS
+
+template <class T>
+class CAutoLockProfile
+{
+	T& m_lock;
+
+public:
+	CAutoLockProfile(T& lock, CFrameProfiler* pProfiler, const CParticleContainer* pCont = 0)
+		: m_lock(lock)
+	{
+		if (lock.TryLock())
+			return;
+
+		// Profile only when waiting is required.
+#if bEVENT_TIMINGS
+		CEventProfilerSection profilerSection(pProfiler, pCont);
+#else
+		CFrameProfilerSection profilerSection(pProfiler);
+#endif
+		lock.Lock();
+	}
+
+	~CAutoLockProfile()
+	{
+		m_lock.Unlock();
+	}
+};
 
 #endif
 

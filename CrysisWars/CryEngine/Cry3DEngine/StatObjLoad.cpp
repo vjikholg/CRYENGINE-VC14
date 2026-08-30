@@ -524,10 +524,11 @@ bool CStatObj::LoadCGF( const char *filename,bool bLod,bool bForceBreakable )
 							if (!pExportInfo->bMergeAllNodes && m_nSubObjectMeshCount > 0 && pNode->pParent)
 							{
 								// We are attached to some object, find it.
-								for (int i = 0,num = nodes.size(); i < num; i++)
+								const size_t attachedNodeCount = nodes.size() < m_subObjects.size() ? nodes.size() : m_subObjects.size();
+								for (size_t i = 0; i < attachedNodeCount; ++i)
 									if (nodes[i] == pNode->pParent)
 									{
-										pStatObjOwner = (CStatObj*)m_subObjects[i].pStatObj;
+										pStatObjOwner = (CStatObj*)m_subObjects.begin()[i].pStatObj;
 										break;
 									}
 							}
@@ -650,11 +651,12 @@ bool CStatObj::LoadCGF( const char *filename,bool bLod,bool bForceBreakable )
 					if (!pExportInfo->bMergeAllNodes && m_nSubObjectMeshCount > 0 && pNode->pParent)
 					{
 						// We are attached to some object, find it.
-						for (int i = 0,num = nodes.size(); i < num; i++)
+						const size_t attachedNodeCount = nodes.size() < m_subObjects.size() ? nodes.size() : m_subObjects.size();
+						for (size_t i = 0; i < attachedNodeCount; ++i)
 						{
 							if (nodes[i] == pNode->pParent)
 							{
-								pStatObjParent = (CStatObj*)m_subObjects[i].pStatObj;
+								pStatObjParent = (CStatObj*)m_subObjects.begin()[i].pStatObj;
 								break;
 							}
 						}
@@ -1158,11 +1160,11 @@ bool CStatObj::LoadCGF_Info( const char *filename )
 	CCryFile file;
 	if (file.Open(filename,"rb",ICryPak::FOPEN_HINT_QUIET))
 	{
-		int nLen = file.GetLength();
+		const size_t dataLength = file.GetLength();
 
-		m_szProperties.resize(nLen);
+		m_szProperties.resize(dataLength);
 		char *sAllText = (char*)&m_szProperties[0];
-		file.ReadRaw( sAllText,nLen );
+		file.ReadRaw(sAllText, dataLength);
 
 		// Convert properties to low case.
 		m_szProperties.MakeLower();
@@ -1198,19 +1200,19 @@ void CStatObj::ParseProperties()
 	//static DynArray<char> propertiesString;
 	//propertiesString.resize(sP)
 
-	int nLen = m_szProperties.size();
-	if (nLen >= 4090)
+	size_t propertyLength = m_szProperties.size();
+	if (propertyLength >= 4090)
 	{
 		Warning("CGF '%s' have longer then 4K geometry info file", m_szFileName.c_str());
-		nLen = 4090;
+		propertyLength = 4090;
 	}
 
 	char properties[4096];
-	memcpy( properties,m_szProperties.c_str(),nLen );
-	properties[nLen] = 0;
+	memcpy(properties, m_szProperties.c_str(), propertyLength);
+	properties[propertyLength] = 0;
 
 	char *str = properties;
-	char *strEnd = str + nLen;
+	char *strEnd = str + propertyLength;
 	while (str < strEnd)
 	{
 		char *line = str;

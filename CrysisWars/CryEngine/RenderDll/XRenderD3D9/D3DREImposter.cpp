@@ -250,8 +250,8 @@ bool CREImposter::PrepareForUpdate()
 		float fRadPixelX = (fMaxX-fMinX)*2;		// for some reason *2 is needed, most likely /near (*4) is the correct
 		float fRadPixelY = (fMaxY-fMinY)*2;
 
-		fRequiredResX = min(fRequiredResX,max(16.0f,fRadPixelX));
-		fRequiredResY = min(fRequiredResY,max(16.0f,fRadPixelY));
+		fRequiredResX = std::min(fRequiredResX,std::max(16.0f,fRadPixelX));
+		fRequiredResY = std::min(fRequiredResY,std::max(16.0f,fRadPixelY));
 	}
 
 	int nRequiredLogXRes = LogBaseTwo((int)(fRequiredResX*fTexScale));

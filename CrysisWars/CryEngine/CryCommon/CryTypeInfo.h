@@ -221,7 +221,7 @@ struct CTypeInfo
 		cstr		FullName;
 		cstr		ShortName;
 	};
-	virtual int EnumElemCount() const										{ return 0; }
+	virtual size_t EnumElemCount() const { return size_t{ 0 }; }
 	virtual CEnumElem const* EnumElem(int nIndex) const { return 0; }
 };
 
@@ -317,7 +317,7 @@ struct CEnumInfo: CTypeInfo
 		int val;
 		return FromString(val, str, flags) && FromInt(Size, data, val);
 	}
-	virtual int EnumElemCount() const
+	virtual size_t EnumElemCount() const
 	{
 		return Elems.size();
 	}

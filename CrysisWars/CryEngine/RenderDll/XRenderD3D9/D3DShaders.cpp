@@ -253,19 +253,19 @@ void CShaderMan::mfCheckObjectDependParams(std::vector<SCGParam>* PNoObj, std::v
   }
 }
 
-static char *sSetParameterExp(char *szExpr, Vec4& vVal, SRenderShaderResources *pRes, bool& bResult);
+static const char* sSetParameterExp(const char* szExpr, Vec4& vVal, SRenderShaderResources* pRes, bool& bResult);
 
-static char *sSetOperand(char *szExpr, Vec4& vVal, SRenderShaderResources *pRes, bool& bResult)
+static const char* sSetOperand(const char* szExpr, Vec4& vVal, SRenderShaderResources* pRes, bool& bResult)
 {
   char temp[256];
-  SkipCharacters(&szExpr, kWhiteSpace);
+  SkipCharacters(szExpr, kWhiteSpace);
   if (*szExpr == '(')
   {
     szExpr = sSetParameterExp(szExpr, vVal, pRes, bResult);
   }
   else
   {
-    fxFillParam(&szExpr, temp);
+    fxFillParam(szExpr, temp);
     if (temp[0] != '.' && (temp[0]<'0' || temp[0]>'9'))
     {
       bResult &= SShaderParam::GetValue(temp, &pRes->m_ShaderParams, &vVal[0], 0);
@@ -277,7 +277,7 @@ static char *sSetOperand(char *szExpr, Vec4& vVal, SRenderShaderResources *pRes,
   return szExpr;
 }
 
-static char *sSetParameterExp(char *szExpr, Vec4& vVal, SRenderShaderResources *pRes, bool& bResult)
+static const char* sSetParameterExp(const char* szExpr, Vec4& vVal, SRenderShaderResources* pRes, bool& bResult)
 {
   if (szExpr[0] != '(')
     return NULL;
@@ -314,14 +314,14 @@ static char *sSetParameterExp(char *szExpr, Vec4& vVal, SRenderShaderResources *
   if (n)
     return NULL;
 
-  char *szE = expr;
+  const char* szE = expr;
   Vec4 vVals[2];
   vVals[0] = Vec4(0,0,0,0);
   szE = sSetOperand(szE, vVals[0], pRes, bResult);
-  SkipCharacters(&szE, kWhiteSpace);
+  SkipCharacters(szE, kWhiteSpace);
   char szOp = *szE++;
   vVals[1] = Vec4(0,0,0,0);
-  SkipCharacters(&szE, kWhiteSpace);
+  SkipCharacters(szE, kWhiteSpace);
   szE = sSetOperand(szE, vVals[1], pRes, bResult);
 
   switch (szOp)
@@ -342,7 +342,7 @@ static char *sSetParameterExp(char *szExpr, Vec4& vVal, SRenderShaderResources *
       break;
   }
 
-  return (char *)szExpr;
+  return szExpr;
 }
 
 static bool sSetParameter(SFXParam *pPR, DynArray<Vec4>& Constants, SRenderShaderResources *pRes, int nOffs, EHWShaderClass eSHClass)
@@ -362,7 +362,7 @@ static bool sSetParameter(SFXParam *pPR, DynArray<Vec4>& Constants, SRenderShade
         {
           Vec4 vVal = Vec4(-10000, -10000, -10000, -10000);
           bool bResult = true;
-          sSetParameterExp((char *)v.c_str(), vVal, pRes, bResult);
+          sSetParameterExp(v.c_str(), vVal, pRes, bResult);
           if (bResult)
           {
             Constants[pPR->m_nRegister[eSHClass]-nOffs][i] = vVal[0];
@@ -511,7 +511,7 @@ void SRenderShaderResources::UpdateConstants(IShader *pISH)
     nLastVS = VSParams[VSParams.size()-1]->m_nRegister[eHWSC_Vertex];
     assert(nLastVS>=FIRST_REG_PM[eHWSC_Vertex] && VSParams[0]->m_nRegister[eHWSC_Vertex]>=FIRST_REG_PM[eHWSC_Vertex]);
   }
-  nLastVS = max(nFirstVS+NUM_VS_PM-1, nLastVS);
+  nLastVS = std::max(nFirstVS+NUM_VS_PM-1, nLastVS);
   int nCur = pCBVS->size();
   if (nCur < nLastVS+1-nFirstVS)
     pCBVS->resize(nLastVS+1-nFirstVS);
@@ -525,7 +525,7 @@ void SRenderShaderResources::UpdateConstants(IShader *pISH)
     nLastPS = PSParams[PSParams.size()-1]->m_nRegister[eHWSC_Pixel];
     assert(nLastPS>=nFirstPS && PSParams[0]->m_nRegister[eHWSC_Pixel]>=nFirstPS);
   }
-  nLastPS = max(nFirstPS+NUM_PS_PM-1, nLastPS);
+  nLastPS = std::max(nFirstPS+NUM_PS_PM-1, nLastPS);
   nCur = pCBPS->size();
   if (nCur < nLastPS+1-nFirstPS)
     pCBPS->resize(nLastPS+1-nFirstPS);
@@ -541,7 +541,7 @@ void SRenderShaderResources::UpdateConstants(IShader *pISH)
       nLastGS = GSParams[GSParams.size()-1]->m_nRegister[eHWSC_Geometry];
       assert(nLastGS>=nFirstGS && GSParams[0]->m_nRegister[eHWSC_Geometry]>=nFirstGS);
     }
-    nLastGS = max(nFirstGS+NUM_GS_PM-1, nLastGS);
+    nLastGS = std::max(nFirstGS+NUM_GS_PM-1, nLastGS);
     nCur = pCBGS->size();
     if (nCur < nLastGS+1-nFirstGS)
       pCBGS->resize(nLastGS+1-nFirstGS);

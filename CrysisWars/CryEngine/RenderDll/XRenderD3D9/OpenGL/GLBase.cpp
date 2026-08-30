@@ -370,7 +370,7 @@ static const char *DescribeProgramParameter(
 		FirstElementParam = cgGetArrayParameter(FirstElementParam, 0);
 	char TypeName[256];
 	char IndentPrefix[256];
-	Indent = min(Indent, (int)sizeof IndentPrefix - 1);
+	Indent = std::min(Indent, (int)sizeof IndentPrefix - 1);
 	memset(IndentPrefix, ' ', Indent);
 	IndentPrefix[Indent] = 0;
 #if 0
@@ -498,7 +498,7 @@ static uint32 DumpShaderProgram(
 		= shaderNameMap.find(Prog);
 	bool top = Param == NULL;
 	char IndentPrefix[256];
-	Indent = min(Indent, (int)sizeof IndentPrefix - 1);
+	Indent = std::min(Indent, (int)sizeof IndentPrefix - 1);
 	memset(IndentPrefix, ' ', Indent);
 	IndentPrefix[Indent] = 0;
 
@@ -755,8 +755,10 @@ const char *GetMappedSemantic(
 		}
 		else
 		{
-			memcpy(buffer, p, min(bufferSize - 1, q - p));
-			buffer[min(bufferSize - 1, q - p)] = 0;
+			const size_t sourceLength = static_cast<size_t>(q - p);
+			const size_t copyLength = std::min(bufferSize - 1, sourceLength);
+			memcpy(buffer, p, copyLength);
+			buffer[copyLength] = 0;
 		}
 	}
 	return buffer;
@@ -5718,7 +5720,7 @@ void RecurseParams(CGprogram Prog, CGparameter Param, ID3DXConstantTable *pTable
 						// Old code kept for reference.
             int nValues;
             cgGetParameterValues(Param, CG_DEFAULT, &nValues);
-            CDesc.RegisterCount = max(nValues / 4, 1);
+            CDesc.RegisterCount = std::max(nValues / 4, 1);
 #endif
 						// This is ugly, but still better than adding 113 case labels...
 						switch (cgType)
@@ -5726,14 +5728,14 @@ void RecurseParams(CGprogram Prog, CGparameter Param, ID3DXConstantTable *pTable
 #if defined(PS3)
 #define CG_DATATYPE_MACRO(name, compilerName, enumName, baseName, nrows, ncols) \
 						case enumName: \
-							CDesc.RegisterCount = max(nrows, 1); \
+							CDesc.RegisterCount = std::max(nrows, 1); \
 							break;
 #include <Cg/NV/cg_datatypes.h>
 #endif
 #if defined(LINUX)
 #define CG_DATATYPE_MACRO(name, compilerName, enumName, baseName, nrows, ncols, prmClass) \
 						case enumName: \
-							CDesc.RegisterCount = max(nrows, 1); \
+							CDesc.RegisterCount = std::max(nrows, 1); \
 							break;
 #include <Cg/cg_datatypes.h>
 #endif

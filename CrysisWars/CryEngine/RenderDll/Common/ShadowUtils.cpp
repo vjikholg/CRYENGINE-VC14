@@ -195,12 +195,12 @@ void CShadowUtils::CalcLightBoundRect(CDLight* pLight, const CRenderCamera& RCam
     Vec4 vScreenPoint = Vec4(pBRectVertices[i], 1.0) * mProj;
 
     //projection space clamping
-    vScreenPoint.w = max(vScreenPoint.w, 0.00000000000001f);
+    vScreenPoint.w = std::max(vScreenPoint.w, 0.00000000000001f);
 
-    vScreenPoint.x = max(vScreenPoint.x, -(vScreenPoint.w));
-    vScreenPoint.x = min(vScreenPoint.x, vScreenPoint.w);
-    vScreenPoint.y = max(vScreenPoint.y, -(vScreenPoint.w));
-    vScreenPoint.y = min(vScreenPoint.y, vScreenPoint.w);
+    vScreenPoint.x = std::max(vScreenPoint.x, -(vScreenPoint.w));
+    vScreenPoint.x = std::min(vScreenPoint.x, vScreenPoint.w);
+    vScreenPoint.y = std::max(vScreenPoint.y, -(vScreenPoint.w));
+    vScreenPoint.y = std::min(vScreenPoint.y, vScreenPoint.w);
 
 
     //NDC
@@ -215,10 +215,10 @@ void CShadowUtils::CalcLightBoundRect(CDLight* pLight, const CRenderCamera& RCam
     assert(vWin.x>=0.0f && vWin.x<=1.0f);
     assert(vWin.y>=0.0f && vWin.y<=1.0f);
 
-    pvMin->x = min( pvMin->x,vWin.x );
-    pvMin->y = min( pvMin->y,vWin.y );
-    pvMax->x = max( pvMax->x,vWin.x );
-    pvMax->y = max( pvMax->y,vWin.y );
+    pvMin->x = std::min( pvMin->x,vWin.x );
+    pvMin->y = std::min( pvMin->y,vWin.y );
+    pvMax->x = std::max( pvMax->x,vWin.x );
+    pvMax->y = std::max( pvMax->y,vWin.y );
   }
 }
 
@@ -270,15 +270,15 @@ void CShadowUtils::GetCubemapFrustumForLight(CDLight* pLight, int nS, float fFov
   (*pmView)(2,0) = xaxis.z;		(*pmView)(2,1) = zaxis.z;	(*pmView)(2,2) = yaxis.z;	(*pmView)(2,3) = 0; 
   (*pmView)(3,0) = -xaxis.Dot(vEyePt);	(*pmView)(3,1) = -zaxis.Dot(vEyePt);	(*pmView)(3,2) = -yaxis.Dot(vEyePt);	(*pmView)(3,3) = 1; 
 
-  mathMatrixPerspectiveFov( pmProj, DEG2RAD_R(fFov), 1.f, max(pLight->m_fProjectorNearPlane,0.1f), pLight->m_fRadius);
+  mathMatrixPerspectiveFov( pmProj, DEG2RAD_R(fFov), 1.f, std::max(pLight->m_fProjectorNearPlane,0.1f), pLight->m_fRadius);
 
   /*if (bShadowGen)
   {
-    mathMatrixPerspectiveFov( pmProj, DEG2RAD_R(fFov), 1.f, max(pLight->m_fProjectorNearPlane,0.01f), pLight->m_fRadius);
+    mathMatrixPerspectiveFov( pmProj, DEG2RAD_R(fFov), 1.f, std::max(pLight->m_fProjectorNearPlane,0.01f), pLight->m_fRadius);
   }
   else
   {
-    mathMatrixPerspectiveFov( pmProj, DEG2RAD_R(fFov*1.001), 1.f, max(pLight->m_fProjectorNearPlane,0.01f)+0.01f, pLight->m_fRadius+3.0f);
+    mathMatrixPerspectiveFov( pmProj, DEG2RAD_R(fFov*1.001), 1.f, std::max(pLight->m_fProjectorNearPlane,0.01f)+0.01f, pLight->m_fRadius+3.0f);
   }*/
 }
 
@@ -310,7 +310,7 @@ void CShadowUtils::GetCubemapFrustum(EFrustum_Type eFrustumType, ShadowMapFrustu
 
   Vec3 vForward = Vec3(sCubeVector[nS][0], sCubeVector[nS][1], sCubeVector[nS][2]);
   Vec3 vUp      = Vec3(sCubeVector[nS][3], sCubeVector[nS][4], sCubeVector[nS][5]);
-  float fMinDist = max(pFrust->fNearDist, 0.03f);
+  float fMinDist = std::max(pFrust->fNearDist, 0.03f);
   float fMaxDist = pFrust->fFarDist;
 
   Vec3 vEyePt = Vec3(

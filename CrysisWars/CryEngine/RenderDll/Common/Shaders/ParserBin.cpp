@@ -587,8 +587,8 @@ void CParserBin::Init()
     uint32 Macro[64];
     if (pr->m_szMacro[0])
     {
-      char *szBuf = (char *)pr->m_szMacro.c_str();
-      SkipCharacters (&szBuf, " ");
+      const char* szBuf = pr->m_szMacro.c_str();
+      SkipCharacters(szBuf, " ");
       if (!szBuf[0])
         break;
       char com[1024];
@@ -731,7 +731,7 @@ uint32 CParserBin::NewUserToken(uint32 nToken, const char *szToken, bool bUseFin
   return nToken;
 }
 
-uint32 CParserBin::NextToken(char*& buf, char *com, bool& bKey)
+uint32 CParserBin::NextToken(const char*& buf, char* com, bool& bKey)
 {
   char ch;
   int n = 0;
@@ -759,6 +759,14 @@ uint32 CParserBin::NextToken(char*& buf, char *com, bool& bKey)
   com[n] = 0;
   uint32 dwToken = fxToken(com, &bKey);
   return dwToken;
+}
+
+uint32 CParserBin::NextToken(char*& buf, char* com, bool& bKey)
+{
+  const char* readCursor = buf;
+  const uint32 token = NextToken(readCursor, com, bKey);
+  buf += readCursor - buf;
+  return token;
 }
 
 bool CParserBin::AddMacro(uint32 dwName, uint32 *pMacro, int nMacroTokens, uint32 nMask, FXMacroBin& Macro)
@@ -1973,7 +1981,7 @@ bool CParserBin::ParseObject(SFXTokenBin *pTokens)
 #ifdef _DEBUG
     TArray<char> Text;
     SParserFrame Fr;
-    Fr.m_nFirstToken = max(m_CurFrame.m_nFirstToken, m_CurFrame.m_nCurToken-5);
+    Fr.m_nFirstToken = std::max(m_CurFrame.m_nFirstToken, m_CurFrame.m_nCurToken-5);
     Fr.m_nLastToken = m_CurFrame.m_nLastToken;
     ConvertToAscii(&m_Tokens[Fr.m_nFirstToken], Fr.m_nLastToken-Fr.m_nFirstToken+1, m_Table, Text);
 #endif
@@ -2056,7 +2064,7 @@ bool CParserBin::ParseObject(SFXTokenBin *pTokens, int& nIndex)
 #ifdef _DEBUG
     TArray<char> Text;
     SParserFrame Fr;
-    Fr.m_nFirstToken = max(m_CurFrame.m_nFirstToken, m_CurFrame.m_nCurToken-5);
+    Fr.m_nFirstToken = std::max(m_CurFrame.m_nFirstToken, m_CurFrame.m_nCurToken-5);
     Fr.m_nLastToken = m_CurFrame.m_nLastToken;
     ConvertToAscii(&m_Tokens[Fr.m_nFirstToken], Fr.m_nLastToken-Fr.m_nFirstToken+1, m_Table, Text);
 #endif

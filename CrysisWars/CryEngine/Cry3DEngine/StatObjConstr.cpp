@@ -207,9 +207,9 @@ void CStatObj::ShutDown()
 	//////////////////////////////////////////////////////////////////////////
 	// Handle sub-objects and parents.
 	//////////////////////////////////////////////////////////////////////////
-	for (size_t i=0; i<m_subObjects.size(); i++)
+	for (DynArray<SSubObject>::iterator it = m_subObjects.begin(); it != m_subObjects.end(); ++it)
 	{
-		CStatObj *pChildObj = (CStatObj*)m_subObjects[i].pStatObj;
+		CStatObj *pChildObj = (CStatObj*)it->pStatObj;
 		if (pChildObj)
 		{
 			if (!m_bSharesChildren)
@@ -1140,6 +1140,11 @@ bool CStatObj::MergeSubObjectsRenderMeshes( int nLod )
 
 	if (!lstRMI.empty())
 	{
+		if (lstRMI.size() > std::numeric_limits<int>::max())
+		{
+			Error("Render-mesh merge input exceeds the merger API limit");
+			return false;
+		}
 		resultMeshes.clear();
 
 		CRenderMeshMerger::SMergeInfo info;
@@ -1147,7 +1152,7 @@ bool CStatObj::MergeSubObjectsRenderMeshes( int nLod )
 		info.sMeshType = "StatObj_Merged";
 		info.bMergeToOneRenderMesh = true;
 		info.pUseMaterial = m_pMaterial;
-		GetSharedRenderMeshMerger()->MergeRenderMeshes( &lstRMI[0],lstRMI.size(),resultMeshes, info);
+		GetSharedRenderMeshMerger()->MergeRenderMeshes(&lstRMI[0], static_cast<int>(lstRMI.size()), resultMeshes, info);
 	}
 
 	if (resultMeshes.empty())

@@ -113,7 +113,7 @@ namespace mesh_compiler
       int nCurVertex = 0;
       PodArray<T> newIndices;
       std::vector<int> arrHashTable[256];
-      newIndices.reserve( indices.size() );
+      newIndices.reserve(indices.Count());
       std::vector<int> *pHash = 0;
 
       float fHashElemSize = 256.0f / max(boxBoundary.max.x - boxBoundary.min.x, 0.01f);
@@ -179,8 +179,8 @@ namespace mesh_compiler
 		const char* GetLastError() { return m_LastError; }
 
 	private:
-		void CompactBuffer( CMesh &mesh,uint8 *vertexMatId, int flags );
-		void DeleteDegenerateFaces( CMesh &mesh );
+		bool CompactBuffer(CMesh& mesh, uint8* vertexMatId, int flags);
+		bool DeleteDegenerateFaces(CMesh& mesh);
 		void FindVertexRanges( CMesh &mesh );
 		bool StripifyMesh( CMesh &mesh );
 		void UpdateFaces( CMesh &mesh );
