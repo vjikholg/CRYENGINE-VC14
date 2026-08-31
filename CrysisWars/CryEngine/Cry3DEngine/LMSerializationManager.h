@@ -225,9 +225,9 @@ protected:
 		RawLMData(const uint32 indwWidth, const uint32 indwHeight, const T& _vGLM_IDs_UsingPatch )
 		{
 //			vGLM_IDs_UsingPatch = _vGLM_IDs_UsingPatch;
-			const uint	Size	=	_vGLM_IDs_UsingPatch.size();
+			const size_t Size = _vGLM_IDs_UsingPatch.size();
 			vGLM_IDs_UsingPatch.resize(Size);
-			for(uint a=0;a<Size;a++)
+			for(size_t a = 0; a < Size; ++a)
 				vGLM_IDs_UsingPatch[a]	=	_vGLM_IDs_UsingPatch[a];
 
 			m_dwWidth=indwWidth;

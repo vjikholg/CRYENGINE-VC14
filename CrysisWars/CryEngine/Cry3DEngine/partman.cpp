@@ -543,8 +543,9 @@ void CPartManager::LogEvents()
 
 							const char* sThread = CryThreadGetName(pEventT->nThread);
 							if (pEventT == pEventC)			// Main thread.
-								GetLog()->LogToFile( "%*s %s(%X) @%s", 
-									nWidth, "", pEventC->pEffect ? pEventC->pEffect->GetName() : "", pEventC->nContainerId, sThread );
+								GetLog()->LogToFile( "%*s %s(%p) @%s",
+									nWidth, "", pEventC->pEffect ? pEventC->pEffect->GetName() : "",
+									reinterpret_cast<void*>(pEventC->nContainerId), sThread );
 							else
 								GetLog()->LogToFile( "%*s   @%s", nWidth, "", sThread );
 
@@ -934,7 +935,7 @@ int CPartManager::AddEventTiming( const char* sEvent, const CParticleContainer* 
 		return -1;
 
 	SEventTiming* pEvent = m_aEvents.push_back();
-	pEvent->nContainerId = (uint32)pCont;
+	pEvent->nContainerId = reinterpret_cast<uintptr_t>(pCont);
 	pEvent->pEffect = pCont ? pCont->GetEffect() : 0;
 	pEvent->nThread = GetCurrentThreadId();
 	pEvent->sEvent = sEvent;

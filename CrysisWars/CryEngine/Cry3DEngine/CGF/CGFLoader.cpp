@@ -613,8 +613,7 @@ uint32 CLoaderCGF::ReadBoneHierarchy ( IChunkFile::ChunkDesc* pChunkDesc )
 	*/
 
 	pSkinningInfo->m_arrBonesDesc.resize (pChunk->nBones);
-	CryBoneDescData zeroBone;
-	memset(&zeroBone, 0, sizeof(zeroBone));
+	CryBoneDescData zeroBone = {};
 	std::fill(pSkinningInfo->m_arrBonesDesc.begin(), pSkinningInfo->m_arrBonesDesc.end(), zeroBone);
 	m_arrIndexToId.resize (pChunk->nBones, ~0);
 	m_arrIdToIndex.resize (pChunk->nBones, ~0);
@@ -834,42 +833,29 @@ bool CLoaderCGF::ReadCompiledBones (  IChunkFile::ChunkDesc *pChunkDesc  )
 
 	if (pChunkDesc->hdr.ChunkVersion == pBIPChunk->VERSION)
 	{
-		uint32 nDataSize = pChunkDesc->size-sizeof(COMPILED_BONE_CHUNK_DESC_0800);
-#if SIZEOF_PTR == 4
-		uint32 numBones = nDataSize/sizeof(CryBoneDescData);
-		pSkinningInfo->m_arrBonesDesc.resize(numBones);
-		CryBoneDescData* pSrcVertices = (CryBoneDescData*)(pBIPChunk+1);
-		SwapEndian( pSrcVertices,numBones );
-
-		for (uint32 i=0; i<numBones; i++) 
-			pSkinningInfo->m_arrBonesDesc[i]=pSrcVertices[i];
-#else
-		const uint32 boneSize = StructSize<CryBoneDescData>();
+		const uint32 nDataSize = pChunkDesc->size-sizeof(COMPILED_BONE_CHUNK_DESC_0800);
+		const uint32 boneSize = StructSize<CryBoneDescData_Comp>();
 		const uint32 numBones = nDataSize / boneSize;
 		pSkinningInfo->m_arrBonesDesc.resize(numBones);
-		CryBoneDescData *pSrcVertices = new CryBoneDescData[numBones];
 		const uint8 *const pSrcData = (const uint8 *)(pBIPChunk + 1);
 		for (uint32 i = 0; i < numBones; ++i)
 		{
-			StructUnpack(pSrcVertices + i, pSrcData + i * boneSize);			
-			pSrcVertices[i].m_PhysInfo[0].pPhysGeom = (phys_geometry*)(INT_PTR)((CryBoneDescData_Comp*) (pSrcData + i * boneSize))->m_PhysInfo[0].nPhysGeom;
-			pSrcVertices[i].m_PhysInfo[1].pPhysGeom = (phys_geometry*)(INT_PTR)((CryBoneDescData_Comp*) (pSrcData + i * boneSize))->m_PhysInfo[1].nPhysGeom;
-			int tmp = (INT_PTR)((CryBoneDescData_Comp*) (pSrcData + i * boneSize))->m_PhysInfo[0].nPhysGeom;;
-			SwapEndian(tmp);
-			pSrcVertices[i].m_PhysInfo[0].pPhysGeom = (phys_geometry*)tmp;
-			tmp = (INT_PTR)((CryBoneDescData_Comp*) (pSrcData + i * boneSize))->m_PhysInfo[1].nPhysGeom;;
-			SwapEndian(tmp);
-			pSrcVertices[i].m_PhysInfo[1].pPhysGeom = (phys_geometry*)tmp;
+			CryBoneDescData_Comp sourceBone = {};
+			StructUnpack(&sourceBone, pSrcData + i * boneSize);
 
-			//SwapEndian(pSrcVertices[i].m_PhysInfo[1].pPhysGeom);
+			CryBoneDescData& destinationBone = pSkinningInfo->m_arrBonesDesc[i];
+			destinationBone.m_nControllerID = sourceBone.m_nControllerID;
+			CopyPhysInfo(destinationBone.m_PhysInfo[0], sourceBone.m_PhysInfo[0]);
+			CopyPhysInfo(destinationBone.m_PhysInfo[1], sourceBone.m_PhysInfo[1]);
+			destinationBone.m_fMass = sourceBone.m_fMass;
+			destinationBone.m_DefaultW2B = sourceBone.m_DefaultW2B;
+			destinationBone.m_DefaultB2W = sourceBone.m_DefaultB2W;
+			memcpy(destinationBone.m_arrBoneName, sourceBone.m_arrBoneName, sizeof(destinationBone.m_arrBoneName));
+			destinationBone.m_nLimbId = sourceBone.m_nLimbId;
+			destinationBone.m_nOffsetParent = sourceBone.m_nOffsetParent;
+			destinationBone.m_numChildren = sourceBone.m_numChildren;
+			destinationBone.m_nOffsetChildren = sourceBone.m_nOffsetChildren;
 		}
-
-
-		for (uint32 i=0; i<numBones; i++) 
-			pSkinningInfo->m_arrBonesDesc[i]=pSrcVertices[i];
-
-		delete []pSrcVertices;
-#endif
 
 		m_CompiledBones=true; 
 		return true;

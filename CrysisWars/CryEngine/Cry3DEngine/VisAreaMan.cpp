@@ -15,6 +15,7 @@
 
 #include "StdAfx.h"
 #include <ICryAnimation.h>
+#include <CryCheckedArithmetic.h>
 
 #include "StatObj.h"
 #include "ObjMan.h"
@@ -1602,12 +1603,18 @@ void CVisAreaManager::LoadLightmap()
 	}
 
 	ILMSerializationManager *pISerializationManager = Get3DEngine()->CreateLMSerializationManager();
+	int32 glmCount = 0;
+	if (!CryTryNarrowSize(vGLMs.size(), glmCount))
+	{
+		pISerializationManager->Release();
+		return;
+	}
 	if( 0 == vGLMs.size() )
 		pISerializationManager->ApplyLightmapfile(Get3DEngine()->GetLevelFilePath(LM_EXPORT_FILE_NAME), NULL, 0 );
 	else
 	{
-		pISerializationManager->ApplyLightmapfile(Get3DEngine()->GetLevelFilePath(LM_EXPORT_FILE_NAME), &vGLMs.front(), vGLMs.size() );
-		pISerializationManager->LoadFalseLight(Get3DEngine()->GetLevelFilePath(LM_FALSE_LIGHTS_EXPORT_FILE_NAME), &vGLMs.front(), vGLMs.size() );
+		pISerializationManager->ApplyLightmapfile(Get3DEngine()->GetLevelFilePath(LM_EXPORT_FILE_NAME), &vGLMs.front(), glmCount );
+		pISerializationManager->LoadFalseLight(Get3DEngine()->GetLevelFilePath(LM_FALSE_LIGHTS_EXPORT_FILE_NAME), &vGLMs.front(), glmCount );
 	}
 	pISerializationManager->Release();
 	pISerializationManager = NULL;

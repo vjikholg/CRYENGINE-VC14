@@ -307,10 +307,10 @@ public:
 			float fSrcX = x*fScaleX-0.5f;		// -0.5 .. 0.5
 			float fSrcAngleX = fSrcAngleMin+2*g_PI*fSrcX;
 
-			if(fSrcAngleX>g_PI)
-				fSrcAngleX-=2*g_PI;
-			if(fSrcAngleX<-g_PI)
-				fSrcAngleX+=2*g_PI;
+			if(fSrcAngleX>gf_PI)
+				fSrcAngleX-=2*gf_PI;
+			if(fSrcAngleX<-gf_PI)
+				fSrcAngleX+=2*gf_PI;
 
 			if(fabs(fSrcAngleX)>fFadeOutFov*0.5f)
 				continue;															// clip away curved parts of the barrel
@@ -1642,12 +1642,14 @@ inline void Blend( float& Stat, int& StatCur, float fBlendCur )
 static void AppendString( char * &szEnd, const char *szToAppend )
 {
 	assert(szToAppend);
+	if (szToAppend)
+	{
+		while (*szToAppend)
+			*szEnd++ = *szToAppend++;
 
-	while(*szToAppend)
-		*szEnd++ = *szToAppend++;
-	
-	*szEnd++=' ';
-	*szEnd=0;
+		*szEnd++ = ' ';
+		*szEnd = 0;
+	}
 }
 
 
@@ -2452,7 +2454,8 @@ bool C3DEngine::ScreenShotPanorama(CStitchedImage* pStitchedImage,const int nRen
 	//GetRenderer()->Update();
 
 	float r_drawnearfov_backup=-1;
-	ICVar *r_drawnearfov = GetConsole()->GetCVar("r_DrawNearFoV");		assert(r_drawnearfov);
+	ICVar *r_drawnearfov = GetConsole()->GetCVar("r_DrawNearFoV");
+	assert(r_drawnearfov);
 
 	r_drawnearfov_backup = r_drawnearfov->GetFVal();
 	r_drawnearfov->Set(-1);		// means the fov override should be switched off

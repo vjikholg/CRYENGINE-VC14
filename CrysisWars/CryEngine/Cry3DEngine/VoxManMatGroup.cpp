@@ -11,6 +11,7 @@
 //////////////////////////////////////////////////////////////////////
 
 #include "StdAfx.h"
+#include <CryCheckedArithmetic.h>
 
 #include "VoxMan.h"
 #include "IndexedMesh.h"
@@ -347,14 +348,15 @@ IRenderMesh * CVoxelMesh::CreateRenderMeshFromIndexedMesh(CMesh * pMatMesh, CVox
 
 int CVoxelMesh::GetMemoryUsage()
 {
-  int nSize = sizeof(*this);
+	size_t nSize = sizeof(*this);
 
   // clear hash
   for(int i=0; i<VOX_HASH_SIZE; i++)
     for(int j=0; j<VOX_HASH_SIZE; j++)
       nSize += m_arrVertHash[i][j].capacity()*sizeof(ushort);
 
-	return nSize;
+	int result = 0;
+	return CryTryNarrowSize(nSize, result) ? result : (std::numeric_limits<int>::max)();
 }
 
 void CVoxelMesh::UpdateVertexHash(IRenderMesh * pRM)

@@ -404,7 +404,8 @@ struct BONE_ENTITY
 struct phys_geometry;
 struct BONE_PHYSICS
 {
-	phys_geometry *pPhysGeom; // id of a separate mesh for this bone // MUST not be in File Structures!!!
+	int32 nPhysGeomId = 0; // serialized chunk id; zero means no geometry
+	phys_geometry *pPhysGeom = nullptr; // resolved runtime geometry; never stores a chunk id
 	// additional joint parameters
 	int		flags;
 	float min[3],max[3];
@@ -494,7 +495,8 @@ struct CryBoneDescData_Comp
 #define __copy3(MEMBER) left.MEMBER[0] = right.MEMBER[0]; left.MEMBER[1] = right.MEMBER[1]; left.MEMBER[2] = right.MEMBER[2];
 inline void CopyPhysInfo (BONE_PHYSICS& left, const BONE_PHYSICS_COMP& right)
 {
-	left.pPhysGeom = (phys_geometry*)(INT_PTR)right.nPhysGeom;
+	left.nPhysGeomId = right.nPhysGeom;
+	left.pPhysGeom = nullptr;
 	left.flags     = right.flags;
 	__copy3(min);
 	__copy3(max);
@@ -507,7 +509,7 @@ inline void CopyPhysInfo (BONE_PHYSICS& left, const BONE_PHYSICS_COMP& right)
 }
 inline void CopyPhysInfo (BONE_PHYSICS_COMP& left, const BONE_PHYSICS& right)
 {
-	left.nPhysGeom = (int)(INT_PTR)right.pPhysGeom;
+	left.nPhysGeom = right.nPhysGeomId;
 	left.flags     = right.flags;
 	__copy3(min);
 	__copy3(max);

@@ -687,7 +687,7 @@ bool CreateVolumeShadow(const Vec3& lightDir, float shadowStrength, const SVolum
 
 	int majAxis = 0;
 	{
-		float abssun[3] = { fabs(sun[0]), fabs(sun[1]), fabs(sun[2]) };
+		float abssun[3] = { fabsf(sun[0]), fabsf(sun[1]), fabsf(sun[2]) };
 
 		if (abssun[1] > abssun[0])
 			majAxis = 1;

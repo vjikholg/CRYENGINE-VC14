@@ -17,6 +17,7 @@
 #define TERRAIN_H
 
 #include "TerrainModifications.h"						// CTerrainModifications
+#include <CryCheckedArithmetic.h>
 
 // lowest level of the outdoor world
 #define TERRAIN_BOTTOM_LEVEL 0
@@ -429,18 +430,34 @@ public:
 
   template <class T> static bool LoadDataFromFile(T *data, size_t elems, FILE * & f, int & nDataSize)
   {
+	size_t byteCount = 0;
+	int byteCount32 = 0;
+	if (!CryTryMultiplySize(sizeof(T), elems, byteCount) ||
+		!CryTryNarrowSize(byteCount, byteCount32) ||
+		byteCount32 > nDataSize)
+	{
+		return false;
+	}
     if(GetPak()->FRead(data, elems, f) != elems)
     {
       assert(0);
       return false;
     }
-    nDataSize -= sizeof(T)*elems;
+    nDataSize -= byteCount32;
     return true;
   }
 
   template <class T> static bool LoadDataFromFile(T *data, size_t elems, uchar * & f, int & nDataSize)
   {
-    StepDataCopy(data, f, &nDataSize, elems);
+	int elementCount = 0;
+	size_t byteCount = 0;
+	if (!CryTryNarrowSize(elems, elementCount) ||
+		!CryTryMultiplySize(sizeof(T), elems, byteCount) ||
+		byteCount > static_cast<size_t>((std::max)(nDataSize, 0)))
+	{
+		return false;
+	}
+    StepDataCopy(data, f, &nDataSize, elementCount);
     return true;
   }
 

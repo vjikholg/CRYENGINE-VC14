@@ -465,10 +465,11 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	// Only used for debugging statistics.
 	//////////////////////////////////////////////////////////////////////////
-	static size_t _usedMemory( size_t size )
+	static size_t _usedMemory( size_t added, size_t removed = 0 )
 	{
 		static size_t s_used_memory = 0;
-		s_used_memory += size;
+		s_used_memory += added;
+		s_used_memory -= removed <= s_used_memory ? removed : s_used_memory;
 		return s_used_memory;
 	}
 
@@ -626,8 +627,8 @@ inline void CryStackStringT<T,S>::_FreeData(value_type* pData)
 {
 	if (pData != m_strBuf)
 	{
-		int allocLen = (m_nAllocSize+1)*sizeof(value_type);
-		_usedMemory( -allocLen ); // For statistics.
+		const size_t allocLen = (m_nAllocSize+1)*sizeof(value_type);
+		_usedMemory(0, allocLen); // For statistics.
 		CryModuleFree(pData);
 	}
 }

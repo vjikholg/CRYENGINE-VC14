@@ -40,7 +40,7 @@ public:
 
 	bool Read( const char *filename );
   bool ReadFromMemBlock( CMemoryBlock * pMemBlock );
-  bool ReadChunkTableFromBuffer( void *pBuffer,int nBufferSize );
+  bool ReadChunkTableFromBuffer( void *pBuffer,size_t nBufferSize );
 	
 	// Write chunks to file.
 	bool Write( const char *filename ) { return false; };

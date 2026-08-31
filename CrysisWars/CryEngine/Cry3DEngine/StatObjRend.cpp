@@ -64,6 +64,12 @@ void CStatObj::SetupBending(CRenderObject * pObj, Vec2 const& vBending)
   pObj->m_ObjFlags |= FOB_BENDED | FOB_VEGETATION;  
 }
 
+const bool CStatObj::IsValidRenderNode(const IRenderNode* node) const
+{
+	constexpr uintptr_t invalidPtr = UINT64_MAX;
+	return node && reinterpret_cast<uintptr_t>(node) != invalidPtr;
+}
+
 //////////////////////////////////////////////////////////////////////
 void CStatObj::Render(const SRendParams & rParams)
 {
@@ -94,8 +100,8 @@ void CStatObj::Render(const SRendParams & rParams)
 	if (!(m_nFlags & STATIC_OBJECT_COMPOUND))
 	{ // draw mesh, don't even try to render childs
 		int nNewLod = 0;
-    bool bRenderNodeValid(rParams.pRenderNode && ((int)(void*)(rParams.pRenderNode)>0));
-    if(bRenderNodeValid)
+		const bool bRenderNodeValid(IsValidRenderNode(rParams.pRenderNode));
+		if(bRenderNodeValid)
 		{
 			float fScale = rParams.pMatrix->GetColumn0().GetLength();
 			nNewLod = CObjManager::GetObjectLOD(rParams.fDistance, rParams.pRenderNode->GetLodRatioNormalized(), GetRadius()*fScale);
@@ -641,12 +647,12 @@ bool CStatObj::RenderDebugInfo( SRendParams & rParams, CRenderObject *pObj, IMat
 					pObj->m_nMaterialLayers = 0;
 				}
 
-        bool bRenderNodeValid(rParams.pRenderNode && ((int)(void*)(rParams.pRenderNode)>0));
-        int nMaxUsableLod = std::min((int)m_nMaxUsableLod,GetCVars()->e_lod_max);
+				bool bRenderNodeValid(IsValidRenderNode(rParams.pRenderNode));
+				int nMaxUsableLod = std::min((int)m_nMaxUsableLod,GetCVars()->e_lod_max);
 				if (nNumLods > 1 && !bNoText)
-          pRend->DrawLabelEx( pos,1.3f,color,true,true,"%d/%d (%d/%.1f/%d)",
-            nLod, nNumLods, 
-            bRenderNodeValid ? rParams.pRenderNode->GetLodRatio() : -1, rParams.fDistance, nMaxUsableLod);
+					pRend->DrawLabelEx(pos,1.3f,color,true,true,"%d/%d (%d/%.1f/%d)",
+					nLod, nNumLods,
+					bRenderNodeValid ? rParams.pRenderNode->GetLodRatio() : -1, rParams.fDistance, nMaxUsableLod);
 
 				return false;
 				//////////////////////////////////////////////////////////////////////////

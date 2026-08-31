@@ -13,6 +13,7 @@
 #include "../Defs.h"
 #include "ShaderComponents.h"
 #include "ShaderGraph.h"
+#include <CryCheckedArithmetic.h>
 
 // bump this value up if you want to invalidate shader cache (e.g. changed cfi include file))
 // #### VIP NOTE ####: DON'T USE MORE THAN ONE DECIMAL PLACE!!!! else it doens't work...
@@ -508,7 +509,7 @@ struct SRenderShaderResources : SBaseShaderResources, IRenderShaderResources
   }
   int Size()
   {
-    int nSize = sizeof(SRenderShaderResources);
+    size_t nSize = sizeof(SRenderShaderResources);
     for (int i=0; i<EFTT_MAX; i++)
     {
       if (m_Textures[i])
@@ -519,7 +520,7 @@ struct SRenderShaderResources : SBaseShaderResources, IRenderShaderResources
     nSize += m_RTargets.GetMemoryUsage();
     if (m_pDeformInfo)
       nSize += m_pDeformInfo->Size();
-    return nSize;
+    return CrySaturateSize<int>(nSize);
   }
   SRenderShaderResources& operator=(const SRenderShaderResources& src);
   SRenderShaderResources(struct SInputShaderResources *pSrc);

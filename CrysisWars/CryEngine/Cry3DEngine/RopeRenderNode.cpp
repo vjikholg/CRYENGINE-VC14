@@ -763,7 +763,7 @@ bool CRopeRenderNode::Render( const SRendParams& rParams )
 	else
 	{
 		// Update mesh only if physics is active.
-		int nRecursionLevel = (int)GetRenderer()->EF_Query(EFQ_RecurseLevel);
+		const uintptr_t nRecursionLevel = reinterpret_cast<uintptr_t>(GetRenderer()->EF_Query(EFQ_RecurseLevel));
 		if (m_pPhysicalEntity /*&& rParams.*/ && (!(rParams.dwFObjFlags & FOB_RENDER_INTO_SHADOWMAP)) && nRecursionLevel == 1)
 		{
 			pe_status_awake status;

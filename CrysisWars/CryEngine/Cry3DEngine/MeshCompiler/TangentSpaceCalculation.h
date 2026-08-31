@@ -33,6 +33,7 @@
 
 #include <vector>									// STL vector<> 
 #include <map>										// STL map<,,> multimap<>
+#include <CryCheckedArithmetic.h>
 
 // derive your proxy from this class
 // don't worry about the virtual function calls - the template implementation should optimize this gracefully
@@ -526,7 +527,8 @@ uint32 CTangentSpaceCalculation<InputProxy>::AddUV2Base( std::multimap<CBaseInde
 
 		CBase33 Base( CVec3(0,0,0), CVec3(0,0,0), vNormal );
 
-		dwBaseUVIndex = m_BaseVectors.size();
+		if (!CryTryNarrowSize(m_BaseVectors.size(), dwBaseUVIndex))
+			return 0xffffffff;
 
 		inMap.insert( std::pair<CBaseIndex,uint32>(Indx,dwBaseUVIndex) );
 		m_BaseVectors.push_back(Base);
@@ -575,7 +577,8 @@ void CTangentSpaceCalculation<InputProxy>::AddNormal2Base( std::multimap<CBaseIn
 
 		CBase33 Base( CVec3(0,0,0), CVec3(0,0,0), CVec3(0,0,0) );
 
-		dwBaseNIndex=m_BaseVectors.size();
+		if (!CryTryNarrowSize(m_BaseVectors.size(), dwBaseNIndex))
+			return;
 		inMap.insert( std::pair<CBaseIndex,uint32>(Indx,dwBaseNIndex) );
 		m_BaseVectors.push_back(Base);
 	}

@@ -17,6 +17,7 @@
 
 #include "IEntity.h"
 #include "IScriptSystem.h"
+#include <CryCheckedArithmetic.h>
 
 #include <vector>
 #include <list>
@@ -438,7 +439,8 @@ public:
 		if (!BeginOptionalGroup(name,true)) return; \
 		if (IsWriting()) \
 		{ \
-			uint32 count = cont.size(); \
+			uint32 count = 0; \
+			if (!CryTryNarrowSize(cont.size(), count)) { EndGroup(); return; } \
 			Value("Size", count); \
 			for (typename container_type<T_Value, Allocator>::iterator iter = cont.begin(); iter != cont.end(); ++iter) \
 			{ \
@@ -470,7 +472,8 @@ public:
 		if (!BeginOptionalGroup(name,true)) return; \
 		if (IsWriting()) \
 		{ \
-			uint32 count = cont.size(); \
+			uint32 count = 0; \
+			if (!CryTryNarrowSize(cont.size(), count)) { EndGroup(); return; } \
 			Value("Size", count); \
 			for (typename container_type<T_Value>::iterator iter = cont.begin(); iter != cont.end(); ++iter) \
 			{\
@@ -503,7 +506,8 @@ public:
 		if (!BeginOptionalGroup(name,true)) return; \
 		if (IsWriting()) \
 		{ \
-			uint32 count = cont.size(); \
+			uint32 count = 0; \
+			if (!CryTryNarrowSize(cont.size(), count)) { EndGroup(); return; } \
 			Value("Size", count); \
 			for (typename container_type<std::pair<T_Value1,T_Value2>, Allocator>::iterator iter = cont.begin(); iter != cont.end(); ++iter) \
 			{ \
@@ -609,7 +613,8 @@ public:
 		BeginGroup(name); \
 		if (IsWriting()) \
 		{ \
-			uint32 count = cont.size(); \
+			uint32 count = 0; \
+			if (!CryTryNarrowSize(cont.size(), count)) { EndGroup(); return; } \
 			Value("Size", count); \
 			for (typename container_type<T_Key, T_Value>::iterator iter = cont.begin(); iter != cont.end(); ++iter) \
 			{ \

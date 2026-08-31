@@ -15,6 +15,7 @@
 
 #include "StdAfx.h"
 #include "CGFSaver.h"
+#include <CryCheckedArithmetic.h>
 
 using namespace mesh_compiler;
 
@@ -239,7 +240,6 @@ void CSaverCGF::SaveNodes()
 		CNodeCGF *pNode = m_pCGF->GetNode(i);
 		const char* pNodeName = pNode->name;
 		// Check if not yet saved.
-		uint32 numSavedNodes = m_savedNodes.size();
 		//	if (m_savedNodes.find(pNode) == m_savedNodes.end())
 		SaveNode( pNode );
 
@@ -341,7 +341,8 @@ int CSaverCGF::SaveNode( CNodeCGF *pNode )
 	}
 
 	chunk.ObjectID = pNode->nObjectChunkId;
-	chunk.PropStrLen = pNode->properties.length();
+	if (!CryTryNarrowSize(pNode->properties.length(), chunk.PropStrLen))
+		return -1;
 
 	CChunkData chunkData;
 	chunkData.Add(chunk);
@@ -412,7 +413,14 @@ int CSaverCGF::SaveNodeMesh( CNodeCGF *pNode )
 	for (int i = 0; i < 4; i++)
 	{
 		if (!pNode->physicalGeomData[i].empty())
-			chunk.nPhysicsDataChunkId[i] = SavePhysicalDataChunk( &pNode->physicalGeomData[i][0],pNode->physicalGeomData[i].size() );
+		{
+			int physicalDataSize = 0;
+			if (!CryTryNarrowSize(pNode->physicalGeomData[i].size(), physicalDataSize))
+				return -1;
+			chunk.nPhysicsDataChunkId[i] = SavePhysicalDataChunk(
+				&pNode->physicalGeomData[i][0],
+				physicalDataSize);
+		}
 	}
 
 	int nMeshChunkId = m_pChunkFile->AddChunk( chunk.chdr,&chunk,sizeof(chunk) );
@@ -520,7 +528,13 @@ int CSaverCGF::SaveMeshSubsetsChunk( CMesh &mesh )
 		{
 			SMeshSubset &srcSubset = mesh.m_subsets[i];
 			MESH_SUBSETS_CHUNK_DESC_0800::MeshBoneIDs subset;
-			subset.numBoneIDs = srcSubset.m_arrGlobalBonesPerSubset.size();
+			constexpr size_t maximumBoneIds =
+				sizeof(subset.arrBoneIDs) / sizeof(subset.arrBoneIDs[0]);
+			if (srcSubset.m_arrGlobalBonesPerSubset.size() > maximumBoneIds ||
+				!CryTryNarrowSize(srcSubset.m_arrGlobalBonesPerSubset.size(), subset.numBoneIDs))
+			{
+				return -1;
+			}
 			for (uint32 b=0; b<subset.numBoneIDs; b++)
 				subset.arrBoneIDs[b]=srcSubset.m_arrGlobalBonesPerSubset[b];
 			chunkData.AddData(&subset, sizeof(MESH_SUBSETS_CHUNK_DESC_0800::MeshBoneIDs));

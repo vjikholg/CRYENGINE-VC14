@@ -62,6 +62,9 @@
     <ClInclude Include="SafeAllocTests.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="SerializedSizeTests.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="MM06Tests.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -122,6 +125,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="SafeAllocTests.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SerializedSizeTests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="CryCommonTestSupport.cpp">

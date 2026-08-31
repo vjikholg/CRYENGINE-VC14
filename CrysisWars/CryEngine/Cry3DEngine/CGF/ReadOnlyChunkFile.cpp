@@ -15,6 +15,7 @@
 
 #include "StdAfx.h"
 #include "ReadOnlyChunkFile.h"
+#include <CryCheckedArithmetic.h>
 
 #define MAX_CHUNKS_NUM 10000
 
@@ -126,11 +127,11 @@ int CReadOnlyChunkFile::GetChunkSize(int nChunkIdx) const
 //////////////////////////////////////////////////////////////////////////
 CReadOnlyChunkFile::ChunkDesc* CReadOnlyChunkFile::FindChunkByType( int type )
 {
-	int nchunks = m_chunks.size();
+	const size_t nchunks = m_chunks.size();
 	if (nchunks > 0)
 	{
 		ChunkDesc *chunks = &m_chunks[0];
-		for (unsigned int i = 0; i < nchunks; i++)
+		for (size_t i = 0; i < nchunks; i++)
 		{
 			if (chunks[i].hdr.ChunkType == type)
 			{
@@ -156,74 +157,91 @@ CReadOnlyChunkFile::ChunkDesc* CReadOnlyChunkFile::FindChunkById( int id )
 }
 
 //////////////////////////////////////////////////////////////////////////
-bool CReadOnlyChunkFile::ReadChunkTableFromBuffer( void *pBuffer,int nBufferSize )
+bool CReadOnlyChunkFile::ReadChunkTableFromBuffer( void *pBuffer,size_t nBufferSize )
 {
-  unsigned i;
-
 	FreeBuffer();
+	m_chunks.clear();
+	if (pBuffer == nullptr || !CryIsRangeWithinSize(nBufferSize, 0, sizeof(m_fileHeader)))
+		return false;
 
-  //char * pData = m_pFileBuffer = (char *)pMemBlock->GetData();
-  m_pFileBuffer = (char*)pBuffer;
+	m_pFileBuffer = static_cast<char*>(pBuffer);
 	m_bOwnFileBuffer = false;
 
-	if(m_pFileBuffer != pBuffer)
-		memcpy(m_pFileBuffer,pBuffer,nBufferSize);
-  char * pData = m_pFileBuffer;
+	memcpy(&m_fileHeader, m_pFileBuffer, sizeof(m_fileHeader));
+	SwapEndian(m_fileHeader);
+	if (m_fileHeader.ChunkTableOffset < 0)
+		return false;
 
-  memcpy(&m_fileHeader, pData, sizeof(m_fileHeader));
-  SwapEndian( m_fileHeader );
-  pData += m_fileHeader.ChunkTableOffset;
+	const size_t chunkTableOffset = static_cast<size_t>(m_fileHeader.ChunkTableOffset);
+	if (!CryIsRangeWithinSize(nBufferSize, chunkTableOffset, sizeof(int)))
+		return false;
 
-  int nChunkTableOffset = m_fileHeader.ChunkTableOffset;
+	int chunkCount = 0;
+	memcpy(&chunkCount, m_pFileBuffer + chunkTableOffset, sizeof(chunkCount));
+	SwapEndian(chunkCount);
+	if (chunkCount < 0 || chunkCount > MAX_CHUNKS_NUM)
+		return false;
 
-  int n_chunks = *(int*)pData;
-  pData += 4;
-  if(n_chunks < 0 || n_chunks > MAX_CHUNKS_NUM)
-    return false;
+	const size_t chunkCountSize = static_cast<size_t>(chunkCount);
+	size_t chunkHeadersOffset = 0;
+	if (!CryTryAddSize(chunkTableOffset, sizeof(chunkCount), chunkHeadersOffset))
+		return false;
 
-  m_nLastChunkId = 0;
+	size_t chunkHeadersEnd = 0;
+	if (!CryTryGetArrayRangeEnd(
+		nBufferSize,
+		chunkHeadersOffset,
+		chunkCountSize,
+		sizeof(CHUNK_HEADER),
+		chunkHeadersEnd))
+	{
+		return false;
+	}
+	const bool tablePrecedesChunks = chunkTableOffset == sizeof(m_fileHeader);
+	const size_t chunkDataBegin = tablePrecedesChunks
+		? chunkHeadersEnd
+		: sizeof(m_fileHeader);
+	const size_t chunkDataEnd = tablePrecedesChunks
+		? nBufferSize
+		: chunkTableOffset;
 
-  CHUNK_HEADER *chunks = (CHUNK_HEADER*)(m_pFileBuffer + nChunkTableOffset+4); //new CHUNK_HEADER[n_chunks];
-  SwapEndian( chunks,n_chunks );
+	m_nLastChunkId = 0;
+	m_chunks.resize(chunkCountSize);
+	for (size_t i = 0; i < chunkCountSize; ++i)
+	{
+		ChunkDesc& chunk = m_chunks[i];
+		memcpy(
+			&chunk.hdr,
+			m_pFileBuffer + chunkHeadersOffset + i * sizeof(CHUNK_HEADER),
+			sizeof(CHUNK_HEADER));
+		SwapEndian(chunk.hdr);
+		if (chunk.hdr.FileOffset < 0 || chunk.hdr.ChunkID < 0)
+			return false;
+		if (chunk.hdr.ChunkID > m_nLastChunkId)
+			m_nLastChunkId = chunk.hdr.ChunkID;
+	}
 
-  m_chunks.clear();
-  m_chunks.resize(n_chunks);
+	std::sort(m_chunks.begin(), m_chunks.end(), ChunkCompareFileOffset);
+	for (size_t i = 0; i < chunkCountSize; ++i)
+	{
+		ChunkDesc& chunk = m_chunks[i];
+		const size_t chunkOffset = static_cast<size_t>(chunk.hdr.FileOffset);
+		const size_t nextOffset = i + 1 < chunkCountSize
+			? static_cast<size_t>(m_chunks[i + 1].hdr.FileOffset)
+			: chunkDataEnd;
+		if (chunkOffset < chunkDataBegin ||
+			nextOffset < chunkOffset ||
+			nextOffset > chunkDataEnd)
+			return false;
 
-  int nextFileOffset,chunkSize;
-  for (i = 0; i < n_chunks; i++)
-  {
-    ChunkDesc &ch = m_chunks[i];
-    ch.hdr = chunks[i];
+		const size_t chunkSize = nextOffset - chunkOffset;
+		if (!CryTryNarrowSize(chunkSize, chunk.size))
+			return false;
+		chunk.data = m_pFileBuffer + chunkOffset;
+	}
 
-    // Find last chunk id.
-    if (ch.hdr.ChunkID > m_nLastChunkId)
-      m_nLastChunkId = ch.hdr.ChunkID;
-  }
-
-  std::sort( m_chunks.begin(),m_chunks.end(),ChunkCompareFileOffset );
-
-  ChunkDesc *sortedChunks = &m_chunks[0];
-  for (i = 0; i < n_chunks; i++)
-  {
-    if (i+1 < n_chunks)
-      nextFileOffset = sortedChunks[i+1].hdr.FileOffset;
-    else
-      nextFileOffset = nBufferSize;
-
-      assert(1);
-
-    ChunkDesc &cd = sortedChunks[i];
-    chunkSize = nextFileOffset - cd.hdr.FileOffset;
-
-    cd.size = chunkSize;
-    cd.data = m_pFileBuffer + cd.hdr.FileOffset;
-  }
-
-  // Resort chunks again now by Id, for faster queryies later.
-  std::sort( m_chunks.begin(),m_chunks.end(),ChunkCompareId );
-
-  //delete []chunks;
-  return true;
+	std::sort(m_chunks.begin(), m_chunks.end(), ChunkCompareId);
+	return true;
 }
 
 //////////////////////////////////////////////////////////////////////////

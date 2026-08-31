@@ -26,6 +26,25 @@
 #define SIGC_AFFECTED_BY_VOXELS 4
 #define SIGC_MAT_ID_SHIFT			8
 
+static bool TryGetTerrainTableSize(size_t count, size_t elementSize, int& byteCount)
+{
+	size_t byteCountSize = 0;
+	return CryTryMultiplySize(count, elementSize, byteCountSize) &&
+		CryTryNarrowSize(byteCountSize, byteCount);
+}
+
+static bool TryAddTerrainTableSize(int& totalSize, size_t count, size_t elementSize)
+{
+	int byteCount = 0;
+	if (totalSize < 0 || !TryGetTerrainTableSize(count, elementSize, byteCount) ||
+		byteCount > (std::numeric_limits<int>::max)() - totalSize)
+	{
+		return false;
+	}
+	totalSize += byteCount;
+	return true;
+}
+
 //! structure to vegetation group properties loading/saving
 struct StatInstGroupChunk
 {
@@ -143,7 +162,13 @@ int CTerrain::GetCompiledDataSize()
 
 	// get vegetation objects table size
 	nDataSize += sizeof(int);
-	nDataSize += GetObjManager()->m_lstStaticTypes.size()*sizeof(StatInstGroupChunk);
+	if (!TryAddTerrainTableSize(
+		nDataSize,
+		GetObjManager()->m_lstStaticTypes.size(),
+		sizeof(StatInstGroupChunk)))
+	{
+		return 0;
+	}
 
 	// get brush objects table size
 	nDataSize += sizeof(int);
@@ -153,10 +178,8 @@ int CTerrain::GetCompiledDataSize()
   { // get vegetation objects materials
     std::vector<IMaterial*> * pMatTable = &usedMats;
     std::vector<StatInstGroup> & rTable = GetObjManager()->m_lstStaticTypes;
-    int nObjectsCount = rTable.size();
-
     // init struct values and load cgf's
-    for(int i=0; i<rTable.size(); i++)
+		for(size_t i = 0; i < rTable.size(); ++i)
     {
       int nMaterialId = -1;
       if(rTable[i].pMaterial)
@@ -164,7 +187,8 @@ int CTerrain::GetCompiledDataSize()
         nMaterialId = CObjManager::GetItemId(pMatTable, (IMaterial*)rTable[i].pMaterial, false);
         if(nMaterialId<0)
         {
-          nMaterialId = pMatTable->size();
+			if (!CryTryNarrowSize(pMatTable->size(), nMaterialId))
+				return 0;
           pMatTable->push_back(rTable[i].pMaterial);
         }
       }
@@ -173,12 +197,14 @@ int CTerrain::GetCompiledDataSize()
 
   Get3DEngine()->m_pObjectsTree->GenerateStatObjAndMatTables(&brushTypes, &usedMats);
   GetVisAreaManager()->GenerateStatObjAndMatTables(&brushTypes, &usedMats);
-	nDataSize += brushTypes.size()*sizeof(SBrushTypeChunk);
+	if (!TryAddTerrainTableSize(nDataSize, brushTypes.size(), sizeof(SBrushTypeChunk)))
+		return 0;
   brushTypes.clear();
 
 	// get custom materials table size
 	nDataSize += sizeof(int);
-	nDataSize += usedMats.size()*sizeof(SMatInfoTmp);
+	if (!TryAddTerrainTableSize(nDataSize, usedMats.size(), sizeof(SMatInfoTmp)))
+		return 0;
 
 	return nDataSize;
 }
@@ -202,14 +228,16 @@ bool CTerrain::GetCompiledData(byte * pData, int nDataSize, std::vector<struct C
 
 	{ // get vegetation objects count
 		std::vector<StatInstGroup> & rTable = GetObjManager()->m_lstStaticTypes;
-		int nObjectsCount = rTable.size();
+		int nObjectsCount = 0;
+		if (!CryTryNarrowSize(rTable.size(), nObjectsCount))
+			return false;
 
 		// prepare temporary chunks array for saving
 		PodArray<StatInstGroupChunk> lstFileChunks;
 		lstFileChunks.PreAllocate(nObjectsCount,nObjectsCount);
 
 		// init struct values and load cgf's
-		for(int i=0; i<rTable.size(); i++)
+		for(int i = 0; i < nObjectsCount; ++i)
 		{
 			strncpy(lstFileChunks[i].szFileName,rTable[i].szFileName,sizeof(lstFileChunks[i].szFileName));
       COPY_MEMBER(&lstFileChunks[i],&rTable[i],bHideability);
@@ -246,7 +274,8 @@ bool CTerrain::GetCompiledData(byte * pData, int nDataSize, std::vector<struct C
           nMaterialId = CObjManager::GetItemId(pMatTable, (IMaterial*)rTable[i].pMaterial, false);
           if(nMaterialId<0)
           {
-            nMaterialId = pMatTable->size();
+				if (!CryTryNarrowSize(pMatTable->size(), nMaterialId))
+					return false;
             pMatTable->push_back(rTable[i].pMaterial);
           }
         }
@@ -270,8 +299,14 @@ bool CTerrain::GetCompiledData(byte * pData, int nDataSize, std::vector<struct C
 		UPDATE_PTR_AND_SIZE(pData,nDataSize,sizeof(int));
 
 		// get table content
-		memcpy(pData, lstFileChunks.GetElements(), lstFileChunks.Count()*sizeof(StatInstGroupChunk));	
-		UPDATE_PTR_AND_SIZE(pData,nDataSize,lstFileChunks.Count()*sizeof(StatInstGroupChunk));
+		int tableBytes = 0;
+		if (!TryGetTerrainTableSize(lstFileChunks.Count(), sizeof(StatInstGroupChunk), tableBytes) ||
+			tableBytes > nDataSize)
+		{
+			return false;
+		}
+		memcpy(pData, lstFileChunks.GetElements(), tableBytes);
+		UPDATE_PTR_AND_SIZE(pData,nDataSize,tableBytes);
 	}
 
   std::vector<struct CStatObj*> * pStatObjTable = new std::vector<struct CStatObj*>;
@@ -279,26 +314,36 @@ bool CTerrain::GetCompiledData(byte * pData, int nDataSize, std::vector<struct C
   GetVisAreaManager()->GenerateStatObjAndMatTables(pStatObjTable,pMatTable);
 
 	{ // get brush objects count
-		int nObjectsCount = pStatObjTable->size();
+		int nObjectsCount = 0;
+		if (!CryTryNarrowSize(pStatObjTable->size(), nObjectsCount))
+			return false;
 		memcpy(pData, &nObjectsCount, sizeof(int));
 		UPDATE_PTR_AND_SIZE(pData,nDataSize,sizeof(int));
 
 		PodArray<SBrushTypeChunk> lstFileChunks;
 		lstFileChunks.PreAllocate(nObjectsCount,nObjectsCount);
 
-		for(int i=0; i<pStatObjTable->size(); i++)
+		for(int i = 0; i < nObjectsCount; ++i)
 		{
 			strncpy(lstFileChunks[i].szFileName, (*pStatObjTable)[i]->GetFilePath(), sizeof(lstFileChunks[i].szFileName));
 		}
 
 		// get table content
-		memcpy(pData, lstFileChunks.GetElements(), lstFileChunks.Count()*sizeof(SBrushTypeChunk));	
-		UPDATE_PTR_AND_SIZE(pData,nDataSize,lstFileChunks.Count()*sizeof(SBrushTypeChunk));
+		int tableBytes = 0;
+		if (!TryGetTerrainTableSize(lstFileChunks.Count(), sizeof(SBrushTypeChunk), tableBytes) ||
+			tableBytes > nDataSize)
+		{
+			return false;
+		}
+		memcpy(pData, lstFileChunks.GetElements(), tableBytes);
+		UPDATE_PTR_AND_SIZE(pData,nDataSize,tableBytes);
 	}
 
 	{ // get brush materials count
 		std::vector<IMaterial*> & rTable = *pMatTable;
-		int nObjectsCount = rTable.size();
+		int nObjectsCount = 0;
+		if (!CryTryNarrowSize(rTable.size(), nObjectsCount))
+			return false;
 
 		// count
 		memcpy(pData, &nObjectsCount, sizeof(int));
@@ -514,8 +559,8 @@ bool CTerrain::Load_T(T * & f, int & nDataSize, STerrainChunkHeader * pTerrainCh
       rTable.clear();
       rTable.resize(nObjectsCount);//PreAllocate(nObjectsCount,nObjectsCount);
 
-      const uint32 cTableCount = rTable.size();
-      for (uint32 tableIndex = 0; tableIndex < cTableCount; ++tableIndex)
+		const size_t cTableCount = rTable.size();
+		for (size_t tableIndex = 0; tableIndex < cTableCount; ++tableIndex)
       {
         SMatInfoTmp matInfoTmp;
         if(!LoadDataFromFile(&matInfoTmp, 1, f, nDataSize))

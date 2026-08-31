@@ -1,6 +1,4 @@
-#define NO_GDI
 #include "StdAfx.h"
-#undef NO_GDI
 #include "Cry3DEngineBase.h"
 //#include <d3d8types.h>
 
@@ -15,6 +13,7 @@
 #include <set>												// STL set<>
 
 #include <memory>
+#include <CryCheckedArithmetic.h>
 
 #include "ObjMan.h"
 #include "Brush.h"
@@ -125,7 +124,13 @@ RenderLMData *CLMSerializationManager::UpdateLMData(
 		pRawLMSmall->m_bUseRAE = false;
 	}
 
-	int32 iCurLMTexData = m_vLightPatches.size();
+	int32 iCurLMTexData = 0;
+	if (!CryTryNarrowSize(m_vLightPatches.size(), iCurLMTexData))
+	{
+		SAFE_DELETE(pRawLMSmall);
+		SAFE_DELETE(pRawLM);
+		return nullptr;
+	}
 	m_vLightPatches.push_back(pRawLMSmall);
 
 	//Save a dds version, after that release the used memory.

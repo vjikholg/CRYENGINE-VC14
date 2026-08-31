@@ -121,7 +121,7 @@ inline const char* stristr(const char* szString, const char* szSubstring)
 		if (strnicmp(szString+nSubstringPos, szSubstring, nSubstringLength) == 0)
 			return szString+nSubstringPos;
 	}
-	return NULL;
+	return nullptr;
 }
 
 

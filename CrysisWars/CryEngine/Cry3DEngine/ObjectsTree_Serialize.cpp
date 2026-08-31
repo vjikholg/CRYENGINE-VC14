@@ -1,4 +1,5 @@
 #include "StdAfx.h"
+#include <CryCheckedArithmetic.h>
 
 #include "VoxMan.h"
 #include "Brush.h"
@@ -221,7 +222,7 @@ bool COctreeNode::CheckRenderFlagsMinSpec( uint32 dwRndFlags )
 //////////////////////////////////////////////////////////////////////////
 int COctreeNode::SerializeObjects(bool bSave, CMemoryBlock * pMemBlock, std::vector<CStatObj*> * pStatObjTable, std::vector<IMaterial*> * pMatTable)
 {
-	int nBlockSize=0;
+	size_t nBlockSize = 0;
 
 	if(bSave)
 	{
@@ -260,7 +261,14 @@ int COctreeNode::SerializeObjects(bool bSave, CMemoryBlock * pMemBlock, std::vec
 				{
 					nBlockSize += sizeof( eType );
 					nBlockSize += sizeof( SWaterVolumeChunk );
-					nBlockSize += ( pSerParams->m_vertices.size() + pSerParams->m_physicsAreaContour.size() ) * sizeof( SWaterVolumeVertex );
+					size_t vertexCount = 0;
+					size_t vertexBytes = 0;
+					if (!CryTryAddSize(pSerParams->m_vertices.size(), pSerParams->m_physicsAreaContour.size(), vertexCount) ||
+						!CryTryMultiplySize(vertexCount, sizeof(SWaterVolumeVertex), vertexBytes) ||
+						!CryTryAddSize(nBlockSize, vertexBytes, nBlockSize))
+					{
+						return 0;
+					}
 				}
 			}
 			else if(eType == eERType_RoadObject_NEW)
@@ -282,7 +290,12 @@ int COctreeNode::SerializeObjects(bool bSave, CMemoryBlock * pMemBlock, std::vec
         nBlockSize += sizeof( eType );
         nBlockSize += sizeof( SWaterWaveChunk );
 
-        nBlockSize += ( pSerParams->m_pVertices.size() ) * sizeof( Vec3 );
+			size_t vertexBytes = 0;
+			if (!CryTryMultiplySize(pSerParams->m_pVertices.size(), sizeof(Vec3), vertexBytes) ||
+				!CryTryAddSize(nBlockSize, vertexBytes, nBlockSize))
+			{
+				return 0;
+			}
       }
 			else if(eType == eERType_AutoCubeMap)
 			{
@@ -291,9 +304,13 @@ int COctreeNode::SerializeObjects(bool bSave, CMemoryBlock * pMemBlock, std::vec
 			}
 		}
 
+		int blockSize32 = 0;
+		if (!CryTryNarrowSize(nBlockSize, blockSize32))
+			return 0;
+
 		if(pMemBlock)
 		{
-			pMemBlock->Allocate(nBlockSize);
+			pMemBlock->Allocate(blockSize32);
 			byte * pPtr = (byte *)pMemBlock->GetData();
 
       for(IRenderNode * pObj = m_lstObjects.m_pFirstNode; pObj; pObj = pObj->m_pNext)
@@ -522,11 +539,17 @@ int COctreeNode::SerializeObjects(bool bSave, CMemoryBlock * pMemBlock, std::vec
 					chunk.m_uTexCoordEnd = pSerData->m_uTexCoordEnd;
 					chunk.m_surfUScale = pSerData->m_surfUScale;
 					chunk.m_surfVScale = pSerData->m_surfVScale;
-					chunk.m_numVertices = pSerData->m_vertices.size();
+					if (!CryTryNarrowSize(pSerData->m_vertices.size(), chunk.m_numVertices))
+						return 0;
 
 					chunk.m_volumeDepth = pSerData->m_volumeDepth;
 					chunk.m_streamSpeed = pSerData->m_streamSpeed;
-					chunk.m_numVerticesPhysAreaContour = pSerData->m_physicsAreaContour.size();
+					if (!CryTryNarrowSize(
+						pSerData->m_physicsAreaContour.size(),
+						chunk.m_numVerticesPhysAreaContour))
+					{
+						return 0;
+					}
 
 					memcpy( pPtr, &chunk, sizeof( chunk ) ); 
 					pPtr += sizeof( chunk );
@@ -670,7 +693,7 @@ int COctreeNode::SerializeObjects(bool bSave, CMemoryBlock * pMemBlock, std::vec
 				//	assert(!"Unsupported object type");
 			}
 
-			assert(pPtr == (byte *)pMemBlock->GetData()+nBlockSize);
+			assert(pPtr == (byte *)pMemBlock->GetData()+blockSize32);
 		}
 	}
 	else
@@ -1086,12 +1109,12 @@ int COctreeNode::SerializeObjects(bool bSave, CMemoryBlock * pMemBlock, std::vec
 					{
 					case IWaterVolumeRenderNode::eWVT_River:
 						{
-							pObj->SetRiverPhysicsArea( &physicsAreaContour[0], physicsAreaContour.size(), pChunk->m_volumeDepth, pChunk->m_streamSpeed );
+							pObj->SetRiverPhysicsArea( &physicsAreaContour[0], pChunk->m_numVerticesPhysAreaContour, pChunk->m_volumeDepth, pChunk->m_streamSpeed );
 							break;
 						}
 					case IWaterVolumeRenderNode::eWVT_Area:
 						{
-							pObj->SetAreaPhysicalArea( &physicsAreaContour[0], physicsAreaContour.size(), pChunk->m_volumeDepth, pChunk->m_streamSpeed );
+							pObj->SetAreaPhysicalArea( &physicsAreaContour[0], pChunk->m_numVerticesPhysAreaContour, pChunk->m_volumeDepth, pChunk->m_streamSpeed );
 							break;
 						}
 					case IWaterVolumeRenderNode::eWVT_Ocean:
@@ -1254,7 +1277,7 @@ int COctreeNode::SerializeObjects(bool bSave, CMemoryBlock * pMemBlock, std::vec
 		}
 	}
 
-	return nBlockSize;
+	return CrySaturateSize<int>(nBlockSize);
 }
 
 int COctreeNode::Load(FILE * & f, int & nDataSize, std::vector<CStatObj*> * pStatObjTable, std::vector<IMaterial*> * pMatTable) { return Load_T(f, nDataSize, pStatObjTable, pMatTable); }

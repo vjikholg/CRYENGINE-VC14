@@ -112,6 +112,7 @@
     <ClInclude Include="MM09Tests.h" />
     <ClInclude Include="MM03BenchmarkEnvironment.h" />
     <ClInclude Include="SafeAllocTests.h" />
+    <ClInclude Include="SerializedSizeTests.h" />
     <ClInclude Include="StlHashMapAdapterTests.h" />
     <ClInclude Include="TestRunner.h" />
     <ClInclude Include="VectorMapTests.h" />
@@ -135,6 +136,7 @@
     <ClCompile Include="MM08Tests.cpp" />
     <ClCompile Include="MM09Tests.cpp" />
     <ClCompile Include="SafeAllocTests.cpp" />
+    <ClCompile Include="SerializedSizeTests.cpp" />
     <ClCompile Include="StlHashMapAdapterTests.cpp" />
     <ClCompile Include="TestRunner.cpp" />
     <ClCompile Include="VectorMapTests.cpp" />

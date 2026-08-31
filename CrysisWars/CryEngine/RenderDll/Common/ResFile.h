@@ -2,6 +2,7 @@
 #define __RESFILE_H__
 
 #include "CryName.h"
+#include <CryCheckedArithmetic.h>
 
 #define IDRESHEADER		(('K'<<24)+('C'<<16)+('P'<<8)+'C')
 #define RESVERSION  2
@@ -172,7 +173,7 @@ public:
   bool mfFlush(uint64 WriteTime=0);
   bool mfOptimize(uint type);
 
-  int mfGetNumFiles() { return m_dir.size(); }
+  int mfGetNumFiles() { return CrySaturateSize<int>(m_dir.size()); }
 
   int mfFileRead(SDirEntry *de);
   int mfFileRead(const char* name);

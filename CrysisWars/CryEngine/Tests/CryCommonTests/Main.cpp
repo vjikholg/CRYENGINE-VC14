@@ -12,6 +12,7 @@
 #include "MM08Tests.h"
 #include "MM09Tests.h"
 #include "SafeAllocTests.h"
+#include "SerializedSizeTests.h"
 #include "StlHashMapAdapterTests.h"
 #include "TestRunner.h"
 #include "VectorMapTests.h"
@@ -133,6 +134,7 @@ int main(int argc, char* argv[])
 	RunMM08PoolAllocatorTests(runner);
 	RunMM09CrtSizeTests(runner);
 	RunMM04DataModelTests(runner);
+	RunSerializedSizeTests(runner);
 	RunStlHashMapAdapterTests(runner);
 	RunVectorMapTests(runner);
 	RunZlibCompatibilityTests(runner);

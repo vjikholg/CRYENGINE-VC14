@@ -14,6 +14,7 @@
 #include "IMaterial.h"
 
 #include "Cry_XOptimise.h"
+#include <CryCheckedArithmetic.h>
 #ifdef LINUX
 # include <platform.h>
 #endif
@@ -1334,10 +1335,10 @@ struct STexSampler
 
   int Size()
   {
-    int nSize = sizeof(this);
+    size_t nSize = sizeof(*this);
     nSize += m_Name.size();
     nSize += m_Texture.size();
-    return nSize;
+    return CrySaturateSize<int>(nSize);
   }
   uint GetTexFlags() { return m_nTexFlags; }
   void Update();
@@ -1425,11 +1426,11 @@ struct SEfResTexture
   }
   int Size()
   {
-    int nSize = sizeof(SEfResTexture) - sizeof(STexSampler);
+    size_t nSize = sizeof(SEfResTexture) - sizeof(STexSampler);
     nSize += m_Name.size();
     nSize += m_Sampler.Size();
 
-    return nSize;
+    return CrySaturateSize<int>(nSize);
   }
 
   ~SEfResTexture()
@@ -1505,8 +1506,8 @@ struct SBaseShaderResources
 
   int Size()
   {
-    int nSize = sizeof(SBaseShaderResources) + m_ShaderParams.size()*sizeof(SShaderParam);
-    return nSize;
+    const size_t nSize = sizeof(SBaseShaderResources) + m_ShaderParams.size()*sizeof(SShaderParam);
+    return CrySaturateSize<int>(nSize);
   }
   SBaseShaderResources& operator=(const SBaseShaderResources& src)
   {
@@ -1581,13 +1582,13 @@ struct SInputShaderResources : public SBaseShaderResources
 
   int Size()
   {
-    int nSize = SBaseShaderResources::Size() - sizeof(SEfResTexture) * EFTT_MAX;
+    size_t nSize = static_cast<size_t>(SBaseShaderResources::Size()) - sizeof(SEfResTexture) * EFTT_MAX;
     nSize += m_TexturePath.size();
     for (int i=0; i<EFTT_MAX; i++)
     {
       nSize += m_Textures[i].Size();
     }
-    return nSize;
+    return CrySaturateSize<int>(nSize);
   }
   SInputShaderResources& operator=(const SInputShaderResources& src)
   {

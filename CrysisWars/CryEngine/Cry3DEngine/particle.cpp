@@ -1096,7 +1096,7 @@ char GetMinAxis(Vec3 const& vVec)
 	return 'z';
 }
 
-static const float fSPHERE_VOLUME = 4.f / 3.f * g_PI;
+static constexpr float fSPHERE_VOLUME = 4.0f / 3.0f * gf_PI;
 
 int CParticle::GetSurfaceIndex() const
 {

@@ -152,7 +152,7 @@ public:
 	_smart_ptr<IMaterial> m_pMaterial;
 	uint32 m_nMaterialLayersMask;
 
-  float m_fObjectRadius;
+	float m_fObjectRadius;
 	float m_fRadiusHors;
 	float m_fRadiusVert;
 
@@ -262,15 +262,15 @@ public:
 	virtual void SetFlags( int nFlags ) { m_nFlags = nFlags; };
 	virtual int  GetFlags() { return m_nFlags; };
 
-  // Loader
-  bool LoadCGF( const char *filename,bool bLod=false,bool bForceBreakable=false );
+	// Loader
+	bool LoadCGF( const char *filename,bool bLod=false,bool bForceBreakable=false );
 
 	//////////////////////////////////////////////////////////////////////////
 	void SetMaterial( IMaterial *pMaterial );
 	IMaterial* GetMaterial() { return m_pMaterial; };
 	//////////////////////////////////////////////////////////////////////////
 
-  virtual void Render(const SRendParams & rParams);
+	virtual void Render(const SRendParams & rParams);
 	void RenderRenderMesh(const SRendParams & rParams, int nLod, float fLodAmmount, struct SInstancingInfo * pInstInfo = NULL);
 	phys_geometry* GetPhysGeom( int nGeomType ) { return m_arrPhysGeomInfo[nGeomType]; }
 	void SetPhysGeom( phys_geometry *pPhysGeom, int nGeomType=0 ) 
@@ -281,27 +281,27 @@ public:
 	}
 	ITetrLattice *GetTetrLattice() { return m_pLattice; }
 
-  float GetAIVegetationRadius() const {return m_aiVegetationRadius;}
-  void SetAIVegetationRadius(float radius) {m_aiVegetationRadius = radius;}
+	float GetAIVegetationRadius() const {return m_aiVegetationRadius;}
+	void SetAIVegetationRadius(float radius) {m_aiVegetationRadius = radius;}
 
-  //! Refresh object ( reload shaders or/and object geometry )
+	 //! Refresh object ( reload shaders or/and object geometry )
 	virtual void Refresh(int nFlags);
 
-  IRenderMesh * GetRenderMesh() { return m_pRenderMesh; };
-  void SetRenderMesh( IRenderMesh *pRM );
+	IRenderMesh * GetRenderMesh() { return m_pRenderMesh; };
+	void SetRenderMesh( IRenderMesh *pRM );
 
-  const char *GetFolderName() { return (m_szFolderName); }
-  const char *GetFilePath()    { return (m_szFileName); }
+	const char *GetFolderName() { return (m_szFolderName); }
+	const char *GetFilePath()    { return (m_szFileName); }
 	void SetFilePath(const char * szFileName) { m_szFileName = szFileName; }
-  const char *GetGeoName()    { return (m_szGeomName); }
-  bool IsSameObject(const char * szFileName, const char * szGeomName);
+	const char *GetGeoName()    { return (m_szGeomName); }
+	bool IsSameObject(const char * szFileName, const char * szGeomName);
 
-  //set object's min/max bbox 
-  void  SetBBoxMin(const Vec3 &vBBoxMin) { m_vBoxMin=vBBoxMin; }  
-  void  SetBBoxMax(const Vec3 &vBBoxMax) { m_vBoxMax=vBBoxMax; }
-  Vec3 GetBoxMin() { return m_vBoxMin; }
-  Vec3 GetBoxMax() { return m_vBoxMax; }
-  AABB GetAABB() {  return AABB(m_vBoxMin,m_vBoxMax);  }
+	//set object's min/max bbox
+	void  SetBBoxMin(const Vec3 &vBBoxMin) { m_vBoxMin=vBBoxMin; }
+	void  SetBBoxMax(const Vec3 &vBBoxMax) { m_vBoxMax=vBBoxMax; }
+	Vec3 GetBoxMin() { return m_vBoxMin; }
+	Vec3 GetBoxMax() { return m_vBoxMax; }
+	AABB GetAABB() {  return AABB(m_vBoxMin,m_vBoxMax);  }
 	bool GetNormalsCone(Vec3 & vNormal, float & fMaxDot);
 //  void MakeVegetationShadowMap(const Vec3 vSunPos);
 //	void FreeVegetationShadowMap();
@@ -309,21 +309,21 @@ public:
 	float ComputeExtent(GeomQuery& geo, EGeomForm eForm);
 	void GetRandomPos(RandomPos& ran, GeomQuery& geo, EGeomForm eForm);
 
-  void SetCurDynMask(int nCurDynMask);
+	void SetCurDynMask(int nCurDynMask);
 
-  virtual Vec3 GetHelperPos(const char * szHelperName);
-  virtual const Matrix34& GetHelperTM(const char * szHelperName);
+	virtual Vec3 GetHelperPos(const char * szHelperName);
+	virtual const Matrix34& GetHelperTM(const char * szHelperName);
 
-  float & GetRadiusVert() { return m_fRadiusVert; }
-  float & GetRadiusHors() { return m_fRadiusHors; }
+	float & GetRadiusVert() { return m_fRadiusVert; }
+	float & GetRadiusHors() { return m_fRadiusHors; }
 
-  virtual void AddRef();
-  virtual void Release();
+	virtual void AddRef();
+	virtual void Release();
 
-  virtual bool IsDefaultObject() { return (m_bDefaultObject); }
+	virtual bool IsDefaultObject() { return (m_bDefaultObject); }
 
-  float GetDistFromPoint(const Vec3 & vPoint);
-  int GetLoadedTrisCount() { return m_nLoadedTrisCount; }
+	float GetDistFromPoint(const Vec3 & vPoint);
+	int GetLoadedTrisCount() { return m_nLoadedTrisCount; }
 	int GetRenderTrisCount() { return m_nRenderTrisCount; }
 
 	// Load LODs
@@ -332,19 +332,19 @@ public:
 	// Free render resources for unused upper LODs.
 	void CleanUnusedLods();
 
-  virtual void FreeIndexedMesh();
+	virtual void FreeIndexedMesh();
 //  virtual const CDLight * GetLightSources(int nId);
-  bool RenderDebugInfo( SRendParams &rParams,CRenderObject *pObj,IMaterial* &pMaterial, int nLod );
-  void DrawMatrix(const Matrix34 & pMat);
+	bool RenderDebugInfo( SRendParams &rParams,CRenderObject *pObj,IMaterial* &pMaterial, int nLod );
+	void DrawMatrix(const Matrix34 & pMat);
 
-  //! Release method.
-  void GetMemoryUsage(class ICrySizer* pSizer);
-  
-  void ShutDown();
-  void Init();
+	//! Release method.
+	void GetMemoryUsage(class ICrySizer* pSizer);
 
-  void CheckLoaded();
-  virtual IStatObj* GetLodObject( int nLodLevel,bool bReturnNearest=false );
+	void ShutDown();
+	void Init();
+
+	void CheckLoaded();
+	virtual IStatObj* GetLodObject( int nLodLevel,bool bReturnNearest=false );
 
 	// interface IStreamCallback -----------------------------------------------------
   
@@ -352,15 +352,15 @@ public:
 
 	// -------------------------------------------------------------------------------
 
-  void StreamCCGF(bool bFinishNow);
+	void StreamCCGF(bool bFinishNow);
 
-  void MakeCompiledFileName(char * szCompiledFileName, int nMaxLen);
-  void ProcessStreamOnCompleteError();
+	void MakeCompiledFileName(char * szCompiledFileName, int nMaxLen);
+	void ProcessStreamOnCompleteError();
 
-  bool IsPhysicsExist();
-  void PreloadResources(float fDist, float fTime, int dwFlags);
-  void SetupBending(CRenderObject * pObj, Vec2 const& vBending);
-  bool IsSphereOverlap(const Sphere& sSphere);
+	bool IsPhysicsExist();
+	void PreloadResources(float fDist, float fTime, int dwFlags);
+	void SetupBending(CRenderObject * pObj, Vec2 const& vBending);
+	bool IsSphereOverlap(const Sphere& sSphere);
 	void Invalidate( bool bPhysics=false );
 
 	void AnalizeFoliage();
@@ -417,9 +417,9 @@ public:
 
 	IParticleEffect* GetSurfaceBreakageEffect( const char *sType );
 
-  void CheckUpdateObjectHeightmap();
-  float GetObjectHeight(float x, float y);
-  int GetMinUsableLod();
+	void CheckUpdateObjectHeightmap();
+	float GetObjectHeight(float x, float y);
+	int GetMinUsableLod();
 
 	int CountChildReferences();
 
@@ -431,6 +431,8 @@ protected:
 
 	bool LoadCGF_Info( const char *filename );
 	void ParseProperties();
+
+	const bool IsValidRenderNode(const IRenderNode* node) const;
 
 	void CalcRadiuses();
 //	void PrepareShadowMaps(const Vec3 & obj_pos, ShadowMapFrustum * pLSource, const Vec3 & vSunPos);
@@ -448,9 +450,9 @@ protected:
 	bool SetFromMesh( CMesh *pMesh );
 	void CalcNormalCone(IRenderMesh * pRM);
 
-  float * m_pHeightmap;
-  int m_nHeightmapSize;
-  float m_fOcclusionAmount;
+	float * m_pHeightmap;
+	int m_nHeightmapSize;
+	float m_fOcclusionAmount;
 };
 
 

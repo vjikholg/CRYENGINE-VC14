@@ -564,8 +564,9 @@ void COcean::RenderWaterVolume()
 
     // tessellate plane
     float planeSize( 2.0f * GetCamera().GetFarPlane() ); 
-    size_t subDivSize( min(64, 1 + (int) (planeSize / 512.0f)) );
-    size_t numSubDivVerts( (subDivSize + 1) * (subDivSize + 1) );
+    const int subDivSize( min(64, 1 + (int) (planeSize / 512.0f)) );
+    const size_t numSubDivVerts(
+      static_cast<size_t>(subDivSize + 1) * static_cast<size_t>(subDivSize + 1) );
 
     if( m_wvVertices.size() != numSubDivVerts )
     {
@@ -582,13 +583,13 @@ void COcean::RenderWaterVolume()
       {
         for( int x(0); x < subDivSize; ++x, ind += 6 )
         {
-          m_wvIndices[ind+0] = (y  ) * (subDivSize+1) + (x  );
-          m_wvIndices[ind+1] = (y  ) * (subDivSize+1) + (x+1);
-          m_wvIndices[ind+2] = (y+1) * (subDivSize+1) + (x+1);
+          m_wvIndices[ind+0] = static_cast<ushort>((y  ) * (subDivSize+1) + (x  ));
+          m_wvIndices[ind+1] = static_cast<ushort>((y  ) * (subDivSize+1) + (x+1));
+          m_wvIndices[ind+2] = static_cast<ushort>((y+1) * (subDivSize+1) + (x+1));
 
-          m_wvIndices[ind+3] = (y  ) * (subDivSize+1) + (x  );
-          m_wvIndices[ind+4] = (y+1) * (subDivSize+1) + (x+1);
-          m_wvIndices[ind+5] = (y+1) * (subDivSize+1) + (x  );
+          m_wvIndices[ind+3] = static_cast<ushort>((y  ) * (subDivSize+1) + (x  ));
+          m_wvIndices[ind+4] = static_cast<ushort>((y+1) * (subDivSize+1) + (x+1));
+          m_wvIndices[ind+5] = static_cast<ushort>((y+1) * (subDivSize+1) + (x  ));
         }
       }
     }

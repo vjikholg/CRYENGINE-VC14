@@ -15,6 +15,7 @@
 
 #include "StdAfx.h"
 #include "ChunkFile.h"
+#include <CryCheckedArithmetic.h>
 
 #define MAX_CHUNKS_NUM 10000
 
@@ -185,21 +186,44 @@ bool CChunkFile::Write( const char *filename )
 
 	unsigned int i;
 
-	unsigned int numChunks = m_chunks.size();
+	uint32 numChunks = 0;
+	if (!CryTryNarrowSize(m_chunks.size(), numChunks))
+	{
+		m_LastError = "Too many chunks for the 32-bit CGF format";
+		fclose(file);
+		return false;
+	}
 
 	// Update chunk offsets.
 	int nChunkTableOffset = sizeof(m_fileHeader);
-	int nChunksOffset = nChunkTableOffset +  sizeof(int) + numChunks*sizeof(CHUNK_HEADER);
+	size_t chunkHeaderBytes = 0;
+	size_t chunksOffsetSize = 0;
+	int nChunksOffset = 0;
+	if (!CryTryMultiplySize(numChunks, sizeof(CHUNK_HEADER), chunkHeaderBytes) ||
+		!CryTryAddSize(nChunkTableOffset + sizeof(numChunks), chunkHeaderBytes, chunksOffsetSize) ||
+		!CryTryNarrowSize(chunksOffsetSize, nChunksOffset))
+	{
+		m_LastError = "CGF chunk table exceeds the 32-bit file format";
+		fclose(file);
+		return false;
+	}
 
 	//////////////////////////////////////////////////////////////////////////
 	// Update offsets of chunks.
 	//////////////////////////////////////////////////////////////////////////
-	unsigned int nCurrOffset = 0;
+	size_t nCurrOffset = 0;
 	for (i = 0; i < m_chunks.size(); i++)
 	{
-		m_chunks[i]->hdr.FileOffset = nChunksOffset + nCurrOffset;
-		// Add size of each chunk.
-		nCurrOffset += m_chunks[i]->size;
+		size_t fileOffset = 0;
+		if (m_chunks[i]->size < 0 ||
+			!CryTryAddSize(chunksOffsetSize, nCurrOffset, fileOffset) ||
+			!CryTryNarrowSize(fileOffset, m_chunks[i]->hdr.FileOffset) ||
+			!CryTryAddSize(nCurrOffset, static_cast<size_t>(m_chunks[i]->size), nCurrOffset))
+		{
+			m_LastError = "CGF chunk data exceeds the 32-bit file format";
+			fclose(file);
+			return false;
+		}
 	}
 
 	//=======================
@@ -280,37 +304,62 @@ bool CChunkFile::Write( const char *filename )
 //////////////////////////////////////////////////////////////////////////
 void CChunkFile::WriteToMemory( void **pData,int *nSize )
 {
-	int i;
+	*pData = nullptr;
+	*nSize = 0;
+	size_t i = 0;
 	
 	// Update chunk offsets.
-	unsigned int numChunks = m_chunks.size();
-	unsigned int nChunkTableOffset = sizeof(m_fileHeader);
-	unsigned int nChunksOffset = nChunkTableOffset +  sizeof(numChunks) + numChunks*sizeof(CHUNK_HEADER);
+	uint32 numChunks = 0;
+	if (!CryTryNarrowSize(m_chunks.size(), numChunks))
+		return;
+	const size_t nChunkTableOffset = sizeof(m_fileHeader);
+	size_t chunkHeaderBytes = 0;
+	size_t nChunksOffset = 0;
+	if (!CryTryMultiplySize(numChunks, sizeof(CHUNK_HEADER), chunkHeaderBytes) ||
+		!CryTryAddSize(nChunkTableOffset + sizeof(numChunks), chunkHeaderBytes, nChunksOffset))
+	{
+		return;
+	}
 
 	//////////////////////////////////////////////////////////////////////////
 	// Update offsets of chunks.
 	//////////////////////////////////////////////////////////////////////////
-	unsigned int nCurrOffset = 0;
+	size_t nCurrOffset = 0;
 	for (i = 0; i < numChunks; i++)
 	{
 		ChunkDesc &ch = *(m_chunks[i]);
-		ch.hdr.FileOffset = nChunksOffset + nCurrOffset;
-		// Add size of each chunk.
-		nCurrOffset += ch.size;
+		size_t fileOffset = 0;
+		if (ch.size < 0 ||
+			!CryTryAddSize(nChunksOffset, nCurrOffset, fileOffset) ||
+			!CryTryNarrowSize(fileOffset, ch.hdr.FileOffset) ||
+			!CryTryAddSize(nCurrOffset, static_cast<size_t>(ch.size), nCurrOffset))
+		{
+			return;
+		}
 	}
 	
-	unsigned int size = nChunksOffset + nCurrOffset;
+	size_t size = 0;
+	int outputSize = 0;
+	int chunkTableOffset32 = 0;
+	if (!CryTryAddSize(nChunksOffset, nCurrOffset, size) ||
+		!CryTryNarrowSize(size, outputSize) ||
+		!CryTryNarrowSize(nChunkTableOffset, chunkTableOffset32))
+	{
+		return;
+	}
 	if (m_pInternalData)
 		free(m_pInternalData);
 	m_pInternalData = (char*)malloc( size );
+	if (!m_pInternalData)
+		return;
 
 	char *pBuf = m_pInternalData;
-	int ofs = nChunkTableOffset;
+	size_t ofs = nChunkTableOffset;
 
 	//////////////////////////////////////////////////////////////////////////
 	// Write File Header.
 	//////////////////////////////////////////////////////////////////////////
-	m_fileHeader.ChunkTableOffset = nChunkTableOffset;
+	m_fileHeader.ChunkTableOffset = chunkTableOffset32;
 	memcpy( pBuf,&m_fileHeader,sizeof(m_fileHeader) );
 
 	//////////////////////////////////////////////////////////////////////////
@@ -362,18 +411,20 @@ void CChunkFile::WriteToMemory( void **pData,int *nSize )
 	}
 
 	*pData = m_pInternalData;
-	*nSize = size;
+	*nSize = outputSize;
 }
 
 //////////////////////////////////////////////////////////////////////////
 bool CChunkFile::ReadChunkTable( CCryFile &file,int nChunkTableOffset )
 {
-	int res;
-	unsigned i;
+	size_t res = 0;
+	size_t i = 0;
 
 	ReleaseChunks();
+	if (nChunkTableOffset < 0)
+		return false;
 
-	unsigned int nEndOfChunks = nChunkTableOffset;
+	size_t nEndOfChunks = static_cast<size_t>(nChunkTableOffset);
 	if (nChunkTableOffset == sizeof(m_fileHeader))
 	{
 		nEndOfChunks = file.GetLength();
@@ -405,8 +456,7 @@ bool CChunkFile::ReadChunkTable( CCryFile &file,int nChunkTableOffset )
 	m_chunks.resize(n_chunks);
 	m_sortedChunks.resize(n_chunks);
 
-	int nextFileOffset,chunkSize;
-	for (i = 0; i < (int)m_chunks.size(); i++)
+	for (i = 0; i < m_chunks.size(); i++)
 	{
 		m_chunks[i] = new ChunkDesc;
 		m_chunks[i]->hdr = chunks[i];
@@ -424,19 +474,30 @@ bool CChunkFile::ReadChunkTable( CCryFile &file,int nChunkTableOffset )
 
 	for (i = 0; i < m_sortedChunks.size(); i++)
 	{
+		size_t nextFileOffset = 0;
 		if (i+1 < m_sortedChunks.size())
-			nextFileOffset = m_sortedChunks[i+1]->hdr.FileOffset;
+		{
+			if (m_sortedChunks[i+1]->hdr.FileOffset < 0)
+				return false;
+			nextFileOffset = static_cast<size_t>(m_sortedChunks[i+1]->hdr.FileOffset);
+		}
 		else
 			nextFileOffset = nEndOfChunks;
 
 		ChunkDesc &cd = *m_sortedChunks[i];
-		chunkSize = nextFileOffset - cd.hdr.FileOffset;
+		if (cd.hdr.FileOffset < 0)
+			return false;
+		const size_t fileOffset = static_cast<size_t>(cd.hdr.FileOffset);
+		if (nextFileOffset < fileOffset || nextFileOffset > file.GetLength())
+			return false;
+		const size_t chunkSize = nextFileOffset - fileOffset;
+		if (!CryTryNarrowSize(chunkSize, cd.size))
+			return false;
 
 		cd.data = new char[chunkSize];
 		file.Seek( cd.hdr.FileOffset,SEEK_SET );
-		cd.size = chunkSize;
 
-		int readres = file.ReadRaw( cd.data,chunkSize );
+		const size_t readres = file.ReadRaw( cd.data,chunkSize );
 		if (readres != chunkSize)
 		{
 			return false;

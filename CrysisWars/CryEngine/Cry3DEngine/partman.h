@@ -127,7 +127,7 @@ public:
 	struct SEventTiming
 	{
 		const CParticleEffect* pEffect;
-		uint32 nContainerId;
+		uintptr_t nContainerId;
 		int nThread;
 		const char* sEvent;
 		float	timeStart, timeEnd;
