@@ -398,7 +398,7 @@ struct AABB {
 
 	float GetDistance( Vec3 const& v ) const
 	{
-		return sqrt(GetDistanceSqr(v));
+		return sqrt_tpl(GetDistanceSqr(v));
 	}
 
 	bool ContainsBox( AABB const& b ) const

@@ -253,12 +253,12 @@ public:
 
 	uint32 AnimationToQueue( const ModelAnimationHeader* pAnim0,int a0, const ModelAnimationHeader* pAnim1,int a1, const ModelAnimationHeader* pAnimAim0,int aid0,const ModelAnimationHeader* pAnimAim1,int aid1, f32 InterpVal, f32 btime, const CryCharAnimationParams& AnimParams);
 	void ClearFIFOLayer( int32 nLayer );
-	void UnloadAnimationAssets(std::vector<CAnimation>& arrAFIFO, int num);
-	int GetNumAnimsInFIFO(uint32 nLayer) { return m_arrLayer_AFIFO[nLayer].size(); };
+	void UnloadAnimationAssets(std::vector<CAnimation>& arrAFIFO, size_t num);
+	int GetNumAnimsInFIFO(uint32 nLayer) { return CrySaturateSize<int>(m_arrLayer_AFIFO[nLayer].size()); }
 	bool RemoveAnimFromFIFO(uint32 nLayer, uint32 num);
 	CAnimation& GetAnimFromFIFO(uint32 nLayer, uint32 num )
 	{
-		uint32 numAnimsInFifo = m_arrLayer_AFIFO[nLayer].size();
+		const size_t numAnimsInFifo = m_arrLayer_AFIFO[nLayer].size();
 		if (num>=numAnimsInFifo)
 			return g_DefaultAnim;
 		return m_arrLayer_AFIFO[nLayer][num];

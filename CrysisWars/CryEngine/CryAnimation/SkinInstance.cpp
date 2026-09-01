@@ -113,7 +113,7 @@ void CSkinInstance::UpdateAttachedObjects(const QuatT& rPhysLocationNext, IAttac
 	//for this we need the absolute joints 
 	m_AttachmentManager.UpdateLocationAttachments( rPhysLocationNext,pOnlyThisType );
 
-	uint32 numAttachmnets = m_AttachmentManager.m_arrAttachments.size();
+	const size_t numAttachmnets = m_AttachmentManager.m_arrAttachments.size();
 	for (uint32 i=0; i<numAttachmnets; i++) 
 	{
 		CAttachment* pCAttachment = m_AttachmentManager.m_arrAttachments[i];
@@ -158,7 +158,7 @@ void CSkinInstance::UpdateAttachedObjectsFast(const QuatT& rPhysLocationNext, fl
 
 	m_AttachmentManager.UpdateLocationAttachmentsFast(rPhysLocationNext); 
 
-	uint32 numAttachmnets = m_AttachmentManager.m_arrAttachments.size();
+	const size_t numAttachmnets = m_AttachmentManager.m_arrAttachments.size();
 	for (uint32 i=0; i<numAttachmnets; i++) 
 	{
 		CAttachment* pCAttachment = m_AttachmentManager.m_arrAttachments[i];
@@ -211,7 +211,7 @@ void CSkinInstance::GetMemoryUsage(ICrySizer* pSizer) const
 	pSizer->AddContainer(m_AttachmentManager.m_arrAttachments);
 #endif
 
-	uint32 nLOD = m_pModel->m_arrModelMeshes.size();
+	const size_t nLOD = m_pModel->m_arrModelMeshes.size();
 	for(uint32 dwLod=0; dwLod<nLOD; dwLod++)
 	{
 		if(!m_pRenderMeshs[dwLod])
@@ -285,7 +285,7 @@ IFacialInstance* CSkinInstance::GetFacialInstance()
 		return m_pFacialInstance;
 
 	// Check all skin attachments if they have facial animation.
-	uint32 numAttachmnets = m_AttachmentManager.m_arrAttachments.size();
+	const size_t numAttachmnets = m_AttachmentManager.m_arrAttachments.size();
 	for (uint32 i=0; i<numAttachmnets; i++) 
 	{
 		CAttachment* pAttachment = m_AttachmentManager.m_arrAttachments[i];
@@ -496,7 +496,7 @@ size_t CSkinInstance::SizeOfThis (ICrySizer * pSizer)
 	{
 		SIZER_SUBCOMPONENT_NAME(pSizer, "CSkinInstance");
 		size_t size		=	sizeof(CSkinInstance)-sizeof(CAttachmentManager)-sizeof(CAnimDecalManager)-sizeof(CMorphing);
-		uint32 stringlength = m_strFilePath.capacity();
+		const size_t stringlength = m_strFilePath.capacity();
 		size += stringlength;
 		pSizer->AddObject(&m_uInstanceFlags, size);
 		SizeOfInstance += size;

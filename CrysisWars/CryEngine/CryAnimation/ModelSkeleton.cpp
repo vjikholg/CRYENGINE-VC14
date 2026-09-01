@@ -26,20 +26,14 @@ CModelJoint::~CModelJoint()
 
 	for(int nLod=0; nLod<2; nLod++)
 	{
-		if (m_PhysInfo[nLod].pPhysGeom && (INT_PTR)m_PhysInfo[nLod].pPhysGeom!=-1) 
+		if (m_PhysInfo[nLod].pPhysGeom)
 		{
-			if ((INT_PTR)m_PhysInfo[nLod].pPhysGeom<0x400) 
+			if (pPhysGeomManager)
 			{
-				//CryWarning(VALIDATOR_MODULE_ANIMATION,VALIDATOR_WARNING,"Error: trying to release wrong bone phys geometry");
-			} 
-			else 
-				if (pPhysGeomManager)
-				{
-					phys_geometry* pPhysGeom = m_PhysInfo[nLod].pPhysGeom;
-					pPhysGeomManager->UnregisterGeometry(pPhysGeom);
-				}
-				else
-					CryWarning(VALIDATOR_MODULE_ANIMATION,VALIDATOR_WARNING,"todo: delete bones phys");
+				pPhysGeomManager->UnregisterGeometry(m_PhysInfo[nLod].pPhysGeom);
+			}
+			else
+				CryWarning(VALIDATOR_MODULE_ANIMATION,VALIDATOR_WARNING,"todo: delete bones phys");
 		}
 	}
 }
@@ -179,29 +173,30 @@ void CModelJoint::AddHierarchyToControllerIdMap (UnsignedToCryBoneMap& mapContro
 
 }
 
-//! Performs post-initialization. This step is requred to initialize the pPhysGeom of the bones
-//! After the bone has been loaded but before it is first used. When the bone is first loaded, pPhysGeom
-//!   is set to the value equal to the chunk id in the file where the physical geometry (BoneMesh) chunk is kept.
-//! After those chunks are loaded, and chunk ids are mapped to the registered physical geometry objects,
-//!   call this function to replace pPhysGeom chunk ids with the actual physical geometry object pointers.
+//! Performs post-initialization after bone-mesh chunks have been registered with the physics system.
+//! Resolves the serialized nPhysGeomId and stores the resulting runtime geometry in pPhysGeom.
 //! RETURNS:
 //    true if the corresponding physical geometry object has been found
 //!	NOTE:
 //!	The entries of the map that were used are deleted
 bool CModelJoint::PostInitPhysGeom (ChunkIdToPhysGeomMap& mapChunkIdToPhysGeom, int nLodLevel, bool bAllowRopePhys)
 {
-	phys_geometry*& pPhysGeom = m_PhysInfo[nLodLevel].pPhysGeom;
-	ChunkIdToPhysGeomMap::iterator it = mapChunkIdToPhysGeom.find ((INT_PTR)pPhysGeom);
+	BONE_PHYSICS& physics = m_PhysInfo[nLodLevel];
+	if (physics.pPhysGeom)
+		return true;
+
+	if (physics.nPhysGeomId <= 0)
+		return false;
+
+	ChunkIdToPhysGeomMap::iterator it = mapChunkIdToPhysGeom.find(static_cast<uint32>(physics.nPhysGeomId));
 	if (it != mapChunkIdToPhysGeom.end() && (bAllowRopePhys || strnicmp(GetJointName(),"rope",4))) 
 	{
-		// remap the chunk id to the actual pointer to the geometry
-		pPhysGeom = it->second;
+		physics.pPhysGeom = it->second;
 		mapChunkIdToPhysGeom.erase (it);
 		return true;
 	} 
 	else
 	{
-		pPhysGeom = NULL;
 		return false;
 	}
 }
@@ -242,7 +237,7 @@ void CModelJoint::PostInitialize()
 //---------------------------------------------------------------------------------
 void CModelSkeleton::SetIKJointID()
 {
-	uint32 numJoints	= m_arrModelJoints.size();
+	const size_t numJoints	= m_arrModelJoints.size();
 	for (uint32 i=0; i<numJoints; i++)
 	{
 		const char * BoneName =  m_arrModelJoints[i].GetJointName();

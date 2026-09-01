@@ -532,7 +532,7 @@ public:
 
 	void UnloadAnimation(int nGLobalAnimID);
 	// returns the total number of animations hold in memory (for statistics)
-	uint32 NumGlobalAnimations() { return m_arrGlobalAnimations.size();	}
+	size_t NumGlobalAnimations() const { return m_arrGlobalAnimations.size(); }
 
 	// notifies the controller manager that this client doesn't use the given animation any more.
 	// these calls must be balanced with AnimationAddRef() calls

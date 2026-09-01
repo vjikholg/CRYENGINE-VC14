@@ -48,7 +48,7 @@ public:
 	// returns the decal multiplier: 0 - no decal, 1 - full decal size
 	f32 getIntensity()const;
 
-	uint32 GetSize()
+	size_t GetSize() const
 	{
 		return sizeof(CAnimDecal) + m_arrFaces.capacity() * sizeof(TFace) + m_arrVertices.capacity() * sizeof(CDecalVertex);
 	}

@@ -259,9 +259,9 @@ private:
 
 inline float CCamera::ComputeHorizontalFov() const
 {
-	float fFractionVert = tan(m_fov*0.5f);
+	float fFractionVert = tan_tpl(m_fov*0.5f);
 	float fFractionHoriz = fFractionVert*GetProjRatio();
-	float fHorizFov = atan(fFractionHoriz)*2;
+	float fHorizFov = atan_tpl(fFractionHoriz)*2;
 
 	return fHorizFov;
 }

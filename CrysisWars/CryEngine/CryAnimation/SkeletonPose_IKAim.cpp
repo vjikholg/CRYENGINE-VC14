@@ -306,7 +306,7 @@ void CSkeletonPose::AimIK( const QuatT& rPhysLocationNext, const QuatTS& rAnimLo
 	Vec3 vDistance=vAimIKTarget-NeckBoneWorld;
 
 
-	uint32 numJoints = m_AbsolutePose.size();
+	const size_t numJoints = m_AbsolutePose.size();
 
 	m_AimIK.m_AimIKInfluence = 0;
 	if (m_pModelSkeleton->m_IdxArray[eIM_RHandIdx] < 0) return;

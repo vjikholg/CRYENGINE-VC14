@@ -207,6 +207,9 @@
     <ClCompile Include="AnimationBase.cpp">
       <Filter>Common</Filter>
     </ClCompile>
+    <ClCompile Include="AnimationAssetValidation.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
     <ClCompile Include="cvars.cpp">
       <Filter>Common</Filter>
     </ClCompile>
@@ -360,6 +363,9 @@
       <Filter>CharacterManager\AnimLoader</Filter>
     </ClInclude>
     <ClInclude Include="AnimationBase.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="AnimationAssetValidation.h">
       <Filter>Common</Filter>
     </ClInclude>
     <ClInclude Include="cvars.h">

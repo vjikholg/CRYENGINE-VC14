@@ -26,7 +26,7 @@ public:
 		switch (event)
 		{
 		case ESYSTEM_EVENT_RANDOM_SEED:
-			g_random_generator.seed(wparam);
+			g_random_generator.seed(static_cast<uint32>(wparam));
 			break;
 		case ESYSTEM_EVENT_LEVEL_RELOAD:
 			{

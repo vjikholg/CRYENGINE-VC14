@@ -148,10 +148,11 @@ void CEyeMovementFaceAnim::UpdateEye(const QuatTS& rAnimLocationNext, EyeID eye,
 	FindLookAngleAndStrength(eye, angle, strength, additionalRotation);
 
 	// Find the two closest directions to the angle.
-	float octantAngle = (angle * DirectionCOUNT / gf_PI2);
+	constexpr float directionCount = static_cast<float>(DirectionCOUNT);
+	float octantAngle = angle * directionCount / gf_PI2;
 	octantAngle = 2.0f - octantAngle;
 	if (octantAngle < 0.0f)
-		octantAngle += DirectionCOUNT;
+		octantAngle += directionCount;
 	//octantAngle = DirectionCOUNT - octantAngle;
 	DirectionID directionInterpolateLow = DirectionID(int(floorf(octantAngle)));
 	if (directionInterpolateLow >= DirectionCOUNT)

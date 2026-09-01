@@ -104,10 +104,10 @@ public:
 		return m_IdxArray[val];
 	}
 
-	uint32 SizeOfThis()
+	size_t SizeOfThis() const
 	{
-		uint32 nSize = sizeof(CModelSkeleton) + m_JointMap.GetMapSize();
-		for (uint32 i = 0, end = m_arrModelJoints.size(); i < end; ++i)
+		size_t nSize = sizeof(CModelSkeleton) + m_JointMap.GetMapSize();
+		for (size_t i = 0, end = m_arrModelJoints.size(); i < end; ++i)
 		{
 			nSize += m_arrModelJoints[i].SizeOfThis();
 		}

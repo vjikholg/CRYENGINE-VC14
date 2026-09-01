@@ -84,7 +84,11 @@ CCharacterModel* CryCGALoader::LoadNewCGA( const char* OriginalGeomName, Charact
 	//-----------------------------------------------------------------------------
 
 	m_DefaultNodeCount=0;	
-	InitNodes(pSkinningInfo,pCGAModel,OriginalGeomName,"Default",1, nControllerJID );
+	if (!InitNodes(pSkinningInfo,pCGAModel,OriginalGeomName,"Default",1, nControllerJID))
+	{
+		delete pCGAModel;
+		return nullptr;
+	}
 	m_DefaultNodeCount = m_NodeAnims.size();
 //	g_pI3DEngine->ReleaseChunkFileContent( pCGF );
 
@@ -95,8 +99,8 @@ CCharacterModel* CryCGALoader::LoadNewCGA( const char* OriginalGeomName, Charact
 		AnimEventLoader::loadAnimationEventDatabase(pCGAModel, pCGAModel->GetModelAnimEventDatabaseCStr());
 
 	// the first step is for the root bone
-	uint32 numJoints = pCGAModel->m_pModelSkeleton->m_arrModelJoints.size();
-	for (uint32 i=0; i<numJoints; i++)
+	const size_t numJoints = pCGAModel->m_pModelSkeleton->m_arrModelJoints.size();
+	for (size_t i=0; i<numJoints; i++)
 	{
 		pCGAModel->m_pModelSkeleton->m_arrModelJoints[i].m_DefaultAbsPose = pCGAModel->m_pModelSkeleton->m_arrModelJoints[i].m_DefaultRelPose;
 		int32 p=pCGAModel->m_pModelSkeleton->m_arrModelJoints[i].m_idxParent;
@@ -196,9 +200,7 @@ bool CryCGALoader::LoadAnimationANM( const char* animFile, CCharacterModel* pCGA
 		return 0;
 	}
 
-	InitNodes(pSkinningInfo,pCGAModel,animFile,sName, 0, unique_model_id );
-
-	return true;
+	return InitNodes(pSkinningInfo,pCGAModel,animFile,sName, 0, unique_model_id );
 }
 
 
@@ -209,7 +211,7 @@ bool CryCGALoader::LoadAnimationANM( const char* animFile, CCharacterModel* pCGA
 
 
 //////////////////////////////////////////////////////////////////////////
-void CryCGALoader::InitNodes( CInternalSkinningInfo* pSkinningInfo, CCharacterModel* pCGAModel, const char* animFile, const string& strAnimationName, bool bMakeNodes, uint32 unique_model_id )
+bool CryCGALoader::InitNodes( CInternalSkinningInfo* pSkinningInfo, CCharacterModel* pCGAModel, const char* animFile, const string& strAnimationName, bool bMakeNodes, uint32 unique_model_id )
 {
 
 	//-------------------------------------------------------------------------
@@ -301,8 +303,7 @@ void CryCGALoader::InitNodes( CInternalSkinningInfo* pSkinningInfo, CCharacterMo
 
 	if (pCGF == 0)
 	{
-		//error
-		return;
+		return false;
 	}
 
 
@@ -349,11 +350,11 @@ void CryCGALoader::InitNodes( CInternalSkinningInfo* pSkinningInfo, CCharacterMo
 
 			int numChunks = (int)m_arrChunkNodes.size();
 
-			if (nd.pos_cont_id!=0xffff)
+			if (nd.pos_cont_id!=NodeDesc::InvalidJointId)
 				assert( nd.pos_cont_id < numChunks );
-			if (nd.rot_cont_id!=0xffff)
+			if (nd.rot_cont_id!=NodeDesc::InvalidJointId)
 				assert( nd.rot_cont_id < numChunks );
-			if (nd.scl_cont_id!=0xffff)
+			if (nd.scl_cont_id!=NodeDesc::InvalidJointId)
 				assert( nd.scl_cont_id < numChunks );
 
 			assert(pGFXNode->nChunkId<(int)numChunks);
@@ -373,15 +374,32 @@ void CryCGALoader::InitNodes( CInternalSkinningInfo* pSkinningInfo, CCharacterMo
 				else
 					pStaticObj = pSubObj->pStatObj;
 
-				nd.node_idx				= pCGAModel->m_pModelSkeleton->m_arrModelJoints.size();
+				const size_t groupNodeSize = pCGAModel->m_pModelSkeleton->m_arrModelJoints.size();
+				if (groupNodeSize >= NodeDesc::InvalidJointId || !CryTryNarrowSize(groupNodeSize, nd.node_idx))
+				{
+					g_pISystem->Warning(VALIDATOR_MODULE_ANIMATION, VALIDATOR_ERROR, VALIDATOR_FLAG_FILE,
+						animFile, "CGA contains too many nodes for its 16-bit joint identifiers");
+					g_pI3DEngine->ReleaseChunkFileContent(pCGF);
+					return false;
+				}
 
-				uint16 ParentID = 0xffff;  
+				uint16 ParentID = NodeDesc::InvalidJointId;
 				if (pGFXNode->nParentChunkId != 0xffffffff)
 				{
 					assert(pGFXNode->nParentChunkId<(int)numChunks);
-					uint32 numJoints = pCGAModel->m_pModelSkeleton->m_arrModelJoints.size();
-					for (uint32 i=0; i<numJoints; i++)
-						if (pGFXNode->nParentChunkId==pCGAModel->m_pModelSkeleton->m_arrModelJoints[i].m_numLevels)	ParentID=i;
+					const size_t numJoints = pCGAModel->m_pModelSkeleton->m_arrModelJoints.size();
+					for (size_t i{ 0 }; i < numJoints; i++)
+					{
+						if (pGFXNode->nParentChunkId == pCGAModel->m_pModelSkeleton->m_arrModelJoints[i].m_numLevels)
+						{
+							if (!CryTryNarrowSize(i, ParentID))
+							{
+								g_pI3DEngine->ReleaseChunkFileContent(pCGF);
+								return false;
+							}
+							break;
+						}
+					}
 				}
 
 				CModelJoint mj;
@@ -395,18 +413,19 @@ void CryCGALoader::InitNodes( CInternalSkinningInfo* pSkinningInfo, CCharacterMo
 				pCGAModel->m_pModelSkeleton->m_arrModelJoints.push_back(mj);
 
 				m_arrChunkNodes[pGFXNode->nChunkId] = nd;
-		//		assert(nodecounter==n);
-		//		nodecounter++;
-			//	g_nControllerJID++;
 			}
 			else
 			{
-				uint32 numJoints = pCGAModel->m_pModelSkeleton->m_arrModelJoints.size();
-				for (uint32 i=0; i<numJoints; i++)
+				const size_t numJoints = pCGAModel->m_pModelSkeleton->m_arrModelJoints.size();
+				for (size_t i=0; i<numJoints; i++)
 				{
 					if (stricmp(pCGAModel->m_pModelSkeleton->m_arrModelJoints[i].GetJointName(), pGFXNode->name) == 0)
 					{
-						nd.node_idx = i;
+						if (!CryTryNarrowSize(i, nd.node_idx))
+						{
+							g_pI3DEngine->ReleaseChunkFileContent(pCGF);
+							return false;
+						}
 						break;
 					}
 				}
@@ -418,12 +437,9 @@ void CryCGALoader::InitNodes( CInternalSkinningInfo* pSkinningInfo, CCharacterMo
 	//------------------------------------------------------------------------
 	//---    init nodes                                                    ---
 	//------------------------------------------------------------------------
-	uint32 numControllers0 = m_CtrlVec3.size();
-	uint32 numControllers1 = m_CtrlQuat.size();
-
-	uint32 numAktiveNodes = 0;
-	uint32 numNodes = m_arrChunkNodes.size();
-	for (uint32 i=0; i<numNodes; i++)
+	size_t numAktiveNodes = 0;
+	const size_t numNodes = m_arrChunkNodes.size();
+	for (size_t i=0; i<numNodes; i++)
 		numAktiveNodes+=m_arrChunkNodes[i].active;
 
 	m_NodeAnims.clear();
@@ -435,25 +451,23 @@ void CryCGALoader::InitNodes( CInternalSkinningInfo* pSkinningInfo, CCharacterMo
 	m_NodeAnims.resize(numAktiveNodes);
 
 
-	for (uint32 i=0; i<numNodes; i++)
+	for (size_t i=0; i<numNodes; i++)
 	{
 		NodeDesc nd = m_arrChunkNodes[i];
 
 		if (nd.active==0) 
 			continue;
 
-		if (nd.node_idx==0xffff)
+		if (nd.node_idx==NodeDesc::InvalidJointId)
 			continue;
 
-		uint32 numAnims = m_NodeAnims.size();
-
 		uint32 id = pCGAModel->m_pModelSkeleton->m_arrModelJoints[nd.node_idx].m_NodeID;
-		if ( id<0 || id>=numAnims)
+		if (static_cast<size_t>(id) >= m_NodeAnims.size())
 			continue;
 
 
 		// find controllers.
-		if (nd.pos_cont_id!=0xffff)
+		if (nd.pos_cont_id!=NodeDesc::InvalidJointId)
 		{
 			m_NodeAnims[id].m_active.p=0;
 			CControllerType pTCB = m_arrControllers[nd.pos_cont_id];
@@ -464,7 +478,7 @@ void CryCGALoader::InitNodes( CInternalSkinningInfo* pSkinningInfo, CCharacterMo
 			}
 		}
 
-		if (nd.rot_cont_id!=0xffff)
+		if (nd.rot_cont_id!=NodeDesc::InvalidJointId)
 		{
 			m_NodeAnims[id].m_active.o=0;
 			CControllerType pTCB = m_arrControllers[nd.rot_cont_id];
@@ -475,7 +489,7 @@ void CryCGALoader::InitNodes( CInternalSkinningInfo* pSkinningInfo, CCharacterMo
 			}
 		}
 
-		if (nd.scl_cont_id!=0xffff)
+		if (nd.scl_cont_id!=NodeDesc::InvalidJointId)
 		{
 			m_NodeAnims[id].m_active.s=0;
 			CControllerType pTCB = m_arrControllers[nd.scl_cont_id];
@@ -492,12 +506,12 @@ void CryCGALoader::InitNodes( CInternalSkinningInfo* pSkinningInfo, CCharacterMo
 	if (!m_CtrlVec3.empty() || !m_CtrlQuat.empty() )
 		LoadANM( pCGAModel, animFile, strAnimationName, m_NodeAnims, unique_model_id );
 
-	uint32 numJoints = pCGAModel->m_pModelSkeleton->m_arrModelJoints.size();
-	for (uint32 a=0; a<numJoints; a++)
+	const size_t numJoints = pCGAModel->m_pModelSkeleton->m_arrModelJoints.size();
+	for (size_t a=0; a<numJoints; a++)
 		pCGAModel->m_pModelSkeleton->m_arrModelJoints[a].m_numChildren=0;
-	for (uint32 a=0; a<numJoints; a++)
+	for (size_t a=0; a<numJoints; a++)
 	{
-		for (uint32 b=0; b<numJoints; b++)
+		for (size_t b=0; b<numJoints; b++)
 		{
 			if (a==pCGAModel->m_pModelSkeleton->m_arrModelJoints[b].m_idxParent)
 				pCGAModel->m_pModelSkeleton->m_arrModelJoints[a].m_numChildren++;
@@ -507,6 +521,7 @@ void CryCGALoader::InitNodes( CInternalSkinningInfo* pSkinningInfo, CCharacterMo
 
 	g_pI3DEngine->ReleaseChunkFileContent(pCGF);
 
+	return true;
 }
 
 
@@ -522,7 +537,8 @@ uint32 CryCGALoader::LoadANM ( CCharacterModel* pModel,const char* pFilePath, co
 
 	{
 		AUTO_PROFILE_SECTION(g_dTimeAnimLoadBindPreallocate);
-		pModel->m_AnimationSet.prepareLoadCAFs ( 1 );
+		if (!pModel->m_AnimationSet.prepareLoadCAFs(1))
+			return 0;
 	}
 
 	int32 rel = pModel->m_AnimationSet.LoadANM( pFilePath, 0.01f, nAnimID, pAnimName, 0, m_LoadCurrAnimation, this, unique_model_id  );

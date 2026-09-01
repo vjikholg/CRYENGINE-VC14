@@ -20,6 +20,7 @@
 #pragma once
 #endif
 
+#include <cstddef>
 #include <string.h>	//for strlen
 
 class Crc32Gen 
@@ -28,51 +29,51 @@ public:
 	Crc32Gen();
 	//! Creates a CRC from a text string 
 	unsigned int GetCRC32( const char *text ) const;
-	unsigned int GetCRC32( const char *data,int size,unsigned int ulCRC ) const;
+	unsigned int GetCRC32(const char* data, size_t size, unsigned int ulCRC) const;
 
 	unsigned int GetCRC32Lowercase( const char *text ) const;
-	unsigned int GetCRC32Lowercase( const char *data,int size,unsigned int ulCRC ) const;
+	unsigned int GetCRC32Lowercase(const char* data, size_t size, unsigned int ulCRC) const;
 
 protected:
 	unsigned int crc32_table[256];  //!< Lookup table array 
 	void init_CRC32_Table();  //!< Builds lookup table array 
 	unsigned int reflect( unsigned int ref, char ch); //!< Reflects CRC bits in the lookup table 
-	unsigned int get_CRC32( const char *data,int size,unsigned int ulCRC ) const;
-	unsigned int get_CRC32Lowercase( const char *data,int size,unsigned int ulCRC ) const;
+	unsigned int get_CRC32(const char* data, size_t size, unsigned int ulCRC) const;
+	unsigned int get_CRC32Lowercase(const char* data, size_t size, unsigned int ulCRC) const;
 };
 
 inline unsigned int Crc32Gen::GetCRC32( const char *text ) const
 {
-	int len = strlen(text);
+	const size_t len = strlen(text);
 	return GetCRC32( text,len,0xffffffff );
 }
 
-inline unsigned int Crc32Gen::GetCRC32( const char *data, int size, unsigned int ulCRC ) const
+inline unsigned int Crc32Gen::GetCRC32(const char* data, size_t size, unsigned int ulCRC) const
 {
 	return get_CRC32( data,size,ulCRC );
 }
 
 inline unsigned int Crc32Gen::GetCRC32Lowercase( const char *text ) const
 {
-	int len = strlen(text);
+	const size_t len = strlen(text);
 	return GetCRC32Lowercase( text,len,0xffffffff );
 }
 
-inline unsigned int Crc32Gen::GetCRC32Lowercase( const char *data, int size, unsigned int ulCRC ) const
+inline unsigned int Crc32Gen::GetCRC32Lowercase(const char* data, size_t size, unsigned int ulCRC) const
 {
 	return get_CRC32Lowercase( data,size,ulCRC );
 }
 
-inline unsigned int Crc32Gen::get_CRC32Lowercase( const char *data,int size,unsigned int ulCRC ) const
+inline unsigned int Crc32Gen::get_CRC32Lowercase(const char* data, size_t size, unsigned int ulCRC) const
 {	
-	int len; 
-	unsigned char* buffer;
+	size_t len;
+	const unsigned char* buffer;
 
 	// Get the length. 
 	len = size; 
 
 	// Save the text in the buffer. 
-	buffer = (unsigned char*)data; 
+	buffer = reinterpret_cast<const unsigned char*>(data);
 	// Perform the algorithm on each character in the string, using the lookup table values. 
 
 	while(len--) 
@@ -81,7 +82,7 @@ inline unsigned int Crc32Gen::get_CRC32Lowercase( const char *data,int size,unsi
 	return ulCRC ^ 0xffffffff; 
 } 
 
-inline unsigned int Crc32Gen::get_CRC32( const char *data, int size, unsigned int ulCRC ) const
+inline unsigned int Crc32Gen::get_CRC32(const char* data, size_t size, unsigned int ulCRC) const
 {
 	// Pass a text string to this function and it will return the CRC.
 
@@ -91,14 +92,14 @@ inline unsigned int Crc32Gen::get_CRC32( const char *data, int size, unsigned in
 	// Be sure to use unsigned variables, because negative values introduce high bits where zero bits are required.
 
 	// Start out with all bits set high.
-	int len; 
-	unsigned char* buffer;
+	size_t len;
+	const unsigned char* buffer;
 
 	// Get the length. 
 	len = size; 
 
 	// Save the text in the buffer. 
-	buffer = (unsigned char*)data; 
+	buffer = reinterpret_cast<const unsigned char*>(data);
 	// Perform the algorithm on each character in the string, using the lookup table values. 
 
 	while(len--) 

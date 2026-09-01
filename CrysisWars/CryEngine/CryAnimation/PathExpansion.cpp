@@ -109,7 +109,7 @@ namespace PathExpansion
 void PathExpansion::EnumeratePathExpansions(const char* pattern, void (*enumCallback)(void* userData, const char* expansion), void* userData)
 {
 	// Allocate some temporary working buffers.
-	int patternLength = strlen(pattern);
+	const size_t patternLength = strlen(pattern);
 	std::vector<char> buffer(patternLength + 1);
 	char* expansion = &buffer[0];
 

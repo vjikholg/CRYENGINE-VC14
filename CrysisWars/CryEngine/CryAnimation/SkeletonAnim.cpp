@@ -116,13 +116,13 @@ void CSkeletonAnim::ProcessAnimations( const QuatT& rPhysLocationCurr, const Qua
 	//check if the oldest animation in the queue is still needed
 	for(uint32 nVLayerNo=0; nVLayerNo<numVIRTUALLAYERS; nVLayerNo++)
 	{
-		uint32 numAnimsInLayer = m_arrLayer_AFIFO[nVLayerNo].size();
+		const size_t numAnimsInLayer = m_arrLayer_AFIFO[nVLayerNo].size();
 		if (numAnimsInLayer==0) 
 			continue;
 
 		if (m_arrLayer_AFIFO[nVLayerNo][0].m_bRemoveFromQueue || m_arrLayer_AFIFO[nVLayerNo][0].m_fTransitionWeight==0)
 		{
-			uint32 na=m_arrLayer_AFIFO[nVLayerNo].size();
+			const size_t na=m_arrLayer_AFIFO[nVLayerNo].size();
 			UnloadAnimationAssets(m_arrLayer_AFIFO[nVLayerNo], 0);
 			for (uint32 i=1; i<na; i++)	m_arrLayer_AFIFO[nVLayerNo][i-1]=m_arrLayer_AFIFO[nVLayerNo][i];
 			m_arrLayer_AFIFO[nVLayerNo].pop_back();
@@ -191,7 +191,7 @@ void CSkeletonAnim::ProcessAnimationUpdate()
 
 	for(uint32 nVLayerNo=0; nVLayerNo<numVIRTUALLAYERS; nVLayerNo++)
 	{
-		uint32 numAnimsPerLayer=m_arrLayer_AFIFO[nVLayerNo].size();
+		const size_t numAnimsPerLayer=m_arrLayer_AFIFO[nVLayerNo].size();
 		if (numAnimsPerLayer)
 		{
 			BlendManager( m_pInstance->m_fDeltaTime*m_arrLayerSpeedMultiplier[nVLayerNo],  m_arrLayer_AFIFO[nVLayerNo], nVLayerNo );
@@ -216,9 +216,9 @@ void CSkeletonAnim::ProcessForwardKinematics( const QuatT& rPhysLocationCurr, co
 	//just for debugging
 	extern uint32 g_AnimationUpdates; 	g_AnimationUpdates++;
 
-	uint32 numJoints		= m_pSkeletonPose->m_AbsolutePose.size();
-	uint32 nBufferSizeQ = numJoints*numTMPLAYERS*sizeof(QuatT);
-	uint32 nBufferSizeS = numJoints*numTMPLAYERS*sizeof(Status4);
+	const size_t numJoints		= m_pSkeletonPose->m_AbsolutePose.size();
+	const size_t nBufferSizeQ = numJoints * numTMPLAYERS * sizeof(QuatT);
+	const size_t nBufferSizeS = numJoints * numTMPLAYERS * sizeof(Status4);
 	QuatT* parrRelQuats = (QuatT*)alloca( nBufferSizeQ );
 	Status4* parrControllerStatus = (Status4*)alloca( nBufferSizeS );
 
@@ -326,7 +326,7 @@ void CSkeletonAnim::ProcessForwardKinematics( const QuatT& rPhysLocationCurr, co
 
 	for(uint32 nVLayerNo=0; nVLayerNo<numVIRTUALLAYERS; nVLayerNo++)
 	{
-		uint32 numAnimsInLayer = m_arrLayer_AFIFO[nVLayerNo].size();
+		const size_t numAnimsInLayer = m_arrLayer_AFIFO[nVLayerNo].size();
 
 		uint32 numActiveAnims=0;
 		for (uint32 a=0; a<numAnimsInLayer; a++)
@@ -417,7 +417,7 @@ void CSkeletonAnim::ProcessForwardKinematics( const QuatT& rPhysLocationCurr, co
 		int layer = 0;
 		int animCount = GetNumAnimsInFIFO(layer);
 
-		char* szMotionParamID[eMotionParamID_COUNT] = 
+		const char* const szMotionParamID[eMotionParamID_COUNT] =
 		{
 			"TravelAngle", "TravelDistScale", "TravelSpeed", "TravelDist", "TravelSlope", "TurnSpeed", "TurnAngle", "Duration"
 		};
@@ -471,7 +471,7 @@ void CSkeletonAnim::ProcessForwardKinematics( const QuatT& rPhysLocationCurr, co
 
 	if (Console::GetInst().ca_ForceNullAnimation && m_pSkeletonPose->m_pModelSkeleton->IsHuman())
 	{
-		uint32 numJoints = m_pSkeletonPose->m_AbsolutePose.size();
+		const size_t numJoints = m_pSkeletonPose->m_AbsolutePose.size();
 		for (uint32 i=0; i<numJoints; i++)
 			m_pSkeletonPose->m_RelativePose[i] = m_pSkeletonPose->m_pModelSkeleton->m_arrModelJoints[i].m_DefaultRelPose;
 	}
@@ -565,7 +565,7 @@ void CSkeletonAnim::Serialize(TSerialize ser)
 		for (uint32 nLayer=0; nLayer<numVIRTUALLAYERS; nLayer++)
 		{
 			ser.BeginGroup("FIFO");
-			uint32 nAnimsInFIFO = m_arrLayer_AFIFO[nLayer].size();  
+			uint32 nAnimsInFIFO = CrySaturateSize<uint32>(m_arrLayer_AFIFO[nLayer].size());
 			ser.Value("nAnimsInFIFO",nAnimsInFIFO);
 			if(ser.IsReading())
 				m_arrLayer_AFIFO[nLayer].resize(nAnimsInFIFO);
@@ -616,7 +616,7 @@ void CSkeletonAnim::Serialize(TSerialize ser)
 		ser.EndGroup();
 
 
-		uint32 numAnims= m_arrLayer_AFIFO[0].size();
+		const size_t numAnims= m_arrLayer_AFIFO[0].size();
 		uint32 fff=0;
 	}
 }
@@ -643,7 +643,7 @@ void CSkeletonAnim::SetDebugging( uint32 debugFlags )
 //////////////////////////////////////////////////////////////////////////
 size_t CSkeletonAnim::SizeOfThis (ICrySizer * pSizer)
 {
-	uint32 TotalSize  = 0;
+	size_t TotalSize = 0;
 	for(uint32 i=0; i<numVIRTUALLAYERS; i++)
 		TotalSize += (m_arrLayer_AFIFO[i].capacity()*sizeof(CAnimation));
 	return TotalSize;

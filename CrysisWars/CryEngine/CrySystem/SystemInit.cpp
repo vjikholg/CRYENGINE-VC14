@@ -2248,9 +2248,18 @@ L_done:;
 	//////////////////////////////////////////////////////////////////////////
 	// FONT
 	//////////////////////////////////////////////////////////////////////////
-	CryLogAlways("Font initialization");
-	if (!InitFont())
-		return false;
+	const bool assetCompatibilityTest =
+		m_pCmdLine->FindArg(eCLAT_Pre, "AssetCompatibilityTest") != nullptr;
+	if (assetCompatibilityTest)
+	{
+		CryLogAlways("Font initialization skipped for asset compatibility testing");
+	}
+	else
+	{
+		CryLogAlways("Font initialization");
+		if (!InitFont())
+			return false;
+	}
 
 	//////////////////////////////////////////////////////////////////////////
 	// AI
@@ -2297,6 +2306,7 @@ L_done:;
 	// We need script materials for now 
 
 	// if (!startupParams.bPreview)
+	if (!assetCompatibilityTest)
 	{
 		CryLogAlways("Script System Initialization");
 		if (!InitScriptSystem())

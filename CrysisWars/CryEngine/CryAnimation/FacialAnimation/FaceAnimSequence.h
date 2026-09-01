@@ -110,7 +110,7 @@ public:
 	virtual ISplineInterpolator* GetLastInterpolator() { return (!m_splines.empty() ? m_splines.back() : 0); }
 	virtual void AddInterpolator();
 	virtual void DeleteInterpolator(int i);
-	virtual int GetInterpolatorCount() const {return m_splines.size();}
+	virtual int GetInterpolatorCount() const { return CrySaturateSize<int>(m_splines.size()); }
 
 	virtual void CleanupKeys(float fErrorMax);
 	virtual void SmoothKeys(float sigma);
@@ -285,7 +285,7 @@ public:
 	virtual Range GetTimeRange() { return m_timeRange; };
 	virtual void SetTimeRange( Range range ) { m_timeRange = range; };
 
-	virtual int GetChannelCount() { return m_channels.size(); };
+	virtual int GetChannelCount() { return CrySaturateSize<int>(m_channels.size()); }
 	virtual IFacialAnimChannel* GetChannel( int nIndex );
 	virtual IFacialAnimChannel* CreateChannel();
 	virtual IFacialAnimChannel* CreateChannelGroup();

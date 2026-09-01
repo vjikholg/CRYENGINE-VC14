@@ -351,7 +351,7 @@ int32 CAttachmentManager::RemoveAttachmentByName( const char* szName ) {
 
 		pAttachment->ClearBinding();
 	//	delete(pAttachment);
-		int32 size = m_arrAttachments.size();
+		const size_t size = m_arrAttachments.size();
 		if (size==0) return 1;
 		if (size<=index) return 1;
 		delete (m_arrAttachments[index]);
@@ -415,10 +415,10 @@ uint32 CAttachment::AddBinding( IAttachmentObject* pModel )
 		//	pInstanceSlave->m_pIMasterAttachment=this;
 
 			CCharacterModel* pModelMaster = ((CSkinInstance*)pInstanceMaster)->m_pModel;
-			uint32 numBonesMaster = pModelMaster->m_pModelSkeleton->m_arrModelJoints.size();
+			const size_t numBonesMaster = pModelMaster->m_pModelSkeleton->m_arrModelJoints.size();
 			uint32 found=0;
 			CCharacterModel* pModelSlave = pInstanceSlave->m_pModel;
-			uint32 numBonesSlave = pModelSlave->m_pModelSkeleton->m_arrModelJoints.size();
+			const size_t numBonesSlave = pModelSlave->m_pModelSkeleton->m_arrModelJoints.size();
 			uint32 NotMatchingNames=0;
 			if (numBonesSlave>numBonesMaster)
 			{
@@ -428,7 +428,7 @@ uint32 CAttachment::AddBinding( IAttachmentObject* pModel )
 				//return 0;
 			}
 
-			m_arrRemapTable.resize(numBonesSlave);
+	m_arrRemapTable.resize(CrySaturateSize<DynArray<uint8>::size_type>(numBonesSlave));
 			for(uint32 s=0; s<numBonesSlave; s++) 
 			{
 				found=0;
@@ -484,7 +484,7 @@ uint32 CAttachmentManager::ProjectAllAttachment()
 	m_pSkelInstance->GetISkeletonPose()->SetDefaultPose();
 	m_pSkelInstance->SetResetMode(1);
 
-	uint32 numAttachments = m_arrAttachments.size();
+	const size_t numAttachments = m_arrAttachments.size();
 	for (AttachArray::iterator it = m_arrAttachments.begin(); it != m_arrAttachments.end(); ++it)
 	{
 		CAttachment* pAttachment	= (*it);
@@ -565,12 +565,10 @@ void CAttachmentManager::UpdateLocationAttachments(const QuatT &rPhysLocationNex
 		if (pSkin->m_UpdateAttachmentMesh && pSkinning)
 		{
 			uint32 AttIndex=0;
-			m_arrAttSkin.empty();
 			m_arrAttSkin.resize(0);
-			m_arrAttSkinnedStream.empty();
 			m_arrAttSkinnedStream.resize(0);
 
-			uint32 numMergedSkins = pSkinning->m_arrExtVerticesCached.size();
+			const size_t numMergedSkins = pSkinning->m_arrExtVerticesCached.size();
 			//move all connected faces into a new buffer
 			for (AttachArray::iterator it = m_arrAttachments.begin(); it != m_arrAttachments.end(); ++it)
 			{
@@ -640,7 +638,7 @@ void CAttachmentManager::UpdateLocationAttachments(const QuatT &rPhysLocationNex
 	{
 		CAttachment* pAttachment	= (*it);
 		
-		uint32 numAttSkinnedStream = m_arrAttSkinnedStream.size();
+		const size_t numAttSkinnedStream = m_arrAttSkinnedStream.size();
 
 		if (pOnlyThisType && pAttachment->m_pIAttachmentObject && *pOnlyThisType != pAttachment->m_pIAttachmentObject->GetAttachmentType())
 			continue;
@@ -814,7 +812,7 @@ void CAttachmentManager::SkinningAttSW( CModelMesh* pSkinning )
 	DEFINE_PROFILER_FUNCTION();
 #endif
 
-	uint32 HowManyVertices = m_arrAttSkin.size();
+	const size_t HowManyVertices = m_arrAttSkin.size();
 	if (HowManyVertices==0) return;
 
 	//-----------------------------------------------------------------------
@@ -912,8 +910,8 @@ void CAttachmentManager::SkinningAttSW( CModelMesh* pSkinning )
 	}
 	else
 	{
-		uint32 numJoints	= pMaster->m_SkeletonPose.m_AbsolutePose.size();
-		cryMemcpy(arrNewSkinQuat, &pMaster->m_arrNewSkinQuat[iActiveFrame][0],	sizeof(QuatTS)*numJoints);
+		const size_t numJoints	= pMaster->m_SkeletonPose.m_AbsolutePose.size();
+	memcpy(arrNewSkinQuat, &pMaster->m_arrNewSkinQuat[iActiveFrame][0], sizeof(QuatTS) * numJoints);
 	}
 
 	if (Console::GetInst().ca_SphericalSkinning) 
@@ -1022,7 +1020,7 @@ void CAttachmentManager::DrawAttachments(const SRendParams& rRendParams, Matrix3
 	Matrix34_f64 WMatrixD;
 	g_pAuxGeom->SetRenderFlags( e_Def3DPublicRenderflags );
 
-	uint32 numAttachments = m_arrAttachments.size();
+	const size_t numAttachments = m_arrAttachments.size();
 	for (uint32 i=0; i<numAttachments; i++)
 	{
 
@@ -1394,7 +1392,7 @@ size_t CAttachmentManager::SizeOfThis()
 	nSize += m_arrAttSkin.capacity() * sizeof(AttSkinVertex);
 	nSize += m_arrAttSkinnedStream.capacity() * sizeof(Vec3);
 
-	uint32 numAttachments= m_arrAttachments.size();
+	const size_t numAttachments= m_arrAttachments.size();
 	for(uint32 i=0; i<numAttachments; i++)
 		nSize += m_arrAttachments[i]->SizeOfThis();
 

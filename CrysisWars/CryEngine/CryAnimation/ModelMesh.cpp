@@ -24,10 +24,13 @@
 // returns the index of the morph target, in the indexation of the array of morph targets
 int CModelMesh::FindMorphTarget (const char* szMorphTargetName)
 {
-	int numMophs = m_morphTargets.size();
-	for (int i=0; i<numMophs; ++i)
+	const size_t numMophs = m_morphTargets.size();
+	for (size_t i=0; i<numMophs; ++i)
 		if (!stricmp(m_morphTargets[i]->m_name.c_str(), szMorphTargetName))
-			return i;
+		{
+			int morphTargetId = -1;
+			return CryTryNarrowSize(i, morphTargetId) ? morphTargetId : -1;
+		}
 	return -1;
 }
 
@@ -52,7 +55,8 @@ CloseInfo CModelMesh::FindClosestPointOnMesh( const Vec3& RMWPosition )
 	LockFullRenderMesh(m_pModel->m_nBaseLOD);
 	int32 numFaces = m_Indices / 3;
 
-	CloseInfo cf;
+	CloseInfo cf = {};
+	cf.FaceNr = (std::numeric_limits<uint32>::max)();
 	uint32 foundedPos(-1);
 	for(int d=0; d<m_Indices; d += 3)	
 	{
@@ -82,7 +86,7 @@ CloseInfo CModelMesh::FindClosestPointOnMesh( const Vec3& RMWPosition )
 	}
 
 
-	for (uint32 i = 0, end = m_arrExtVerticesCached.size(); i < end; i += 3)
+	for (size_t i = 0, end = m_arrExtVerticesCached.size(); i < end; i += 3)
 	{
 		Vec3 v0 = m_arrExtVerticesCached[i].wpos1;
 		Vec3 v1 = m_arrExtVerticesCached[i+ 1].wpos1;
@@ -94,7 +98,11 @@ CloseInfo CModelMesh::FindClosestPointOnMesh( const Vec3& RMWPosition )
 
 		if (m_arrExtVerticesCached[i].wpos1 == cf.tv0 && m_arrExtVerticesCached[i+1].wpos1 == cf.tv1 && m_arrExtVerticesCached[i+2].wpos1 == cf.tv2)
 		{
-			face = i/3;
+			if (!CryTryNarrowSize(i/3, face))
+			{
+				UnlockFullRenderMesh(m_pModel->m_nBaseLOD);
+				return cf;
+			}
 			break;
 		}
 	}
@@ -154,7 +162,11 @@ CloseInfo CModelMesh::FindClosestPointOnMesh( const Vec3& RMWPosition )
 
 		m_arrExtVerticesCached.push_back(vertex);
 
-		face = (m_arrExtVerticesCached.size() - 1) / 3;
+		if (!CryTryNarrowSize((m_arrExtVerticesCached.size() - 1) / 3, face))
+		{
+			UnlockFullRenderMesh(m_pModel->m_nBaseLOD);
+			return cf;
+		}
 
 	}
 	UnlockFullRenderMesh(m_pModel->m_nBaseLOD);
@@ -393,8 +405,8 @@ void CModelMesh::InitSkinningExtSW ( CMorphing* pMorphing, f32* pShapeDeform,uin
 		else
 			memset(&m_arrExtMorphStream[0],0,numExtVertices*sizeof(Vec3));
 
-		uint32 num= pMorphing->m_arrMorphEffectors.size();
-		for (uint32 nMorphEffector=0; nMorphEffector<num; ++nMorphEffector)
+		const size_t num= pMorphing->m_arrMorphEffectors.size();
+		for (size_t nMorphEffector=0; nMorphEffector<num; ++nMorphEffector)
 		{
 			const CryModEffMorph& rMorphEffector = pMorphing->m_arrMorphEffectors[nMorphEffector];
 			int nMorphTargetId = rMorphEffector.getMorphTargetId ();
@@ -402,8 +414,8 @@ void CModelMesh::InitSkinningExtSW ( CMorphing* pMorphing, f32* pShapeDeform,uin
 				continue;
 			CMorphTarget* rMorphSkin = this->m_pModel->getMorphSkin (0, nMorphTargetId);
 			float fBlending = rMorphEffector.getBlending();
-			uint32 num = rMorphSkin->m_vertices.size();
-			for(uint32 i=0; i<num; i++) 
+			const size_t num = rMorphSkin->m_vertices.size();
+			for(size_t i=0; i<num; i++)
 			{
 				// add all morph-values to the stream to use subsequently in skinning
 				uint32 idx = rMorphSkin->m_vertices[i].nVertexId;
@@ -468,8 +480,10 @@ void CModelMesh::SkinningExtSW ( CCharInstance* pMaster, CAttachment* pAttachmen
 	}
 	else
 	{
-		uint32 numJoints	= pMaster->m_SkeletonPose.m_AbsolutePose.size();
-		cryMemcpy(arrNewSkinQuat, &pMaster->m_arrNewSkinQuat[iActiveFrame][0],	sizeof(QuatTS)*numJoints);
+		const size_t numJoints = pMaster->m_SkeletonPose.m_AbsolutePose.size();
+		if (numJoints > MAX_JOINT_AMOUNT + 1)
+			return;
+		memcpy(arrNewSkinQuat, &pMaster->m_arrNewSkinQuat[iActiveFrame][0], sizeof(QuatTS)*numJoints);
 	}
 
 
@@ -748,11 +762,11 @@ void CModelMesh::DrawWireframeStatic( CMorphing* pMorphing, const Matrix34& m34,
 	assert(numExtVertices);
 
 	static std::vector<ColorB> arrExtVColors;
-	uint32 csize = arrExtVColors.size();
+	const size_t csize = arrExtVColors.size();
 	if (csize<numExtVertices) arrExtVColors.resize( numExtVertices );	
 
 	static std::vector<Vec3> arrExtSkinnedStream;
-	uint32 vsize = arrExtSkinnedStream.size();
+	const size_t vsize = arrExtSkinnedStream.size();
 	if (vsize<numExtVertices) arrExtSkinnedStream.resize( numExtVertices );	
 	LockFullRenderMesh(nLOD); 
 	for(uint32 e=0; e<numExtVertices; e++) 
@@ -788,12 +802,12 @@ void CModelMesh::DrawWireframe ( CMorphing* pMorphing, QuatTS* parrNewSkinQuat, 
 	assert(numExtVertices);
 
 	static std::vector<ColorB> arrExtVColors;
-	uint32 csize = arrExtVColors.size();
+	const size_t csize = arrExtVColors.size();
 	if (csize<numExtVertices) arrExtVColors.resize( numExtVertices );	
 
 
 	static std::vector<Vec3> arrExtSkinnedStream;
-	uint32 vsize = arrExtSkinnedStream.size();
+	const size_t vsize = arrExtSkinnedStream.size();
 	if (vsize<numExtVertices) arrExtSkinnedStream.resize( numExtVertices );	
 
 
@@ -898,13 +912,20 @@ void CModelMesh::DrawTangents ( const Matrix34& rRenderMat34)
 {
 
 //	uint32 numExtIndices	= m_pModel->GetRenderMesh(m_pModel->m_nBaseLOD)->GetSysIndicesCount();
-	uint32 numExtVertices	=	m_arrExtSkinnedStream.size();
+	const size_t numExtVertices = m_arrExtSkinnedStream.size();
+	size_t debugPointCount = 0;
+	uint32 renderPointCount = 0;
+	if (!CryTryMultiplySize(numExtVertices, size_t{2}, debugPointCount) ||
+		!CryTryNarrowSize(debugPointCount, renderPointCount))
+	{
+		return;
+	}
 	assert(numExtVertices);
 
 	static std::vector<ColorB> arrExtVColors;
-	uint32 csize = arrExtVColors.size();
-	if (csize<(numExtVertices*2)) arrExtVColors.resize( numExtVertices*2 );	
-	for(uint32 i=0; i<numExtVertices*2; i=i+2)	
+	const size_t csize = arrExtVColors.size();
+	if (csize<debugPointCount) arrExtVColors.resize(debugPointCount);
+	for(size_t i=0; i<debugPointCount; i=i+2)
 	{
 		arrExtVColors[i+0] = RGBA8(0x3f,0x00,0x00,0x00);
 		arrExtVColors[i+1] = RGBA8(0xff,0x7f,0x7f,0x00);
@@ -913,9 +934,9 @@ void CModelMesh::DrawTangents ( const Matrix34& rRenderMat34)
 	Matrix34 WMat34 = rRenderMat34;
 	Matrix33 WMat33 = Matrix33(rRenderMat34);
 	static std::vector<Vec3> arrExtSkinnedStream;
-	uint32 vsize = arrExtSkinnedStream.size();
-	if (vsize<(numExtVertices*2)) arrExtSkinnedStream.resize( numExtVertices*2 );	
-	for(uint32 i=0,t=0; i<numExtVertices; i++)	
+	const size_t vsize = arrExtSkinnedStream.size();
+	if (vsize<debugPointCount) arrExtSkinnedStream.resize(debugPointCount);
+	for(size_t i=0,t=0; i<numExtVertices; i++)
 	{
 		Vec3 tangent  = Vec3( tPackB2F(m_arrTangents[i].Tangent.x), tPackB2F(m_arrTangents[i].Tangent.y), tPackB2F(m_arrTangents[i].Tangent.z) )*VLENGTH;
 		arrExtSkinnedStream[t+0] = WMat34*m_arrExtSkinnedStream[i].pos; 
@@ -925,7 +946,7 @@ void CModelMesh::DrawTangents ( const Matrix34& rRenderMat34)
 
 	SAuxGeomRenderFlags renderFlags( e_Def3DPublicRenderflags );
 	g_pAuxGeom->SetRenderFlags( renderFlags );
-	g_pAuxGeom->DrawLines( &arrExtSkinnedStream[0],numExtVertices*2, &arrExtVColors[0]);		
+	g_pAuxGeom->DrawLines(&arrExtSkinnedStream[0], renderPointCount, &arrExtVColors[0]);
 }
 
 
@@ -935,13 +956,20 @@ void CModelMesh::DrawTangents ( const Matrix34& rRenderMat34)
 void CModelMesh::DrawBinormals( const Matrix34& rRenderMat34)
 {
 	//uint32 numExtIndices	= m_pModel->GetRenderMesh(m_pModel->m_nBaseLOD)->GetSysIndicesCount();
-	uint32 numExtVertices	=	m_arrExtSkinnedStream.size();
+	const size_t numExtVertices = m_arrExtSkinnedStream.size();
+	size_t debugPointCount = 0;
+	uint32 renderPointCount = 0;
+	if (!CryTryMultiplySize(numExtVertices, size_t{2}, debugPointCount) ||
+		!CryTryNarrowSize(debugPointCount, renderPointCount))
+	{
+		return;
+	}
 	assert(numExtVertices);
 
 	static std::vector<ColorB> arrExtVColors;
-	uint32 csize = arrExtVColors.size();
-	if (csize<(numExtVertices*2)) arrExtVColors.resize( numExtVertices*2 );	
-	for(uint32 i=0; i<numExtVertices*2; i=i+2)	
+	const size_t csize = arrExtVColors.size();
+	if (csize<debugPointCount) arrExtVColors.resize(debugPointCount);
+	for(size_t i=0; i<debugPointCount; i=i+2)
 	{
 		arrExtVColors[i+0] = RGBA8(0x00,0x3f,0x00,0x00);
 		arrExtVColors[i+1] = RGBA8(0x7f,0xff,0x7f,0x00);
@@ -950,9 +978,9 @@ void CModelMesh::DrawBinormals( const Matrix34& rRenderMat34)
 	Matrix34 WMat34 = rRenderMat34;
 	Matrix33 WMat33 = Matrix33(rRenderMat34);
 	static std::vector<Vec3> arrExtSkinnedStream;
-	uint32 vsize = arrExtSkinnedStream.size();
-	if (vsize<(numExtVertices*2)) arrExtSkinnedStream.resize( numExtVertices*2 );	
-	for(uint32 i=0,t=0; i<numExtVertices; i++)	
+	const size_t vsize = arrExtSkinnedStream.size();
+	if (vsize<debugPointCount) arrExtSkinnedStream.resize(debugPointCount);
+	for(size_t i=0,t=0; i<numExtVertices; i++)
 	{
 		Vec3 binormal = Vec3( tPackB2F(m_arrTangents[i].Binormal.x), tPackB2F(m_arrTangents[i].Binormal.y), tPackB2F(m_arrTangents[i].Binormal.z) )*VLENGTH;
 		arrExtSkinnedStream[t+0] = WMat34*m_arrExtSkinnedStream[i].pos; 
@@ -962,7 +990,7 @@ void CModelMesh::DrawBinormals( const Matrix34& rRenderMat34)
 
 	SAuxGeomRenderFlags renderFlags( e_Def3DPublicRenderflags );
 	g_pAuxGeom->SetRenderFlags( renderFlags );
-	g_pAuxGeom->DrawLines( &arrExtSkinnedStream[0],numExtVertices*2, &arrExtVColors[0]);		
+	g_pAuxGeom->DrawLines(&arrExtSkinnedStream[0], renderPointCount, &arrExtVColors[0]);
 }
 
 //--------------------------------------------------------------------
@@ -970,13 +998,20 @@ void CModelMesh::DrawBinormals( const Matrix34& rRenderMat34)
 //--------------------------------------------------------------------
 void CModelMesh::DrawNormals ( const Matrix34& rRenderMat34)
 {
-	uint32 numExtVertices	=	m_arrExtSkinnedStream.size();
+	const size_t numExtVertices = m_arrExtSkinnedStream.size();
+	size_t debugPointCount = 0;
+	uint32 renderPointCount = 0;
+	if (!CryTryMultiplySize(numExtVertices, size_t{2}, debugPointCount) ||
+		!CryTryNarrowSize(debugPointCount, renderPointCount))
+	{
+		return;
+	}
 	assert(numExtVertices);
 
 	static std::vector<ColorB> arrExtVColors;
-	uint32 csize = arrExtVColors.size();
-	if (csize<(numExtVertices*2)) arrExtVColors.resize( numExtVertices*2 );	
-	for(uint32 i=0; i<numExtVertices*2; i=i+2)	
+	const size_t csize = arrExtVColors.size();
+	if (csize<debugPointCount) arrExtVColors.resize(debugPointCount);
+	for(size_t i=0; i<debugPointCount; i=i+2)
 	{
 		arrExtVColors[i+0] = RGBA8(0x00,0x00,0x3f,0x00);
 		arrExtVColors[i+1] = RGBA8(0x7f,0x7f,0xff,0x00);
@@ -985,9 +1020,9 @@ void CModelMesh::DrawNormals ( const Matrix34& rRenderMat34)
 	Matrix34 WMat34 = rRenderMat34;
 	Matrix33 WMat33 = Matrix33(rRenderMat34);
 	static std::vector<Vec3> arrExtSkinnedStream;
-	uint32 vsize = arrExtSkinnedStream.size();
-	if (vsize<(numExtVertices*2)) arrExtSkinnedStream.resize( numExtVertices*2 );	
-	for(uint32 i=0,t=0; i<numExtVertices; i++)	
+	const size_t vsize = arrExtSkinnedStream.size();
+	if (vsize<debugPointCount) arrExtSkinnedStream.resize(debugPointCount);
+	for(size_t i=0,t=0; i<numExtVertices; i++)
 	{
 		f32  flip	=     tPackB2F(m_arrTangents[i].Binormal.w)*VLENGTH;
 		Vec3 binormal	= Vec3( tPackB2F(m_arrTangents[i].Binormal.x),tPackB2F(m_arrTangents[i].Binormal.y),tPackB2F(m_arrTangents[i].Binormal.z) );
@@ -1000,7 +1035,7 @@ void CModelMesh::DrawNormals ( const Matrix34& rRenderMat34)
 
 	SAuxGeomRenderFlags renderFlags( e_Def3DPublicRenderflags );
 	g_pAuxGeom->SetRenderFlags( renderFlags );
-	g_pAuxGeom->DrawLines( &arrExtSkinnedStream[0],numExtVertices*2, &arrExtVColors[0]);		
+	g_pAuxGeom->DrawLines(&arrExtSkinnedStream[0], renderPointCount, &arrExtVColors[0]);
 }
 
 
@@ -1101,16 +1136,16 @@ void CModelMesh::ExportModel()
 
 size_t CModelMesh::SizeOfThis(ICrySizer *pSizer) const
 {
-	uint32 nSize = 0;//sizeof(CModelMesh);
+	size_t nSize = 0;//sizeof(CModelMesh);
 
 	{
 		SIZER_SUBCOMPONENT_NAME(pSizer, "Phys Bone meshes");
 
-		for(uint32 i = 0, end = m_arrPhyBoneMeshes.size(); i < end; ++i )
+		for(const auto& boneMesh : m_arrPhyBoneMeshes)
 		{
-			nSize += m_arrPhyBoneMeshes[i].m_arrPoints.capacity() * sizeof(Vec3);
-			nSize += m_arrPhyBoneMeshes[i].m_arrIndices.capacity() * sizeof(uint16);
-			nSize += m_arrPhyBoneMeshes[i].m_arrMaterials.capacity();
+			nSize += boneMesh.m_arrPoints.capacity() * sizeof(Vec3);
+			nSize += boneMesh.m_arrIndices.capacity() * sizeof(uint16);
+			nSize += boneMesh.m_arrMaterials.capacity();
 		}
 
 		pSizer->AddObject(&m_arrPhyBoneMeshes, nSize);
@@ -1126,7 +1161,7 @@ size_t CModelMesh::SizeOfThis(ICrySizer *pSizer) const
 		//	nSize += sizeof(SMeshSubset) + m_arrSubsets[i].m_arrGlobalBonesPerSubset.size() * sizeof(uint16);
 		//}
 
-		for (uint32 i = 0, end = m_morphTargets.size(); i < end; ++i)
+		for (size_t i = 0, end = m_morphTargets.size(); i < end; ++i)
 		{
 			if (m_morphTargets[i]) {
 				nSize += m_morphTargets[i]->m_vertices.capacity() * sizeof(CMorphTarget::Vertex) + sizeof(CMorphTarget) + m_morphTargets[i]->m_name.capacity();
@@ -1215,7 +1250,9 @@ void CModelMesh::DrawDebugInfo(CCharInstance* pInstance, int nLOD,const Matrix34
 	bool bNoText = DebugMode < 0;
 
 	int nTris = m_pModel->GetRenderMesh(nLOD)->GetVertCount();
-	int32 numLODs = m_pModel->m_arrModelMeshes.size();
+	int32 numLODs = 0;
+	if (!CryTryNarrowSize(m_pModel->m_arrModelMeshes.size(), numLODs) || numLODs == 0)
+		return;
 	int index = 0;
 	Vec3 trans = rRenderMat34.GetTranslation();
 	trans += (m_pModel->m_arrCollisions[index].m_aABB.max - m_pModel->m_arrCollisions[index].m_aABB.min)/2.0f + m_pModel->m_arrCollisions[index].m_aABB.min;

@@ -181,7 +181,7 @@ IFacialEffCtrl* CFacialEffector::AddSubEffector( IFacialEffector *pEffector )
 //////////////////////////////////////////////////////////////////////////
 void CFacialEffector::RemoveSubEffector( IFacialEffector *pEffector )
 {
-	int nSize = m_subEffectors.size();
+	const size_t nSize = m_subEffectors.size();
 	for (int i = 0; i < nSize; i++)
 	{
 		if (m_subEffectors[i]->GetCEffector() == pEffector)

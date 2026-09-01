@@ -36,6 +36,18 @@ void CAnimationSet::Init()
 	g_AnimationManager.Register(this);
 }
 
+bool CAnimationSet::TryCreateLocalAnimationId(int& animationId) const noexcept
+{
+	constexpr size_t maximumAnimationCount = static_cast<size_t>((std::numeric_limits<int>::max)());
+	if (m_arrAnimations.size() >= maximumAnimationCount)
+	{
+		animationId = -1;
+		return false;
+	}
+
+	return CryTryNarrowSize(m_arrAnimations.size(), animationId);
+}
+
 size_t CAnimationSet::SizeOfThis() const
 {
 	size_t nSize = m_arrAnimations.size();
@@ -173,7 +185,7 @@ const char* CAnimationSet::GetFacialAnimationPathByName(const char* szName)
 
 int CAnimationSet::GetNumFacialAnimations()
 {
-	return m_facialAnimations.size();
+	return CrySaturateSize<int>(m_facialAnimations.size());
 }
 
 const char* CAnimationSet::GetFacialAnimationName(int index)
@@ -200,9 +212,11 @@ int CAnimationSet::LoadCAF(const char * szFilePath, float fScale, int nAnimID, c
 	int nModelAnimId = GetAnimIDByName (szAnimName);
 	if (nModelAnimId == -1) 
 	{
-		int nGlobalAnimID = g_AnimationManager.CreateGlobalMotionHeader (szFilePath);
+		int nLocalAnimId = -1;
+		if (!TryCreateLocalAnimationId(nLocalAnimId))
+			return -1;
 
-		int nLocalAnimId = m_arrAnimations.size();
+		int nGlobalAnimID = g_AnimationManager.CreateGlobalMotionHeader (szFilePath);
 		ModelAnimationHeader localAnim; 
 		localAnim.m_nGlobalAnimId = nGlobalAnimID;
 		localAnim.SetAnimName(szAnimName);
@@ -215,7 +229,7 @@ int CAnimationSet::LoadCAF(const char * szFilePath, float fScale, int nAnimID, c
 
 		path.replace('\\','/' );
 
-		int p = path.find("//");
+		string::size_type p = path.find("//");
 		while (p != string::npos)
 		{
 			path.erase(p,1 );
@@ -226,7 +240,7 @@ int CAnimationSet::LoadCAF(const char * szFilePath, float fScale, int nAnimID, c
 		path.MakeLower();
 
 		uint32 crc = g_pCrc32Gen->GetCRC32Lowercase(path.c_str());
-		m_FullPathAnimationsMap.insert(std::make_pair<uint32, int32>(crc,nGlobalAnimID));
+		m_FullPathAnimationsMap.insert(std::make_pair(crc, nGlobalAnimID));
 
 		selfValidate();
 
@@ -309,9 +323,11 @@ int CAnimationSet::LoadANM(const char * szFileName, float fScale, int nAnimID, c
 	int nModelAnimId = GetAnimIDByName (szAnimName);
 	if (nModelAnimId == -1) 
 	{
-		int nGlobalAnimID = g_AnimationManager.CreateGlobalMotionHeader (szFileName);
+		int nLocalAnimId = -1;
+		if (!TryCreateLocalAnimationId(nLocalAnimId))
+			return -1;
 
-		int nLocalAnimId = m_arrAnimations.size();
+		int nGlobalAnimID = g_AnimationManager.CreateGlobalMotionHeader (szFileName);
 		ModelAnimationHeader LocalAnim; 
 		LocalAnim.m_nGlobalAnimId = nGlobalAnimID;
 		LocalAnim.SetAnimName(szAnimName);
@@ -427,8 +443,11 @@ int CAnimationSet::LoadLMG(const char * szFilePath, float fScale, int nAnimID, c
 	int nModelAnimId = GetAnimIDByName (szAnimName);
 	if (nModelAnimId == -1) 
 	{
+		int nLocalAnimId = -1;
+		if (!TryCreateLocalAnimationId(nLocalAnimId))
+			return -1;
+
 		int nGlobalAnimID = g_AnimationManager.CreateGlobalMotionHeader(szFilePath);
-		int nLocalAnimId = m_arrAnimations.size();
 
 		ModelAnimationHeader LocalAnim; 
 		LocalAnim.m_nGlobalAnimId = nGlobalAnimID;
@@ -844,8 +863,8 @@ void CAnimationSet::ComputeSelectionProperties()
 void CAnimationSet::VerifyLocomotionGroups()
 {
 	//search for animation-names 
-	uint32 numAnimation=m_arrAnimations.size();
-	for (uint32 i=0; i<numAnimation; i++)
+	const size_t numAnimation=m_arrAnimations.size();
+	for (size_t i=0; i<numAnimation; i++)
 	{
 
 		uint32 GlobalAnimationID			= m_arrAnimations[i].m_nGlobalAnimId;
@@ -1418,7 +1437,7 @@ uint32 CAnimationSet::numMorphTargets() const
 	if (pModelMesh==0)
 		return 0;
 
-	return pModelMesh->m_morphTargets.size();
+	return CrySaturateSize<uint32>(pModelMesh->m_morphTargets.size());
 };
 
 const char* CAnimationSet::GetNameMorphTarget (int nMorphTargetId) 
@@ -1435,17 +1454,25 @@ const char* CAnimationSet::GetNameMorphTarget (int nMorphTargetId)
 
 
 // prepares to load the specified number of CAFs by reserving the space for the controller pointers
-void CAnimationSet::prepareLoadCAFs (uint32 nReserveAnimations)
+bool CAnimationSet::prepareLoadCAFs (size_t nReserveAnimations)
 {
-	nReserveAnimations += m_arrAnimations.size();
+	size_t totalAnimations = 0;
+	constexpr size_t maximumAnimationCount = static_cast<size_t>((std::numeric_limits<int>::max)());
+	if (!CryTryAddSize(nReserveAnimations, m_arrAnimations.size(), totalAnimations) ||
+		totalAnimations > maximumAnimationCount)
+	{
+		AnimWarning("Animation set exceeds the signed local animation-ID range");
+		return false;
+	}
 
 	//uint32 numJoints = m_pModel->m_pModelSkeleton->m_arrModelJoints.size();
 	//for (uint32 i=0; i<numJoints; i++)
 	//	m_pModel->m_pModelSkeleton->m_arrModelJoints[i].m_arrControllersMJoint.reserve (nReserveAnimations);
 
-	m_arrAnimations.reserve (nReserveAnimations);
+	m_arrAnimations.reserve (totalAnimations);
 //	m_arrAnimByGlobalId.reserve (nReserveAnimations);
-	//	m_arrAnimByLocalName.reserve (nReserveAnimations);
+	//	m_arrAnimByLocalName.reserve (totalAnimations);
+	return true;
 }
 
 
@@ -1513,7 +1540,18 @@ int CAnimationSet::GetAnimIDByName( const char* szAnimationName)
 	if (szAnimationName[0] == '#')
 	{	
 		//search for morph-names
-		return int(m_arrAnimations.size() + m_pModel->m_arrModelMeshes[0].FindMorphTarget(szAnimationName));
+		const int morphTargetId = m_pModel->m_arrModelMeshes[0].FindMorphTarget(szAnimationName);
+		if (morphTargetId < 0)
+			return -1;
+
+		size_t combinedId = 0;
+		int animationId = -1;
+		if (!CryTryAddSize(m_arrAnimations.size(), static_cast<size_t>(morphTargetId), combinedId) ||
+			!CryTryNarrowSize(combinedId, animationId))
+		{
+			return -1;
+		}
+		return animationId;
 	}
 	else
 	{
@@ -1527,7 +1565,11 @@ int CAnimationSet::GetAnimIDByName( const char* szAnimationName)
 		}
 		*/
 
-		return m_AnimationHashMap.GetValue(szAnimationName);
+		const size_t value = m_AnimationHashMap.GetValue(szAnimationName);
+		int animationId = -1;
+		return value != size_t(-1) && CryTryNarrowSize(value, animationId)
+			? animationId
+			: -1;
 	}
 }
 
@@ -3715,8 +3757,7 @@ int32 CAnimationSet::GetGlobalIDByID(int nAnimationId)
 //if the return-value is positive then the closest-quaternion is at key[0...1]
 f32 CAnimationSet::GetClosestQuatInChannel(const char* szAnimationName,int32 JointID, const Quat& reference)
 {
-	int32 numJoints = m_pModel->m_pModelSkeleton->m_arrModelJoints.size();
-	if (JointID<0 || JointID>=numJoints)
+	if (JointID<0 || static_cast<size_t>(JointID) >= m_pModel->m_pModelSkeleton->m_arrModelJoints.size())
 	{
 		AnimFileWarning(m_pModel->GetModelFilePath(),"illegal joint index: %d",JointID);
 		return -1; // wrong animation name
@@ -3769,9 +3810,9 @@ void CAnimationSet::AddNullControllers(int nGlobalAnimID)
 	GlobalAnimationHeader& rGlobalAnim = g_AnimationManager.GetGlobalAnimationHeader(nGlobalAnimID);
 
 	// Create a controller for each joint.
-	uint32 numController = m_pModel->m_pModelSkeleton->m_arrModelJoints.size();
+	const size_t numController = m_pModel->m_pModelSkeleton->m_arrModelJoints.size();
 	rGlobalAnim.m_arrController.resize(numController);
-	for(uint32 i=0; i<numController; i++ )
+	for(size_t i=0; i<numController; i++ )
 	{
 		// Create a dummy controller for this joint.
 		CControllerPQLog_AutoPtr pController = new CControllerPQLog ();

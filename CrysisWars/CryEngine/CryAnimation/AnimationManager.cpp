@@ -60,9 +60,10 @@ void CAnimationManager::Clear()
 /////////////////////////////////////////////////////////////////////
 int CAnimationManager::GetGlobalIDbyFilePath (const char * sAnimFileName)
 {
-	size_t id = m_AnimationMap.GetValue(sAnimFileName);
-	if ( id != -1 && !stricmp(m_arrGlobalAnimations[id].GetPathName(),sAnimFileName))
-		return id;
+	const size_t id = m_AnimationMap.GetValue(sAnimFileName);
+	if (id != static_cast<size_t>(-1) && id < m_arrGlobalAnimations.size() &&
+		!stricmp(m_arrGlobalAnimations[id].GetPathName(), sAnimFileName))
+		return CrySaturateSize<int>(id);
 	else
 		return -1;
 }
@@ -127,7 +128,7 @@ bool CAnimationManager::LoadAnimation(int nAnimId, eLoadingOptions flags)
 {
 
 	GlobalAnimationHeader& Anim = m_arrGlobalAnimations[nAnimId];
-	uint32 numCtrl = Anim.GetControllersCount();//m_arrController.size();
+	const size_t numCtrl = Anim.GetControllersCount();//m_arrController.size();
 	if (numCtrl)
 		return true;
 
@@ -439,7 +440,7 @@ bool CAnimationManager::LoadAnimationTCB(int nAnimId, std::vector<CControllerTCB
 	rGlobalAnim.m_fTotalDuration = rGlobalAnim.m_fEndSec - rGlobalAnim.m_fStartSec;
 	assert(rGlobalAnim.m_fTotalDuration > 0);
 
-	uint32 numCtrl = rGlobalAnim.m_arrController.size();
+	const size_t numCtrl = rGlobalAnim.m_arrController.size();
 	if (numCtrl)
 		return true;
 
@@ -814,7 +815,7 @@ bool CAnimationManager::GetGlobalAnimStatistics(size_t num, SAnimationStatistics
 // Unloads animation from memory and remove 
 void CAnimationManager::UnloadAnimation(int nGLobalAnimID)
 {
-	for (uint32 i =0, end = m_arrClients.size(); i < end; ++i)
+	for (size_t i =0, end = m_arrClients.size(); i < end; ++i)
 	{
 		m_arrClients[i]->OnAnimationGlobalUnLoad(nGLobalAnimID);
 	}
@@ -921,13 +922,13 @@ bool GlobalAnimationHeader::UnpackAnimation()
 
 			IControllerOpt_AutoPtr pController = 0;
 
-			uint32 ss = m_arrController[i]->GetRotationKeysNum();
+			uint32 ss = CrySaturateSize<uint32>(m_arrController[i]->GetRotationKeysNum());
 
 			if (rotk != pOldController->GetRotationFormat() && ss)	{
 
 				Quat * vStepStart = vStep;
 
-				for (size_t j = 0; j < ss; ++j, ++vStep) {
+				for (uint32 j = 0; j < ss; ++j, ++vStep) {
 					*vStep = m_arrController[i]->GetOrientationByKey(j);
 				}
 			
@@ -935,7 +936,7 @@ bool GlobalAnimationHeader::UnpackAnimation()
 				
 				pController->SetRotationKeyTimes(ss, pOldController->GetRotationKeyTimesData());
 				pController->SetRotationKeys(ss, /*pOldController->GetRotationData()*/(char*)vStepStart);
-				ss = m_arrController[i]->GetPositionKeysNum();
+				ss = CrySaturateSize<uint32>(m_arrController[i]->GetPositionKeysNum());
 				pController->SetPositionKeyTimes(ss, pOldController->GetPositionKeyTimesData());
 				pController->SetPositionKeys(ss, pOldController->GetPositionKeyData());
 
@@ -970,19 +971,19 @@ bool GlobalAnimationHeader::UnpackAnimation()
 
 			IControllerOpt_AutoPtr pController = 0;
 
-			uint32 ss = m_arrController[i]->GetRotationKeysNum();
+			uint32 ss = CrySaturateSize<uint32>(m_arrController[i]->GetRotationKeysNum());
 			if (rotk != pOldController->GetRotationController()->GetFormat() && ss )	{
 
 				Quat * vStepStart = vStep;
 
-				for (size_t j = 0; j < ss; ++j, ++vStep) {
+				for (uint32 j = 0; j < ss; ++j, ++vStep) {
 					*vStep = m_arrController[i]->GetOrientationByKey(j);
 				}
 
 				pController =  ControllerHelper::CreateController(rotk, rotkt, posk, poskt);
 				pController->SetRotationKeyTimes(ss, pOldController->GetRotationController()->GetKeyTimesInformation()->GetData());
 				pController->SetRotationKeys(ss, (char*)vStepStart);
-				ss = m_arrController[i]->GetPositionKeysNum();
+				ss = CrySaturateSize<uint32>(m_arrController[i]->GetPositionKeysNum());
 				pController->SetPositionKeyTimes(ss, pOldController->GetPositionController()->GetKeyTimesInformation()->GetData());
 				pController->SetPositionKeys(ss, pOldController->GetPositionController()->GetData());
 				m_arrControllerCache[i] = pController;

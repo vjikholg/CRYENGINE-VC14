@@ -205,7 +205,7 @@ ICharacterInstance* CharacterManager::CreateCHRInstance( const string& strPath, 
 //////////////////////////////////////////////////////////////////////////
 CCharacterModel* CharacterManager::CheckIfModelLoaded (const string& strFileName)
 {
-	uint32 numModels = m_arrModelCache.size();
+	const size_t numModels = m_arrModelCache.size();
 	ValidateModelCache();
 	CryModelCache::iterator it = std::lower_bound (m_arrModelCache.begin(), m_arrModelCache.end(), strFileName, OrderByFileName());
 
@@ -268,7 +268,7 @@ ICharacterInstance* CharacterManager::CreateCGAInstance( const char* strPath )
 	CCharacterModel* pModel = 0;
 	ValidateModelCache();
 
-	uint32 numModels = m_arrModelCache.size();
+	const size_t numModels = m_arrModelCache.size();
 	for (uint32 i=0; i<numModels; i++)
 	{
 		CCharacterModel* pModelInCache=m_arrModelCache[i];
@@ -330,11 +330,11 @@ void CharacterManager::RegisterModel (CCharacterModel* pModel)
 
 	bool bIdentical(false);
 	_smart_ptr<CModelSkeleton> pSkeleton;
-	for (uint32 i = 0, end = m_arrModelCache.size(); i < end; ++i )
+	for (size_t i = 0, end = m_arrModelCache.size(); i < end; ++i )
 	{
 		if (m_arrModelCache[i]->m_pModelSkeleton->m_arrModelJoints.size() == pModel->m_pModelSkeleton->m_arrModelJoints.size()) {
 			// at least numer of bones is identical
-			for (uint32 j = 0, endj = m_arrModelCache[i]->m_pModelSkeleton->m_arrModelJoints.size(); j < endj; ++j) {
+			for (size_t j = 0, endj = m_arrModelCache[i]->m_pModelSkeleton->m_arrModelJoints.size(); j < endj; ++j) {
 				if (m_arrModelCache[i]->m_pModelSkeleton->m_arrModelJoints[j] != pModel->m_pModelSkeleton->m_arrModelJoints[j])
 					bIdentical = false;
 				break;
@@ -349,7 +349,7 @@ void CharacterManager::RegisterModel (CCharacterModel* pModel)
 	}
 
 	if (!bIdentical) {
-		uint32 numJoints = pModel->m_pModelSkeleton->m_arrModelJoints.size();
+		const size_t numJoints = pModel->m_pModelSkeleton->m_arrModelJoints.size();
 		for (uint32 i=0; i<numJoints; i++)
 		{
 			//uint32 c0=pModel->m_pModelSkeleton->m_arrModelJoints[i].m_numChildren;
@@ -425,7 +425,7 @@ void CharacterManager::DecideModelLockStatus(CCharacterModel* pModel, uint32 nHi
 void CharacterManager::UnregisterModel (CCharacterModel* pModel)
 {
 	ValidateModelCache();
-	uint32 numBodies = m_arrModelCache.size();
+	const size_t numBodies = m_arrModelCache.size();
 	if (numBodies)
 	{
 		const char* fname = pModel->GetModelFilePath();
@@ -433,7 +433,7 @@ void CharacterManager::UnregisterModel (CCharacterModel* pModel)
 	}
 
 	uint32 counter=0;
-	uint32 numModels2 = m_arrModelCache.size();
+	const size_t numModels2 = m_arrModelCache.size();
 	for (uint32 i=0; i<numModels2; i++)
 	{
 		if (pModel==m_arrModelCache[i])
@@ -463,7 +463,7 @@ void CharacterManager::UnregisterModel (CCharacterModel* pModel)
 	ValidateModelCache();
 
 
-	uint32 numModels = m_arrModelCache.size();
+	const size_t numModels = m_arrModelCache.size();
 	for (uint32 i=0; i<numModels; i++)
 	{
 		CCharacterModel* pModelInCache=m_arrModelCache[i];
@@ -480,7 +480,7 @@ void CharacterManager::UnregisterModel (CCharacterModel* pModel)
 void CharacterManager::GetStatistics(Statistics& rStats)
 {
 	memset (&rStats, 0, sizeof(rStats));
-	rStats.numCharModels = m_arrModelCache.size();
+	rStats.numCharModels = CrySaturateSize<decltype(rStats.numCharModels)>(m_arrModelCache.size());
 	for (CryModelCache::const_iterator it = m_arrModelCache.begin(); it != m_arrModelCache.end(); ++it)
 		rStats.numCharacters += (*it)->NumInstances();
 
@@ -571,7 +571,7 @@ void CharacterManager::GetModelCacheSize(class ICrySizer* pSizer)const
 {
 	SIZER_SUBCOMPONENT_NAME(pSizer, "Model cache");
 
-	for (uint32 i =0, end = m_arrModelCache.size(); i < end; ++i)
+	for (size_t i =0, end = m_arrModelCache.size(); i < end; ++i)
 		m_arrModelCache[i]->SizeOfThis(pSizer);
 }
 
@@ -579,9 +579,9 @@ void CharacterManager::GetCharacterInstancesSize(class ICrySizer* pSizer)const
 {
 	SIZER_SUBCOMPONENT_NAME(pSizer, "Character instances");
 
-	uint32 nSize(0);
+	size_t nSize = 0;
 
-	for (uint32 i =0, end = m_arrModelCache.size(); i < end; ++i)
+	for (size_t i =0, end = m_arrModelCache.size(); i < end; ++i)
 	{
 
 		for (std::set<ICharacterInstance*>::iterator it = m_arrModelCache[i]->m_SetInstances.begin(), end = m_arrModelCache[i]->m_SetInstances.end();
@@ -604,7 +604,7 @@ void CharacterManager::GetCharacterInstancesSize(class ICrySizer* pSizer)const
 
 	uint32 nSize=0;
 
-	for (uint32 i =0, end = m_arrModelCache.size(); i < end; ++i) {
+	for (size_t i =0, end = m_arrModelCache.size(); i < end; ++i) {
 
 		for (std::vector<ICharacterInstance*>::iterator it = m_arrModelCache[i]->m_SetInstances.begin(), end = m_arrModelCache[i]->m_SetInstances.end();
 			it != end; ++it) {
@@ -627,23 +627,23 @@ void CharacterManager::ClearResources(void)
 //------------------------------------------------------------------------
 f32 CharacterManager::GetAverageFrameTime(f32 sec, f32 FrameTime, f32 fTimeScale, f32 LastAverageFrameTime) 
 { 
-	uint32 numFT=m_arrFrameTimes.size();
-	for (int32 i=(numFT-2); i>-1; i--)
-		m_arrFrameTimes[i+1] = m_arrFrameTimes[i];
+	const size_t numFT = m_arrFrameTimes.size();
+	for (size_t i = numFT; i-- > 1;)
+		m_arrFrameTimes[i] = m_arrFrameTimes[i - 1];
 
 	m_arrFrameTimes[0] = FrameTime;
 
 	//get smoothed frame
-	uint32 FrameAmount = 1;
+	size_t FrameAmount = 1;
 	if (LastAverageFrameTime)
 	{
-		FrameAmount = uint32(sec/LastAverageFrameTime*fTimeScale+0.5f); //average the frame-times for a certain time-period (sec)
+		FrameAmount = static_cast<size_t>(sec / LastAverageFrameTime * fTimeScale + 0.5f); //average the frame-times for a certain time-period (sec)
 		if (FrameAmount>numFT)	FrameAmount=numFT;
 		if (FrameAmount<1)	FrameAmount=1;
 	}
 
 	f32 AverageFrameTime=0;
-	for (uint32 i=0; i<FrameAmount; i++)	
+	for (size_t i = 0; i < FrameAmount; ++i)
 		AverageFrameTime += m_arrFrameTimes[i];
 	AverageFrameTime /= FrameAmount;
 
@@ -691,7 +691,7 @@ void CharacterManager::Update()
 
 	if (Console::GetInst().ca_DebugModelCache)
 	{
-		uint32 numModels = m_arrModelCache.size();
+		const size_t numModels = m_arrModelCache.size();
 		for(uint32 i=0; i<numModels; i++ )
 		{
 			float fColor[4] = {0,1,0,1};
@@ -724,7 +724,7 @@ void CharacterManager::Update()
 		g_pIRenderer->Draw2dLabel( 1,g_YLine, 1.3f, fColor, false,"SkeletonUpdates: %d",g_SkeletonUpdates );	
 		g_YLine+=16.0f; 
 
-		uint32 numFSU = m_arrSkeletonUpdates.size();
+		const size_t numFSU = m_arrSkeletonUpdates.size();
 		g_pIRenderer->Draw2dLabel( 1,g_YLine, 1.3f, fColor, false,"Instances with 'Force Skeleton Update': %d",numFSU );	
 		g_YLine+=16.0f; 
 		for (uint32 i=0; i<numFSU; i++)
@@ -749,7 +749,7 @@ void CharacterManager::Update()
 	if (Console::GetInst().ca_DebugAnimUsage)
 	{
 		float fColor[4] = {1,0,0,1};
-		uint32 nNumAnimHeaders = g_AnimationManager.m_arrGlobalAnimations.size();
+		const size_t nNumAnimHeaders = g_AnimationManager.m_arrGlobalAnimations.size();
 
 		uint32 nAnimUsed = 0;
 		for (uint32 i=0; i<nNumAnimHeaders; i++)
@@ -814,7 +814,7 @@ void CharacterManager::DumpAssetStatistics()
 		}
 	};
 	
-	uint32 nNumAnimHeaders = g_AnimationManager.m_arrGlobalAnimations.size();
+	const size_t nNumAnimHeaders = g_AnimationManager.m_arrGlobalAnimations.size();
 
 
 	{
@@ -943,7 +943,7 @@ ICharacterInstance* CharacterManager::LoadCharacterDefinition( const string path
 
 	
 	uint32 ind = -1;
-	uint32 end = m_cdfFiles.size();
+	const size_t end = m_cdfFiles.size();
 	for (uint32 i=0; i<end; i++)
 	{
 		if (m_cdfFiles[i].FilePath.compareNoCase(pathname) == 0)
@@ -997,7 +997,7 @@ ICharacterInstance* CharacterManager::LoadCharacterDefinition( const string path
 		//-----------------------------------------------------------
 		//load attachment-list 
 		IAttachmentManager* pIAttachmentManager = pCharacter->GetIAttachmentManager();
-		uint32 num = def.arrAttachments.size();
+		const size_t num = def.arrAttachments.size();
 		for (uint32 i=0; i<num; i++) 
 		{
 			CharacterAttachment& attach = def.arrAttachments[i];
@@ -1319,7 +1319,7 @@ int32 CharacterManager::LoadCDF(const char* pathname )
 	}
 
 	m_cdfFiles.push_back(def);
-	return m_cdfFiles.size() - 1;
+	return CrySaturateSize<int32>(m_cdfFiles.size() - 1);
 }
 
 
@@ -1327,7 +1327,7 @@ void CharacterManager::ReleaseCDF(const char* pathname)
 {
 
 	uint32 ind = -1;
-	uint32 end = m_cdfFiles.size();
+	const size_t end = m_cdfFiles.size();
 	for (uint32 i=0; i<end; i++)
 	{
 		if (m_cdfFiles[i].FilePath.compareNoCase(pathname) == 0)
@@ -1519,7 +1519,7 @@ CharacterManager::CharacterManager ()
 CharacterManager::~CharacterManager()
 {
 	m_setLockedModels.clear();
-	uint32 numModels = m_arrModelCache.size();
+	const size_t numModels = m_arrModelCache.size();
 	if (numModels)
 	{
 		g_pILog->LogToFile("*ERROR* CharacterManager: %u body instances still not deleted. Forcing deletion (though some instances may still refer to them)", m_arrModelCache.size());

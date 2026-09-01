@@ -97,6 +97,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="AnimationAssetTests.h" />
     <ClInclude Include="ComparisonCompatibilityTests.h" />
     <ClInclude Include="CryFileNameTests.h" />
     <ClInclude Include="CryStringCompatibilityTests.h" />
@@ -119,6 +120,7 @@
     <ClInclude Include="ZlibCompatibilityTests.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AnimationAssetTests.cpp" />
     <ClCompile Include="ComparisonCompatibilityTests.cpp" />
     <ClCompile Include="CryFileNameTests.cpp" />
     <ClCompile Include="CryStringCompatibilityTests.cpp" />
@@ -188,6 +190,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <None Include="TestData\AnimationCompatibility\README.md" />
     <None Include="TestData\DxtCompatibility\mwll_dot_dxt3.dds">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <TargetPath>TestData\DxtCompatibility\mwll_dot_dxt3.dds</TargetPath>

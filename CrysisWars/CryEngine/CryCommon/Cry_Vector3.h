@@ -918,9 +918,9 @@ template <typename F> struct Ang3_tpl
 	{
 		F cx	= v0.y*v1.z; 
 		F cz	= v0.x*v1.y-v0.y*v1.x; 
-		F s		=	sgn(cz)*sqrt(cx*cx+cz*cz);
+		F s		=	F(sgn(cz))*sqrt_tpl(cx*cx+cz*cz);
 		F c		=	v0.x*v1.x+v0.y*v1.y;
-		return F( atan2(s,c) );
+		return atan2_tpl(s,c);
 	}
 
 	template<typename F1>	ILINE static Ang3_tpl<F> GetAnglesXYZ( const Quat_tpl<F1>& q ) {	return Ang3_tpl<F>(q); }

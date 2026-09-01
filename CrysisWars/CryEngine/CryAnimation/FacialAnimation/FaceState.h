@@ -77,7 +77,7 @@ public:
 	void Reset();
 
 	void SetNumWeights( int n );
-	int  GetNumWeights() { return m_weights.size(); };
+	int GetNumWeights() { return CrySaturateSize<int>(m_weights.size()); }
 
 	size_t SizeOfThis() {
 		return m_weights.capacity() * sizeof(float) + m_balance.capacity() * sizeof(float);

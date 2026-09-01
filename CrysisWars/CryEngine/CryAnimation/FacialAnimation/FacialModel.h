@@ -53,7 +53,7 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	// IFacialModel interface
 	//////////////////////////////////////////////////////////////////////////
-	int GetEffectorCount() const { return m_effectors.size(); }
+	int GetEffectorCount() const { return CrySaturateSize<int>(m_effectors.size()); }
 	CFacialEffector* GetEffector( int nIndex ) const { return m_effectors[nIndex].pEffector; }
 	virtual void AssignLibrary( IFacialEffectorsLibrary *pLibrary );
 	virtual IFacialEffectorsLibrary* GetLibrary();

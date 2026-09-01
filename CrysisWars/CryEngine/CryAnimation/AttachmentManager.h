@@ -41,7 +41,7 @@ public:
 
 	IAttachment* CreateAttachment( const char* szName, uint32, const char* szBoneName );
 
-	int32 GetAttachmentCount() { return m_arrAttachments.size(); };
+	int32 GetAttachmentCount() { return CrySaturateSize<int32>(m_arrAttachments.size()); }
 
 	IAttachment* GetInterfaceByIndex( uint32 c);
 	IAttachment* GetInterfaceByName(  const char* szName ); 

@@ -95,7 +95,7 @@ public:
 
 	virtual uint32 GetTextureMemoryUsage( ICrySizer *pSizer=0 );
 	virtual uint32 GetMeshMemoryUsage( ICrySizer *pSizer=0 );
-	uint32 SizeOfThis(ICrySizer *pSizer=0 );
+	size_t SizeOfThis(ICrySizer *pSizer=0 );
 
 	virtual ICharacterInstance * GetInstance(uint32 num)
 	{
@@ -131,11 +131,7 @@ public:
 	//CModelSkeleton m_ModelSkeleton;
 
 
-	//! Performs post-initialization. This step is requred to initialize the pPhysGeom of the bones
-	//! After the bone has been loaded but before it is first used. When the bone is first loaded, pPhysGeom
-	//! is set to the value equal to the chunk id in the file where the physical geometry (BoneMesh) chunk is kept.
-	//! After those chunks are loaded, and chunk ids are mapped to the registered physical geometry objects,
-	//! call this function to replace pPhysGeom chunk ids with the actual physical geometry object pointers.
+	//! Resolves each bone's serialized physical-geometry chunk id after the geometry chunks are registered.
 	//!	NOTE:
 	//!	The entries of the map that were used are deleted upon exit
 
@@ -146,7 +142,7 @@ public:
 		// and set the hasphysics to 1 if at least one bone has recognized and mapped its physical geometry
 		bool bHasPhysics = false;
 		bool bAllowRopePhys = strstr(m_strFilePath,"alien")!=0 || strstr(m_strFilePath,"Alien")!=0;
-		uint32 numJoints=m_pModelSkeleton->m_arrModelJoints.size();
+		const size_t numJoints=m_pModelSkeleton->m_arrModelJoints.size();
 		for (uint32 i=0; i<numJoints; ++i)
 		{
 			if (m_pModelSkeleton->m_arrModelJoints[i].PostInitPhysGeom (mapChunkIdToPhysGeom, nLodLevel, bAllowRopePhys))
@@ -160,7 +156,7 @@ public:
 
 	void onBonePhysicsChanged()
 	{
-		uint32 numJoints=m_pModelSkeleton->m_arrModelJoints.size();
+		const size_t numJoints=m_pModelSkeleton->m_arrModelJoints.size();
 		for (uint32 i=0; i<numJoints; ++i)
 			m_pModelSkeleton->m_arrModelJoints[i].PostInitialize();
 	}
@@ -168,7 +164,7 @@ public:
 	// updates the physics info of the given lod from the given bone animation descriptor
 	void UpdateRootBonePhysics (const BONEANIM_CHUNK_DESC* pChunk, unsigned nChunkSize, int nLodLevel)
 	{
-		uint32 numJoints=m_pModelSkeleton->m_arrModelJoints.size();
+		const size_t numJoints=m_pModelSkeleton->m_arrModelJoints.size();
 		if (numJoints)
 			m_pModelSkeleton->m_arrModelJoints[0].UpdateHierarchyPhysics (pChunk, nChunkSize, nLodLevel);
 	}
@@ -176,7 +172,7 @@ public:
 	// scales the skeleton (its initial pose)
 	void scaleBones (float fScale)
 	{
-		uint32 numJoints=m_pModelSkeleton->m_arrModelJoints.size();
+		const size_t numJoints=m_pModelSkeleton->m_arrModelJoints.size();
 		for (uint32 i=0; i<numJoints; i++)
 			m_pModelSkeleton->m_arrModelJoints[i].scale (fScale);
 	}
@@ -196,7 +192,7 @@ public:
 	bool DoesInstanceExist (ICharacterInstance* pInstance)	{
 		return m_SetInstances.find (pInstance) != m_SetInstances.end();
 	}
-	uint32 NumInstances() {	return m_SetInstances.size();	}
+	uint32 NumInstances() { return CrySaturateSize<uint32>(m_SetInstances.size()); }
 
 	//--------------------------------------------------------------------------------
 	//------      Members of ModelMesh       -----------------------------------------
@@ -218,12 +214,12 @@ public:
 
 	uint32 GetModelMeshCount()
 	{
-		return m_arrModelMeshes.size();
+		return CrySaturateSize<uint32>(m_arrModelMeshes.size());
 	}
 	// returns the geometry of the given lod (0 is the highest detail lod)
 	CModelMesh* GetModelMesh(uint32 nLOD)
 	{
-		uint32 numMeshes = m_arrModelMeshes.size();
+		const size_t numMeshes = m_arrModelMeshes.size();
 		if (numMeshes<=nLOD) 
 			return 0;
 		return &m_arrModelMeshes[nLOD];
@@ -231,7 +227,7 @@ public:
 	// returns the geometry of the given lod (0 is the highest detail lod)
 	const CModelMesh* GetModelMesh(uint32 nLOD) const
 	{
-		uint32 numMeshes = m_arrModelMeshes.size();
+		const size_t numMeshes = m_arrModelMeshes.size();
 		if (numMeshes<=nLOD) 
 			return 0;
 		return &m_arrModelMeshes[nLOD];

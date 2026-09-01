@@ -9,6 +9,7 @@
 //! Include standard headers.
 #include <platform.h>
 #include <map>
+#include <CryCheckedArithmetic.h>
 
 #pragma warning(disable : 4996)
 #pragma warning(default:4018)	// signed/unsigned mismatch

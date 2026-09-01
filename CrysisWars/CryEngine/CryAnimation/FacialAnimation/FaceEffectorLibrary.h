@@ -56,7 +56,7 @@ public:
 
 	void MergeLibrary(IFacialEffectorsLibrary* pMergeLibrary, const Functor1wRet<const char*, MergeCollisionAction>& collisionStrategy);
 
-	int GetEffectorCount() const { return m_nameToEffectorMap.size(); }
+	int GetEffectorCount() const { return CrySaturateSize<int>(m_nameToEffectorMap.size()); }
 
 private:
 	void NewRoot();

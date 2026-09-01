@@ -56,7 +56,7 @@ uint32 CSkeletonPose::SetLArmIK(const Vec3& localgoal)
 	if (b2<0) return 0;
 	TwoBoneIK(b0,b1,b2,localgoal);
 
-	uint32 numJoints = m_AbsolutePose.size();
+	const size_t numJoints = m_AbsolutePose.size();
 	for (uint32 i=1; i<numJoints; i++)
 	{
 		int32 p=m_parrModelJoints[i].m_idxParent;
@@ -77,7 +77,7 @@ uint32 CSkeletonPose::SetRArmIK(const Vec3& localgoal)
 	if (b2<0) return 0;
 	TwoBoneIK(b0,b1,b2,localgoal);
 
-	uint32 numJoints = m_AbsolutePose.size();
+	const size_t numJoints = m_AbsolutePose.size();
 	for (uint32 i=1; i<numJoints; i++)
 	{
 		int32 p=m_parrModelJoints[i].m_idxParent;
@@ -98,7 +98,7 @@ uint32 CSkeletonPose::SetCustomArmIK(const Vec3& localgoal,int32 idx0,int32 idx1
 
 	TwoBoneIK(idx0,idx1,idx2,localgoal);
 
-	uint32 numJoints = m_AbsolutePose.size();
+	const size_t numJoints = m_AbsolutePose.size();
 	for (uint32 i=1; i<numJoints; i++)
 	{
 		int32 p=m_parrModelJoints[i].m_idxParent;
@@ -183,7 +183,7 @@ void CSkeletonPose::MoveSkeletonVertical( f32 vertical )
 {
 	if ( (m_pSkeletonAnim->m_IsAnimPlaying&1) && m_pSkeletonAnim->m_AnimationDrivenMotion && m_bFullSkeletonUpdate)
 	{
-		uint32 numJoints = m_AbsolutePose.size();
+		const size_t numJoints = m_AbsolutePose.size();
 		m_RelativePose[1].t.z += vertical;
 		for (uint32 i=1; i<numJoints; i++)
 		{

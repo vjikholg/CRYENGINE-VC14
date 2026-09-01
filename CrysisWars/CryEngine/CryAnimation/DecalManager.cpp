@@ -78,7 +78,7 @@ void CAnimDecalManager::CreateDecalsOnInstance(QuatTS* parrNewSkinQuat, CCharact
 	// if there are decal requests, then converts them into the decal objects
 	// reserves the vertex/updates the index buffers, if need to be
 	// sets m_bNeedUpdateIndices to true if it has added something (and therefore refresh of indices is required)
-	uint32 numDecalRequests = m_arrDecalRequests.size();
+	const size_t numDecalRequests = m_arrDecalRequests.size();
 	if (numDecalRequests==0)
 		CryError("Decals Zero2");
 
@@ -87,11 +87,11 @@ void CAnimDecalManager::CreateDecalsOnInstance(QuatTS* parrNewSkinQuat, CCharact
 	CModelMesh* pMesh = pModel->GetModelMesh(pModel->m_nBaseLOD);
 	uint32 numIntVertices	= pMesh->GetVertextCount();//arrSkinnedVertices.size();
 	uint32 numIntFaces		= pMesh->m_numExtTriangles;
-	uint32 numVMappings = g_arrDecalVertexMapping.size();
+	const size_t numVMappings = g_arrDecalVertexMapping.size();
 	if (numVMappings<numIntVertices)
 		g_arrDecalVertexMapping.resize(numIntVertices);
 
-	uint32 numVerticesBCS = g_arrVerticesBS.size();
+	const size_t numVerticesBCS = g_arrVerticesBS.size();
 	if (numVerticesBCS<numIntVertices)
 		g_arrVerticesBS.resize(numIntVertices);
 
@@ -275,7 +275,7 @@ void CAnimDecalManager::CreateDecalsOnInstance(QuatTS* parrNewSkinQuat, CCharact
 			}
 		}
 
-		uint32 num = NewDecal.m_arrFaces.size();
+		const size_t num = NewDecal.m_arrFaces.size();
 		if (num==0)
 			continue; // we're not interested in this decal: we don't have any decals
 
@@ -299,7 +299,7 @@ void CAnimDecalManager::CreateDecalsOnInstance(QuatTS* parrNewSkinQuat, CCharact
 // NOTE: the radius is m^2 - it's the square of the radius of the sphere
 void CAnimDecalManager::fadeOutCloseDecals (const Vec3& ptCenter, float fRadius2)
 {
-	uint32 numDecals = m_arrDecals.size();
+	const size_t numDecals = m_arrDecals.size();
 	for (uint32 i=0; i<numDecals; ++i)
 	{
 		if ( (m_arrDecals[i].m_ptSource-ptCenter).GetLengthSquared() < fRadius2)
@@ -310,7 +310,7 @@ void CAnimDecalManager::fadeOutCloseDecals (const Vec3& ptCenter, float fRadius2
 // if we delete one of the decals
 void CAnimDecalManager::RemoveObsoleteDecals()
 {
-	uint32 numDecals = m_arrDecals.size();
+	size_t numDecals = m_arrDecals.size();
 	for (uint32 i=0; i<numDecals; i++)
 	{
 		if ( m_arrDecals[i].isDead() )

@@ -35,7 +35,7 @@ void CSkeletonPose::InitSkeletonPose(CCharInstance* pInstance, CSkeletonAnim* pS
 
 
 	//usually not needed for skin-attachments
-	uint32 numJoints		= m_pInstance->m_pModel->m_pModelSkeleton->m_arrModelJoints.size();
+	const size_t numJoints		= m_pInstance->m_pModel->m_pModelSkeleton->m_arrModelJoints.size();
 	m_RelativePose.resize(numJoints);
 	m_AbsolutePose.resize(numJoints);
 	m_arrControllerInfo.resize (numJoints);
@@ -137,7 +137,7 @@ void CSkeletonPose::SetDefaultPosePerInstance()
 	m_FootAnchor.Init();
 	m_arrPostProcess.resize(0);
 
-	uint32 numJoints = m_AbsolutePose.size();
+	const size_t numJoints = m_AbsolutePose.size();
 
 	if (numJoints)
 	{
@@ -180,10 +180,10 @@ void CSkeletonPose::InitPhysicsSkeleton()
 {
 
 	assert(!m_arrPhysicsJoints.size());
-	uint32 numJoints	= m_pInstance->m_pModel->m_pModelSkeleton->m_arrModelJoints.size();
+	const int numJoints = CrySaturateSize<int>(m_pInstance->m_pModel->m_pModelSkeleton->m_arrModelJoints.size());
 
 	m_arrPhysicsJoints.resize(numJoints);
-	for (uint32 i=0; i<numJoints; i++)
+	for (int i = 0; i < numJoints; ++i)
 	{
 		m_arrPhysicsJoints[i].m_DefaultRelativeQuat	=	m_parrModelJoints[i].m_DefaultRelPose;
 		m_arrPhysicsJoints[i].m_qRelPhysParent[0] = m_parrModelJoints[i].m_qDefaultRelPhysParent[0];
@@ -215,11 +215,11 @@ void CSkeletonPose::InitPhysicsSkeleton()
 
 void CSkeletonPose::InitCGASkeleton()
 {
-	uint32 numJoints	= m_pInstance->m_pModel->m_pModelSkeleton->m_arrModelJoints.size();
+	const int numJoints = CrySaturateSize<int>(m_pInstance->m_pModel->m_pModelSkeleton->m_arrModelJoints.size());
 
 	m_arrCGAJoints.resize(numJoints);
 
-	for (uint32 i=0; i<numJoints; i++)
+	for (int i = 0; i < numJoints; ++i)
 	{
 		m_arrCGAJoints[i].m_CGAObjectInstance		= m_parrModelJoints[i].m_CGAObject;
 	}
@@ -239,7 +239,7 @@ int16 CSkeletonPose::GetJointIDByName (const char* szJointName) const
 
 int16 CSkeletonPose::GetParentIDByID (int32 nChildID) const
 {
-	int32 numJoints = m_AbsolutePose.size();
+	const size_t numJoints = m_AbsolutePose.size();
 	if(nChildID>=0 && nChildID<numJoints)
 		return m_parrModelJoints[nChildID].m_idxParent;
 	assert(0);
@@ -248,7 +248,7 @@ int16 CSkeletonPose::GetParentIDByID (int32 nChildID) const
 
 uint32 CSkeletonPose::GetJointCRC32 (int32 nJointID) const
 {
-	int32 numJoints = m_AbsolutePose.size();
+	const size_t numJoints = m_AbsolutePose.size();
 	if(nJointID>=0 && nJointID<numJoints)
 		return m_parrModelJoints[nJointID].m_nJointCRC32;
 	assert(0);
@@ -258,7 +258,7 @@ uint32 CSkeletonPose::GetJointCRC32 (int32 nJointID) const
 // Return name of bone from bone table, return zero id nId is out of range
 const char* CSkeletonPose::GetJointNameByID(int32 nJointID) const
 {
-	int32 numJoints = m_AbsolutePose.size();
+	const size_t numJoints = m_AbsolutePose.size();
 	if(nJointID>=0 && nJointID<numJoints)
 		return m_parrModelJoints[nJointID].GetJointName();
 	assert("GetJointNameByID - Index out of range!");

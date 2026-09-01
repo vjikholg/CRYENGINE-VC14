@@ -1343,7 +1343,7 @@ template <typename F> struct QuatTS_tpl
 		s = m.GetRow(0).GetLengthSquared();
 		if (abs(s-1) > 0.001f)
 		{
-			s = sqrt(s);
+			s = sqrt_tpl(s);
 			m3 /= s;
 		}
 		else

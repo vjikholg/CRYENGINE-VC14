@@ -61,22 +61,21 @@ struct CInternalDatabaseInfo
 
 	void Clear()
 	{
-		for (std::size_t i =0, end =m_arrRotationTracksArray.size(); i < end; ++i )
+		for (ITrackRotationStorage* track : m_arrRotationTracksArray)
 		{
-			if (m_arrRotationTracksArray[i])
-				ControllerHelper::DeleteRotationControllerPtrArray(m_arrRotationTracksArray[i]);
+			if (track)
+				ControllerHelper::DeleteRotationControllerPtrArray(track);
 		}
 
-		for (std::size_t i =0, end =m_arrKeyTimesArray.size(); i < end; ++i )
+		for (IKeyTimesInformation* track : m_arrKeyTimesArray)
 		{
-			if (m_arrKeyTimesArray[i])
-				ControllerHelper::DeleteTimesControllerPtrArray(m_arrKeyTimesArray[i]);
+			if (track)
+				ControllerHelper::DeleteTimesControllerPtrArray(track);
 		}
-		for (std::size_t i =0, end =m_arrPositionTracksArray.size(); i < end; ++i )
+		for (ITrackPositionStorage* track : m_arrPositionTracksArray)
 		{
-
-			if (m_arrPositionTracksArray[i])
-				ControllerHelper::DeletePositionControllerPtrArray(m_arrPositionTracksArray[i]);
+			if (track)
+				ControllerHelper::DeletePositionControllerPtrArray(track);
 		}
 
 		//SAFE_DELETE_ARRAY(m_pControllers);

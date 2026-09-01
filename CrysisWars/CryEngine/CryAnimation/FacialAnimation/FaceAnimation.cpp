@@ -68,7 +68,7 @@ uint32 CFacialAnimationContext::FadeInChannel( IFacialEffector *pEffector,float 
 //////////////////////////////////////////////////////////////////////////
 void CFacialAnimationContext::StopChannel( uint32 nChannelId,float fFadeTime )
 {
-	uint32 nChannels = m_channels.size();
+	const size_t nChannels = m_channels.size();
 	for (uint32 i = 0; i < nChannels; ++i)
 	{
 		if (m_channels[i].nChannelId == nChannelId)
@@ -159,7 +159,7 @@ bool CFacialAnimationContext::Update( CFaceState &faceState, const QuatTS& rAnim
 
 	m_time = g_pISystem->GetITimer()->GetFrameStartTime();
 
-	int nChannels = m_channels.size();
+	const size_t nChannels = m_channels.size();
 	if (nChannels <= 0 && !m_bForceLastUpdate && m_sequences.empty())
 		return false;
 
@@ -563,7 +563,7 @@ void CFacialAnimationContext::PauseSequence(CFacialAnimSequence *pSequence, bool
 //////////////////////////////////////////////////////////////////////////
 bool CFacialAnimationContext::IsPlayingSequence( CFacialAnimSequence *pSequence )
 {
-	for (unsigned i = 0, end = m_sequences.size(); i < end; i++)
+	for (size_t i = 0, end = m_sequences.size(); i < end; i++)
 	{
 		if (m_sequences[i].pSequence == pSequence)
 		{

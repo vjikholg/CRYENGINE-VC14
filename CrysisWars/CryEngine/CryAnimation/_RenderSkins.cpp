@@ -55,7 +55,7 @@ void CSkinInstance::Render(const struct SRendParams& RendParams, const QuatTS& O
 	//	Set LOD
 	float fLodRatioNorm, fRadiusRated;
 	static ICVar *p_e_lod_ratio = g_pISystem->GetIConsole()->GetCVar("e_lod_ratio");
-	if(p_e_lod_ratio && RendParams.pRenderNode && ((int)(void*)(RendParams.pRenderNode)>0))
+	if (p_e_lod_ratio && RendParams.pRenderNode)
 	{
 		fLodRatioNorm = RendParams.pRenderNode->GetLodRatioNormalized();
 		fRadiusRated = RendParams.pRenderNode->GetBBox().GetRadius()*p_e_lod_ratio->GetIVal();
@@ -73,7 +73,9 @@ void CSkinInstance::Render(const struct SRendParams& RendParams, const QuatTS& O
 	if(p_e_lod_min)
 		m_nLodLevel += p_e_lod_min->GetIVal();
 
-	int32 numLODs = m_pModel->m_arrModelMeshes.size();
+	int32 numLODs = 0;
+	if (!CryTryNarrowSize(m_pModel->m_arrModelMeshes.size(), numLODs) || numLODs == 0)
+		return;
 	if(m_nLodLevel<m_pModel->m_nBaseLOD)
 		m_nLodLevel=m_pModel->m_nBaseLOD;
 	if(m_nLodLevel>=numLODs)
@@ -223,13 +225,17 @@ void CSkinInstance::DrawDecalsBBoxes( CCharInstance* pMaster2, CAttachment* pAtt
 	uint32 iActiveFrame		=	pMaster2->m_iActiveFrame;
 	if(pAttachment)
 	{
-		uint32 numRemapJoints	= pAttachment->m_arrRemapTable.size();
-		for (uint32 i=0; i<numRemapJoints; i++)	arrNewSkinQuat[i]=pMaster2->m_arrNewSkinQuat[iActiveFrame][pAttachment->m_arrRemapTable[i]];
+		const size_t numRemapJoints = static_cast<size_t>(pAttachment->m_arrRemapTable.size());
+		if (numRemapJoints > MAX_JOINT_AMOUNT + 1)
+			return;
+		for (size_t i=0; i<numRemapJoints; i++)	arrNewSkinQuat[i]=pMaster2->m_arrNewSkinQuat[iActiveFrame][pAttachment->m_arrRemapTable[static_cast<int>(i)]];
 	}
 	else
 	{
-		uint32 numJoints	= pMaster2->m_SkeletonPose.m_AbsolutePose.size();
-		cryMemcpy(arrNewSkinQuat, &pMaster2->m_arrNewSkinQuat[iActiveFrame][0],	sizeof(QuatTS)*numJoints);
+		const size_t numJoints = pMaster2->m_SkeletonPose.m_AbsolutePose.size();
+		if (numJoints > MAX_JOINT_AMOUNT + 1)
+			return;
+		memcpy(arrNewSkinQuat, &pMaster2->m_arrNewSkinQuat[iActiveFrame][0], sizeof(QuatTS)*numJoints);
 	}
 
 	OBB obb;
@@ -386,8 +392,10 @@ uint32 CSkinInstance::GetSkeletonPose( int nLOD, const Matrix34& rRenderMat34, Q
 
 			QuatTS arrNewSkinQuat[MAX_JOINT_AMOUNT+1];	//bone quaternions for skinning (entire skeleton)
 			uint32 iActiveFrame		=	pMaster->m_iActiveFrame;
-			uint32 numRemapJoints	= m_pSkinAttachment->m_arrRemapTable.size();
-			for (uint32 i=0; i<numRemapJoints; i++)	arrNewSkinQuat[i]=pMaster->m_arrNewSkinQuat[iActiveFrame][m_pSkinAttachment->m_arrRemapTable[i]];
+			const size_t numRemapJoints = static_cast<size_t>(m_pSkinAttachment->m_arrRemapTable.size());
+			if (numRemapJoints > MAX_JOINT_AMOUNT + 1)
+				return 0;
+			for (size_t i=0; i<numRemapJoints; i++)	arrNewSkinQuat[i]=pMaster->m_arrNewSkinQuat[iActiveFrame][m_pSkinAttachment->m_arrRemapTable[static_cast<int>(i)]];
 			pModelMesh->DrawWireframe(&m_Morphing,arrNewSkinQuat,pMaster->GetShapeDeformArray(),pMaster->GetResetMode(),nLOD,rRenderMat34);
 		}
 		uint32 tang=0;

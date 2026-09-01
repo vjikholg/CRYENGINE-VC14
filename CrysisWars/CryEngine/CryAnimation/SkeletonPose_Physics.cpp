@@ -30,7 +30,7 @@ void CSkeletonPose::SetRagdollDefaultPose()
 	if (m_arrPhysicsJoints.empty())
 		InitPhysicsSkeleton();
 
-	uint32 numJoints	=	m_AbsolutePose.size();
+	const size_t numJoints	=	m_AbsolutePose.size();
 	for (uint32 i=0; i<numJoints; ++i)
 	{
 		int32 pidx=m_parrModelJoints[i].m_idxParent;
@@ -118,8 +118,10 @@ int CSkeletonPose::TranslatePartIdToDeadBody(int partid)
 	if ((unsigned int)partid>=(unsigned int)m_AbsolutePose.size())
 		return -1;
 
-	int numLODs = m_pInstance->m_pModel->m_arrModelMeshes.size();
-	int nLod = min(numLODs-1,1);
+	const size_t numLODs = m_pInstance->m_pModel->m_arrModelMeshes.size();
+	if (numLODs == 0)
+		return -1;
+	const int nLod = (std::min)(CrySaturateSize<int>(numLODs - 1), 1);
 	if (GetModelJointPointer(partid)->m_PhysInfo[nLod].pPhysGeom)
 		return partid;
 
@@ -202,7 +204,7 @@ void CSkeletonPose::ProcessPhysics(const QuatT& rPhysEntityLocation, float fDelt
 				pf.flagsOR = pef_disabled;
 				m_pCharPhysics->SetParams(&pf);
 				Matrix33 mtxid;	mtxid.SetIdentity();
-				int32 numJoints = m_AbsolutePose.size();
+				const size_t numJoints = m_AbsolutePose.size();
 				// read angles deltas from physics and set current angles from animation as qext to physics
 				for(i=0; i<numJoints; i++)
 				{
@@ -463,7 +465,7 @@ void CSkeletonPose::ProcessPhysics(const QuatT& rPhysEntityLocation, float fDelt
 
 
 				f32 mindiff=1E10f;
-				int numStandupAnims = m_pInstance->m_pModel->m_AnimationSet.m_arrStandupAnims[m_iFnPSet].size();
+				const size_t numStandupAnims = m_pInstance->m_pModel->m_AnimationSet.m_arrStandupAnims[m_iFnPSet].size();
 				for(i=0; i<numStandupAnims; i++)
 				{
 					pKinCharInstance->m_SkeletonAnim.StopAnimationsAllLayers();
@@ -502,7 +504,7 @@ void CSkeletonPose::ProcessPhysics(const QuatT& rPhysEntityLocation, float fDelt
 		//	g_pIRenderer->Draw2dLabel( 1,g_YLine, 1.4f, fColor, false,"m_timeStandingUp: %f",m_timeStandingUp );	
 		//	g_YLine+=16.0f;
 
-			uint32 numJoints=m_AbsolutePose.size();
+			const size_t numJoints=m_AbsolutePose.size();
 			f32 t=min(1.0f,m_timeStandingUp);
 			m_RelativePose[0].q.SetNlerp(m_arrPhysicsJoints[0].m_qRelFallPlay,m_RelativePose[0].q,t);
 			m_AbsolutePose[0].q = m_RelativePose[0].q;
@@ -651,7 +653,7 @@ void CSkeletonPose::StandUp(const Matrix34 &_mtx, bool b3DOF, IPhysicalEntity *&
 	CAnimationSet *pAnimSet = (CAnimationSet*)m_pInstance->GetIAnimationSet();
 	QuatT mtxDeltaInv=QuatT(mtxDelta).GetInverted(), mtxQ=QuatT(mtx);
 
-	uint32 numJoints = m_AbsolutePose.size();
+	const size_t numJoints = m_AbsolutePose.size();
 	m_arrPhysicsJoints[0].m_qRelFallPlay = m_AbsolutePose[0].q;
 	for(uint32 j=1; j<numJoints; j++)
 		m_arrPhysicsJoints[j].m_qRelFallPlay = !m_AbsolutePose[m_parrModelJoints[j].m_idxParent].q * m_AbsolutePose[j].q;
@@ -690,12 +692,18 @@ void CSkeletonPose::StandUp(const Matrix34 &_mtx, bool b3DOF, IPhysicalEntity *&
 
 bool CSkeletonPose::SetFnPAnimGroup(const char *name) 
 { 
-	int i;
-	for(i=m_pInstance->m_pModel->m_AnimationSet.m_arrStandupAnimTypes.size()-1; 
-			i>=0 && strcmp(m_pInstance->m_pModel->m_AnimationSet.m_arrStandupAnimTypes[i],name); i--);
-	if (i<0)
-		return false; 
-	m_iFnPSet=i; return true;
+	const auto& groups = m_pInstance->m_pModel->m_AnimationSet.m_arrStandupAnimTypes ;
+
+	for (size_t idx{ groups.size() }; idx-- > 0;)
+	{
+		if (strcmp(groups[idx].c_str(), name) == 0)
+		{
+			m_iFnPSet = CrySaturateSize<int>(idx);
+			return true;
+		}
+	}
+
+	return false;
 }
 bool CSkeletonPose::SetFnPAnimGroup(int idx) 
 { 
@@ -1167,7 +1175,8 @@ int CSkeletonPose::CreateAuxilaryPhysics(IPhysicalEntity *pHost, const Matrix34 
 int CSkeletonPose::CreateAuxilaryPhysics(IPhysicalEntity *pHost, const Matrix34 &mtx, float scale,Vec3 offset, int nLod) 
 //float *pForcedRopeLen,int *piForcedRopeIdx,int nForcedRopes)
 {
-	int i,j,k,nchars;
+	int i, j, k;
+	size_t nchars = 0;
 	const char *pspace;
 
 	// Delete aux physics
@@ -1200,7 +1209,7 @@ int CSkeletonPose::CreateAuxilaryPhysics(IPhysicalEntity *pHost, const Matrix34 
 		if (!strnicmp(szBoneName,"rope",4) && pBoneInfo->numChildren()>0)
 		{
 			if (pspace = strchr(szBoneName,' '))
-				nchars = (int)(pspace-szBoneName);
+				nchars = static_cast<size_t>(pspace - szBoneName);
 			else 
 				nchars = strlen(szBoneName);
 			for(j = 0; j < m_nAuxPhys && strncmp(m_auxPhys[j].strName,szBoneName,nchars); ++j);
@@ -1432,8 +1441,12 @@ void CSkeletonPose::SynchronizeWithPhysicalEntity(IPhysicalEntity *pent, const V
 		if (!pent && !m_nAuxPhys) 
 			return;
 
-		int numLODs = m_pInstance->m_pModel->m_arrModelMeshes.size();
-		int i,j,nLod = min(m_pCharPhysics!=pent || m_bPhysicsRelinquished?1:0,numLODs-1);
+		const size_t numLODs = m_pInstance->m_pModel->m_arrModelMeshes.size();
+		if (numLODs == 0)
+			return;
+		int i, j;
+		const int nLod = (std::min)(m_pCharPhysics != pent || m_bPhysicsRelinquished ? 1 : 0,
+			CrySaturateSize<int>(numLODs - 1));
 		QuatT roffs(!offset.q,-offset.t*offset.q);
 		pe_status_pos sp;
 		pe_status_joint sj;
@@ -1562,17 +1575,20 @@ IPhysicalEntity *CSkeletonPose::RelinquishCharacterPhysics(const Matrix34 &mtx, 
 {
 	if (m_bHasPhysics) 
 	{
-		int numLODs = m_pInstance->m_pModel->m_arrModelMeshes.size();
-		int i,j,nAuxPhys, nLod=min(numLODs-1,1), iRoot=getBonePhysChildIndex(0,0);
-		//float ropeLen[64];
-		//FillRopeLenArray(ropeLen,0,64);
-		//DestroyCharacterPhysics();
+		const size_t lodCount = m_pInstance->m_pModel->m_arrModelMeshes.size();
+		int jointCount = 0;
+		if (lodCount == 0 || !CryTryNarrowSize(m_AbsolutePose.size(), jointCount))
+			return nullptr;
+		if (jointCount == 0)
+			return nullptr;
+
+		int i,j,nAuxPhys, nLod=lodCount > 1 ? 1 : 0, iRoot=getBonePhysChildIndex(0,0);
 
 		if (m_arrPhysicsJoints.empty())
 			InitPhysicsSkeleton();
 		ConvertBoneGlobalToRelativeMatrices();	// takes into accout all post-animation layers
 		// store death pose (current) matRelative orientation in bone's m_pqTransform
-		for(i=0;i<(int)m_AbsolutePose.size();i++) 
+		for(i=0;i<jointCount;i++)
 			m_arrPhysicsJoints[i].m_qRelFallPlay = m_RelativePose[i].q;
 
 		ResetNonphysicalBoneRotations(nLod,1.0f); // reset nonphysical bones matRel to default pose matRel
@@ -1595,16 +1611,18 @@ IPhysicalEntity *CSkeletonPose::RelinquishCharacterPhysics(const Matrix34 &mtx, 
 		pj.bNoUpdate = 1;
 		iRoot = getBonePhysChildIndex(0,nLod);
 		for(i=0;i<3;i++) { pj.kd[i]=0.1f; }//pj.ks[i]=0; }
-		for(i=m_AbsolutePose.size()-1;i>=0;i--)	
-			if (GetModelJointPointer(i)->m_PhysInfo[nLod].pPhysGeom) 
+		for (i = jointCount; i-- > 0;)
+		{
+			if (GetModelJointPointer(i)->m_PhysInfo[nLod].pPhysGeom)
 			{
-				pj.op[0] = getBonePhysParentIndex(i,nLod);
+				pj.op[0] = getBonePhysParentIndex(i, nLod);
 				pj.op[1] = i;
-				pj.flags = GetModelJointPointer(i)->m_PhysInfo[nLod].flags & (all_angles_locked | angle0_limit_reached*7);
-				if (i==iRoot)
+				pj.flags = GetModelJointPointer(i)->m_PhysInfo[nLod].flags & (all_angles_locked | angle0_limit_reached * 7);
+				if (i == iRoot)
 					pj.flags = 0;
 				res->SetParams(&pj);
 			}
+		}
 
 		m_fPhysBlendTime = 0.0f;
 		m_fPhysBlendMaxTime = Console::GetInst().ca_DeathBlendTime;
@@ -1805,7 +1823,8 @@ void CSkeletonPose::ResetNonphysicalBoneRotations(int nLod, float fBlend)
 // RETURNS: in each bone global matrix, there's the actual global matrix
 void CSkeletonPose::UnconvertBoneGlobalFromRelativeForm(bool bNonphysicalOnlyArg, int nLod, bool bRopeTipsOnly)
 {
-	unsigned numBones = m_AbsolutePose.size(), nRopeLevel=0;	
+	const size_t numBones = m_AbsolutePose.size();
+	size_t nRopeLevel = 0;
 	bool bNonphysicalOnly = true;
 	// start from 1, since we don't affect the root, which is #0
 	for (unsigned i = 1; i < numBones; ++i)
@@ -1847,7 +1866,7 @@ void CSkeletonPose::UnconvertBoneGlobalFromRelativeForm(bool bNonphysicalOnlyArg
 // RETURNS: in each m_matRelativeToParent matrix, there's a matrix relative to the parent
 void CSkeletonPose::ConvertBoneGlobalToRelativeMatrices()
 {
-	uint32 numJoints = m_AbsolutePose.size();
+	const size_t numJoints = m_AbsolutePose.size();
 	m_RelativePose[0] = m_AbsolutePose[0];
 	for (uint32 i=1; i<numJoints; i++)
 	{

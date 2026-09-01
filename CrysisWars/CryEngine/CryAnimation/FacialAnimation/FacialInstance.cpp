@@ -350,12 +350,12 @@ IFacialAnimSequence* CFacialInstance::LoadSequence( const char *sSequenceName, b
 		return 0;
 	}
 
-	static const int MAX_PATH_LENGTH = 1024;
+	static constexpr size_t MAX_PATH_LENGTH = 1024;
 	char pathBuffer[MAX_PATH_LENGTH] = "";
-	int patternLength = strlen(szSequencePattern);
+	const size_t patternLength = strlen(szSequencePattern);
 	if (patternLength + 1 > MAX_PATH_LENGTH)
 	{
-		AnimWarning("Facial sequence CAL file pattern for \"%s\" exceeds maximum length (%d)", sSequenceName, MAX_PATH_LENGTH);
+		AnimWarning("Facial sequence CAL file pattern for \"%s\" exceeds maximum length (%zu)", sSequenceName, MAX_PATH_LENGTH);
 		return 0;
 	}
 
@@ -397,12 +397,12 @@ void CFacialInstance::PrecacheFacialExpression(const char *sSequenceName)
 		return;
 	}
 
-	static const int MAX_PATH_LENGTH = 1024;
+	static constexpr size_t MAX_PATH_LENGTH = 1024;
 	char pathBuffer[MAX_PATH_LENGTH] = "";
-	int patternLength = strlen(szSequencePattern);
+	const size_t patternLength = strlen(szSequencePattern);
 	if (patternLength + 1 > MAX_PATH_LENGTH)
 	{
-		AnimWarning("Facial sequence CAL file pattern for \"%s\" exceeds maximum length (%d)", sSequenceName, MAX_PATH_LENGTH);
+		AnimWarning("Facial sequence CAL file pattern for \"%s\" exceeds maximum length (%zu)", sSequenceName, MAX_PATH_LENGTH);
 		return;
 	}
 

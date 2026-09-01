@@ -957,48 +957,50 @@ void CActor::Fall(Vec3 hitPos, bool forceFall, float sleepTime /*=0.0f*/)
 	if(pStats)
 		pStats->timeFallen = gEnv->pTimer->GetFrameStartTime().GetSeconds();
 
-	IAnimationGraphState* pAGState = GetAnimationGraphState();
-	if ( pAGState && m_pAnimatedCharacter )
-	{
-		ICharacterInstance* pCharacter = GetEntity()->GetCharacter(0);
-		if ( pCharacter )
-		{
-			ISkeletonPose* pSkeletonPose = pCharacter->GetISkeletonPose();
-			if ( pSkeletonPose )
-			{
-				int fnpGroudId = 0;
-				IAnimationSet* pAnimSet = pCharacter->GetIAnimationSet();
-				if ( pAnimSet )
-				{
-					char stance[256];
-					pAGState->GetInput( m_inputStance, stance );
-					if ( stance[0] == 0 )
-						strcpy( stance, "combat" );
-					char item[256];
-					pAGState->GetInput( pAGState->GetInputId( "Item" ), item );
-					if ( item[0] == 0 )
-						strcpy( item, "nw" );
+	IAnimationGraphState* pAGState{ GetAnimationGraphState() };
+	if (!pAGState || !m_pAnimatedCharacter)
+		return;
+	
+	ICharacterInstance* pCharacter{ GetEntity()->GetCharacter(0) };
+	if (!pCharacter)
+		return;
 
-					int maxScore = 0;
-					const char* groupName = NULL;
-					for ( int i = 0; (groupName = pAnimSet->GetFnPAnimGroupName(i)) != NULL && groupName[0] != 0; ++i )
-					{
-						int score = 0;
-						if ( CryStringUtils::stristr( groupName, item ) != NULL )
-							score += 2;
-						if ( CryStringUtils::stristr( groupName, stance ) != NULL )
-							score += 1;
-						if ( score > maxScore )
-						{
-							maxScore = score;
-							fnpGroudId = i;
-						}
-					}
-				}
-				pSkeletonPose->SetFnPAnimGroup( fnpGroudId );
-			}
+		
+	ISkeletonPose* pSkeletonPose{ pCharacter->GetISkeletonPose() };
+	if (!pSkeletonPose)
+		return; 
+
+	size_t fnpGroudId{ 0 };
+	IAnimationSet* pAnimSet{ pCharacter->GetIAnimationSet() };
+	if (!pAnimSet)
+		return;
+
+	char stance[256];
+	pAGState->GetInput( m_inputStance, stance );
+	if ( stance[0] == 0 )
+		strcpy( stance, "combat" );
+	char item[256];
+	pAGState->GetInput( pAGState->GetInputId( "Item" ), item );
+	if ( item[0] == 0 )
+		strcpy( item, "nw" );
+
+	int maxScore{ 0 };
+	const char* groupName{ nullptr };
+	for (size_t i{ 0 }; (groupName = pAnimSet->GetFnPAnimGroupName(i)) && groupName[0] != 0; ++i)
+	{
+		int score{ 0 };
+		if ( CryStringUtils::stristr( groupName, item ) )
+			score += 2;
+		if ( CryStringUtils::stristr( groupName, stance ) )
+			score += 1;
+		if ( score > maxScore )
+		{
+			maxScore = score;
+			fnpGroudId = i;
 		}
 	}
+	
+	pSkeletonPose->SetFnPAnimGroup( fnpGroudId );
 }
 
 //------------------------------------------------------------------------

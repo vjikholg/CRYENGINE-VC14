@@ -79,7 +79,7 @@ CCharInstance::CCharInstance ( const string &strFileName, CCharacterModel* pMode
 	m_LastUpdateFrameID_Post=0;
 	m_LastUpdateFrameID_PostType=-1;
 
-	uint32 numJoints		= m_pModel->m_pModelSkeleton->m_arrModelJoints.size();
+	const size_t numJoints		= m_pModel->m_pModelSkeleton->m_arrModelJoints.size();
 	QuatTS identityQuatTS;	identityQuatTS.SetIdentity();
 
 	for (uint32 b=0; b<MAX_MOTIONBLUR_FRAMES; b++ )
@@ -176,7 +176,7 @@ void CCharInstance::SkeletonPreProcess(const QuatT &rPhysLocationCurr, const Qua
 	m_SkeletonPose.m_FootAnchor.m_vFootSlide = Vec3(ZERO);
 
 	m_pSkinAttachment =	0;
-	uint32 numAttachments = m_AttachmentManager.m_arrAttachments.size();
+	const size_t numAttachments = m_AttachmentManager.m_arrAttachments.size();
 	for (uint32 i=0; i<numAttachments; i++)
 	{
 		CAttachment* pAttachment=m_AttachmentManager.m_arrAttachments[i];
@@ -200,7 +200,7 @@ void CCharInstance::SkeletonPreProcess(const QuatT &rPhysLocationCurr, const Qua
 		AnimCharLocation			=	rAnimLocationCurr;
 		if (Console::GetInst().ca_RandomScaling)
 		{
-			uint32 inst=(uint32(this)>>3)&0x0f;
+			const uintptr_t inst = (reinterpret_cast<uintptr_t>(this) >> 3) & 0x0f;
 			AnimCharLocation.s = f32(inst)/160.0f+0.95f;
 			//float fColor[4] = {1,1,0,1};
 			//g_pIRenderer->Draw2dLabel( 1,g_YLine, 1.3f, fColor, false,"Scaling: %x %f",inst, AnimCharLocation.s );	g_YLine+=16.0f;
@@ -309,7 +309,7 @@ void CCharInstance::UpdatePhysicsCGA( float fScale, const QuatTS& rAnimLocationN
 	pe_params_part params;
 	pe_action_set_velocity asv;
 	pe_status_pos sp;
-	int numNodes = m_SkeletonPose.m_AbsolutePose.size();
+	const size_t numNodes = m_SkeletonPose.m_AbsolutePose.size();
 	assert(numNodes);
 
 	int i,iLayer,iLast=-1;
@@ -531,7 +531,7 @@ void CCharInstance::CreateDecal(CryEngineDecalInfo& DecalLCS)
 
 	m_DecalManager.CreateDecalsOnInstance(&m_arrNewSkinQuat[m_iActiveFrame][0],m_pModel,&m_Morphing,m_arrShapeDeformValues, DecalLCS, m_PhysEntityLocation );
 
-	uint32 numAttachments = m_AttachmentManager.m_arrAttachments.size();
+	const size_t numAttachments = m_AttachmentManager.m_arrAttachments.size();
 	for (uint32 i=0; i<numAttachments; i++)
 	{
 		CAttachment* pAttachment=m_AttachmentManager.m_arrAttachments[i];
@@ -676,7 +676,7 @@ size_t CCharInstance::SizeOfThis (ICrySizer * pSizer)
 	{
 		SIZER_COMPONENT_NAME(pSizer, "CCharInstance");
 		size_t size		=	sizeof(CCharInstance) - sizeof(CAttachmentManager)-sizeof(CAnimDecalManager)-sizeof(CMorphing)-sizeof(CSkeletonAnim)-sizeof(CSkeletonPose);
-		uint32 stringlength = m_strFilePath.capacity();
+		const size_t stringlength = m_strFilePath.capacity();
 		size += stringlength;
 		pSizer->AddObject(&m_fDeltaTime, size /*+ SkinningQuats*/);
 		SizeOfInstance += size;

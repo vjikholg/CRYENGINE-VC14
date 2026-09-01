@@ -32,7 +32,7 @@ uint32 CSkeletonAnim::BlendManager(	f32 fDeltaTime,	std::vector<CAnimation>& arr
 
 
 
-	uint32 NumAnimsInQueue = arrAFIFO.size();
+	uint32 NumAnimsInQueue = CrySaturateSize<uint32>(arrAFIFO.size());
 	if (NumAnimsInQueue==0)
 		return 0;
 
@@ -451,7 +451,7 @@ uint32 CSkeletonAnim::BlendManagerDebug(	std::vector<CAnimation>& arrAFIFO, uint
 	f32 fColor[4] = {1,0,0,1};
 	CAnimationSet* pAnimationSet = &m_pInstance->m_pModel->m_AnimationSet;
 
-	uint32 NumAnimsInQueue = arrAFIFO.size();
+	const size_t NumAnimsInQueue = arrAFIFO.size();
 	for (uint32 i=0; i<NumAnimsInQueue; i++)
 	{
 		const ModelAnimationHeader &anim	=	pAnimationSet->GetModelAnimationHeaderRef(arrAFIFO[i].m_LMG0.m_nAnimID[0]);
@@ -509,8 +509,7 @@ uint32 CSkeletonAnim::BlendManagerDebug(	std::vector<CAnimation>& arrAFIFO, uint
 			f32 fS2 =	arrAFIFO[i].m_AnimParams.m_fPlaybackSpeed;
 			f32 fSpeedScale =	fS0*fS1*fS2;
 
-			uint32 Instance=uint32(m_pInstance);
-			g_pIRenderer->Draw2dLabel( 1,g_YLine, 1.3f, fColor, false,"AnimInAFIFO %02d: t:%d  %s  ATime:%f Flag:%08x TTime:%f seg:%02d Instance:%08x", nVLayer, arrAFIFO[i].m_AnimParams.m_nUserToken,  pName0, arrAFIFO[i].m_fAnimTime, arrAFIFO[i].m_AnimParams.m_nFlags, arrAFIFO[i].m_AnimParams.m_fTransTime, arrAFIFO[i].m_LMG0.m_nSegmentCounter[0],Instance ); g_YLine+=0x10;
+			g_pIRenderer->Draw2dLabel( 1,g_YLine, 1.3f, fColor, false,"AnimInAFIFO %02d: t:%d  %s  ATime:%f Flag:%08x TTime:%f seg:%02d Instance:%p", nVLayer, arrAFIFO[i].m_AnimParams.m_nUserToken,  pName0, arrAFIFO[i].m_fAnimTime, arrAFIFO[i].m_AnimParams.m_nFlags, arrAFIFO[i].m_AnimParams.m_fTransTime, arrAFIFO[i].m_LMG0.m_nSegmentCounter[0], static_cast<void*>(m_pInstance) ); g_YLine+=0x10;
 			g_pIRenderer->Draw2dLabel( 1,g_YLine, 1.3f, fColor, false,"AimPoses: %s %s  AimIK: %d  AimIKBlend: %f",arrAFIFO[i].m_strAimPosName0,arrAFIFO[i].m_strAimPosName1,m_pSkeletonPose->m_AimIK.m_UseAimIK,m_pSkeletonPose->m_AimIK.m_AimIKBlend ); g_YLine+=0x10;
 			f32 fUpperBodyBlend = m_arrLayerBlending[nVLayer];
 			g_pIRenderer->Draw2dLabel( 1,g_YLine, 1.3f, fColor, false,"AimID: %d  SpeedScale: %f Visisble: %d  UBBlend: %f",arrAFIFO[i].m_LMG0.m_nAnimID[0], fSpeedScale, m_pSkeletonPose->m_bInstanceVisible,fUpperBodyBlend); g_YLine+=0x10;
@@ -565,7 +564,7 @@ void CSkeletonAnim::LayerBlendManager( f32 fDeltaTime, uint32 nLayer )
 	if (m_arrLayerBlending[nLayer]<0.0f)
 		m_arrLayerBlending[nLayer]=0.0f;
 
-	uint32 numAnims = m_arrLayer_AFIFO[nLayer].size();
+	const size_t numAnims = m_arrLayer_AFIFO[nLayer].size();
 	if (numAnims&& (m_arrLayerBlending[nLayer]==0.0f) && (status==0))
 		m_arrLayer_AFIFO[nLayer][0].m_bRemoveFromQueue=1;
 
@@ -790,7 +789,7 @@ void CSkeletonAnim::AnimCallback ( std::vector<CAnimation>& arrAFIFO, uint32 Ani
 void CSkeletonAnim::SetIWeight(uint32 nLayer, f32 bw)
 {
 	assert(nLayer<16);
-	uint32 numAnimsOnStack = m_arrLayer_AFIFO[nLayer].size();
+	const size_t numAnimsOnStack = m_arrLayer_AFIFO[nLayer].size();
 	for (uint32 i=0; i<numAnimsOnStack; i++)
 			m_arrLayer_AFIFO[nLayer][i].m_fIWeight=bw;
 }
@@ -799,7 +798,7 @@ void CSkeletonAnim::SetIWeight(uint32 nLayer, f32 bw)
 f32 CSkeletonAnim::GetIWeight(uint32 nLayer)
 {
 	assert(nLayer<16);
-	uint32 numAnimsOnStack = m_arrLayer_AFIFO[nLayer].size();
+	const size_t numAnimsOnStack = m_arrLayer_AFIFO[nLayer].size();
 	if (numAnimsOnStack)
 		return m_arrLayer_AFIFO[nLayer][0].m_fIWeight;
 	return 0.0f; //error
@@ -972,7 +971,7 @@ Vec3 CSkeletonAnim::GetRelFootSlide()
 void CSkeletonAnim::SetLayerTime (uint32 nLayer, float fTimeSeconds)
 {
 	CAnimationSet* pAnimationSet = &m_pInstance->m_pModel->m_AnimationSet;
-	uint32 numAnims = m_arrLayer_AFIFO[nLayer].size();
+	const size_t numAnims = m_arrLayer_AFIFO[nLayer].size();
 	if (numAnims>0)
 	{
 		int32 nGlobalLMGID = m_arrLayer_AFIFO[nLayer][0].m_LMG0.m_nGlobalLMGID;
@@ -1090,7 +1089,7 @@ f32 CSkeletonAnim::GetFootPlantStatus()
 { 
 
 	f32 fFinalSteps=0.0f;
-	int32 numAnimsLayer0 = m_arrLayer_AFIFO[0].size();
+	const size_t numAnimsLayer0 = m_arrLayer_AFIFO[0].size();
 	for (int32 i=0; i<numAnimsLayer0; i++)
 	{
 		f32 fSteps0=0.0f;

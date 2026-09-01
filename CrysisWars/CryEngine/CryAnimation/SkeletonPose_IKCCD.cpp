@@ -25,7 +25,7 @@ void CSkeletonPose::CCDInitIKBuffer(QuatT* pRelativeQuatIK,QuatT* pAbsoluteQuatI
 {
 	if (m_pSkeletonAnim->m_TrackViewExclusive)
 		return;
-	uint32	numJoints  = m_AbsolutePose.size();
+	const size_t	numJoints  = m_AbsolutePose.size();
 	for( uint32 i=0; i<numJoints; i++ )
 	{
 		pRelativeQuatIK[i] = m_RelativePose[i];
@@ -87,7 +87,7 @@ void CSkeletonPose::CCDLockHunterFoot(int32 idx,QuatT* pRelativeQuatIK,QuatT* pA
 	Legs[0]=m_AbsolutePose[id0].q;
 	Legs[1]=m_AbsolutePose[id1].q;
 	Legs[2]=m_AbsolutePose[id2].q;
-	int32 numCCDJoints = m_arrCCDChain.size();
+	const int32 numCCDJoints = CrySaturateSize<int32>(m_arrCCDChain.size());
 	idx0=m_arrCCDChain[numCCDJoints-1];
 	idx1=m_arrCCDChain[numCCDJoints-2];
 	idx2=m_arrCCDChain[numCCDJoints-3];
@@ -147,7 +147,7 @@ void CSkeletonPose::CCDRotationSolver(const Vec3& vIKPos,f32 fThreshold,f32 Step
 	Quat qrel0,qrel1,qrel2;
 
 	uint32	stop=1; 
-	int32 numCCDJoints2 = m_arrCCDChain.size();
+	const int32 numCCDJoints2 = CrySaturateSize<int32>(m_arrCCDChain.size());
 	int32 sCCDJoint	=	m_arrCCDChain[0];
 	int32 eCCDJoint	=	m_arrCCDChain[numCCDJoints2-1];
 
@@ -235,7 +235,7 @@ void CSkeletonPose::CCDTranslationSolver(const Vec3& pos,QuatT* pRelativeQuatIK,
 
 	Vec3 PositionCCD	=	m_pInstance->m_PhysEntityLocation.GetInverted()*pos;
 
-	int32 numCCDJoints	= m_arrCCDChain.size();
+	const int32 numCCDJoints = CrySaturateSize<int32>(m_arrCCDChain.size());
 	int32 eCCDJoint			=	m_arrCCDChain[numCCDJoints-1];
 
 	Vec3 absEndEffector =	pAbsoluteQuatIK[eCCDJoint].t;			// Position of end effector
@@ -279,7 +279,7 @@ void CSkeletonPose::CCDTranslationSolver(const Vec3& pos,QuatT* pRelativeQuatIK,
 void CSkeletonPose::CCDDirConstraint(const Vec3& dir,QuatT* pRelativeQuatIK,QuatT* pAbsoluteQuatIK)
 {
 
-	int32 numCCDJoints	= m_arrCCDChain.size();
+	const int32 numCCDJoints = CrySaturateSize<int32>(m_arrCCDChain.size());
 	int32 eCCDJoint			=	m_arrCCDChain[numCCDJoints-1];
 
 	int32 id0 = eCCDJoint;
@@ -346,7 +346,7 @@ void CSkeletonPose::CCDQuatConstraint(const Quat* pQuats,QuatT* pRelativeQuatIK,
 	if (pQuats==0)
 		return;
 
-	int32 numCCDJoints	= m_arrCCDChain.size();
+	const int32 numCCDJoints = CrySaturateSize<int32>(m_arrCCDChain.size());
 	int32 eCCDJoint			=	m_arrCCDChain[numCCDJoints-1];
 
 	int32 id0 = eCCDJoint;
@@ -390,7 +390,7 @@ void CSkeletonPose::CCDUpdateSkeleton(QuatT* pRelativeQuatIK,QuatT* pAbsoluteQua
 	if (m_pSkeletonAnim->m_IsAnimPlaying==0)
 		return;
 
-	uint32 numJoints = m_AbsolutePose.size();
+	const size_t numJoints = m_AbsolutePose.size();
 	for(uint32 i=0; i<numJoints; i++)
 	{
 		pAbsoluteQuatIK[i] = pRelativeQuatIK[i];
@@ -410,7 +410,7 @@ void CSkeletonPose::CCDUpdateSkeleton(QuatT* pRelativeQuatIK,QuatT* pAbsoluteQua
 	//--------------------------------------------------------------------------------------
 	//--------------------------------------------------------------------------------------
 	//--------------------------------------------------------------------------------------
-	int32 numCCDJoints	= m_arrCCDChain.size();
+	const int32 numCCDJoints = CrySaturateSize<int32>(m_arrCCDChain.size());
 	int32 eCCDJoint			=	m_arrCCDChain[numCCDJoints-1];
 
 	static Ang3 angle=Ang3(ZERO);
@@ -467,7 +467,7 @@ void CSkeletonPose::LookIKHunter( uint32 LIKFlag, const QuatT& rPhysLocationNext
 
 	QuatT ACOffset = QuatT( rPhysLocationNext.GetInverted()*rAnimLocationNext);
 
-	uint32 numJoints = m_AbsolutePose.size();
+	const size_t numJoints = m_AbsolutePose.size();
 	QuatT* pRelativeQuatIK = (QuatT*)alloca( numJoints*sizeof(QuatT) );
 	QuatT* pAbsoluteQuatIK = (QuatT*)alloca( numJoints*sizeof(QuatT) );
 

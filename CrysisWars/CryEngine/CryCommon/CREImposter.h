@@ -73,7 +73,7 @@ public:
     m_bSplit(false),
     m_fRadiusX(0),
     m_fRadiusY(0),
-    m_fErrorToleranceCosAngle(cos(DEG2RAD(0.25f))),
+    m_fErrorToleranceCosAngle(cos_tpl(DEG2RAD(0.25f))),
     m_bScreenImposter(false),
     m_State(GS_DEPTHWRITE),
     m_AlphaRef(-1),

@@ -1,3 +1,4 @@
+#include "AnimationAssetTests.h"
 #include "ComparisonCompatibilityTests.h"
 #include "CryFileNameTests.h"
 #include "CryStringCompatibilityTests.h"
@@ -24,6 +25,47 @@
 
 int main(int argc, char* argv[])
 {
+	if ((argc == 3 || argc == 4) &&
+		std::strcmp(argv[1], "--animation-asset-format") == 0)
+	{
+		const std::filesystem::path assetRoot(argv[2]);
+		const std::filesystem::path reportPath = argc == 4
+			? std::filesystem::path(argv[3])
+			: std::filesystem::current_path() / "AnimationAssetCompatibility.tsv";
+		return RunAnimationAssetFormatCorpus(assetRoot.c_str(), reportPath.c_str());
+	}
+
+	if ((argc == 5 || argc == 6) &&
+		std::strcmp(argv[1], "--animation-assets") == 0)
+	{
+		const std::filesystem::path runtimeDirectory(argv[2]);
+		const std::filesystem::path gameRoot(argv[3]);
+		const std::filesystem::path assetRoot(argv[4]);
+		const std::filesystem::path reportPath = argc == 6
+			? std::filesystem::path(argv[5])
+			: std::filesystem::current_path() / "AnimationAssetCompatibility.tsv";
+		return RunAnimationAssetCompatibilityPipeline(
+			runtimeDirectory.c_str(),
+			gameRoot.c_str(),
+			assetRoot.c_str(),
+			reportPath.c_str());
+	}
+
+	if (argc == 7 && std::strcmp(argv[1], "--animation-assets-runtime") == 0)
+	{
+		const std::filesystem::path runtimeDirectory(argv[2]);
+		const std::filesystem::path gameRoot(argv[3]);
+		const std::filesystem::path assetRoot(argv[4]);
+		const std::filesystem::path reportPath(argv[5]);
+		const std::filesystem::path checkpointPath(argv[6]);
+		return RunAnimationAssetRuntimeCorpus(
+			runtimeDirectory.c_str(),
+			gameRoot.c_str(),
+			assetRoot.c_str(),
+			reportPath.c_str(),
+			checkpointPath.c_str());
+	}
+
 	if (argc == 2 && std::strcmp(argv[1], "--mm01-trace") == 0)
 	{
 		return RunMM01AllocatorTrace();
@@ -112,7 +154,9 @@ int main(int argc, char* argv[])
 	if (argc != 1)
 	{
 		std::printf(
-			"Usage: CryCommonTests.exe [--mm01-trace | --mm02-layout | -mm03-trace | "
+			"Usage: CryCommonTests.exe [--animation-asset-format <asset-root> [report.tsv] | "
+			"--animation-assets <runtime-dir> <game-root> <asset-root> [report.tsv] | "
+			"--mm01-trace | --mm02-layout | -mm03-trace | "
 			"--mm02-trace <CrySystem.dll> | --mm04-trace [CrySystem.dll] | "
 			"--mm05-trace | --mm08-trace | "
 			"--mm06-trace <CrySystem.dll> | --mm07-trace <CrySystem.dll> | "

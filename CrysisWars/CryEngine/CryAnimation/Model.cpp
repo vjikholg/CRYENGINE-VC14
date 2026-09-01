@@ -92,7 +92,7 @@ void CCharacterModel::UnregisterInstance (ICharacterInstance* pInstance)
 #ifdef _DEBUG
 	if (m_SetInstances.find(pInstance) == m_SetInstances.end())
 	{
-		g_pILog->LogToFile("*ERROR* CCharacterModel::UnregisterInstance(0x%x): twice-deleting the character instance 0x%08X!!!", (uint32)this, (uint32)pInstance);
+		g_pILog->LogToFile("*ERROR* CCharacterModel::UnregisterInstance(%p): twice-deleting the character instance %p!!!", static_cast<void*>(this), static_cast<void*>(pInstance));
 	}
 #endif
 	m_SetInstances.erase(pInstance);
@@ -107,7 +107,7 @@ void CCharacterModel::CleanupInstances()
 {
 	// since after each instance deletion the body may be destructed itself,
 	// we'll lock it for this time
-	uint32 numInstances = m_SetInstances.size();
+	const size_t numInstances = m_SetInstances.size();
 /*	for (uint32 i=0; i<numInstances; i++)
 	{
 		CharacterInstance* pCharacterInstance = *m_setInstances.begin();
@@ -222,29 +222,29 @@ IMaterial* CCharacterModel::GetMaterial()
 //////////////////////////////////////////////////////////////////////////
 uint32 CCharacterModel::GetTextureMemoryUsage( ICrySizer *pSizer )
 {
-	uint32 nSize = 0;
+	size_t nSize = 0;
 	if (pSizer)
 	{
 		for (int i=0; i<g_nMaxGeomLodLevels; i++)
 		{
 			if (m_pRenderMeshs[i])
 			{
-				nSize += (uint32)m_pRenderMeshs[i]->GetTextureMemoryUsage( m_pMaterial,pSizer );
+				nSize += static_cast<size_t>(m_pRenderMeshs[i]->GetTextureMemoryUsage(m_pMaterial, pSizer));
 			}
 		}
 	}
 	else
 	{
 		if (m_pRenderMeshs[0])
-			nSize = (uint32)m_pRenderMeshs[0]->GetTextureMemoryUsage( m_pMaterial );
+			nSize = static_cast<size_t>(m_pRenderMeshs[0]->GetTextureMemoryUsage(m_pMaterial));
 	}
-	return nSize;
+	return CrySaturateSize<uint32>(nSize);
 }
 
 //////////////////////////////////////////////////////////////////////////
 uint32 CCharacterModel::GetMeshMemoryUsage( ICrySizer *pSizer)
 {
-	uint32 nSize = 0;
+	size_t nSize = 0;
 
 	for (int i=0; i<g_nMaxGeomLodLevels; i++)
 	{
@@ -256,17 +256,17 @@ uint32 CCharacterModel::GetMeshMemoryUsage( ICrySizer *pSizer)
 
 	nSize += SizeOfThis(pSizer);
 
-	return nSize;
+	return CrySaturateSize<uint32>(nSize);
 }
 
-uint32 CCharacterModel::SizeOfThis(ICrySizer *pSizer)
+size_t CCharacterModel::SizeOfThis(ICrySizer *pSizer)
 {
-	uint32 nSize = sizeof(CCharacterModel) + m_SetInstances.size() * 4;
+	size_t nSize = sizeof(CCharacterModel) + m_SetInstances.size() * sizeof(ICharacterInstance*);
 
 	{
 		SIZER_COMPONENT_NAME(pSizer, "Models size");
 
-		for(uint32 i =0, end = m_arrModelMeshes.size(); i < end; ++i)
+		for (size_t i = 0, end = m_arrModelMeshes.size(); i < end; ++i)
 		{
 			nSize += m_arrModelMeshes[i].SizeOfThis(pSizer) + sizeof(CModelMesh);
 		}
@@ -344,7 +344,7 @@ void CCharacterModel::AddModelTracksDatabase(const string& sAnimTracksDatabasePa
 {
 	string tmp(sAnimTracksDatabasePath);
 	CryStringUtils::UnifyFilePath(tmp);
-	for (int i = 0, end = m_arrTracksDBFilePath.size(); i < end; ++i)
+	for (size_t i = 0, end = m_arrTracksDBFilePath.size(); i < end; ++i)
 	{
 		if (m_arrTracksDBFilePath[i].compareNoCase(tmp) == 0)
 			return;

@@ -30,8 +30,8 @@ public:
 		m_numVLinks				= 0;    //how many vertices are affected by this joint
 		m_numLevels		= 0;
 
-		m_PhysInfo[0].pPhysGeom = 0;
-		m_PhysInfo[1].pPhysGeom = 0;
+		m_PhysInfo[0] = BONE_PHYSICS{};
+		m_PhysInfo[1] = BONE_PHYSICS{};
 		m_DefaultRelPose.SetIdentity(); 
 		m_DefaultAbsPose.SetIdentity(); 
 	}
@@ -103,7 +103,7 @@ public:
 	void resetPhysics (int nLod)
 	{
 		assert (nLod >= 0 && nLod < sizeof(m_PhysInfo)/sizeof(m_PhysInfo[0]));
-		memset (&m_PhysInfo[nLod], 0, sizeof(m_PhysInfo[nLod]));
+		m_PhysInfo[nLod] = BONE_PHYSICS{};
 	}
 	const BONE_PHYSICS& getPhysics (int nLod) const
 	{
@@ -115,13 +115,12 @@ public:
 	void scale (f32 fScale);
 
 	//! Performs post-initialization. This step is requred to initialize the pPhysGeom of the bones
-	//! After the bone has been loaded but before it is first used. When the bone is first loaded, pPhysGeom
-	//! is set to the value equal to the chunk id in the file where the physical geometry (BoneMesh) chunk is kept.
-	//! After those chunks are loaded, and chunk ids are mapped to the registered physical geometry objects,
-	//! call this function to replace pPhysGeom chunk ids with the actual physical geometry object pointers.
+	//! After the bone has been loaded but before it is first used. The serialized physical-geometry chunk id
+	//! is kept in nPhysGeomId until the bone-mesh chunks have been registered with the physics system.
+	//! This function resolves that id and stores the resulting runtime geometry in pPhysGeom.
 	//!	NOTE:
 	//!	The entries of the map that were used are deleted
-	typedef std::map<INT_PTR, struct phys_geometry*> ChunkIdToPhysGeomMap;
+	typedef std::map<uint32, struct phys_geometry*> ChunkIdToPhysGeomMap;
 
 
 	CModelJoint* getChild (unsigned i) {assert(i < numChildren()); return this + m_nOffsetChildren + i;}
@@ -146,14 +145,10 @@ public:
 	// adds this bone and all its children to the given map controller id-> bone ptr
 	void AddHierarchyToControllerIdMap (UnsignedToCryBoneMap& mapControllerIdToCryBone);
 
-	//! Performs post-initialization. This step is requred to initialize the pPhysGeom of the bones
-	//! After the bone has been loaded but before it is first used. When the bone is first loaded, pPhysGeom
-	//! is set to the value equal to the chunk id in the file where the physical geometry (BoneMesh) chunk is kept.
-	//! After those chunks are loaded, and chunk ids are mapped to the registered physical geometry objects,
-	//! call this function to replace pPhysGeom chunk ids with the actual physical geometry object pointers.
+	//! Resolves nPhysGeomId after bone-mesh chunks have been registered with the physics system.
+	//! A successful resolution stores an actual runtime geometry in pPhysGeom.
 	//!	NOTE:
 	//!	The entries of the map that were used are deleted
-//	typedef std::map<int, struct phys_geometry*> ChunkIdToPhysGeomMap;
 	bool PostInitPhysGeom ( ChunkIdToPhysGeomMap& mapChunkIdToPhysGeom, int nLodLevel, bool bAllowRopePhys);
 
 	//--------------------------------------------------------------------------------

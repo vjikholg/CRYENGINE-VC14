@@ -279,7 +279,7 @@ void CFacialAnimSequence::RemoveChannel( IFacialAnimChannel *pChannelToRemove )
 //////////////////////////////////////////////////////////////////////////
 int CFacialAnimSequence::GetSoundEntryCount()
 {
-	return m_soundEntries.size();
+	return CrySaturateSize<int>(m_soundEntries.size());
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -386,7 +386,7 @@ void CFacialAnimSequence::Animate( const QuatTS& rAnimLocationNext, CFacialAnimS
 			{
 				for (size_t subEffectorIndex = 0, subEffectorCount = pEffector->GetSubEffectorCount(); subEffectorIndex < subEffectorCount; ++subEffectorIndex)
 				{
-					IFacialEffector* pSubEffector = pEffector->GetSubEffector(subEffectorIndex);
+		IFacialEffector* pSubEffector = pEffector->GetSubEffector(CrySaturateSize<int>(subEffectorIndex));
 					int index = pSubEffector->GetIndexInState();
 					if (index >= 0)
 						pInstance->m_pAnimContext->SetLipsyncStrength(index, fStrength);
@@ -461,7 +461,7 @@ void CFacialAnimSequence::Animate( const QuatTS& rAnimLocationNext, CFacialAnimS
 		overriddenPhonemes.SwapElementsWithVector(foundChannels);
 	}
 
-	for (int i = 0, count = m_soundEntries.size(); i < count; ++i)
+	for (size_t i = 0, count = m_soundEntries.size(); i < count; ++i)
 	{
 		if (m_soundEntries[i].m_pSentence)
 			m_soundEntries[i].m_pSentence->Animate( rAnimLocationNext, pInstance->m_pAnimContext,fTime - m_soundEntries[i].m_startTime,fPhonemeStrength * Console::GetInst().ca_lipsync_phoneme_strength, overriddenPhonemes);
@@ -729,7 +729,7 @@ void CFacialAnimSequence::Serialize( XmlNodeRef &xmlNode,bool bLoading,ESerializ
 
 		if (flags & SFLAG_SOUND_ENTRIES)
 		{
-			for (int soundEntry = 0, soundEntryCount = m_soundEntries.size(); soundEntry < soundEntryCount; ++soundEntry)
+			for (size_t soundEntry = 0, soundEntryCount = m_soundEntries.size(); soundEntry < soundEntryCount; ++soundEntry)
 			{
 				XmlNodeRef soundEntryNode(xmlNode->newChild("SoundEntry"));
 				soundEntryNode->setAttr("Sound", m_soundEntries[soundEntry].m_sound);
@@ -744,7 +744,7 @@ void CFacialAnimSequence::Serialize( XmlNodeRef &xmlNode,bool bLoading,ESerializ
 
 		if (flags & SFLAG_ANIMATION)
 		{
-			for (int skeletonAnimationEntry = 0, skeletonAnimationCount = m_skeletonAnimationEntries.size(); skeletonAnimationEntry < skeletonAnimationCount; ++skeletonAnimationEntry)
+			for (size_t skeletonAnimationEntry = 0, skeletonAnimationCount = m_skeletonAnimationEntries.size(); skeletonAnimationEntry < skeletonAnimationCount; ++skeletonAnimationEntry)
 			{
 				XmlNodeRef skeletonAnimationEntryNode(xmlNode->newChild("SkeletonAnimationEntry"));
 				skeletonAnimationEntryNode->setAttr("AnimationName", m_skeletonAnimationEntries[skeletonAnimationEntry].m_animationName);
@@ -920,7 +920,7 @@ void CFacialAnimSequence::GenerateProceduralChannels()
 	pLeftRightChannel->GetInterpolator()->InsertKeyFloat(0, 0);
 	pUpDownChannel->GetInterpolator()->InsertKeyFloat(0, 0);
 
-	for (int soundEntry = 0, soundEntryCount = m_soundEntries.size(); soundEntry < soundEntryCount; ++soundEntry)
+	for (size_t soundEntry = 0, soundEntryCount = m_soundEntries.size(); soundEntry < soundEntryCount; ++soundEntry)
 	{
 		float fLeftRight = 0.0f;
 		float fUpDown = 0.0f;
@@ -982,7 +982,7 @@ void CFacialAnimSequence::GenerateProceduralChannels()
 //////////////////////////////////////////////////////////////////////////
 void CFacialAnimSequence::UpdateSoundEntriesValidateID()
 {
-	for (int i = 0, count = m_soundEntries.size(); i < count; ++i)
+	for (size_t i = 0, count = m_soundEntries.size(); i < count; ++i)
 	{
 		if (m_soundEntries[i].IsSentenceInvalid())
 		{
@@ -1125,11 +1125,11 @@ void CFacialAnimSequenceInstance::BindChannels( CFacialAnimationContext *pContex
 				if (pParentChannel)
 				{
 					ChannelInfo& parentInfo = m_channels[pParentChannel->GetInstanceChannelId()];
-					parentInfo.nBalanceChannelListIndex = balanceChannelEntryIndex;
+					parentInfo.nBalanceChannelListIndex = CrySaturateSize<int>(balanceChannelEntryIndex);
 				}
 				else
 				{
-					rootBalanceChannelEntryIndex = balanceChannelEntryIndex;
+					rootBalanceChannelEntryIndex = CrySaturateSize<int>(balanceChannelEntryIndex);
 				}
 			}
 			else

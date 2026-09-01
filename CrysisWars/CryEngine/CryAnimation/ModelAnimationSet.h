@@ -72,7 +72,7 @@ public:
 	// the animation controls need to be unbound to free up the memory
 	void Init();
 	// prepares to load the specified number of CAFs by reserving the space for the controller pointers
-	void prepareLoadCAFs (unsigned nReserveAnimations);
+	bool prepareLoadCAFs (size_t nReserveAnimations);
 	void selfValidate();
 	// tries to load the animation info if isn't present in memory; returns NULL if can't load
 	const ModelAnimationHeader* GetModelAnimationHeader(int32 i);
@@ -223,7 +223,7 @@ public:
 	const char* GetNameByAnimID ( int nAnimationId);
 
 	// for internal use only
-	uint32 numAnimations() const { return m_arrAnimations.size(); }
+	uint32 numAnimations() const { return CrySaturateSize<uint32>(m_arrAnimations.size()); }
 
 	GlobalAnimationHeader* GetGlobalAnimationHeaderFromLocalID(int nAnimationId);
 	GlobalAnimationHeader* GetGlobalAnimationHeaderFromLocalName(const char* AnimationName);
@@ -283,7 +283,12 @@ public:
 
 	FacialAnimationSet& GetFacialAnimations() {return m_facialAnimations;}
 
-	const char *GetFnPAnimGroupName(int idx) { return (unsigned int)idx<m_arrStandupAnimTypes.size() ? m_arrStandupAnimTypes[idx]:0; }
+	const char* GetFnPAnimGroupName(int idx)
+	{
+		return idx >= 0 && static_cast<size_t>(idx) < m_arrStandupAnimTypes.size()
+			? m_arrStandupAnimTypes[static_cast<size_t>(idx)].c_str()
+			: nullptr;
+	}
 
 	// Not safe method. Just direct access to m_arrAnimations
 	const ModelAnimationHeader&  GetModelAnimationHeaderRef(int i)
@@ -294,6 +299,7 @@ public:
 	uint32 m_CharEditMode; 
 
 private:
+	bool TryCreateLocalAnimationId(int& animationId) const noexcept;
 
 	// No more direct access to vector. No more LocalIDs!!!! This is just vector of registered animations!!!
 	// When animation started we need build remap controllers\bones

@@ -77,9 +77,9 @@ public:
 	void ApplyProceduralFaceBehaviour( Vec3 &vCamPos );
 	void UpdateProceduralFaceBehaviour();
 
-	uint32 SizeOfThis()
+	size_t SizeOfThis() const
 	{
-		uint32 size = sizeof(CFacialInstance);
+		size_t size = sizeof(CFacialInstance);
 		size += m_forcedRotations.capacity() * sizeof(CFacialAnimForcedRotationEntry);
 		if (m_pFaceState)
 			size += m_pFaceState->SizeOfThis();

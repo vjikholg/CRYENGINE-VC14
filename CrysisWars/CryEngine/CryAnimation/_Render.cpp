@@ -127,7 +127,7 @@ void CCharInstance::Render(const struct SRendParams& RendParams, const QuatTS& O
 	//	Set LOD
 	float fLodRatioNorm, fRadiusRated;
 	static ICVar *p_e_lod_ratio = g_pISystem->GetIConsole()->GetCVar("e_lod_ratio");
-	if(p_e_lod_ratio && RendParams.pRenderNode && ((int)(void*)(RendParams.pRenderNode)>0))
+	if (p_e_lod_ratio && RendParams.pRenderNode)
 	{
 		fLodRatioNorm = RendParams.pRenderNode->GetLodRatioNormalized();
 		fRadiusRated = RendParams.pRenderNode->GetBBox().GetRadius()*p_e_lod_ratio->GetIVal();
@@ -149,7 +149,9 @@ void CCharInstance::Render(const struct SRendParams& RendParams, const QuatTS& O
 	//extern f32 g_YLine;
 	//g_pIRenderer->Draw2dLabel( 1,g_YLine, 1.3f, fColor, false,"m_nLodLevel: %d",m_nLodLevel ); g_YLine+=0x10;
 
-	int32 numLODs = m_pModel->m_arrModelMeshes.size();
+	int32 numLODs = 0;
+	if (!CryTryNarrowSize(m_pModel->m_arrModelMeshes.size(), numLODs) || numLODs == 0)
+		return;
 	if(m_nLodLevel<m_pModel->m_nBaseLOD)
 		m_nLodLevel=m_pModel->m_nBaseLOD;
 	if(m_nLodLevel>=numLODs)
@@ -296,10 +298,11 @@ void CCharInstance::RenderCGA(const struct SRendParams& RendParams, const Matrix
 
 	IMaterial* pMaterial = nodeRP.pMaterial;
 
-	uint32 numJoints = m_SkeletonPose.m_AbsolutePose.size();
+	int numJoints = 0;
+	if (!CryTryNarrowSize(m_SkeletonPose.m_AbsolutePose.size(), numJoints) || numJoints == 0)
+		return;
 
-	assert(numJoints);
-	for (uint32 i=0; i<numJoints; i++)
+	for (int i=0; i<numJoints; i++)
 	{
 		//SJoint* joint = &m_SkeletonPose.m_arrJoints[i];
 		if (m_SkeletonPose.m_arrCGAJoints.size() &&  m_SkeletonPose.m_arrCGAJoints[i].m_CGAObjectInstance)
@@ -499,8 +502,8 @@ void CCharInstance::MotionBlurTest(int nLOD, const Matrix34& rRenderMat34 )
     fAlpha *= fAlphaScale;
   }
 
-  uint32 numBones=m_arrMBSkinQuat.size();
-  for (uint32 i=0; i<numBones; i++)
+	const size_t numBones=m_arrMBSkinQuat.size();
+	for (size_t i=0; i<numBones; i++)
    m_arrMBSkinQuat[i].SetNLerp(m_arrNewSkinQuat[m_iActiveFrame][i],m_arrNewSkinQuat[m_iBackFrame][i], fAlpha);
 
 	CModelMesh* pModelMesh = m_pModel->GetModelMesh(nLOD);
@@ -513,7 +516,7 @@ void CCharInstance::MotionBlurTest(int nLOD, const Matrix34& rRenderMat34 )
 	assert(numExtVertices);
 
 	static std::vector<Vec3> arrExtSkinnedStream;
-	uint32 vsize = arrExtSkinnedStream.size();
+	const size_t vsize = arrExtSkinnedStream.size();
 	if (vsize<numExtVertices) arrExtSkinnedStream.resize( numExtVertices );	
 
 
@@ -667,12 +670,12 @@ bool CCharInstance::MotionBlurMotionCheck( uint nObjFlags )
     return false;
   }
 
-  uint32 numBones = m_arrNewSkinQuat[m_iActiveFrame].size();
+	const size_t numBones = m_arrNewSkinQuat[m_iActiveFrame].size();
   if (!numBones || m_iActiveFrame == m_iBackFrame ) // no updates
     return false;
 
   float fMovementAmount = 0.0f;
-  for (uint32 i=0; i<numBones; ++i)
+	for (size_t i=0; i<numBones; ++i)
   {
     QuatTS q0 = m_arrNewSkinQuat[m_iActiveFrame][i];
     QuatTS q1 = m_arrNewSkinQuat[m_iBackFrame][i];
@@ -700,19 +703,19 @@ void CCharInstance::UpdatePreviousFrameBones(int nLOD)
     fAlpha *= fAlphaScale;
   }
 
-  uint32 numBones=m_arrMBSkinQuat.size();
+	const size_t numBones=m_arrMBSkinQuat.size();
 	if (!numBones)
 		m_arrMBSkinQuat.resize(m_arrNewSkinQuat[m_iActiveFrame].size());
 
   if( m_iActiveFrame != m_iBackFrame )
   {
-    for (uint32 i=0; i<numBones; ++i)
+		for (size_t i=0; i<numBones; ++i)
       m_arrMBSkinQuat[i].SetNLerp(m_arrNewSkinQuat[m_iActiveFrame][i],m_arrNewSkinQuat[m_iBackFrame][i], fAlpha);
   }
   else
   {
     // if skeleton not being updated use only current frame 
-    for (uint32 i=0; i<numBones; ++i)
+		for (size_t i=0; i<numBones; ++i)
       m_arrMBSkinQuat[i] = m_arrNewSkinQuat[m_iActiveFrame][i];
   }
 }
@@ -832,6 +835,21 @@ void CSkinInstance::AddDecalsToRenderer( CCharInstance* pMaster, CAttachment* pA
 
 			if( numFaces > 0 && numVertices > 0 )
 			{
+				size_t indexCount = 0;
+				int renderVertexCount = 0;
+				int renderIndexCount = 0;
+				if (!CryTryMultiplySize(numFaces, size_t{3}, indexCount) ||
+					!CryTryNarrowSize(numVertices, renderVertexCount) ||
+					!CryTryNarrowSize(indexCount, renderIndexCount))
+				{
+					continue;
+				}
+				if (m_pSkinAttachment &&
+					static_cast<size_t>(m_pSkinAttachment->m_arrRemapTable.size()) > MAX_JOINT_AMOUNT + 1)
+				{
+					continue;
+				}
+
 				// add decals to renderer
 				CRenderObject* pObj( g_pIRenderer->EF_GetObject( true ) );
         if (!pObj)
@@ -842,7 +860,7 @@ void CSkinInstance::AddDecalsToRenderer( CCharInstance* pMaster, CAttachment* pA
 				struct_VERTEX_FORMAT_P3F_COL4UB_TEX2F* pDecalVertices( 0 );
 				SPipTangents* pDecalTangents( 0 );
 				uint16* pDecalIndices( 0 );
-				g_pIRenderer->EF_AddPolygonToScene( pMaterial->GetShaderItem(), pObj, numVertices, numFaces * 3, pDecalVertices, pDecalTangents, pDecalIndices, true, false );
+				g_pIRenderer->EF_AddPolygonToScene( pMaterial->GetShaderItem(), pObj, renderVertexCount, renderIndexCount, pDecalVertices, pDecalTangents, pDecalIndices, true, false );
 
 
 
@@ -850,8 +868,8 @@ void CSkinInstance::AddDecalsToRenderer( CCharInstance* pMaster, CAttachment* pA
 				if(m_pSkinAttachment)
 				{
 					QuatTS arrNewSkinQuat[MAX_JOINT_AMOUNT+1];	//bone quaternions for skinning (entire skeleton)
-					uint32 numRemapJoints	= m_pSkinAttachment->m_arrRemapTable.size();
-					for (uint32 i=0; i<numRemapJoints; i++)	arrNewSkinQuat[i]=pMaster->m_arrNewSkinQuat[iActiveFrame][m_pSkinAttachment->m_arrRemapTable[i]];
+					const size_t numRemapJoints = static_cast<size_t>(m_pSkinAttachment->m_arrRemapTable.size());
+					for (size_t i=0; i<numRemapJoints; i++)	arrNewSkinQuat[i]=pMaster->m_arrNewSkinQuat[iActiveFrame][m_pSkinAttachment->m_arrRemapTable[static_cast<int>(i)]];
 					FillUpDecalBuffer( pMaster,arrNewSkinQuat, pDecalVertices, pDecalTangents, pDecalIndices, d );
 				}
 				else
@@ -868,11 +886,11 @@ void CSkinInstance::AddDecalsToRenderer( CCharInstance* pMaster, CAttachment* pA
 					{
 						static std::vector<Vec3> arrVertices;
 						arrVertices.resize(numVertices);
-						for (uint32 i=0; i<numVertices; i++)
+						for (size_t i=0; i<numVertices; i++)
 							arrVertices[i] = RenderMat34*pDecalVertices[i].xyz;
 						static std::vector<TFace> arrFaces;
 						arrFaces.resize(numFaces);
-						for (uint32 i=0; i<numFaces; i++)
+						for (size_t i=0; i<numFaces; i++)
 						{
 							arrFaces[i].i0 = pDecalIndices[i*3+0];
 							arrFaces[i].i1 = pDecalIndices[i*3+1];
@@ -882,7 +900,8 @@ void CSkinInstance::AddDecalsToRenderer( CCharInstance* pMaster, CAttachment* pA
 						renderFlags.SetFillMode( e_FillModeWireframe );
 						renderFlags.SetDrawInFrontMode( e_DrawInFrontOn );
 						g_pAuxGeom->SetRenderFlags( renderFlags );
-						g_pAuxGeom->DrawTriangles( &arrVertices[0],numVertices,  &arrFaces[0].i0,numFaces*3, RGBA8(0x00,0xff,0x00,0x00) );		
+						g_pAuxGeom->DrawTriangles(&arrVertices[0], static_cast<uint32>(renderVertexCount),
+							&arrFaces[0].i0, static_cast<uint32>(renderIndexCount), RGBA8(0x00,0xff,0x00,0x00));
 					}
 				}
 			}
@@ -979,8 +998,8 @@ void CSkinInstance::PreloadResources ( float fDistance, float fTime, int nFlags 
 
 void CSkinInstance::PreloadResources2(float fDistance, float fTime, int nFlags)
 {
-	uint32 numLODs = m_pModel->m_arrModelMeshes.size();
-	for (uint32 i=0; i<numLODs; ++i)
+	const size_t numLODs = m_pModel->m_arrModelMeshes.size();
+	for (size_t i=0; i<numLODs; ++i)
 		if (m_pRenderMeshs[i])
 			g_pIRenderer->EF_PrecacheResource(m_pRenderMeshs[i], fDistance, fTime, nFlags);
 }
@@ -1062,7 +1081,7 @@ void CSkinInstance::AddMorphTargetsToVertexBuffer( int nLOD,uint32 nCloseEnough,
 				}
 
 
-				uint32 numMorphs =m_Morphing.m_arrMorphEffectors.size();
+				const size_t numMorphs =m_Morphing.m_arrMorphEffectors.size();
 		//		float fColor[4] = {0,1,0,1};
 		//		g_pIRenderer->Draw2dLabel( 1,g_YLine, 1.3f, fColor, false,"numMorphs: %d",numMorphs );	
 		//		g_YLine+=16.0f;
@@ -1085,7 +1104,7 @@ void CSkinInstance::AddMorphTargetsToVertexBuffer( int nLOD,uint32 nCloseEnough,
 
 
 					m_nStillNeedsMorph = 30; // Continue morph targets for at least 100 times after all morph targets gone.
-					for (uint32 nMorphEffector=0; nMorphEffector<numMorphs; ++nMorphEffector)
+					for (size_t nMorphEffector=0; nMorphEffector<numMorphs; ++nMorphEffector)
 					{
 
 						const CryModEffMorph& rMorphEffector = m_Morphing.m_arrMorphEffectors[nMorphEffector];
@@ -1114,8 +1133,8 @@ void CSkinInstance::AddMorphTargetsToVertexBuffer( int nLOD,uint32 nCloseEnough,
 								float _fBase = fBlending * fBalanceBase;
 								float _fBalL = fBlending*fBalanceL;
 								float _fBalR = fBlending*fBalanceR;
-								uint32 numVerts = pMorphSkin->m_vertices.size();
-								for(uint32 i=0; i<numVerts; i++) 
+								const size_t numVerts = pMorphSkin->m_vertices.size();
+								for(size_t i=0; i<numVerts; i++)
 								{
 
 									uint32 idx = pMorphSkin->m_vertices[i].nVertexId;
@@ -1188,27 +1207,27 @@ void CSkinInstance::AddMorphTargetsToVertexBuffer( int nLOD,uint32 nCloseEnough,
 				m_Morphing.m_morphTargetsState.resize(numVertices);
 			memset( &m_Morphing.m_morphTargetsState[0],0,numVertices*sizeof(Vec3) );
 
-			uint32 numMorphs=pModelMesh->m_morphTargets.size();
+			const size_t numMorphs=pModelMesh->m_morphTargets.size();
 			if (numMorphs>1)
 			{
 				f32 t=m_Morphing.m_LinearMorphSequence;
 				if (t>=1)	t=0.9999f;
 
-				f32 blend  = t*(numMorphs-1);
-				uint32 Morph0 = uint32(blend);
-				uint32 Morph1 = Morph0+1;
+				f32 blend  = t*static_cast<f32>(numMorphs-1);
+				const size_t Morph0 = static_cast<size_t>(blend);
+				const size_t Morph1 = Morph0+1;
 
 				assert(Morph0!=Morph1);
 				CMorphTarget* pMorphTarget0 = pModelMesh->m_morphTargets[Morph0];
 				f32 t0=1.0f-(blend-Morph0);
-				uint32 numMorphVertices0 = pMorphTarget0->m_vertices.size();
-				for (uint32 i=0; i<numMorphVertices0; i++)
+				const size_t numMorphVertices0 = pMorphTarget0->m_vertices.size();
+				for (size_t i=0; i<numMorphVertices0; i++)
 					m_Morphing.m_morphTargetsState[pMorphTarget0->m_vertices[i].nVertexId] = pMorphTarget0->m_vertices[i].m_MTVertex*t0;
 
 				f32 t1=(blend-Morph0);
 				CMorphTarget* pMorphTarget1 = pModelMesh->m_morphTargets[Morph1];
-				uint32 numMorphVertices1 = pMorphTarget1->m_vertices.size();
-				for (uint32 i=0; i<numMorphVertices1; i++)
+				const size_t numMorphVertices1 = pMorphTarget1->m_vertices.size();
+				for (size_t i=0; i<numMorphVertices1; i++)
 					m_Morphing.m_morphTargetsState[pMorphTarget1->m_vertices[i].nVertexId] += pMorphTarget1->m_vertices[i].m_MTVertex*t1;
 
 				//float fColor[4] = {0,1,0,1};
@@ -1351,7 +1370,10 @@ uint32 CCharInstance::GetSkeletonPose( int nLOD, const Matrix34& rRenderMat34, Q
 		}
 	}
 
-	return m_arrNewSkinQuat[m_iActiveFrame].size();//
+	uint32 jointCount = 0;
+	return CryTryNarrowSize(m_arrNewSkinQuat[m_iActiveFrame].size(), jointCount)
+		? jointCount
+		: 0;
 }
 
 

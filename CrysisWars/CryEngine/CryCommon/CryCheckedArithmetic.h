@@ -36,13 +36,10 @@ constexpr bool CryTryMultiplySize(
 }
 
 template<class Destination>
-constexpr bool CryTryNarrowSize(
-	size_t value,
-	Destination& result) noexcept
+constexpr bool CryTryNarrowSize( size_t value, Destination& result) noexcept
 {
 	static_assert(std::is_integral_v<Destination>);
-	constexpr size_t maximum =
-		static_cast<size_t>((std::numeric_limits<Destination>::max)());
+	constexpr size_t maximum = static_cast<size_t>((std::numeric_limits<Destination>::max)());
 	if (value > maximum)
 	{
 		result = 0;

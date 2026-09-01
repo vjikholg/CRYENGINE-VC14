@@ -98,7 +98,7 @@ void CSkeletonPose::LookIK( const QuatT& rPhysLocationNext, uint32 LIKFlag )
 	if (ridx<0)				return;
 	if (lidx<0)				return;
 
-	uint32 numJoints	= m_AbsolutePose.size();
+	const size_t numJoints	= m_AbsolutePose.size();
 	QuatT* pRelativeQuatIK = (QuatT*)alloca( numJoints*sizeof(QuatT) );
 	QuatT* pAbsoluteQuatIK = (QuatT*)alloca( numJoints*sizeof(QuatT) );
 
@@ -408,7 +408,7 @@ void CSkeletonPose::LookIKEyes( const QuatT& rPhysLocationNext )
 	int32 lidx			= (m_pModelSkeleton ? m_pModelSkeleton->m_IdxArray[eIM_LeftEyeIdx] : 0);
 	int eyeBones[2] = {lidx, ridx};
 
-	uint32 numJoints = m_AbsolutePose.size();
+	const size_t numJoints = m_AbsolutePose.size();
 
 	// [MichaelS] - This line seems to be needed - there is some special processing for eye attachments
 	// (which connect to these eye bones) that relies on RelativeQuat being set. Previously it was the
@@ -682,7 +682,7 @@ void CSkeletonPose::PlayRecoilAnimation( const QuatT& rPhysEntityLocation )
 	m_RelativePose[l1] = m_AbsolutePose[l0].GetInverted() * m_AbsolutePose[l1];
 	m_RelativePose[l2] = m_AbsolutePose[l1].GetInverted() * m_AbsolutePose[l2];
 
-	uint32 numJoints = m_AbsolutePose.size();
+	const size_t numJoints = m_AbsolutePose.size();
 	for (uint32 i=1; i<numJoints; i++)
 		m_AbsolutePose[i]	= m_AbsolutePose[m_parrModelJoints[i].m_idxParent] * m_RelativePose[i];
 };

@@ -33,6 +33,8 @@ namespace Wavelet
 			np1=10;
 		if (np2 <= 0)
 			np2=10;
+		if (Lbt >= std::numeric_limits<size_t>::digits)
+			return -1;
 
 
 		CDaubechiDWT wbt(np2,true);         	// Daubechies binary tree wavelet
@@ -47,7 +49,7 @@ namespace Wavelet
 
 		if (Lbt>0) 
 		{
-			nl2 = 1 << Lbt;
+			nl2 = size_t{1} << Lbt;
 		}
 
 		if (nl1>0) 

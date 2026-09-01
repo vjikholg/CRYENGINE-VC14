@@ -562,7 +562,7 @@ bool CLoaderDBA::ReadController900 (IChunkFile::ChunkDesc *pChunkDesc  )
 		CryModuleMemoryInfo info;
 		CryGetMemoryInfoForModule(&info);
 		char tmp[256];
-		sprintf(tmp, "ReadController. ControllersResize. Controllers %i sizeof %i,  rots %i sizeof %i, poss %i sizeof %i. Memstat %i", totalControllers, sizeof(CControllerInplace), rotControllers, sizeof(RotationTrackInformationInplace),  posControllers, sizeof(PositionTrackInformationInplace), (int)(info.allocated - info.freed));
+		sprintf_s(tmp, sizeof(tmp), "ReadController. ControllersResize. Controllers %u sizeof %zu, rots %u sizeof %zu, poss %u sizeof %zu. Memstat %lld", totalControllers, sizeof(CControllerInplace), rotControllers, sizeof(RotationTrackInformationInplace), posControllers, sizeof(PositionTrackInformationInplace), static_cast<long long>(info.allocated) - static_cast<long long>(info.freed));
 		g_pILog->UpdateLoadingScreen(tmp);
 	}
 
@@ -585,7 +585,7 @@ bool CLoaderDBA::ReadController900 (IChunkFile::ChunkDesc *pChunkDesc  )
 		pData += strSize;
 
 
-		m_pDatabaseInfo->m_AnimationCRCMap.insert(std::make_pair<uint32, uint32>(g_pCrc32Gen->GetCRC32(tmp), i));
+		m_pDatabaseInfo->m_AnimationCRCMap.insert(std::make_pair(g_pCrc32Gen->GetCRC32(tmp), i));
 
 		CStoredSkinningInfo info;
 
@@ -1015,7 +1015,7 @@ uint32 GetKeyTimesFormatSizeOf(uint32 format);
 		pData += strSize;
 
 
-		m_pDatabaseInfo->m_AnimationCRCMap.insert(std::make_pair<uint32, uint32>(g_pCrc32Gen->GetCRC32(tmp), i));
+		m_pDatabaseInfo->m_AnimationCRCMap.insert(std::make_pair(g_pCrc32Gen->GetCRC32(tmp), i));
 
 		CStoredSkinningInfo info;
 
@@ -1415,7 +1415,7 @@ bool CLoaderDBA::ReadController904 (IChunkFile::ChunkDesc *pChunkDesc  )
 		pData += strSize;
 
 
-		m_pDatabaseInfo->m_AnimationCRCMap.insert(std::make_pair<uint32, uint32>(g_pCrc32Gen->GetCRC32(tmp), i));
+		m_pDatabaseInfo->m_AnimationCRCMap.insert(std::make_pair(g_pCrc32Gen->GetCRC32(tmp), i));
 
 		CStoredSkinningInfo info;
 

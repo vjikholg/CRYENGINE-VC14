@@ -144,7 +144,7 @@ void CSkeletonPose::SkeletonPostProcess( const QuatT& rPhysLocationNext, const Q
 
 
 	uint32 nObjectType =	m_pInstance->m_pModel->m_ObjectType;
-	uint32 numJoints = m_AbsolutePose.size();
+	const size_t numJoints = m_AbsolutePose.size();
 	m_pInstance->m_PhysEntityLocation = rPhysLocationNext;
 	m_pInstance->m_fOriginalDeltaTime	= g_pITimer->GetFrameTime();
 	m_pInstance->m_fDeltaTime					=	m_pInstance->m_fOriginalDeltaTime*m_pInstance->m_fAnimSpeedScale;
@@ -407,7 +407,7 @@ void CSkeletonPose::KinematicPostProcess(const QuatT &rPhysLocationNext, const Q
 
 	//------------------------------------------------------------------------------------------------
 
-	uint32 numJoints = m_AbsolutePose.size();
+	const size_t numJoints = m_AbsolutePose.size();
 	uint32 ObjectType =	m_pInstance->m_pModel->m_ObjectType;
 
 	if (m_bFullSkeletonUpdate) 
@@ -618,7 +618,7 @@ void CSkeletonPose::KinematicPostProcess(const QuatT &rPhysLocationNext, const Q
 
 	if (m_bFullSkeletonUpdate)
 	{
-		uint32 numEntries = m_arrPostProcess.size();
+		const size_t numEntries = m_arrPostProcess.size();
 		if (numEntries)
 		{
 			for (uint32 i=0; i<numEntries; i++)
@@ -681,7 +681,7 @@ void CSkeletonPose::UpdateAbsoluteJointTransforms()
 		return;
 
 	m_bAllAbsoluteJointsValid = true;
-	uint32 numJoints = m_AbsolutePose.size();
+	const size_t numJoints = m_AbsolutePose.size();
 	if (numJoints > 0)
 		m_AbsolutePose[0] = m_RelativePose[0] * m_qAdditionalRotPos[0].q;
 
@@ -878,7 +878,7 @@ void CSkeletonPose::SetSkinningSkeletonMaster(f32 fScaling)
 	//----------------------------------------------------------
 	//--  its a master skeleton. do the full initialization   --
 	//----------------------------------------------------------
-	uint32 numJoints = m_AbsolutePose.size();
+	const size_t numJoints = m_AbsolutePose.size();
 	if (Console::GetInst().ca_SphericalSkinning) 
 	{
 		for (uint32 i=0; i<numJoints; i++)
@@ -901,12 +901,12 @@ void CSkeletonPose::SetSkinningSkeletonMaster(f32 fScaling)
 	{
 
 		uint32 i = 0;
-		uint32 total = numJoints/4;
+		size_t total = numJoints / 4;
 		total *= 4;
-		int rest = numJoints  - total;
+		const size_t rest = numJoints - total;
 		QuatTS q;
 		
-		for (uint32 i=0; i<numJoints; i++)
+		for (size_t i = 0; i < numJoints; ++i)
 		{ 
 			QuatT DevInvPose	 = m_parrModelJoints[i].m_DefaultAbsPoseInverse;
 			DevInvPose.t *= fScaling;
@@ -992,7 +992,7 @@ void CSkeletonPose::UpdateBBox(uint32 update)
 	//g_YLine+=16.0f;
 
 	uint32 numCGAJoints = m_arrCGAJoints.size();
-	uint32 numJoints = m_AbsolutePose.size();
+	const size_t numJoints = m_AbsolutePose.size();
 	if (numCGAJoints)
 	{
 		//if we have a CGA, then us this code

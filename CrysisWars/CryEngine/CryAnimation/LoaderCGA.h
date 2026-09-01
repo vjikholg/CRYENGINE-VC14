@@ -13,24 +13,26 @@
 #define __AnimObjectLoader_h__
 #pragma once
 
+#include <limits>
 
 struct CInternalSkinningInfo;
 class CChunkFileReader;
 
 typedef spline::TCBSpline<Vec3> CControllerTCBVec3;
 
-
 // Internal description of node.
 struct NodeDesc
 {
+	static constexpr uint16 InvalidJointId = (std::numeric_limits<uint16>::max)();
+
 	NodeDesc()
 	{
-		active			=	0; 
-		node_idx		=	0xffff;	//index of joint
-		parentID		=	0xffff;	//if of parent-chunk
-		pos_cont_id	=	0xffff;	// position controller chunk id
-		rot_cont_id	=	0xffff;	// rotation controller chunk id
-		scl_cont_id	=	0xffff;	// scale		controller chunk id
+		active		=	0;
+		node_idx	= InvalidJointId;	//index of joint
+		parentID	= InvalidJointId;	//if of parent-chunk
+		pos_cont_id	= InvalidJointId;	// position controller chunk id
+		rot_cont_id	= InvalidJointId;	// rotation controller chunk id
+		scl_cont_id	= InvalidJointId;	// scale		controller chunk id
 	};
 
 	uint16 active; 
@@ -57,7 +59,7 @@ public:
 
 //private:
 public:
-	void InitNodes( CInternalSkinningInfo* pSkinningInfo, CCharacterModel* pCGAModel, const char* animFile, const string& strName, bool bMakeNodes, uint32 unique_model_id  );
+	bool InitNodes( CInternalSkinningInfo* pSkinningInfo, CCharacterModel* pCGAModel, const char* animFile, const string& strName, bool bMakeNodes, uint32 unique_model_id  );
 
 	// Load all animations for this object.
 	void LoadAnimations( const char *cgaFile, CCharacterModel* pCGAModel, uint32 unique_model_id );
@@ -80,7 +82,7 @@ public:
 	int m_start;
 	int m_end;
 
-	uint32 m_DefaultNodeCount;
+	size_t m_DefaultNodeCount;
 
 	//the controllers for CGA are in this array
 	std::vector<CControllerTCB> m_NodeAnims;

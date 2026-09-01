@@ -294,9 +294,9 @@ bool CSkeletonAnim::StartAnimation (const char* szAnimName0,const char* szAnimNa
 	if (TrackViewExclusive)
 	{
 		int32 Layer = Params.m_nLayerID;
-		int32 numAnims = m_arrLayer_AFIFO[Layer].size()-1;
-		if (numAnims>0)
-			for (int32 i=0; i<numAnims; i++)
+		const size_t animationCount = m_arrLayer_AFIFO[Layer].size();
+		if (animationCount > 1)
+			for (size_t i = 0; i + 1 < animationCount; ++i)
 				m_arrLayer_AFIFO[Layer][i].m_AnimParams.m_fTransTime=fabsf(m_arrLayer_AFIFO[Layer][i].m_AnimParams.m_fTransTime*0.01f);
 	}
 
@@ -376,7 +376,7 @@ uint32 CSkeletonAnim::AnimationToQueue ( const ModelAnimationHeader* pAnim0,int 
 	if (aar==0)
 	{
 		//don't allow to start the same animation twice
-		uint32 numAnimsOnStack = m_arrLayer_AFIFO[AnimParams.m_nLayerID].size();
+		const size_t numAnimsOnStack = m_arrLayer_AFIFO[AnimParams.m_nLayerID].size();
 		if (numAnimsOnStack)
 		{
 
@@ -446,7 +446,7 @@ uint32 CSkeletonAnim::AnimationToQueue ( const ModelAnimationHeader* pAnim0,int 
 
 	if (AnimParams.m_nFlags&CA_REMOVE_FROM_FIFO)
 	{
-		uint32 numAnims=m_arrLayer_AFIFO[AnimParams.m_nLayerID].size();
+		const size_t numAnims=m_arrLayer_AFIFO[AnimParams.m_nLayerID].size();
 		if (numAnims>0x0e)
 		{
 			for (uint32 i=1; i<numAnims; i++)	
@@ -536,7 +536,7 @@ uint32 CSkeletonAnim::AnimationToQueue ( const ModelAnimationHeader* pAnim0,int 
 
 	m_arrLayer_AFIFO[AnimParams.m_nLayerID].push_back( AnimOnStack );
 
-	uint32 numAnimsInQueue = m_arrLayer_AFIFO[AnimParams.m_nLayerID].size();
+	const size_t numAnimsInQueue = m_arrLayer_AFIFO[AnimParams.m_nLayerID].size();
 	if (numAnimsInQueue>0x10)
 	{
 		AnimFileWarning(m_pInstance->m_pModel->GetModelFilePath(),"Animation-queue overflow. More then %d entries. This is a serious performance problem.",numAnimsInQueue);
@@ -553,7 +553,7 @@ uint32 CSkeletonAnim::AnimationToQueue ( const ModelAnimationHeader* pAnim0,int 
 
 void CSkeletonAnim::ClearFIFOLayer( int32 nLayer )
 {
-	uint32 numAnimsInLayer=m_arrLayer_AFIFO[nLayer].size();
+	const size_t numAnimsInLayer=m_arrLayer_AFIFO[nLayer].size();
 	for (size_t i=0; i<numAnimsInLayer; i++)
 		UnloadAnimationAssets(m_arrLayer_AFIFO[nLayer],i);
 
@@ -561,7 +561,7 @@ void CSkeletonAnim::ClearFIFOLayer( int32 nLayer )
 }
 
 
-void CSkeletonAnim::UnloadAnimationAssets(std::vector<CAnimation>& arrAFIFO, int num)
+void CSkeletonAnim::UnloadAnimationAssets(std::vector<CAnimation>& arrAFIFO, size_t num)
 {
 	CAnimation& rAnim = arrAFIFO[num];
 

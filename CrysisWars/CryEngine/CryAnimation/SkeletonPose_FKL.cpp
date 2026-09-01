@@ -45,7 +45,7 @@ void CSkeletonPose::Transition( CAnimation* parrActiveAnims, uint32 numAnims, ui
 	//	float fColor[4] = {0,1,0,1};
 	//	g_pIRenderer->Draw2dLabel( 1,g_YLine, 2.3f, fColor, false,"numAnims: %d",numAnims );	g_YLine+=16.0f;
 
-	uint32 numJoints=m_AbsolutePose.size(); 
+	const size_t numJoints=m_AbsolutePose.size();
 	CAnimation rAnim0 = parrActiveAnims[0 ];
 	Playback( rAnim0,nVLayer,TMPREG00, parrRelQuats, parrControllerStatus, fScaling );
 
@@ -157,7 +157,7 @@ void CSkeletonPose::Playback_2 (const CAnimation& rAnim, uint32 nVLayer, uint32 
 			lblend -= 0.5f;
 			lblend = 0.5f+lblend/(0.5f+2.0f*lblend*lblend);
 
-			uint32 numJoints = m_AbsolutePose.size();
+			const size_t numJoints = m_AbsolutePose.size();
 			for (uint32 j=0; j<numJoints; j++)
 			{
 				Status4 status = parrControllerStatus[numJoints*MULTILAYER+j];
@@ -209,7 +209,7 @@ void CSkeletonPose::Playback_2 (const CAnimation& rAnim, uint32 nVLayer, uint32 
 			lblend -= 0.5f;
 			lblend = 0.5f+lblend/(0.5f+2.0f*lblend*lblend);
 
-			uint32 numJoints = m_AbsolutePose.size();
+			const size_t numJoints = m_AbsolutePose.size();
 			for (uint32 j=0; j<numJoints; j++)
 			{
 				Status4 status = parrControllerStatus[numJoints*MULTILAYER+j];
@@ -267,7 +267,7 @@ void CSkeletonPose::Playback_2 (const CAnimation& rAnim, uint32 nVLayer, uint32 
 			lblend = 0.5f+lblend/(0.5f+2.0f*lblend*lblend);
 
 
-			uint32 numJoints = m_AbsolutePose.size();
+			const size_t numJoints = m_AbsolutePose.size();
 			for (uint32 j=0; j<numJoints; j++)
 			{
 				Status4 status = parrControllerStatus[numJoints*MULTILAYER+j];
@@ -317,7 +317,7 @@ void CSkeletonPose::SingleEvaluation (const SAnimation& rAnim, uint32 nVLayer, Q
 	assert(rAnim.m_nEAnimID>=0);
 	assert(rAnim.m_nEGlobalID>=0);
 
-	uint32 numJoints = m_AbsolutePose.size();
+	const size_t numJoints = m_AbsolutePose.size();
 	uint32 PartialBodyUpdates = rAnim.m_EAnimParams.m_nFlags&CA_PARTIAL_SKELETON_UPDATE;
 	f32 fMultiLayerBlend = m_pSkeletonAnim->m_BlendedRoot.m_fAllowMultilayerAnim;
 
@@ -426,7 +426,7 @@ void CSkeletonPose::SingleEvaluation (const SAnimation& rAnim, uint32 nVLayer, u
 	assert(rAnim.m_nEAnimID>=0);
 	assert(rAnim.m_nEGlobalID>=0);
 
-	uint32 numJoints = m_AbsolutePose.size();
+	const size_t numJoints = m_AbsolutePose.size();
 	uint32 PartialBodyUpdates = rAnim.m_EAnimParams.m_nFlags&CA_PARTIAL_SKELETON_UPDATE;
 
 	memset( &parrControllerStatus[numJoints*nRedirectLayer].ops,0,numJoints*sizeof(Status4) );
@@ -538,7 +538,7 @@ void CSkeletonPose::SingleEvaluationLMG (const CAnimation& rAnim, uint32 nVLayer
 	GlobalAnimationHeader& rGlobalAnimHeader = g_AnimationManager.m_arrGlobalAnimations[a0.m_LMG0.m_nGlobalLMGID];
 	uint32 bt=rGlobalAnimHeader.m_nBlendCodeLMG;
 
-	uint32 numJoints=m_AbsolutePose.size(); 
+	const size_t numJoints=m_AbsolutePose.size();
 	for (uint32 j=0; j<numJoints; j++)
 	{
 		parrControllerStatus[numJoints*TMPREG05+j].ops=0;
@@ -638,7 +638,7 @@ void CSkeletonPose::SingleEvaluationLMG (const CAnimation& rAnim, uint32 nVLayer
 			//	if (parrControllerStatus[TMPREG06][1].p)
 			//		m_arrJoints[1].m_RelativePose.t		= parrRelQuats[TMPREG06][1].t;
 
-			uint32 numJoints=m_AbsolutePose.size();
+			const size_t numJoints=m_AbsolutePose.size();
 			for (uint32 i=1; i<numJoints; i++)
 			{
 				m_RelativePose[i]				= parrRelQuats[numJoints*TMPREG06+i];
@@ -669,7 +669,7 @@ void CSkeletonPose::TwoWayBlend(uint32 src0,uint32 src1,uint32 dst, f32 t, QuatT
 	//------------------------------------------------------------------------------------
 	//------------------------------------------------------------------------------------
 	//------------------------------------------------------------------------------------
-	uint32 numJoints=m_AbsolutePose.size();
+	const size_t numJoints=m_AbsolutePose.size();
 	uint32 channelO=0;
 	assert(parrControllerStatus[numJoints*src0+0].o<2);
 	assert(parrControllerStatus[numJoints*src1+0].o<2);
@@ -825,7 +825,7 @@ void CSkeletonPose::BLENDLAYER_MOVE(uint32 src,uint32 dst,f32 t, QuatT* parrRelQ
 	if (src >= numTMPLAYERS) 
 		return;
 
-	uint32 numJoints=m_AbsolutePose.size();
+	const size_t numJoints=m_AbsolutePose.size();
 	parrRelQuats[numJoints*dst+0].q =	parrRelQuats[numJoints*src+0].q*t;
 	parrRelQuats[numJoints*dst+0].t =	parrRelQuats[numJoints*src+0].t*t;
 	parrControllerStatus[numJoints*dst+0].ops = parrControllerStatus[numJoints*src+0].ops;
@@ -847,7 +847,7 @@ void CSkeletonPose::BLENDLAYER_ADD(uint32 src,uint32 dst,f32 t, QuatT* parrRelQu
 	if (src >= numTMPLAYERS) 
 		return;
 
-	uint32 numJoints=m_AbsolutePose.size();
+	const size_t numJoints=m_AbsolutePose.size();
 	parrRelQuats[numJoints*dst+0].q %= parrRelQuats[numJoints*src+0].q*t;
 	parrRelQuats[numJoints*dst+0].t += parrRelQuats[numJoints*src+0].t*t;
 	parrControllerStatus[numJoints*dst+0].ops |= parrControllerStatus[numJoints*src+0].ops;
@@ -869,7 +869,7 @@ void CSkeletonPose::BLENDLAYER_ADD(uint32 src,uint32 dst,f32 t, QuatT* parrRelQu
 //--------------------------------------------------------------------------
 void CSkeletonPose::BLENDLAYER_NORM(uint32 dst, QuatT* parrRelQuats, Status4* parrControllerStatus )
 {
-	uint32 numJoints=m_AbsolutePose.size();
+	const size_t numJoints=m_AbsolutePose.size();
 	parrRelQuats[numJoints*dst+0].q.v.x=0;
 	parrRelQuats[numJoints*dst+0].q.v.y=0;
 	parrRelQuats[numJoints*dst+0].q.Normalize();

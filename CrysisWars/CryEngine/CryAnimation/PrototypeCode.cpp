@@ -34,7 +34,7 @@ void CAnimationSet::AnalyseAndModifyAnimations(const string& strPath, CCharacter
 		return;
 
 	uint32 initialized=0;
-	uint32 numGlobalAnims = g_AnimationManager.m_arrGlobalAnimations.size();
+	const size_t numGlobalAnims = g_AnimationManager.m_arrGlobalAnimations.size();
 	for(uint32 i=0; i<numGlobalAnims; i++)
 	{
 		if (g_AnimationManager.m_arrGlobalAnimations[i].IsAssetProcessed())
@@ -50,7 +50,7 @@ void CAnimationSet::AnalyseAndModifyAnimations(const string& strPath, CCharacter
 	int16 ltoenub_idx = -1;
 	int16 rtoenub_idx = -1;
 
-	uint32 numBones =  pModel->m_pModelSkeleton->m_arrModelJoints.size();
+	const size_t numBones =  pModel->m_pModelSkeleton->m_arrModelJoints.size();
 	for (uint32 i=0; i<numBones; i++)
 	{
 		const char * BoneName =  pModel->m_pModelSkeleton->m_arrModelJoints[i].GetJointName();
@@ -74,7 +74,7 @@ void CAnimationSet::AnalyseAndModifyAnimations(const string& strPath, CCharacter
 		footskel=1;
 
 	//---------------------------------------------------------------------------
-	uint32 numAnims = m_arrAnimations.size();
+	const size_t numAnims = m_arrAnimations.size();
 	if (footskel)
 	{
 		//this test is mainly for human-characters
@@ -552,7 +552,7 @@ void CAnimationSet::FindLeftWrist(GlobalAnimationHeader& rGAH, CCharacterModel* 
 
 	std::vector<QuatT> relQuatIK;
 	std::vector<QuatT> absQuatIK;
-	uint32 numJoints = pModelSkeleton->m_arrModelJoints.size();
+	const size_t numJoints = pModelSkeleton->m_arrModelJoints.size();
 	relQuatIK.resize(numJoints);
 	absQuatIK.resize(numJoints);
 
@@ -2600,14 +2600,14 @@ void CAnimationSet::SetFootplantBitsAutomatically( std::vector< std::vector<Debu
 	std::vector<f32> g_arrRToeNub0Velocity;
 
 
-	uint32 numPoses=arrSkeletons.size();
+	const size_t numPoses=arrSkeletons.size();
 
 	if (lHidx>0 && rHidx>0 && lTidx>0 && rTidx>0 && lNidx>0 && rNidx>0)
 	{
 		//arrFootPlants.resize(numPoses);
 		//nGlobalAnimID
 		if (rGlobalAnimHeader.m_FootPlantBits.empty())
-			rGlobalAnimHeader.m_FootPlantBits.resize(numPoses);
+			rGlobalAnimHeader.m_FootPlantBits.resize(CrySaturateSize<DynArray<uint8>::size_type>(numPoses));
 
 		assert (numPoses == rGlobalAnimHeader.m_FootPlantBits.size());
 		for (uint32 i=0; i<numPoses; i++)	
@@ -2735,7 +2735,7 @@ void CAnimationSet::CreateSkeletonArray( std::vector< std::vector<DebugJoint> >&
 	//	rGAH.m_FootPlantBits.resize(HowManyPoses);
 
 	arrSkeletons.resize(HowManyPoses);
-	uint32 numJoints = m_pModel->m_pModelSkeleton->m_arrModelJoints.size();
+	const size_t numJoints = m_pModel->m_pModelSkeleton->m_arrModelJoints.size();
 	for(uint32 i=0; i<HowManyPoses; i++)
 		arrSkeletons[i].resize(numJoints);
 

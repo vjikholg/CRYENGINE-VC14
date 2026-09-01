@@ -74,7 +74,7 @@ void CSkeletonPose::DrawSkeleton( const Matrix34& rRenderMat34, uint32 shift )
 
 	QuatT WorldQuat		=	QuatT( rRenderMat34 );
 
-	uint32 numJoints = m_AbsolutePose.size();
+	const size_t numJoints = m_AbsolutePose.size();
 	for (uint32 i=0; i<numJoints; i++)
 	{
 		int32 p = m_parrModelJoints[i].m_idxParent;
@@ -145,7 +145,7 @@ void CSkeletonPose::DrawDefaultSkeleton( const Matrix34& rRenderMat34 )
 
 	QuatTS WorldQuat		=	QuatTS( rRenderMat34 );
 
-	uint32 numJoints = m_AbsolutePose.size();
+	const size_t numJoints = m_AbsolutePose.size();
 	for (uint32 i=0; i<numJoints; i++)
 	{
 		int32 p = m_parrModelJoints[i].m_idxParent;
@@ -193,7 +193,7 @@ void CSkeletonPose::DrawThinSkeletons( const QuatT& m34, const std::vector< std:
 
 	GlobalAnimationHeader& rGlobalAnimHeader = g_AnimationManager.m_arrGlobalAnimations[nGlobalAnimID];
 
-	uint32 numSkeletons = arrSkeletons.size();
+	const size_t numSkeletons = arrSkeletons.size();
 	for (uint32 s=0; s<numSkeletons; s++) 
 		DrawThinSkeleton( m34, arrSkeletons[s], rGlobalAnimHeader.m_FootPlantBits[s], RGBA8(0xff,0xff,0xff,0xff) );
 }
@@ -281,7 +281,7 @@ void CSkeletonPose::DrawThinSkeleton( const QuatT& m34, const std::vector<DebugJ
 	}
 
 
-	uint32 numJoints = arrSkeleton.size();
+	const size_t numJoints = arrSkeleton.size();
 	for (uint32 i=0; i<numJoints; i++)
 	{
 
@@ -310,7 +310,7 @@ void CSkeletonPose::DrawThinSkeleton( const QuatT& m34, const std::vector<DebugJ
 f32 CSkeletonPose::SecurityCheck()
 {
 	f32 fRadius = 0.0f;
-	uint32 numJoints = m_AbsolutePose.size();
+	const size_t numJoints = m_AbsolutePose.size();
 	for (uint32 i=0; i<numJoints; i++)
 	{
 		f32 t=m_AbsolutePose[i].t.GetLength();
@@ -325,7 +325,7 @@ f32 CSkeletonPose::SecurityCheck()
 //////////////////////////////////////////////////////////////////////////
 uint32 CSkeletonPose::IsSkeletonValid()
 {
-	uint32 numJoints = m_AbsolutePose.size();
+	const size_t numJoints = m_AbsolutePose.size();
 	for (uint32 i=0; i<numJoints; i++)
 	{
 		uint32 valid = m_AbsolutePose[i].t.IsValid();

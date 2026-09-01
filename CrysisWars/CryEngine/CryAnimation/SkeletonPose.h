@@ -107,7 +107,7 @@ struct aux_phys_data {
 	Vec3 *pSubVtx;
 	const char *strName;
 	aux_bone_info *pauxBoneInfo;
-	int nChars;
+	size_t nChars;
 	int nBones;
 	int iBoneTiedTo[2];
 	int nSubVtxAlloc;
@@ -408,7 +408,7 @@ public:
 	size_t SizeOfThis (ICrySizer * pSizer);
 
 	//! Returns the number of bones; all bone ids are in the range from 0 to this number exclusive; 0th bone is the root
-	uint32 GetJointCount() const { return m_AbsolutePose.size(); }
+	uint32 GetJointCount() const { return CrySaturateSize<uint32>(m_AbsolutePose.size()); }
 	// finds the bone by its name; returns the index of the bone
 	int16 GetJointIDByName (const char* szJointName) const;
 	int16 GetParentIDByID (int32 ChildID) const;
@@ -494,7 +494,7 @@ public:
 	{
 		if (nLayerNo>=numVIRTUALLAYERS)
 			return 0;
-		uint32 numBones = m_AbsolutePose.size();
+		const size_t numBones = m_AbsolutePose.size();
 		for (uint32 b=0; b<numBones; b++)
 			SetJointMask(b,nLayerNo, nVal);
 		return 1;

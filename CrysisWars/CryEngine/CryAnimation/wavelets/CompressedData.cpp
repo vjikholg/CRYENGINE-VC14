@@ -33,7 +33,7 @@ void CWaveRDC::ResizeZ(int n)
 int CWaveRDC::DumpZ(const char *fname, int app)
 {
 
-	char *mode = "wb";
+	const char *mode = "wb";
 	if (app == 1) 
 		mode = "ab";
 

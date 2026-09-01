@@ -86,8 +86,9 @@ bool CMorphing::SetMorphTime (int nMorphTargetId, float fTime)
 void CMorphing::RunMorph (int nMorphTargetId, const CryCharMorphParams&Params)
 {
 	// find the first free slot in the array of morph target, or create a new one and start morphing there
-	unsigned nMorphEffector, nMorphEffectorSize = m_arrMorphEffectors.size();
-	for (nMorphEffector = 0; nMorphEffector < nMorphEffectorSize; ++nMorphEffector)
+	size_t nMorphEffector = 0;
+	const size_t nMorphEffectorSize = m_arrMorphEffectors.size();
+	for (; nMorphEffector < nMorphEffectorSize; ++nMorphEffector)
 	{
 		if (!m_arrMorphEffectors[nMorphEffector].isActive())
 		{
@@ -119,7 +120,7 @@ void CMorphing::UpdateMorphEffectors (CFacialInstance* pFacialInstance, float fD
 	if (pFacialInstance)
 		pFacialInstance->UpdatePlayingSequences(fDeltaTimeSec, rAnimLocationNext);
 
-	uint32 numMorphTargets = m_arrMorphEffectors.size();
+	const size_t numMorphTargets = m_arrMorphEffectors.size();
 
 	for (uint32 nMorphTarget=0; nMorphTarget<numMorphTargets; ++nMorphTarget)
 	{
@@ -189,7 +190,7 @@ bool CMorphing::SetMorphSpeed (const char* szMorphTarget, float fSpeed)
 //returns the morph target effector, or NULL if no such effector found
 CryModEffMorph* CMorphing::GetMorphTarget(int nMorphTargetId)
 {
-	unsigned nMorphEffectorSize = m_arrMorphEffectors.size();
+	const size_t nMorphEffectorSize = m_arrMorphEffectors.size();
 	for (uint32 nMorphEffector=0; nMorphEffector < nMorphEffectorSize; ++nMorphEffector)
 	{
 		if (m_arrMorphEffectors[nMorphEffector].getMorphTargetId() == nMorphTargetId)

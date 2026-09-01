@@ -18,11 +18,23 @@
     <Filter Include="Header Files\DXT Compatibility">
       <UniqueIdentifier>{74CF4E5C-E564-471A-8A5F-A0B0435F3054}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Animation Compatibility">
+      <UniqueIdentifier>{17CE0594-1E6B-40BC-B29F-E9077FE2A8B7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Animation Compatibility">
+      <UniqueIdentifier>{CBF7CD44-EE49-47D4-9663-A806B5BDEAC5}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Test Data\DXT Compatibility">
       <UniqueIdentifier>{95A38909-0F7D-4452-8291-3D087BF5B3D8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Test Data\Animation Compatibility">
+      <UniqueIdentifier>{BFAC6D51-960D-49A6-81BE-6A2274EDE3CD}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AnimationAssetTests.h">
+      <Filter>Header Files\Animation Compatibility</Filter>
+    </ClInclude>
     <ClInclude Include="ComparisonCompatibilityTests.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -85,6 +97,9 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AnimationAssetTests.cpp">
+      <Filter>Source Files\Animation Compatibility</Filter>
+    </ClCompile>
     <ClCompile Include="ComparisonCompatibilityTests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -216,6 +231,9 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <None Include="TestData\AnimationCompatibility\README.md">
+      <Filter>Test Data\Animation Compatibility</Filter>
+    </None>
     <None Include="TestData\DxtCompatibility\mwll_dot_dxt3.dds">
       <Filter>Test Data\DXT Compatibility</Filter>
     </None>

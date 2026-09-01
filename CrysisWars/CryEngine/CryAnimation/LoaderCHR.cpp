@@ -89,7 +89,7 @@ CCharacterModel* CryCHRLoader::LoadNewCHR( const string& strGeomFileName, Charac
 					g_pISystem->Warning( VALIDATOR_MODULE_ANIMATION,VALIDATOR_WARNING,	VALIDATOR_FLAG_FILE,filename,	"Failed to Load Character file" );
 				}
 
-				return false;
+				return nullptr;
 			}
 			else
 				--baseLOD;
@@ -202,7 +202,7 @@ CCharacterModel* CryCHRLoader::LoadNewCHR( const string& strGeomFileName, Charac
 			{
 				g_pISystem->Warning( VALIDATOR_MODULE_ANIMATION,VALIDATOR_WARNING, VALIDATOR_FLAG_FILE,filename,	"Failed to Load Character file. GFXNode not found" );
 				assert (0);
-				return false;
+				return nullptr;
 			}
 
 			CMesh* pMesh = pGFXNode->pMesh;
@@ -210,7 +210,7 @@ CCharacterModel* CryCHRLoader::LoadNewCHR( const string& strGeomFileName, Charac
 			{
 				g_pISystem->Warning( VALIDATOR_MODULE_ANIMATION,VALIDATOR_WARNING, VALIDATOR_FLAG_FILE,filename,	"Failed to Load Character file. Skeleton-Initial-Positions are missing" );
 				assert (0);
-				return false;
+				return nullptr;
 			}
 
 			if (lod == 0 || m_pMaterial == NULL)
@@ -244,7 +244,7 @@ CCharacterModel* CryCHRLoader::LoadNewCHR( const string& strGeomFileName, Charac
 				{
 					g_pISystem->Warning( VALIDATOR_MODULE_ANIMATION,VALIDATOR_WARNING, VALIDATOR_FLAG_FILE,filename,	"Failed to Load Character, Different bone amount of LOD0 and LOD%i", lod );
 					assert (0);
-					return false;
+					return nullptr;
 				}
 
 				uint32 HasLODMismatch=0;
@@ -261,7 +261,7 @@ CCharacterModel* CryCHRLoader::LoadNewCHR( const string& strGeomFileName, Charac
 				}
 
 				if (HasLODMismatch)
-					return false;
+					return nullptr;
 			}
 
 
@@ -301,7 +301,7 @@ CCharacterModel* CryCHRLoader::LoadNewCHR( const string& strGeomFileName, Charac
 
 					pModel->m_pModelSkeleton->m_arrModelJoints[nBone].m_nJointCRC32	=	pSkinningInfo->m_arrBonesDesc[nBone].m_nControllerID;
 					pModel->m_pModelSkeleton->m_arrModelJoints[nBone].m_PhysInfo[0]			=	pSkinningInfo->m_arrBonesDesc[nBone].m_PhysInfo[0];
-					pModel->m_pModelSkeleton->m_arrModelJoints[nBone].m_PhysInfo[1].pPhysGeom = 0;
+					pModel->m_pModelSkeleton->m_arrModelJoints[nBone].m_PhysInfo[1] = BONE_PHYSICS{};
 					pModel->m_pModelSkeleton->m_arrModelJoints[nBone].m_fMass						=	pSkinningInfo->m_arrBonesDesc[nBone].m_fMass;
 					pModel->m_pModelSkeleton->m_arrModelJoints[nBone].m_DefaultAbsPose	=	QuatT(pSkinningInfo->m_arrBonesDesc[nBone].m_DefaultB2W);
 					pModel->m_pModelSkeleton->m_arrModelJoints[nBone].m_DefaultAbsPose.q.Normalize();
@@ -393,9 +393,15 @@ CCharacterModel* CryCHRLoader::LoadNewCHR( const string& strGeomFileName, Charac
 				for (uint32 p=0; p<numPBM; p++) 
 				{
 					PhysicalProxy  pbm = pSkinningInfo->m_arrPhyBoneMeshes[p];
-					uint32 numFaces = pbm.m_arrMaterials.size();
+					int numFaces = 0;
+					if (!CryTryNarrowSize(pbm.m_arrMaterials.size(), numFaces))
+					{
+						g_pISystem->Warning(VALIDATOR_MODULE_ANIMATION, VALIDATOR_ERROR, VALIDATOR_FLAG_FILE,
+							filename, "Physical proxy contains too many faces for the geometry API");
+						return nullptr;
+					}
 					// add a new entry to the map chunk->limb geometry, so that later it can be found by the bones
-					// during the post-initialization mapping of pPhysGeom from Chunk id to the actual geometry pointer
+					// during post-initialization resolution of the stored chunk id
 					uint32 flags = (numFaces<=20 ? mesh_SingleBB : mesh_OBB|mesh_AABB|mesh_AABB_rotated)	| mesh_multicontact0 | mesh_approx_box | mesh_approx_sphere | mesh_approx_cylinder | mesh_approx_capsule;
 
 					IGeometry* pPhysicalGeometry = m_pPhysicalGeometryManager->CreateMesh(&pbm.m_arrPoints[0],&pbm.m_arrIndices[0], &pbm.m_arrMaterials[0] ,0,numFaces,flags );
@@ -423,7 +429,7 @@ CCharacterModel* CryCHRLoader::LoadNewCHR( const string& strGeomFileName, Charac
 
 				if (lod < 2)
 				{
-					// change the pPhysGeom from indices (chunk ids) to the actual physical geometry pointers
+					// Resolve physical-geometry chunk ids to runtime geometry pointers.
 					// This modifies the given map by deleting or zeroing elements of the map that were used during the mapping
 					if (pModel->PostInitBonePhysGeom (m_mapLimbPhysGeoms, lod))
 					{
@@ -460,8 +466,8 @@ CCharacterModel* CryCHRLoader::LoadNewCHR( const string& strGeomFileName, Charac
 			}
 
 			//calculate inverse default pose
-			uint32 numJoints = pModel->m_pModelSkeleton->m_arrModelJoints.size();
-			for (uint32 i=0; i<numJoints; i++)
+			const size_t numJoints = pModel->m_pModelSkeleton->m_arrModelJoints.size();
+			for (size_t i=0; i<numJoints; i++)
 			{
 				pModel->m_pModelSkeleton->m_arrModelJoints[i].m_DefaultAbsPoseInverse = pModel->m_pModelSkeleton->m_arrModelJoints[i].m_DefaultAbsPose.GetInverted();
 				pModel->m_pModelSkeleton->m_arrModelJoints[i].m_DefaultAbsPoseInverse.q.Normalize();
@@ -510,7 +516,7 @@ CCharacterModel* CryCHRLoader::LoadNewCHR( const string& strGeomFileName, Charac
 				{
 					g_pISystem->Warning( VALIDATOR_MODULE_ANIMATION,VALIDATOR_WARNING, VALIDATOR_FLAG_FILE,filename,	"Failed to Load Character file. The basemodel has thin and fat version, but the LODs don't." );
 					assert (0);
-					return false;
+					return nullptr;
 				}
 
 				uint32 size_thin = pSkin_thin->m_arrIntVertices.size();
@@ -519,7 +525,7 @@ CCharacterModel* CryCHRLoader::LoadNewCHR( const string& strGeomFileName, Charac
 				{
 					g_pISystem->Warning( VALIDATOR_MODULE_ANIMATION,VALIDATOR_WARNING, VALIDATOR_FLAG_FILE,filename,	"Failed to Load Character file. Thin, fat and basemodel have different vertex-count" );
 					assert (0);
-					return false;
+					return nullptr;
 				}
 
 				//	assert(numIntVertices==size_thin);
@@ -1031,7 +1037,14 @@ CCharacterModel* CryCHRLoader::LoadNewCHR( const string& strGeomFileName, Charac
 
 						DynArray<short int> tmp;
 						tmp.swap(pModel->m_arrCollisions[i].m_arrIndexes);
-						pModel->m_arrCollisions[i].m_arrIndexes.reserve(unique.size());
+						DynArray<short int>::size_type uniqueIndexCount = 0;
+						if (!CryTryNarrowSize(unique.size(), uniqueIndexCount))
+						{
+							g_pISystem->Warning(VALIDATOR_MODULE_ANIMATION, VALIDATOR_ERROR, VALIDATOR_FLAG_FILE,
+								filename, "Collision index set exceeds DynArray capacity");
+							return nullptr;
+						}
+						pModel->m_arrCollisions[i].m_arrIndexes.reserve(uniqueIndexCount);
 
 						for (uint32 j = 0; j < arrExtFaces.size(); ++j)
 						{
@@ -1121,8 +1134,7 @@ CCharacterModel* CryCHRLoader::LoadNewCHR( const string& strGeomFileName, Charac
 			pModel->m_AnimationSet.VerifyLocomotionGroups();
 		}
 
-		int32 numGlobalAnims = g_AnimationManager.m_arrGlobalAnimations.size();
-		assert(numGlobalAnims);
+		assert(!g_AnimationManager.m_arrGlobalAnimations.empty());
 	}
 
 	// If there is a facial model, but no expression library, we should create an empty library for it.
@@ -1179,11 +1191,10 @@ bool CryCHRLoader::loadAnimations( string m_strCalFileName, CCharacterModel* pMo
 	m_arrAnimFiles.push_back( new SAnimFile(string(NULL_ANIM_FILE "/") + pModel->GetNameCStr(), "null", 0));
 
 	ParseCALFile(m_strCalFileName,pModel);
-	uint32 numCALs = m_arrCalFiles.size();
-	for (uint32 i=0; i<numCALs; i++)
+	const size_t numCALs = m_arrCalFiles.size();
+	for (size_t i=0; i<numCALs; i++)
 		CollectAnimationsInCAL(m_arrCalFiles[i],pModel);
 
-	uint32 numAnimNames = m_arrAnimFiles.size();
 	numAnimAssets=loadAnimationArray (pModel, m_arrAnimFiles);
 
 	// Store the list of facial animations in the model animation set.
@@ -1203,7 +1214,7 @@ bool CryCHRLoader::loadAnimations( string m_strCalFileName, CCharacterModel* pMo
 	*/
 
 	if (numAnimAssets>1)
-		g_pILog->UpdateLoadingScreen("  %d animation-assets loaded (total assets: %d)", numAnimAssets, g_AnimationManager.NumGlobalAnimations());
+		g_pILog->UpdateLoadingScreen("  %d animation-assets loaded (total assets: %zu)", numAnimAssets, g_AnimationManager.NumGlobalAnimations());
 
 	if (Console::GetInst().ca_MemoryUsageLog)
 	{
@@ -1238,7 +1249,7 @@ void CryCHRLoader::ParseCALFile (  string m_strCalFileName, CCharacterModel* pMo
 {
 
 
-	for (uint32 i = 0, end = m_arrCalFiles.size(); i < end; ++i)
+	for (size_t i = 0, end = m_arrCalFiles.size(); i < end; ++i)
 		if (m_arrCalFiles[i].compareNoCase(m_strCalFileName) == 0)
 			return;
 
@@ -1394,7 +1405,7 @@ void CryCHRLoader::ParseCALFile (  string m_strCalFileName, CCharacterModel* pMo
 
 	m_arrCalFiles.push_back(m_strCalFileName);
 
-	for( uint32 i = 0 , end = arrCalFiles.size(); i < end; ++i)
+	for(size_t i = 0, end = arrCalFiles.size(); i < end; ++i)
 	{
 		ParseCALFile(arrCalFiles[i], pModel);
 	}
@@ -1596,18 +1607,24 @@ const char* CryCHRLoader::GetFilePath( FILE* fCalFile )
 // the 0th animation is the default animation
 uint32 CryCHRLoader::loadAnimationArray ( CCharacterModel* pModel, const TAnimFilesVec& arrAnimFiles)
 {
-	uint32 nAnimID = 0;
-	uint32 numAnims = arrAnimFiles.size();
+	int nAnimID = 0;
+	int numAnims = 0;
+	if (!CryTryNarrowSize(arrAnimFiles.size(), numAnims))
+	{
+		AnimWarning("Animation list contains more entries than the signed animation-ID API can represent");
+		return 0;
+	}
 
 	if (numAnims==0)
 		return 0;
 
 	{
 		AUTO_PROFILE_SECTION(g_dTimeAnimLoadBindPreallocate);
-		pModel->m_AnimationSet.prepareLoadCAFs ( numAnims );
+		if (!pModel->m_AnimationSet.prepareLoadCAFs(numAnims))
+			return 0;
 	}
 
-	int nNullLen = strlen(NULL_ANIM_FILE);
+	const size_t nNullLen = strlen(NULL_ANIM_FILE);
 
 
 	//	CLoaderDBA * pLoader = 0;
@@ -1618,7 +1635,7 @@ uint32 CryCHRLoader::loadAnimationArray ( CCharacterModel* pModel, const TAnimFi
 		g_AnimationManager.LoadDBA(pModel->m_arrTracksDBFilePath);
 	}
 
-	for (uint32 i=0; i<numAnims; i++)
+	for (int i=0; i<numAnims; i++)
 	{
 		const char* pFilePath = arrAnimFiles[i]->strFileName.c_str();
 		const char* pAnimName = arrAnimFiles[i]->strAnimName.c_str();
@@ -1642,7 +1659,7 @@ uint32 CryCHRLoader::loadAnimationArray ( CCharacterModel* pModel, const TAnimFi
 		else
 			AnimWarning("Animation (caf) file \"%s\" could not be read (it's an animation of \"%s.%s\")", arrAnimFiles[i]->strFileName.c_str(), m_strGeomFileNameNoExt.c_str(),CRY_CHARACTER_FILE_EXT );
 	}
-	return nAnimID;
+	return static_cast<uint32>(nAnimID);
 }
 
 
@@ -1654,10 +1671,8 @@ void CryCHRLoader::clear()
 	m_strGeomFileNameNoExt = "";
 
 	// delete all structures
-	for (uint32 i = 0, size = m_arrAnimFiles.size(); i < size; ++i)
-	{
-		delete m_arrAnimFiles[i];
-	}
+	for (SAnimFile* animationFile : m_arrAnimFiles)
+		delete animationFile;
 
 	m_arrAnimFiles.clear();
 	m_arrCalFiles.clear();
