@@ -103,7 +103,8 @@ static void get_time64(uint32_t t[2])
 static void get_time64(uint32_t t[2])
 {
 	/* Best we can do with strict ANSI */
-	t[0] = time(NULL);
+	/* Preserve the historical low-word seed when time_t is wider than 32 bits. */
+	t[0] = (uint32_t)time(NULL);
 	t[1] = 0;
 }
 #endif

@@ -22,6 +22,7 @@ Please see the GameSpy Presence SDK documentation for more information
 #include <sys/stat.h>
 #endif
 #include <string.h>
+#include <limits.h>
 #include "gpi.h"
 
 #define GPI_TRANSFER_VERSION      1
@@ -1353,13 +1354,15 @@ static GPResult gpiSendFileData
 )
 {
 	CHECK_RESULT(gpiPeerStartTransferMessage(connection, transfer->peer, GPI_BM_FILE_DATA, (GPITransferID_st)&transfer->transferID));
+	if (len > (size_t)INT_MAX)
+		return GP_PARAMETER_ERROR;
 
 	// Add the file index.
 	//////////////////////
 	gpiSendOrBufferStringLen(connection, transfer->peer, "\\file\\", 6);
 	gpiSendOrBufferInt(connection, transfer->peer, transfer->currentFile);
 
-	gpiFinishTransferMessage(connection, transfer, (char *)data, len);
+	gpiFinishTransferMessage(connection, transfer, (char *)data, (int)len);
 
 	return GP_NO_ERROR;
 }
@@ -1514,9 +1517,10 @@ GPResult gpiProcessCurrentFile
 				num = fread(buffer, 1, sizeof(buffer), file->file);
 				if(num)
 				{
+					const int bytesRead = (int)num; // num cannot exceed sizeof(buffer).
 					// Update the md5.
 					//////////////////
-					MD5Update(&file->md5, (unsigned char*)buffer, num);
+					MD5Update(&file->md5, (unsigned char*)buffer, (unsigned int)bytesRead);
 
 					// Send the data.
 					/////////////////
@@ -1524,9 +1528,9 @@ GPResult gpiProcessCurrentFile
 
 					// Update progress.
 					///////////////////
-					transfer->progress += num;
-					file->progress += num;
-					total += num;
+					transfer->progress += bytesRead;
+					file->progress += bytesRead;
+					total += bytesRead;
 
 					// Call the callback.
 					/////////////////////

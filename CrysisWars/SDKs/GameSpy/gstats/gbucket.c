@@ -47,11 +47,11 @@ typedef struct bucket_s
 	} vals;
 } bucket_t;
 
-typedef struct dumpdata_s
+	typedef struct dumpdata_s
 {
 	char *data;
-	unsigned int maxlen;
-	unsigned int len;
+	size_t maxlen;
+	size_t len;
 } dumpdata_t;
 
 /********
@@ -254,7 +254,7 @@ static void DumpMap(void *elem, void *clientData)
 {
 	bucket_t *bucket = (bucket_t *)elem;
 	dumpdata_t *data = (dumpdata_t *)clientData;
-	unsigned int minlen;
+	size_t minlen;
 
 	//find out if we need to resize!
 	minlen = strlen(bucket->name) + 3;
@@ -349,8 +349,8 @@ static bucket_t *DoFind(bucketset_t set, char *name)
 #define MULTIPLIER -1664117991
 static int BucketHash(const void *elem, int numbuckets)
 {
-    unsigned int i;
-    unsigned int len;
+	size_t i;
+	size_t len;
     unsigned int hashcode = 0;
 
 	char *s = ((bucket_t *)elem)->name;

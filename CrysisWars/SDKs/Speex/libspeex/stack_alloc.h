@@ -35,6 +35,8 @@
 #ifndef STACK_ALLOC_H
 #define STACK_ALLOC_H
 
+#include <stdint.h>
+
 #ifdef USE_ALLOCA
 #ifdef WIN32
 #include <malloc.h>
@@ -93,19 +95,27 @@
 
 #include <valgrind/memcheck.h>
 
-#define ALIGN(stack, size) ((stack) += ((size) - (long)(stack)) & ((size) - 1))
+#if defined(_MSC_VER)
+#define SPEEX_ALIGNOF(type) __alignof(type)
+#elif defined(__GNUC__) || defined(__clang__)
+#define SPEEX_ALIGNOF(type) __alignof__(type)
+#else
+#define SPEEX_ALIGNOF(type) sizeof(type)
+#endif
+
+#define ALIGN(stack, size) ((stack) += ((size) - (uintptr_t)(stack)) & ((size) - 1))
 
 #define PUSH(stack, size, type) (VALGRIND_MAKE_NOACCESS(stack, 1000),ALIGN((stack),sizeof(type)),VALGRIND_MAKE_WRITABLE(stack, ((size)*sizeof(type))),(stack)+=((size)*sizeof(type)),(type*)((stack)-((size)*sizeof(type))))
 
-#define PUSHS(stack, type) (VALGRIND_MAKE_NOACCESS(stack, 1000),ALIGN((stack),sizeof(long)),VALGRIND_MAKE_WRITABLE(stack, (sizeof(type))),(stack)+=(sizeof(type)),(type*)((stack)-(sizeof(type))))
+#define PUSHS(stack, type) (VALGRIND_MAKE_NOACCESS(stack, 1000),ALIGN((stack),SPEEX_ALIGNOF(type)),VALGRIND_MAKE_WRITABLE(stack, (sizeof(type))),(stack)+=(sizeof(type)),(type*)((stack)-(sizeof(type))))
 
 #else
 
-#define ALIGN(stack, size) ((stack) += ((size) - (long)(stack)) & ((size) - 1))
+#define ALIGN(stack, size) ((stack) += ((size) - (uintptr_t)(stack)) & ((size) - 1))
 
 #define PUSH(stack, size, type) (ALIGN((stack),sizeof(type)),(stack)+=((size)*sizeof(type)),(type*)((stack)-((size)*sizeof(type))))
 
-#define PUSHS(stack, type) (ALIGN((stack),sizeof(long)),(stack)+=(sizeof(type)),(type*)((stack)-(sizeof(type))))
+#define PUSHS(stack, type) (ALIGN((stack),SPEEX_ALIGNOF(type)),(stack)+=(sizeof(type)),(type*)((stack)-(sizeof(type))))
 
 #endif
 

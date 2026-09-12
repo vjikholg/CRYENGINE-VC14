@@ -737,7 +737,7 @@ static void wsiLoginEncryptPassword(const gsi_char * password, gsi_u8 ciphertext
 #ifdef GSI_UNICODE
 	gsCryptRSAEncryptBuffer(&sigkeypub, (const gsi_u8*)password_A, _tcslen(password), ciphertext);
 #else
-	gsCryptRSAEncryptBuffer(&sigkeypub, (const gsi_u8*)password, strlen(password), ciphertext);
+	gsCryptRSAEncryptBuffer(&sigkeypub, (const gsi_u8*)password, (gsi_u32)strlen(password), ciphertext);
 #endif
 }
 
@@ -796,9 +796,9 @@ gsi_bool wsLoginCertIsValid(const GSLoginCertificate * cert)
 		MD5Update(&md5, (unsigned char*)keyhash_A, strlen(keyhash_A));        //FIX for unicode
 	}
 #else
-	MD5Update(&md5, (unsigned char*)&cert->mProfileNick, strlen(cert->mProfileNick)); 
-	MD5Update(&md5, (unsigned char*)&cert->mUniqueNick, strlen(cert->mUniqueNick));   
-	MD5Update(&md5, (unsigned char*)&cert->mCdKeyHash, strlen(cert->mCdKeyHash));     
+	MD5Update(&md5, (unsigned char*)&cert->mProfileNick, (unsigned int)strlen(cert->mProfileNick));
+	MD5Update(&md5, (unsigned char*)&cert->mUniqueNick, (unsigned int)strlen(cert->mUniqueNick));
+	MD5Update(&md5, (unsigned char*)&cert->mCdKeyHash, (unsigned int)strlen(cert->mCdKeyHash));
 #endif
 
 	// must be hashed in big endian byte order
@@ -855,7 +855,7 @@ gsi_bool wsLoginCertIsValid(const GSLoginCertificate * cert)
 gsi_bool wsLoginCertWriteBinary(const GSLoginCertificate * cert, char * bufout, unsigned int maxlen, unsigned int * lenout)
 {
 	gsi_i32 intNB; // network byte order int
-	gsi_i32 lenoutSoFar = 0; // tracks bytes written to bufout
+	size_t lenoutSoFar = 0; // tracks bytes written to bufout
 	gsi_i32 lenTemp = 0; // for temp length of large ints
 
 
@@ -967,7 +967,7 @@ gsi_bool wsLoginCertWriteBinary(const GSLoginCertificate * cert, char * bufout, 
 gsi_bool wsLoginCertReadBinary(GSLoginCertificate * certOut, char * bufin, unsigned int maxlen)
 {
 	gsi_u32 intHB; // host byte order int
-	gsi_u32 lenoutSoFar = 0; // tracks bufin index to make sure we dont exceed the maxlen
+	size_t lenoutSoFar = 0; // tracks bufin index to make sure we dont exceed the maxlen
 	gsi_u32 lenTemp = 0; // for temp length of large ints
 
 	

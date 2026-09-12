@@ -188,8 +188,11 @@ void jitter_buffer_put(JitterBuffer *jitter, const JitterBufferPacket *packet)
    
    /* Copy packet in buffer */
    jitter->buf[i]=(char*)speex_alloc(packet->len);
-   for (j=0;j<packet->len;j++)
-      jitter->buf[i][j]=packet->data[j];
+   {
+      spx_uint32_t packet_index;
+      for (packet_index=0;packet_index<packet->len;packet_index++)
+         jitter->buf[i][packet_index]=packet->data[packet_index];
+   }
    jitter->timestamp[i]=packet->timestamp;
    jitter->span[i]=packet->span;
    jitter->len[i]=packet->len;

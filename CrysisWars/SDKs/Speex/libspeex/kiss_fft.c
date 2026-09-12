@@ -18,6 +18,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "config.h"
 #endif
 
+#include <limits.h>
+
 #include "_kiss_fft_guts.h"
 #include "misc.h"
 
@@ -307,7 +309,12 @@ static void kf_bfly_generic(
             int twidx=0;
             Fout[ k ] = scratchbuf[0];
             for (q=1;q<p;++q ) {
-                twidx += fstride * k;
+                if (k > 0 && fstride > (size_t)(INT_MAX - twidx) / (size_t)k)
+                {
+                    speex_error("KissFFT: twiddle index overflow");
+                    return;
+                }
+                twidx += (int)(fstride * (size_t)k);
                 if (twidx>=Norig) twidx-=Norig;
                 C_MUL(t,scratchbuf[q] , twiddles[twidx] );
                 C_ADDTO( Fout[ k ] ,t);
@@ -364,6 +371,8 @@ void kf_work(
         )
 {
    int i;
+   size_t next_fstride;
+   size_t next_s2;
     kiss_fft_cpx * Fout_beg=Fout;
     const int p=*factors++; /* the radix  */
     const int m=*factors++; /* stage's fft length/p */
@@ -412,7 +421,24 @@ void kf_work(
           }
        }*/
     }else{
-       kf_work( Fout , f, fstride*p, in_stride, factors,st, N*p, fstride*in_stride, m);
+       if (p <= 0 || fstride > (size_t)-1 / (size_t)p)
+       {
+          speex_error("KissFFT: FFT stride overflow");
+          return;
+       }
+       if (in_stride < 0 || (in_stride > 0 && fstride > (size_t)INT_MAX / (size_t)in_stride))
+       {
+          speex_error("KissFFT: input stride is too large");
+          return;
+       }
+       if (N > INT_MAX / p)
+       {
+          speex_error("KissFFT: FFT length overflow");
+          return;
+       }
+       next_fstride = fstride * (size_t)p;
+       next_s2 = fstride * (size_t)in_stride;
+       kf_work( Fout , f, next_fstride, in_stride, factors,st, N*p, (int)next_s2, m);
     }
 
     
@@ -463,11 +489,32 @@ void kf_factor(int n,int * facbuf)
 kiss_fft_cfg kiss_fft_alloc(int nfft,int inverse_fft,void * mem,size_t * lenmem )
 {
     kiss_fft_cfg st=NULL;
-    size_t memneeded = sizeof(struct kiss_fft_state)
-        + sizeof(kiss_fft_cpx)*(nfft-1); /* twiddle factors*/
+    size_t memneeded;
+
+    if (nfft <= 0)
+    {
+        if (lenmem != NULL)
+            *lenmem = 0;
+        return NULL;
+    }
+
+    if ((size_t)(nfft - 1) > ((size_t)-1 - sizeof(struct kiss_fft_state)) / sizeof(kiss_fft_cpx))
+    {
+        if (lenmem != NULL)
+            *lenmem = 0;
+        return NULL;
+    }
+    memneeded = sizeof(struct kiss_fft_state)
+        + sizeof(kiss_fft_cpx)*(size_t)(nfft-1); /* twiddle factors*/
 
     if ( lenmem==NULL ) {
+#ifndef USE_SIMD
+        if (memneeded > (size_t)INT_MAX)
+            return NULL;
+        st = ( kiss_fft_cfg)KISS_FFT_MALLOC( (int)memneeded );
+#else
         st = ( kiss_fft_cfg)KISS_FFT_MALLOC( memneeded );
+#endif
     }else{
         if (mem != NULL && *lenmem >= memneeded)
             st = (kiss_fft_cfg)mem;
@@ -510,6 +557,11 @@ void kiss_fft_stride(kiss_fft_cfg st,const kiss_fft_cpx *fin,kiss_fft_cpx *fout,
        kf_work(tmpbuf,fin,1,in_stride, st->factors,st);
        speex_move(fout,tmpbuf,sizeof(kiss_fft_cpx)*st->nfft);*/
     } else {
+       if (in_stride < 0 || (in_stride > 0 && st->nfft > INT_MAX / in_stride))
+       {
+          speex_error("KissFFT: input stride is too large");
+          return;
+       }
        kf_shuffle( fout, fin, 1,in_stride, st->factors,st);
        kf_work( fout, fin, 1,in_stride, st->factors,st, 1, in_stride, 1);
     }

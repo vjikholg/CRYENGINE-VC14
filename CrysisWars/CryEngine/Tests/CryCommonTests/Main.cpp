@@ -1,6 +1,7 @@
 #include "AnimationAssetTests.h"
 #include "ComparisonCompatibilityTests.h"
 #include "CryFileNameTests.h"
+#include "CryNetworkCompatibilityTests.h"
 #include "CryStringCompatibilityTests.h"
 #include "DxtCompatibilityTests.h"
 #include "LegacyStdioCompatibilityTests.h"
@@ -167,6 +168,7 @@ int main(int argc, char* argv[])
 	CryTestRunner runner;
 	RunComparisonCompatibilityTests(runner);
 	RunCryFileNameTests(runner);
+	RunCryNetworkCompatibilityTests(runner);
 	RunCryStringCompatibilityTests(runner);
 	RunDxtCompatibilityTests(runner);
 	RunLegacyStdioCompatibilityTests(runner);

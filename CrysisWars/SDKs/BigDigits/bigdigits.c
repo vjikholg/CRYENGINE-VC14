@@ -1082,19 +1082,22 @@ size_t mpConvFromOctets(DIGIT_T a[], size_t ndigits, const unsigned char *c, siz
    Returns actual number of digits set (may be larger than mpSizeof)
 */
 {
-	size_t i;
-	int j, k;
+	size_t i, remaining;
+	int k;
 	DIGIT_T t;
 
 	mpSetZero(a, ndigits);
 
 	/* Read in octets, least significant first */
-	/* i counts into big_d, j along c, and k is # bits to shift */
-	for (i = 0, j = nbytes - 1; i < ndigits && j >= 0; i++)
+	/* i counts into big_d, remaining counts down through c, and k is # bits to shift */
+	for (i = 0, remaining = nbytes; i < ndigits && remaining > 0; i++)
 	{
 		t = 0;
-		for (k = 0; j >= 0 && k < BITS_PER_DIGIT; j--, k += 8)
-			t |= ((DIGIT_T)c[j]) << k;
+		for (k = 0; remaining > 0 && k < BITS_PER_DIGIT; k += 8)
+		{
+			--remaining;
+			t |= ((DIGIT_T)c[remaining]) << k;
+		}
 		a[i] = t;
 	}
 

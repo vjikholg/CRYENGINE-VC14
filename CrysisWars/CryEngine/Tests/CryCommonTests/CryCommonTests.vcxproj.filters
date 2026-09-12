@@ -24,6 +24,12 @@
     <Filter Include="Header Files\Animation Compatibility">
       <UniqueIdentifier>{CBF7CD44-EE49-47D4-9663-A806B5BDEAC5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\CryNetwork Compatibility">
+      <UniqueIdentifier>{A4CB1B91-E63E-4C4C-951E-3F485E839F82}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\CryNetwork Compatibility">
+      <UniqueIdentifier>{765117A8-E9C5-4B18-A934-EF484254B26D}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Test Data\DXT Compatibility">
       <UniqueIdentifier>{95A38909-0F7D-4452-8291-3D087BF5B3D8}</UniqueIdentifier>
     </Filter>
@@ -40,6 +46,9 @@
     </ClInclude>
     <ClInclude Include="CryFileNameTests.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CryNetworkCompatibilityTests.h">
+      <Filter>Header Files\CryNetwork Compatibility</Filter>
     </ClInclude>
     <ClInclude Include="CryStringCompatibilityTests.h">
       <Filter>Header Files</Filter>
@@ -106,6 +115,9 @@
     <ClCompile Include="CryFileNameTests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CryNetworkCompatibilityTests.cpp">
+      <Filter>Source Files\CryNetwork Compatibility</Filter>
+    </ClCompile>
     <ClCompile Include="CryStringCompatibilityTests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -165,6 +177,9 @@
     </ClCompile>
     <ClCompile Include="ZlibCompatibilityTests.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\CryNetwork\Cryptography\rijndael.cpp">
+      <Filter>Source Files\CryNetwork Compatibility</Filter>
     </ClCompile>
     <ClCompile Include="..\..\RenderDll\Common\Textures\Image\Squish\alpha.cpp">
       <Filter>Source Files\DXT Compatibility\Squish</Filter>

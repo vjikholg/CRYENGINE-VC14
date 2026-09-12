@@ -20,6 +20,9 @@ static std::unordered_map<const CMementoMemoryManager*, SMementoAllocatorTestSta
 static std::unordered_map<void*, SMementoAllocationRecord> g_mementoAllocations;
 static CMementoMemoryManager* g_currentMementoManager = 0;
 
+struct SSystemGlobalEnvironment;
+SSystemGlobalEnvironment* gEnv = nullptr;
+
 void CryAssertTrace(const char*, ...)
 {
 }
@@ -77,10 +80,6 @@ extern "C" void* CryModuleRealloc(void* memory, size_t size) throw()
 extern "C" void CryModuleFree(void* memory) throw()
 {
 	std::free(memory);
-}
-
-void CryError(const char*, ...)
-{
 }
 
 CMementoMemoryManager& MMM()

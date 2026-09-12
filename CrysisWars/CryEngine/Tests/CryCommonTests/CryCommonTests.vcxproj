@@ -57,7 +57,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(MSBuildProjectDirectory)\..\..\CryCommon;$(MSBuildProjectDirectory)\..\..\CrySystem;$(MSBuildProjectDirectory)\..\..\RenderDll\Common\Textures\Image\Squish;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(MSBuildProjectDirectory)\..\..\CryCommon;$(MSBuildProjectDirectory)\..\..\CrySystem;$(MSBuildProjectDirectory)\..\..\CryNetwork;$(MSBuildProjectDirectory)\..\..\RenderDll\Common\Textures\Image\Squish;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CONSOLE;NOT_USE_CRY_MEMORY_MANAGER;_ITERATOR_DEBUG_LEVEL=0;_HAS_ITERATOR_DEBUGGING=0;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <WarningLevel>Level4</WarningLevel>
       <TreatWarningAsError>false</TreatWarningAsError>
@@ -100,6 +100,7 @@
     <ClInclude Include="AnimationAssetTests.h" />
     <ClInclude Include="ComparisonCompatibilityTests.h" />
     <ClInclude Include="CryFileNameTests.h" />
+    <ClInclude Include="CryNetworkCompatibilityTests.h" />
     <ClInclude Include="CryStringCompatibilityTests.h" />
     <ClInclude Include="DxtCompatibilityTests.h" />
     <ClInclude Include="LegacyStdioCompatibilityTests.h" />
@@ -123,6 +124,7 @@
     <ClCompile Include="AnimationAssetTests.cpp" />
     <ClCompile Include="ComparisonCompatibilityTests.cpp" />
     <ClCompile Include="CryFileNameTests.cpp" />
+    <ClCompile Include="CryNetworkCompatibilityTests.cpp" />
     <ClCompile Include="CryStringCompatibilityTests.cpp" />
     <ClCompile Include="DxtCompatibilityTests.cpp" />
     <ClCompile Include="CryCommonTestSupport.cpp" />
@@ -143,6 +145,9 @@
     <ClCompile Include="TestRunner.cpp" />
     <ClCompile Include="VectorMapTests.cpp" />
     <ClCompile Include="ZlibCompatibilityTests.cpp" />
+    <ClCompile Include="..\..\CryNetwork\Cryptography\rijndael.cpp">
+      <AdditionalIncludeDirectories>$(MSBuildProjectDirectory)\..\..\CryNetwork;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
     <ClCompile Include="..\..\RenderDll\Common\Textures\Image\Squish\alpha.cpp" />
     <ClCompile Include="..\..\RenderDll\Common\Textures\Image\Squish\clusterfit.cpp" />
     <ClCompile Include="..\..\RenderDll\Common\Textures\Image\Squish\colourblock.cpp" />

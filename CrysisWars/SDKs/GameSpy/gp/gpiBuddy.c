@@ -529,11 +529,7 @@ gpiFixBuddyIndices(
   void * data
 )
 {
-#ifndef _PS2
-	int baseIndex = (int)(unsigned long)data;
-#else
-	int baseIndex = (int)data;
-#endif
+	const int baseIndex = *(const int *)data;
 
 	GSI_UNUSED(connection);
 
@@ -590,11 +586,7 @@ gpiDeleteBuddy(
 			gpiRemoveProfile(connection, pProfile);
 		iconnection->profileList.numBuddies--;
 		assert(iconnection->profileList.numBuddies >= 0);
-#ifndef _PS2
-		gpiProfileMap(connection, gpiFixBuddyIndices, (void *)(unsigned long)index);
-#else
-		gpiProfileMap(connection, gpiFixBuddyIndices, (void *)index);
-#endif
+		gpiProfileMap(connection, gpiFixBuddyIndices, &index);
 	}
 	return GP_NO_ERROR;
 }

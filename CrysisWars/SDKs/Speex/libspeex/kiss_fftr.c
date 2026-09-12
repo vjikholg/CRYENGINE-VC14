@@ -16,6 +16,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "config.h"
 #endif
 
+#include <limits.h>
+
 #include "kiss_fftr.h"
 #include "_kiss_fft_guts.h"
 
@@ -32,19 +34,38 @@ kiss_fftr_cfg kiss_fftr_alloc(int nfft,int inverse_fft,void * mem,size_t * lenme
 {
     int i;
     kiss_fftr_cfg st = NULL;
-    size_t subsize, memneeded;
+    size_t subsize, memneeded, complex_count;
 
+    if (nfft <= 0)
+        return NULL;
     if (nfft & 1) {
         speex_warning("Real FFT optimization must be even.\n");
         return NULL;
     }
     nfft >>= 1;
 
+    subsize = 0;
     kiss_fft_alloc (nfft, inverse_fft, NULL, &subsize);
-    memneeded = sizeof(struct kiss_fftr_state) + subsize + sizeof(kiss_fft_cpx) * ( nfft * 2);
+    if (subsize == 0)
+        return NULL;
+    if (subsize > (size_t)-1 - sizeof(struct kiss_fftr_state))
+        return NULL;
+    memneeded = sizeof(struct kiss_fftr_state) + subsize;
+    if ((size_t)nfft > (size_t)-1 / 2)
+        return NULL;
+    complex_count = (size_t)nfft * 2;
+    if (complex_count > ((size_t)-1 - memneeded) / sizeof(kiss_fft_cpx))
+        return NULL;
+    memneeded += sizeof(kiss_fft_cpx) * complex_count;
 
     if (lenmem == NULL) {
+#ifndef USE_SIMD
+        if (memneeded > (size_t)INT_MAX)
+            return NULL;
+        st = (kiss_fftr_cfg) KISS_FFT_MALLOC ((int)memneeded);
+#else
         st = (kiss_fftr_cfg) KISS_FFT_MALLOC (memneeded);
+#endif
     } else {
         if (*lenmem >= memneeded)
             st = (kiss_fftr_cfg) mem;

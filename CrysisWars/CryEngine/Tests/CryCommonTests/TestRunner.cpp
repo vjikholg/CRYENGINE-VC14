@@ -23,6 +23,7 @@ void CryTestRunner::Run(const char* testName, TestFunction testFunction)
 	{
 		std::printf("[FAIL] %s\n", testName);
 	}
+	std::fflush(stdout);
 }
 
 void CryTestRunner::Check(bool condition, const char* expression, const char* file, int line)

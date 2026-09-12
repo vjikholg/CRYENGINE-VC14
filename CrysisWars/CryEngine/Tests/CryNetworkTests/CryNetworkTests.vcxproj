@@ -57,19 +57,21 @@
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(MSBuildProjectDirectory)\..\..\CryCommon;$(MSBuildProjectDirectory)\..\..\CryNetwork;$(MSBuildProjectDirectory)\..\CryCommonTests;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_CONSOLE;NDEBUG;NOT_USE_CRY_MEMORY_MANAGER;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(MSBuildProjectDirectory)\..\..\CryCommon;$(MSBuildProjectDirectory)\..\..\CryNetwork;$(MSBuildProjectDirectory)\..\CryCommonTests;$(MSBuildProjectDirectory)\..\..\..\SDKs;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CONSOLE;NDEBUG;CRYNETWORK_RELEASEBUILD=1;NOT_USE_CRY_MEMORY_MANAGER;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;_WIN32_WINNT=0x0601;WINVER=0x0601;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <WarningLevel>Level4</WarningLevel>
       <TreatWarningAsError>false</TreatWarningAsError>
       <SDLCheck>false</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
       <AdditionalOptions>/Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -99,17 +101,28 @@
   <ItemGroup>
     <ClInclude Include="..\..\CryNetwork\StreamAllocator.h" />
     <ClInclude Include="CryNetworkTestPreamble.h" />
+	<ClInclude Include="GameSpyWrapperBoundaryTests.h" />
 	<ClInclude Include="MementoAllocatorTestSupport.h" />
 	<ClInclude Include="MM05HandleTests.h" />
+	<ClInclude Include="NetworkIdAndIndexTests.h" />
     <ClInclude Include="STLMementoAllocatorTests.h" />
     <ClInclude Include="..\CryCommonTests\TestRunner.h" />
+	<ClInclude Include="WireFormatTests.h" />
   </ItemGroup>
   <ItemGroup>
+	<ClCompile Include="..\..\CryNetwork\Compression\ArithModel.cpp" />
+	<ClCompile Include="..\..\CryNetwork\Compression\ArithPrimitives.cpp" />
+	<ClCompile Include="..\..\CryNetwork\Compression\StringTable.cpp" />
+	<ClCompile Include="..\..\CryNetwork\Streams\ByteStream.cpp" />
+	<ClCompile Include="ArithModelTestSupport.cpp" />
+	<ClCompile Include="GameSpyWrapperBoundaryTests.cpp" />
     <ClCompile Include="Main.cpp" />
 	<ClCompile Include="MementoAllocatorTestSupport.cpp" />
 	<ClCompile Include="MM05HandleTests.cpp" />
+	<ClCompile Include="NetworkIdAndIndexTests.cpp" />
     <ClCompile Include="STLMementoAllocatorTests.cpp" />
     <ClCompile Include="..\CryCommonTests\TestRunner.cpp" />
+	<ClCompile Include="WireFormatTests.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

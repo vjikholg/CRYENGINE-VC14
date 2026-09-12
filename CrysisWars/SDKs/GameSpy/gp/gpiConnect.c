@@ -318,7 +318,7 @@ gpiSendLogin(
 		passphrase = data->partnerchallenge;
 	else
 		passphrase = iconnection->password;
-	MD5Digest((unsigned char*)passphrase, strlen(passphrase), data->passwordHash);
+	MD5Digest((unsigned char*)passphrase, (unsigned int)strlen(passphrase), data->passwordHash);
 
 	// Construct the user.
 	//////////////////////
@@ -354,7 +354,7 @@ gpiSendLogin(
 		data->userChallenge,
 		data->serverChallenge,
 		data->passwordHash);
-	MD5Digest((unsigned char *)buffer, strlen(buffer), response);
+	MD5Digest((unsigned char *)buffer, (unsigned int)strlen(buffer), response);
 
 	// Check for an existing profile.
 	/////////////////////////////////
@@ -406,7 +406,7 @@ gpiSendLogin(
 	gpiAppendIntToBuffer(connection, &iconnection->outputBuffer, iconnection->partnerID);
 	gpiAppendStringToBuffer(connection, &iconnection->outputBuffer, "\\response\\");
 	gpiAppendStringToBuffer(connection, &iconnection->outputBuffer, response);
-	if(iconnection->firewall == GP_FIREWALL)
+	if(iconnection->firewall == GPITrue)
 		gpiAppendStringToBuffer(connection, &iconnection->outputBuffer, "\\firewall\\1");
 	gpiAppendStringToBuffer(connection, &iconnection->outputBuffer, "\\port\\");
 	gpiAppendIntToBuffer(connection, &iconnection->outputBuffer, (short)ntohs((unsigned short )iconnection->peerPort));
@@ -676,7 +676,7 @@ gpiProcessConnect(
 			data->serverChallenge,
 			data->userChallenge,
 			data->passwordHash);
-		MD5Digest((unsigned char *)buffer, strlen(buffer), check);
+		MD5Digest((unsigned char *)buffer, (unsigned int)strlen(buffer), check);
 
 		// Get the proof.
 		/////////////////

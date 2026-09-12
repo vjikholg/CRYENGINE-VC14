@@ -36,34 +36,57 @@ void gcd_compute_response(char *cdkey, char *challenge, char response[RESPONSE_S
 	char rawout[RAWSIZE];
 	unsigned int anyrandom;
 	char randstr[9];
+	int formatResult;
+	size_t cdkeyLength;
+	size_t challengeLength;
 
+	cdkeyLength = strlen(cdkey);
+	challengeLength = strlen(challenge);
 
 	/* check to make sure we weren't passed a huge cd key/challenge */
-	if (strlen(cdkey) * 2 + strlen(challenge) + 8 >= RAWSIZE)
+	if (challengeLength >= RAWSIZE - 8 ||
+		cdkeyLength >= (RAWSIZE - 8 - challengeLength) / 2)
 	{
-		strcpy(response,"CD Key or challenge too long");
+		formatResult = snprintf(response, RESPONSE_SIZE, "%s", "CD Key or challenge too long");
+		if (formatResult < 0 || (size_t)formatResult >= RESPONSE_SIZE)
+			response[0] = '\0';
 		return;
 	}
 
 	/* make sure we are randomized */
-	srand(time(NULL) ^ 0x33333333);
+	srand((unsigned int)time(NULL) ^ 0x33333333u);
 	/* Since RAND_MAX is 16 bit on many systems, make sure we get a 32 bit number */
 	anyrandom = (rand() << 16 | rand()); 
-	sprintf(randstr,"%.8x",anyrandom);
+	formatResult = snprintf(randstr, sizeof(randstr), "%.8x",anyrandom);
+	if (formatResult < 0 || (size_t)formatResult >= sizeof(randstr))
+	{
+		response[0] = '\0';
+		return;
+	}
 
 	/* auth response   = MD5(cdkey + random mod 0xffff + challenge) */
 	/* reauth response = MD5(challenge + random mode 0xffff + cdkey) */ 
 	if (method == 0)
-		sprintf(rawout, "%s%d%s",cdkey, anyrandom % 0xFFFF , challenge );
+		formatResult = snprintf(rawout, RAWSIZE, "%s%d%s",cdkey, anyrandom % 0xFFFF , challenge );
 	else
-		sprintf(rawout, "%s%d%s",challenge, anyrandom % 0xFFFF, cdkey);
+		formatResult = snprintf(rawout, RAWSIZE, "%s%d%s",challenge, anyrandom % 0xFFFF, cdkey);
+	if (formatResult < 0 || (size_t)formatResult >= RAWSIZE)
+	{
+		response[0] = '\0';
+		return;
+	}
 
 	/* do the cd key md5 */
-	MD5Digest((unsigned char *)cdkey, strlen(cdkey), response);
+	MD5Digest((unsigned char *)cdkey, (unsigned int)cdkeyLength, response);
 	/* add the random value */
-	strcpy(&response[32], randstr);
+	formatResult = snprintf(&response[32], RESPONSE_SIZE - 32, "%s", randstr);
+	if (formatResult < 0 || (size_t)formatResult >= RESPONSE_SIZE - 32)
+	{
+		response[0] = '\0';
+		return;
+	}
 	/* do the response md5 */
-	MD5Digest((unsigned char *)rawout, strlen(rawout), &response[40]);	
+	MD5Digest((unsigned char *)rawout, (unsigned int)strlen(rawout), &response[40]);
 }
 
 

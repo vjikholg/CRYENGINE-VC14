@@ -5,6 +5,7 @@
 #include "gsXML.h"
 #include "gsStringUtil.h"
 #include "../darray.h"
+#include <limits.h>
 
 
 
@@ -129,8 +130,8 @@ static int gsUnicodeStringLen(const unsigned short * str)
 GSXmlStreamWriter gsXmlCreateStreamWriter(const char ** namespaces, int count)
 {
 	GSIXmlStreamWriter * newStream = NULL;
-	int initialCapacity = GS_XML_SOAP_BUFFER_INCREMENT_SIZE;
-	int namespaceLen = 0;
+	size_t initialCapacity = GS_XML_SOAP_BUFFER_INCREMENT_SIZE;
+	size_t namespaceLen = 0;
 	int i=0;
 
 	GS_ASSERT((namespaces == NULL && count == 0) || (namespaces != NULL && count != 0));
@@ -157,17 +158,25 @@ GSXmlStreamWriter gsXmlCreateStreamWriter(const char ** namespaces, int count)
 		namespaceLen += strlen(namespaces[i]);
 	}
 	while (initialCapacity < namespaceLen)
+	{
+		if (initialCapacity > (size_t)INT_MAX - GS_XML_SOAP_BUFFER_INCREMENT_SIZE)
+		{
+			gsifree(newStream);
+			return NULL;
+		}
 		initialCapacity += GS_XML_SOAP_BUFFER_INCREMENT_SIZE;
+	}
 
 	// allocate write buffer
 	newStream->mBuffer = (char*)gsimalloc((size_t)initialCapacity);
 	if (newStream->mBuffer == NULL)
 	{
 		gsDebugFormat(GSIDebugCat_Common, GSIDebugType_Memory, GSIDebugLevel_HotError,
-			"Out of memory in gsXmlCreateStreamWriter, needed %d bytes", initialCapacity);
+			"Out of memory in gsXmlCreateStreamWriter, needed %zu bytes", initialCapacity);
+		gsifree(newStream);
 		return NULL; // OOM
 	}
-	newStream->mCapacity = initialCapacity;
+	newStream->mCapacity = (int)initialCapacity;
 	newStream->mLen = 0;
 	newStream->mBuffer[0] = '\0';
 	newStream->mClosed = gsi_false;

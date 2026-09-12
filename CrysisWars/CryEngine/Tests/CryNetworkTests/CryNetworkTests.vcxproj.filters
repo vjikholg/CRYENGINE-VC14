@@ -20,10 +20,16 @@
     <ClInclude Include="CryNetworkTestPreamble.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+	<ClInclude Include="GameSpyWrapperBoundaryTests.h">
+		<Filter>Header Files</Filter>
+	</ClInclude>
 	<ClInclude Include="MementoAllocatorTestSupport.h">
 		<Filter>Header Files</Filter>
 	</ClInclude>
 	<ClInclude Include="MM05HandleTests.h">
+		<Filter>Header Files</Filter>
+	</ClInclude>
+	<ClInclude Include="NetworkIdAndIndexTests.h">
 		<Filter>Header Files</Filter>
 	</ClInclude>
     <ClInclude Include="STLMementoAllocatorTests.h">
@@ -32,8 +38,29 @@
     <ClInclude Include="..\CryCommonTests\TestRunner.h">
       <Filter>Shared Test Support</Filter>
     </ClInclude>
+	<ClInclude Include="WireFormatTests.h">
+		<Filter>Header Files</Filter>
+	</ClInclude>
   </ItemGroup>
   <ItemGroup>
+	<ClCompile Include="..\..\CryNetwork\Compression\ArithModel.cpp">
+		<Filter>Source Files</Filter>
+	</ClCompile>
+	<ClCompile Include="..\..\CryNetwork\Compression\ArithPrimitives.cpp">
+		<Filter>Source Files</Filter>
+	</ClCompile>
+	<ClCompile Include="..\..\CryNetwork\Compression\StringTable.cpp">
+		<Filter>Source Files</Filter>
+	</ClCompile>
+	<ClCompile Include="..\..\CryNetwork\Streams\ByteStream.cpp">
+		<Filter>Source Files</Filter>
+	</ClCompile>
+	<ClCompile Include="ArithModelTestSupport.cpp">
+		<Filter>Shared Test Support</Filter>
+	</ClCompile>
+	<ClCompile Include="GameSpyWrapperBoundaryTests.cpp">
+		<Filter>Source Files</Filter>
+	</ClCompile>
     <ClCompile Include="Main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -43,11 +70,17 @@
 	<ClCompile Include="MM05HandleTests.cpp">
 		<Filter>Source Files</Filter>
 	</ClCompile>
+	<ClCompile Include="NetworkIdAndIndexTests.cpp">
+		<Filter>Source Files</Filter>
+	</ClCompile>
     <ClCompile Include="STLMementoAllocatorTests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\CryCommonTests\TestRunner.cpp">
       <Filter>Shared Test Support</Filter>
     </ClCompile>
+	<ClCompile Include="WireFormatTests.cpp">
+		<Filter>Source Files</Filter>
+	</ClCompile>
   </ItemGroup>
 </Project>

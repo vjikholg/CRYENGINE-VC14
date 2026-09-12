@@ -1098,7 +1098,9 @@ size_t bdSetRandTest(T a, size_t ndigits)
 
 	assert(a);
 	/* Pick a random size */
-	n = (size_t)spSimpleRand(1, ndigits);
+	if (ndigits == 0 || ndigits > (size_t)MAX_DIGIT)
+		return 0;
+	n = (size_t)spSimpleRand(1, (DIGIT_T)ndigits);
 	
 	/* Check allocated memory */
 	bd_resize(a, n);
@@ -1164,9 +1166,14 @@ int bdGeneratePrime(T b, size_t nbits, size_t ntests,
 	DIGIT_T mask, chop;
 	DIGIT_T *p;
 	int done;
-	int iloop, maxloops, j, maxodd;
+	size_t iloop, maxloops, j, maxodd;
 
 	assert(b);
+	if (nbits == 0 ||
+		nbits > (size_t)-1 - (BITS_PER_DIGIT - 1) ||
+		nbits > (size_t)-1 / 100)
+		return 1;
+
 	/* Make sure big enough */
 	ndigits = (nbits + BITS_PER_DIGIT - 1) / BITS_PER_DIGIT;
 	bd_resize(b, ndigits);

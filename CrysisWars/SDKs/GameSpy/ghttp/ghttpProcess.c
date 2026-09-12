@@ -992,11 +992,11 @@ static GHTTPBool ghiDeliverIncomingFileData
 	}
 	else if(connection->type == GHISAVE)
 	{
-		int bytesWritten = 0;
+		size_t bytesWritten = 0;
 #ifndef NOFILE
 		bytesWritten = fwrite(data, 1, len, connection->saveFile);
 #endif
-		if(bytesWritten != len)
+		if(bytesWritten != (size_t)len)
 		{
 			connection->completed = GHTTPTrue;
 			connection->result = GHTTPFileWriteFailed;

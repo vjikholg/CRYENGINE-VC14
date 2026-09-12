@@ -335,9 +335,11 @@ bool PasswordReminder::EncryptEncode()
 				break;
 			case ENCRYPT_XXTEA:
 			{				
+				if (m_EmailAddr.length() > static_cast<size_t>((std::numeric_limits<gsi_i32>::max)()))
+					return false;
 				strncpy(key, m_Key.c_str(), XXTEA_KEY_SIZE);
 				char *temp = gsXxteaEncrypt(m_EmailAddr.c_str(), 
-					m_EmailAddr.length(), key, &lengthOutput);
+					static_cast<gsi_i32>(m_EmailAddr.length()), key, &lengthOutput);
 				encrypEncEmail = temp;
 				delete[] temp;
 				temp = NULL;
@@ -361,7 +363,9 @@ bool PasswordReminder::EncryptEncode()
 			break;
 		case ENCODE_B64SAFE:
 		{
-			B64Encode(encrypEncEmail.c_str(), encOut, encrypEncEmail.length(), 
+			if (encrypEncEmail.length() > static_cast<size_t>((std::numeric_limits<int>::max)()))
+				return false;
+			B64Encode(encrypEncEmail.c_str(), encOut, static_cast<int>(encrypEncEmail.length()),
 				2);
 			encrypEncEmail = output;
 			break;

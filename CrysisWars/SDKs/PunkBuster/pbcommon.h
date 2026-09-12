@@ -6,9 +6,9 @@
 // EVEN BALANCE - T.RAY
 //
 
-//#if !defined(LINUX)
-#define __WITH_PB__
-//#endif
+#if defined(CRYNETWORK_ENABLE_PUNKBUSTER) && CRYNETWORK_ENABLE_PUNKBUSTER
+	#define __WITH_PB__
+#endif
 
 #ifdef __WITH_PB__
 

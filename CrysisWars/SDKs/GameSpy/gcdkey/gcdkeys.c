@@ -842,9 +842,10 @@ static void send_keep_alive()
 		lastKeepAliveSent = current_time();
 	if (current_time() > lastKeepAliveSent + MAX_KEEP_ALIVE_INTERVAL)
 	{	
+		const int keepAliveLength = (int)strlen(keepAlive);
 		strcpy(buf, keepAlive);
-		xcode_buf(buf, strlen(keepAlive));
-		sendto(sock, buf, strlen(keepAlive), 0, (struct sockaddr *)&valaddr, sizeof(struct sockaddr_in));
+		xcode_buf(buf, keepAliveLength);
+		sendto(sock, buf, keepAliveLength, 0, (struct sockaddr *)&valaddr, sizeof(struct sockaddr_in));
 		lastKeepAliveSent = current_time();
 	}
 }

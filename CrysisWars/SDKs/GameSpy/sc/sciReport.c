@@ -810,8 +810,8 @@ SCResult SC_CALL sciReportAddStringValue(SCIReport *      theReport,
 	// Now strip to Ascii and write the length - subtract 1 to get rid of appended null character
 	theReport->mBuffer.mPos += UCS2ToAsciiString(theValue, &theReport->mBuffer.mData[theReport->mBuffer.mPos])-1;
 #else
-	strncpy(&theReport->mBuffer.mData[theReport->mBuffer.mPos], theValue, strlen(theValue));
-	theReport->mBuffer.mPos += strlen(theValue);
+	strncpy(&theReport->mBuffer.mData[theReport->mBuffer.mPos], theValue, (size_t)asciiLen);
+	theReport->mBuffer.mPos += (gsi_u32)asciiLen;
 #endif
 
 	return SCResult_NO_ERROR;
