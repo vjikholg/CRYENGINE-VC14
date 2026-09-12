@@ -10,6 +10,22 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
+#if defined(_WIN64)
+	// Define the supported Windows API surface before platform.h or any SDK header.
+	#if defined(_WIN32_WINNT) && _WIN32_WINNT < 0x0601
+		#error CryNetwork x64 requires Windows 7 or later (_WIN32_WINNT >= 0x0601)
+	#endif
+	#ifndef _WIN32_WINNT
+		#define _WIN32_WINNT 0x0601
+	#endif
+	#if defined(WINVER) && WINVER < _WIN32_WINNT
+		#error WINVER must be at least _WIN32_WINNT for CryNetwork x64
+	#endif
+	#ifndef WINVER
+		#define WINVER _WIN32_WINNT
+	#endif
+#endif
+
 //#define NOT_USE_CRY_MEMORY_MANAGER
 
 #include <CryModuleDefs.h>
@@ -27,10 +43,6 @@
 #include <stdarg.h>
 
 #ifdef WIN32
-#ifdef _WIN32_WINNT
-#undef _WIN32_WINNT
-#define _WIN32_WINNT 0x400
-#endif
 #include <winsock2.h>
 #endif
 
@@ -44,6 +56,7 @@
 #include <algorithm>
 
 #include <Cry_Math.h>
+#include <CryCheckedArithmetic.h>
 #include <CrySizer.h>
 #include <StlAlgorithms.h>
 #include <StlHashMap.h>
@@ -137,7 +150,7 @@ void NET_ASSERT_FAIL(const char * check, const char * file, int line);
 inline void __cdecl __NET_TRACE(const char *sFormat, ... ) PRINTF_PARAMS(1, 2);
 
 #ifndef PS2
-inline void __cdecl __NET_TRACE(const char *sFormat, ... )
+inline void __cdecl __NET_TRACE(const char*, ... )
 {
 	/*
 	va_list vl;
@@ -204,7 +217,7 @@ class CDefaultStreamAllocator : public IStreamAllocator
 #pragma intrinsic(memcpy)
 #endif
 
-#if !defined(PS3)
+#if !defined(PS3) && defined(CRYNETWORK_ENABLE_PUNKBUSTER) && CRYNETWORK_ENABLE_PUNKBUSTER
 	#include "PunkBuster/pbcommon.h"
 #endif
 

@@ -108,7 +108,7 @@ static void DumpBytes( const uint8 * p, size_t len )
 // SBigEndpointState
 //
 
-CCTPEndpoint::SBigEndpointState::SBigEndpointState( size_t acks, CMessageMapper& msgMapper, Rijndael::Direction dir, const uint8* key, uint8* initVec ) :
+CCTPEndpoint::SBigEndpointState::SBigEndpointState( unsigned acks, CMessageMapper& msgMapper, Rijndael::Direction dir, const uint8* key, uint8* initVec ) :
 	m_AckAlphabet(acks), 
 	m_MsgAlphabet(msgMapper.GetNumberOfMsgIds()), 
 	m_ArithModel()
@@ -717,7 +717,13 @@ void CCTPEndpoint::SendPacketsIfNecessary( CTimeValue nTime, bool isDisconnectin
 				NetWarning( "Resend last packet to %s", RESOLVER.ToString(m_pParent->GetIP()).c_str() );
 				CCommOutputStream& stm = m_outputStreamImpl.GetOutput();
 				m_pParent->Send( m_assemblyBuffer, m_assemblySize );
-				m_PacketRateCalculator.SentPacket( nTime, m_nOutputSeq, stm.GetOutputSize() );
+				uint16 outputSize = 0;
+				if (!CryTryNarrowSize(stm.GetOutputSize(), outputSize))
+				{
+					CryError("Outgoing packet exceeds the 16-bit packet-size limit");
+					return;
+				}
+				m_PacketRateCalculator.SentPacket( nTime, m_nOutputSeq, outputSize );
 				m_nRepeated ++;
 				m_nSent ++;
 			}
@@ -904,10 +910,10 @@ void CCTPEndpoint::ProcessPacket( CTimeValue nTime, TMemHdl hdl, bool bQueueing,
 
 	if (MMM().GetHdlSize(hdl) < 8 || ((MMM().GetHdlSize(hdl)-2-4*DEBUG_SEQUENCE_NUMBERS) & 15))
 	{
-		uint32 sizeForMessage = MMM().GetHdlSize(hdl);
+		const size_t sizeForMessage = MMM().GetHdlSize(hdl);
 		//m_pParent->Disconnect(eDC_ProtocolError, "Malformed packet");
 		MMM().FreeHdl(hdl);
-		NetWarning("Illegal packet size [size was %d, from %s]", sizeForMessage, m_pParent->GetName());
+		NetWarning("Illegal packet size [size was %zu, from %s]", sizeForMessage, m_pParent->GetName());
 		return;
 	}
 
@@ -1084,7 +1090,14 @@ void CCTPEndpoint::ProcessPacket( CTimeValue nTime, TMemHdl hdl, bool bQueueing,
 	m_dqAcks.push_back( SAckData(true,false,nTime) );
 	m_nInputSeq ++;
 
-	m_PacketRateCalculator.GotPacket( nTime, MMM().GetHdlSize(hdl) );
+	uint16 receivedPacketSize = 0;
+	if (!CryTryNarrowSize(MMM().GetHdlSize(hdl), receivedPacketSize))
+	{
+		MMM().FreeHdl(hdl);
+		m_pParent->Disconnect(eDC_ProtocolError, "Packet exceeds the 16-bit packet-size limit");
+		return;
+	}
+	m_PacketRateCalculator.GotPacket( nTime, receivedPacketSize );
 
 	CNetInputSerializeImpl stmImpl( normBytes+1, pktLen-1, m_pParent );
 	CSimpleSerialize<CNetInputSerializeImpl> stm(stmImpl);
@@ -1140,7 +1153,14 @@ void CCTPEndpoint::ProcessPacket( CTimeValue nTime, TMemHdl hdl, bool bQueueing,
 		// read a message id and process it - we have some internal messages
 		// handled by a switch, and anything higher-level is dispatched through
 		// our message mapper
-		size_t msg = state.ReadMsgId( stmImpl.GetInput() );
+		const size_t decodedMsg = state.ReadMsgId( stmImpl.GetInput() );
+		uint32 msg = 0;
+		if (!CryTryNarrowSize(decodedMsg, msg))
+		{
+			MMM().FreeHdl(hdl);
+			m_pParent->Disconnect(eDC_ProtocolError, "Decoded message ID exceeds the 32-bit protocol limit");
+			return;
+		}
 		nMessages ++;
 
 		// we must ensure that the memento streams are NULL at this point
@@ -1866,7 +1886,12 @@ void CCTPEndpoint::SentElem( uint32& head, const SSendableHandle& hdl )
 	uint32 cur;
 	if (m_freeSentElem == InvalidSentElem)
 	{
-		cur = m_sentElems.size();
+		if (m_sentElems.size() >= InvalidSentElem)
+		{
+			CryError("Sent-message tracking exhausted its 32-bit index space");
+			return;
+		}
+		cur = static_cast<uint32>(m_sentElems.size());
 		m_sentElems.push_back(SSentElem());
 	}
 	else

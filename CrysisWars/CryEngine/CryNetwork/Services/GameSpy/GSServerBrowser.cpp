@@ -272,9 +272,11 @@ static void LogKeys(SBServer server)
 
 void CGSServerBrowser::KeyEnumCallback(const gsi_char* key,const gsi_char* value,void* instance)
 {
+	if (!key || !key[0])
+		return;
 	CGSServerBrowser *sb=(CGSServerBrowser*)instance;
 
-	int k,l;
+	size_t k,l;
 	k=l=strlen(key)-1;
 	while(k>0 && key[k]>='0' && key[k]<='9')
 		k--;
@@ -369,7 +371,7 @@ void CGSServerBrowser::OnSBCallback(SBCallbackReason reason,SBServer server)
 	case sbc_serveradded:
 		{
 			if(VERBOSE)
-				NetLog("GS server added: %s %x",adr,(unsigned)server);
+				NetLog("GS server added: %s %p",adr,static_cast<void*>(server));
 
 			m_serverMap.insert(TSrvMap::value_type(server,SServerInfo(m_lastId)));
 
@@ -407,7 +409,7 @@ void CGSServerBrowser::OnSBCallback(SBCallbackReason reason,SBServer server)
 	case sbc_serverdeleted:
 		{
 			if(VERBOSE)
-				NetLog("GS server deleted: %s %x",adr,(unsigned)server);
+				NetLog("GS server deleted: %s %p",adr,static_cast<void*>(server));
 			TSrvMap::iterator i=m_serverMap.find(server);
 			NET_ASSERT(i!=m_serverMap.end() && "sbc_serverdeleted - server id not found");
 			TO_GAME(&CGSServerBrowser::GRemoveServer,this,i->second.m_id);

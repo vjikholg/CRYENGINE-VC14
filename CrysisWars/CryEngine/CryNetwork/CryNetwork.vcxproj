@@ -66,6 +66,13 @@
     <SccLocalPath>..\..</SccLocalPath>
     <SccProvider>MSSCCI:Perforce SCM</SccProvider>
   </PropertyGroup>
+  <PropertyGroup>
+    <CryNetworkEnablePunkBuster Condition="'$(CryNetworkEnablePunkBuster)'=='' and '$(Platform)'=='x64'">false</CryNetworkEnablePunkBuster>
+    <CryNetworkEnablePunkBuster Condition="'$(CryNetworkEnablePunkBuster)'==''">true</CryNetworkEnablePunkBuster>
+    <CryNetworkEnableVoiceChat Condition="'$(CryNetworkEnableVoiceChat)'=='' and '$(Platform)'=='x64'">false</CryNetworkEnableVoiceChat>
+    <CryNetworkEnableVoiceChat Condition="'$(CryNetworkEnableVoiceChat)'==''">true</CryNetworkEnableVoiceChat>
+    <CryNetworkVoiceIncludeDirectories Condition="'$(CryNetworkEnableVoiceChat)'=='true'">..\..\SDKs\Speex\include</CryNetworkVoiceIncludeDirectories>
+  </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='CRYSIS_BETA|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
@@ -344,7 +351,7 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\CryCommon;..\..\SDKs\Speex\include;.;..\..\SDKs;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\CryCommon;$(CryNetworkVoiceIncludeDirectories);.;..\..\SDKs;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MinimalRebuild>true</MinimalRebuild>
       <ExceptionHandling />
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -383,7 +390,7 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\CryCommon;..\..\SDKs\Speex\include;.;..\..\SDKs;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\CryCommon;$(CryNetworkVoiceIncludeDirectories);.;..\..\SDKs;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -406,7 +413,6 @@
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>libcmt.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <BaseAddress>0x39500000</BaseAddress>
       <TargetMachine>MachineX64</TargetMachine>
     </Link>
   </ItemDefinitionGroup>
@@ -425,7 +431,7 @@
       <OmitFramePointers>true</OmitFramePointers>
       <EnableFiberSafeOptimizations>false</EnableFiberSafeOptimizations>
       <WholeProgramOptimization>true</WholeProgramOptimization>
-      <AdditionalIncludeDirectories>..\CryCommon;..\..\SDKs\Speex\include;.;..\..\SDKs;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\CryCommon;$(CryNetworkVoiceIncludeDirectories);.;..\..\SDKs;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling />
@@ -476,7 +482,7 @@
       <OmitFramePointers>true</OmitFramePointers>
       <EnableFiberSafeOptimizations>false</EnableFiberSafeOptimizations>
       <WholeProgramOptimization>true</WholeProgramOptimization>
-      <AdditionalIncludeDirectories>..\CryCommon;..\..\SDKs\Speex\include;.;..\..\SDKs;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\CryCommon;$(CryNetworkVoiceIncludeDirectories);.;..\..\SDKs;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling />
@@ -502,7 +508,6 @@
       <IgnoreSpecificDefaultLibraries>libcmt.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <ProgramDatabaseFile>.\Release/CryNetwork.pdb</ProgramDatabaseFile>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
-      <BaseAddress>0x39500000</BaseAddress>
       <ImportLibrary>$(IntDir)$(TargetName).lib</ImportLibrary>
       <TargetMachine>MachineX64</TargetMachine>
     </Link>
@@ -521,7 +526,7 @@
       <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
       <EnableFiberSafeOptimizations>false</EnableFiberSafeOptimizations>
       <WholeProgramOptimization>true</WholeProgramOptimization>
-      <AdditionalIncludeDirectories>..\CryCommon;..\..\SDKs\Speex\include;.;..\..\SDKs;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\CryCommon;$(CryNetworkVoiceIncludeDirectories);.;..\..\SDKs;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <StringPooling>true</StringPooling>
       <ExceptionHandling />
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
@@ -566,7 +571,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <OmitFramePointers>true</OmitFramePointers>
       <EnableFiberSafeOptimizations>false</EnableFiberSafeOptimizations>
-      <AdditionalIncludeDirectories>..\CryCommon;..\..\SDKs\Speex\include;.;..\..\SDKs;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\CryCommon;$(CryNetworkVoiceIncludeDirectories);.;..\..\SDKs;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <StringPooling>true</StringPooling>
       <ExceptionHandling />
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
@@ -593,7 +598,6 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <BaseAddress>0x39500000</BaseAddress>
       <TargetMachine>MachineX64</TargetMachine>
     </Link>
   </ItemDefinitionGroup>
@@ -611,7 +615,7 @@
       <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
       <EnableFiberSafeOptimizations>false</EnableFiberSafeOptimizations>
       <WholeProgramOptimization>true</WholeProgramOptimization>
-      <AdditionalIncludeDirectories>..\CryCommon;..\..\SDKs\Speex\include;.;..\..\SDKs;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\CryCommon;$(CryNetworkVoiceIncludeDirectories);.;..\..\SDKs;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>SP_DEMO;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling />
@@ -657,7 +661,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <OmitFramePointers>true</OmitFramePointers>
       <EnableFiberSafeOptimizations>false</EnableFiberSafeOptimizations>
-      <AdditionalIncludeDirectories>..\CryCommon;..\..\SDKs\Speex\include;.;..\..\SDKs;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\CryCommon;$(CryNetworkVoiceIncludeDirectories);.;..\..\SDKs;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>SP_DEMO;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling />
@@ -685,7 +689,6 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <BaseAddress>0x39500000</BaseAddress>
       <TargetMachine>MachineX64</TargetMachine>
     </Link>
   </ItemDefinitionGroup>
@@ -703,7 +706,7 @@
       <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
       <EnableFiberSafeOptimizations>false</EnableFiberSafeOptimizations>
       <WholeProgramOptimization>true</WholeProgramOptimization>
-      <AdditionalIncludeDirectories>..\CryCommon;..\..\SDKs\Speex\include;.;..\..\SDKs;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\CryCommon;$(CryNetworkVoiceIncludeDirectories);.;..\..\SDKs;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>CRYSIS_BETA;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling />
@@ -749,7 +752,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <OmitFramePointers>true</OmitFramePointers>
       <EnableFiberSafeOptimizations>false</EnableFiberSafeOptimizations>
-      <AdditionalIncludeDirectories>..\CryCommon;..\..\SDKs\Speex\include;.;..\..\SDKs;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\CryCommon;$(CryNetworkVoiceIncludeDirectories);.;..\..\SDKs;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <StringPooling>true</StringPooling>
       <ExceptionHandling />
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
@@ -776,9 +779,23 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <BaseAddress>0x39500000</BaseAddress>
       <TargetMachine>MachineX64</TargetMachine>
     </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(CryNetworkEnablePunkBuster)'=='true'">
+    <ClCompile>
+      <PreprocessorDefinitions>CRYNETWORK_ENABLE_PUNKBUSTER=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(CryNetworkEnableVoiceChat)'=='true'">
+    <ClCompile>
+      <PreprocessorDefinitions>CRYNETWORK_ENABLE_VOICE_CHAT=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(CryNetworkEnableVoiceChat)'!='true'">
+    <ClCompile>
+      <PreprocessorDefinitions>CRYNETWORK_ENABLE_VOICE_CHAT=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\..\SDKs\BigDigits\bigd.h" />
@@ -881,6 +898,8 @@
     <ClInclude Include="..\..\SDKs\PunkBuster\pbmd5.h" />
     <ClInclude Include="..\..\SDKs\PunkBuster\pbsdk.h" />
     <ClInclude Include="..\..\SDKs\PunkBuster\pbsv.h" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(CryNetworkEnableVoiceChat)'=='true'">
     <ClInclude Include="..\..\SDKs\Speex\include\speex\speex.h" />
     <ClInclude Include="..\..\SDKs\Speex\include\speex\speex_bits.h" />
     <ClInclude Include="..\..\SDKs\Speex\include\speex\speex_callbacks.h" />
@@ -935,6 +954,8 @@
     <ClInclude Include="..\..\SDKs\Speex\libspeex\vq_bfin.h" />
     <ClInclude Include="..\..\SDKs\Speex\libspeex\vq_sse.h" />
     <ClInclude Include="..\..\SDKs\Speex\libspeex\_kiss_fft_guts.h" />
+  </ItemGroup>
+  <ItemGroup>
     <ClInclude Include="AntiCheat\ClientDefence.h" />
     <ClInclude Include="AntiCheat\DefenceContext.h" />
     <ClInclude Include="AntiCheat\DefenceData.h" />
@@ -2990,10 +3011,20 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='SP_DEMO|x64'">
       </PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\SDKs\PunkBuster\pbcl.cpp" />
-    <ClCompile Include="..\..\SDKs\PunkBuster\pbmd5.cpp" />
-    <ClCompile Include="..\..\SDKs\PunkBuster\pbsdk.cpp" />
-    <ClCompile Include="..\..\SDKs\PunkBuster\pbsv.cpp" />
+    <ClCompile Include="..\..\SDKs\PunkBuster\pbcl.cpp">
+      <ExcludedFromBuild Condition="'$(CryNetworkEnablePunkBuster)'!='true'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\SDKs\PunkBuster\pbmd5.cpp">
+      <ExcludedFromBuild Condition="'$(CryNetworkEnablePunkBuster)'!='true'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\SDKs\PunkBuster\pbsdk.cpp">
+      <ExcludedFromBuild Condition="'$(CryNetworkEnablePunkBuster)'!='true'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\SDKs\PunkBuster\pbsv.cpp">
+      <ExcludedFromBuild Condition="'$(CryNetworkEnablePunkBuster)'!='true'">true</ExcludedFromBuild>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup Condition="'$(CryNetworkEnableVoiceChat)'=='true'">
     <ClCompile Include="..\..\SDKs\Speex\libspeex\bits.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='CRYSIS_BETA|Win32'">
       </PrecompiledHeader>
@@ -4034,6 +4065,8 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='SP_DEMO|x64'">
       </PrecompiledHeader>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
     <ClCompile Include="AntiCheat\ClientDefence.cpp" />
     <ClCompile Include="AntiCheat\DefenceContext.cpp" />
     <ClCompile Include="AntiCheat\DefenceData.cpp" />
@@ -4213,7 +4246,7 @@
     <ClCompile Include="Utils.cpp" />
     <ClCompile Include="VOIP\IVoiceDecoder.cpp" />
     <ClCompile Include="VOIP\IVoiceEncoder.cpp" />
-    <ClCompile Include="VOIP\SpeexCodec.cpp" />
+    <ClCompile Include="VOIP\SpeexCodec.cpp" Condition="'$(CryNetworkEnableVoiceChat)'=='true'" />
     <ClCompile Include="VOIP\VoiceManager.cpp" />
     <ClCompile Include="VOIP\VoicePacket.cpp" />
     <ClCompile Include="WorkQueue.cpp" />

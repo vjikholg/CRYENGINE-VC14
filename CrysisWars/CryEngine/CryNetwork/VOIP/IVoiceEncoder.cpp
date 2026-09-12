@@ -1,6 +1,8 @@
 #include "StdAfx.h"
 #include "IVoiceEncoder.h"
 
+#include <CryCheckedArithmetic.h>
+
 CVoiceEncodingSession::CVoiceEncodingSession( IVoiceEncoder * pEnc ) : m_pEnc(pEnc)
 {
 	m_buildFragment.resize( pEnc->GetFrameSize() );
@@ -11,18 +13,36 @@ CVoiceEncodingSession::CVoiceEncodingSession( IVoiceEncoder * pEnc ) : m_pEnc(pE
 
 void CVoiceEncodingSession::AddVoiceFragment( int numSamples, const int16 * pSamples, IVoicePacketSink * pSink )
 {
-	while (numSamples)
+	if (m_buildFragment.empty())
 	{
-		size_t copySize = min(m_buildFragment.size() - m_buildPos, size_t(numSamples));
+		NET_ASSERT(false);
+		return;
+	}
+
+	while (numSamples > 0)
+	{
+		const size_t requestedCopySize = std::min(m_buildFragment.size() - m_buildPos, static_cast<size_t>(numSamples));
+		int copySize = 0;
+		if (!CryTryNarrowSize(requestedCopySize, copySize))
+		{
+			NET_ASSERT(false);
+			return;
+		}
 		memcpy( &m_buildFragment[m_buildPos], pSamples, sizeof(int16)*copySize );
 		m_buildPos += copySize;
 		numSamples -= copySize;
 		pSamples += copySize;
 		if (m_buildPos == m_buildFragment.size())
 		{
+			int frameSize = 0;
+			if (!CryTryNarrowSize(m_buildFragment.size(), frameSize))
+			{
+				NET_ASSERT(false);
+				return;
+			}
 			TVoicePacketPtr pPacket = CVoicePacket::Allocate();
 			pPacket->SetSeq(m_seq);
-			m_pEnc->EncodeFrame( m_buildFragment.size(), &m_buildFragment[0], pPacket );
+			m_pEnc->EncodeFrame( frameSize, &m_buildFragment[0], pPacket );
 			m_buildPos = 0;
 			m_seq++;
 			pSink->AddPacket( pPacket );
@@ -36,10 +56,16 @@ void CVoiceEncodingSession::Reset( IVoicePacketSink * pSink )
 	//fill up with silence to compress current data
 	if(m_buildPos)
 	{
+		int frameSize = 0;
+		if (!CryTryNarrowSize(m_buildFragment.size(), frameSize))
+		{
+			NET_ASSERT(false);
+			return;
+		}
 		memset(&m_buildFragment[m_buildPos],0,sizeof(int16)*(m_buildFragment.size()-m_buildPos));
 		TVoicePacketPtr pPacket = CVoicePacket::Allocate();
 		pPacket->SetSeq(m_seq);
-		m_pEnc->EncodeFrame(m_buildFragment.size(),&m_buildFragment[0],pPacket);
+		m_pEnc->EncodeFrame(frameSize,&m_buildFragment[0],pPacket);
 		m_buildPos=0;
 		m_seq++;
 		pSink->AddPacket( pPacket );

@@ -215,7 +215,7 @@ void CLanQueryListener::ProcessResultFrom( const uint8 * buffer, size_t bufferLe
 	//this dumps the servers in the console...
 	//m_pGameQueryListener->OnReceiveGameState( RESOLVER.ToString(addr).c_str(), xml );
 
-	int pos = temp.find("\n");
+	string::size_type pos = temp.find("\n");
 	while(pos != string::npos)		//delete newlines and unimportant info
 	{
 		temp.erase(pos, 1);

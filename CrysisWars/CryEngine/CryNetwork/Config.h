@@ -3,6 +3,11 @@
 
 #pragma once
 
+// Retain the public voice interfaces and wire-message slots when the implementation is disabled.
+#ifndef CRYNETWORK_ENABLE_VOICE_CHAT
+	#define CRYNETWORK_ENABLE_VOICE_CHAT 0
+#endif
+
 // enable a good toolkit of debug stuff for when you're developing code
 #define USUAL_DEBUG_STUFF 0
 

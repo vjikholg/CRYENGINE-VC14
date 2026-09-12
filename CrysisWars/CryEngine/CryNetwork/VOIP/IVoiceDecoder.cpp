@@ -2,6 +2,8 @@
 #include "IVoiceDecoder.h"
 #include "Network.h"
 
+#include <CryCheckedArithmetic.h>
+
 static const float DEBUG_FADEOUT = 1;
 
 CVoiceDecodingSession::CVoiceDecodingSession(IVoiceDecoder* d):m_pDecoder(d)
@@ -142,8 +144,12 @@ void CVoiceDecodingSession::GetSamples( int inNumSamples, int16 * pSamples )
 		numSamples -= copySize;
 	}
 
-	if(m_packets.size()<m_minPendingPackets)
-		m_minPendingPackets=m_packets.size();
+	if (m_packets.size() < static_cast<size_t>(m_minPendingPackets))
+	{
+		int pendingPacketCount = 0;
+		if (CryTryNarrowSize(m_packets.size(), pendingPacketCount))
+			m_minPendingPackets = pendingPacketCount;
+	}
 
 	m_samplesSinceCorrection+=inNumSamples;
 	if(m_samplesSinceCorrection>=8000)
@@ -168,7 +174,13 @@ uint32 CVoiceDecodingSession::GetPendingPackets()
 {
 	CryAutoLock<CryFastLock> lk(m_lock);
 
-	return m_packets.size();
+	uint32 pendingPacketCount = 0;
+	if (!CryTryNarrowSize(m_packets.size(), pendingPacketCount))
+	{
+		NET_ASSERT(false);
+		return (std::numeric_limits<uint32>::max)();
+	}
+	return pendingPacketCount;
 }
 
 void CVoiceDecodingSession::GetStats(SDecodingStats& s)

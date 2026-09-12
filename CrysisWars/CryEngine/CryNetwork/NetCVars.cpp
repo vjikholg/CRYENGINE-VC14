@@ -62,10 +62,15 @@ CNetCVars::CNetCVars()
 	static const int DEFAULT_CHEAT_PROTECTION = 1;
 #endif
 	c->Register( "sv_cheatprotection", &CheatProtectionLevel, DEFAULT_CHEAT_PROTECTION, 0, "" );
+#if CRYNETWORK_ENABLE_VOICE_CHAT
 	pVoiceCodec=c->RegisterString( "sv_voicecodec", "speex", VF_REQUIRE_LEVEL_RELOAD );
 	c->Register("sv_voice_enable_groups",&EnableVoiceGroups,1,0);
-
 	c->Register("net_enable_voice_chat",&EnableVoiceChat,1,0);
+#else
+	pVoiceCodec=c->RegisterString( "sv_voicecodec", "disabled", VF_READONLY );
+	c->Register("sv_voice_enable_groups",&EnableVoiceGroups,0,VF_READONLY);
+	c->Register("net_enable_voice_chat",&EnableVoiceChat,0,VF_READONLY);
+#endif
 	c->Register("net_rtt_convergence_factor", &RTTConverge, 995);
 #if !ALWAYS_CHECK_CD_KEYS
   c->Register( "sv_check_cd_keys",&CheckCDKeys, 0, VF_NOHELP, "Sets CDKey validation mode:\n 0 - no check\n 1 - check&disconnect unverified\n 2 - check only\n");
@@ -100,10 +105,17 @@ CNetCVars::CNetCVars()
 	c->RegisterFloat( "net_defaultChannelPacketRateToleranceHigh", 2.0f, VF_READONLY );
 	c->RegisterFloat( "net_defaultChannelIdlePacketRateDesired", 0.05f, VF_READONLY );
 
+#if CRYNETWORK_ENABLE_VOICE_CHAT
   c->Register( "net_voice_lead_packets", &VoiceLeadPackets, 5 );
   c->Register( "net_voice_trail_packets", &VoiceTrailPackets, 5 );
 	c->Register( "net_voice_proximity", &VoiceProximity, 0.0f, 0);
-	c->Register( "net_voice_averagebitrate", &VoiceAverageBitRate, 15000, 0, "The average bit rate for VOIP transmission\n(default 15000, higher=better quality)."); 
+	c->Register( "net_voice_averagebitrate", &VoiceAverageBitRate, 15000, 0, "The average bit rate for VOIP transmission\n(default 15000, higher=better quality).");
+#else
+  c->Register( "net_voice_lead_packets", &VoiceLeadPackets, 0, VF_READONLY );
+  c->Register( "net_voice_trail_packets", &VoiceTrailPackets, 0, VF_READONLY );
+	c->Register( "net_voice_proximity", &VoiceProximity, 0.0f, VF_READONLY);
+	c->Register( "net_voice_averagebitrate", &VoiceAverageBitRate, 0, VF_READONLY);
+#endif
 
   c->Register( "net_lan_scanport_first", &LanScanPortFirst,  SERVER_DEFAULT_PORT, VF_DUMPTODISK, "Starting port for LAN games scanning");
   c->Register( "net_lan_scanport_num", &LanScanPortNum, 5, VF_DUMPTODISK, "Num ports for LAN games scanning" );

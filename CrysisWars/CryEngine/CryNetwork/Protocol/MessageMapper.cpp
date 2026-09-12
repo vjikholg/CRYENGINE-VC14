@@ -12,7 +12,7 @@
 #include "StdAfx.h"
 #include "MessageMapper.h"
 
-CMessageMapper::CMessageMapper()
+CMessageMapper::CMessageMapper() : m_DefMapBias(0)
 {
 }
 
@@ -20,13 +20,31 @@ void CMessageMapper::Reset( size_t nReservedMessages,
 														const SNetProtocolDef * pProtocols,
 														size_t nProtocols )
 {
+	m_messages.clear();
+	m_IdMap.clear();
+	m_DefMap.clear();
+	m_nameToDef.clear();
+	m_DefMapBias = 0;
+
 	SSinkMessages msgs;
-	msgs.nEnd = nReservedMessages;
+	if (!CryTryNarrowSize(nReservedMessages, msgs.nEnd))
+	{
+		CryError("Reserved network message count exceeds the 32-bit message ID space");
+		return;
+	}
 
 	for (size_t i = 0; i < nProtocols; i++)
 	{
 		msgs.nStart = msgs.nEnd;
-		msgs.nEnd = msgs.nStart + pProtocols[i].nMessages;
+		size_t end = 0;
+		if (!CryTryAddSize(msgs.nStart, pProtocols[i].nMessages, end) ||
+			!CryTryNarrowSize(end, msgs.nEnd))
+		{
+			CryError("Network protocol message count exceeds the 32-bit message ID space");
+			m_messages.clear();
+			m_nameToDef.clear();
+			return;
+		}
 		msgs.pFirst = pProtocols[i].vMessages;
 		msgs.pLast = pProtocols[i].vMessages + pProtocols[i].nMessages;
 		m_messages.push_back(msgs);
@@ -38,7 +56,7 @@ void CMessageMapper::Reset( size_t nReservedMessages,
 	// Build the ID and definition mapping.
 	if (m_messages.empty())
 		return;
-	const int nMessageIDs = GetNumberOfMsgIds();
+	const uint32 nMessageIDs = GetNumberOfMsgIds();
 	uint32 i = 0;
 	m_IdMap.clear();
 	m_DefMap.resize(0);
@@ -132,7 +150,7 @@ uint32 CMessageMapper::GetNumberOfMsgIds() const
 {
 	return m_messages.empty()?
 		1 :
-		m_messages.back().nStart + m_messages.back().pLast - m_messages.back().pFirst;
+		m_messages.back().nEnd;
 }
 
 bool CMessageMapper::LookupMessage( const char * name, SNetMessageDef const ** pDef, size_t * pnSubProtocol )

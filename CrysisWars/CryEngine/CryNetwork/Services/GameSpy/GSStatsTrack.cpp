@@ -220,7 +220,16 @@ void CGSStatsTrack::ProcessPending()
 					break;
 				}
 				
-				SCResult res = scCreateReport(m_interface, m_version, m_toReport.size(), m_teamData.size(), &m_report);
+				gsi_u32 playerCount = 0;
+				gsi_u32 teamCount = 0;
+				if (!CryTryNarrowSize(m_toReport.size(), playerCount) ||
+					!CryTryNarrowSize(m_teamData.size(), teamCount))
+				{
+					TO_GAME(&CGSStatsTrack::GC_Error, this, SCResult_INVALID_PARAMETERS);
+					fail = true;
+					break;
+				}
+				SCResult res = scCreateReport(m_interface, m_version, playerCount, teamCount, &m_report);
 				if(res != SCResult_NO_ERROR)
 				{
 					TO_GAME(&CGSStatsTrack::GC_Error, this, res);

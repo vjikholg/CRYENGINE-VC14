@@ -6,108 +6,36 @@
 #include "MiniQueue.h"
 #include "Typelist.h"
 
+#include <limits>
+
 class CByteStreamPacker
 {
 public:
+	static constexpr size_t MaxStreamSize =
+		static_cast<size_t>((std::numeric_limits<uint32>::max)());
+
 	CByteStreamPacker()
 	{
 		for (int i=0; i<3; i++)
 			m_data[i] = 0;
 	}
 
-	uint32 GetNextOfs( uint32 sz );
+	bool TryGetNextOfs(size_t sz, uint32& offset) noexcept;
+	uint32 GetNextOfs(size_t sz);
 
 	template <int N>
 	ILINE uint32 GetNextOfs_Fixed( NTypelist::Int2Type<N> )
 	{
 		return GetNextOfs(N);
 	}
-	ILINE uint32 GetNextOfs_Fixed( NTypelist::Int2Type<0> )
-	{
-		return m_data[eD_Size];
-	}
-	ILINE uint32 GetNextOfs_Fixed( NTypelist::Int2Type<1> )
-	{
-/*
-		CByteStreamPacker orig = *this;
-		CByteStreamPacker temp = *this;
-		if (temp.m_data[eD_Ofs1]%4 == 0)
-		{
-			temp.m_data[eD_Ofs1] = temp.m_data[eD_Size];
-			temp.m_data[eD_Size] += 4;
-		}
-		uint32 outShouldBe = temp.m_data[eD_Ofs1];
-		temp.m_data[eD_Ofs1] += 1;
-*/
-
-		static const uint32 SEL = 0x0e; // binary 1110
-		uint32 selector = (SEL >> (m_data[eD_Ofs1] & 3)) & 1;
-		uint32 out = m_data[eD_Ofs1] = m_data[selector];
-		m_data[eD_Ofs1] ++;
-		m_data[eD_Size] += 4-4*selector;
-
-/*
-		NET_ASSERT(out == outShouldBe);
-		for (int i=0; i<3; i++)
-			NET_ASSERT(m_data[i] == temp.m_data[i]);
-*/
-
-		return out;
-	}
-	ILINE uint32 GetNextOfs_Fixed( NTypelist::Int2Type<2> )
-	{
-/*
-		CByteStreamPacker orig = *this;
-		CByteStreamPacker temp = *this;
-		if (temp.m_data[eD_Ofs2]%4 == 0)
-		{
-			temp.m_data[eD_Ofs2] = temp.m_data[eD_Size];
-			temp.m_data[eD_Size] += 4;
-		}
-		uint32 outShouldBe = temp.m_data[eD_Ofs2];
-		temp.m_data[eD_Ofs2] += 2;
-*/
-
-		static const uint32 SEL = 0x1c; // binary 1110<<1
-		uint32 selector = (SEL >> (m_data[eD_Ofs2] & 3)) & 2;
-		uint32 out = m_data[eD_Ofs2] = m_data[selector];
-		m_data[eD_Ofs2] += 2;
-		m_data[eD_Size] += 4-2*selector;
-
-/*
-		NET_ASSERT(out == outShouldBe);
-		for (int i=0; i<3; i++)
-			NET_ASSERT(m_data[i] == temp.m_data[i]);
-*/
-
-		return out;
-	}
-	ILINE uint32 GetNextOfs_Fixed( NTypelist::Int2Type<4> )
-	{
-		uint32 ofs = m_data[eD_Size];
-		m_data[eD_Size] += 4;
-		return ofs;
-	}
-	ILINE uint32 GetNextOfs_Fixed( NTypelist::Int2Type<8> )
-	{
-		uint32 ofs = m_data[eD_Size];
-		m_data[eD_Size] += 8;
-		return ofs;
-	}
-	ILINE uint32 GetNextOfs_Fixed( NTypelist::Int2Type<12> )
-	{
-		uint32 ofs = m_data[eD_Size];
-		m_data[eD_Size] += 12;
-		return ofs;
-	}
-	ILINE uint32 GetNextOfs_Fixed( NTypelist::Int2Type<16> )
-	{
-		uint32 ofs = m_data[eD_Size];
-		m_data[eD_Size] += 16;
-		return ofs;
-	}
 
 protected:
+	static void GetCurrentOffset(size_t nextSize, size_t& nextOffset) noexcept;
+	static bool TryGetSingleByteOffset(size_t& nextSize, size_t& nextOfs1, size_t& nextOffset) noexcept;
+	static bool TryGetTwoByteOffset(size_t& nextSize, size_t& nextOfs2, size_t& nextOffset) noexcept;
+	static bool TryGetFourByteOffset(size_t& nextSize, size_t& nextOffset) noexcept;
+	static bool TryGetAlignedOffset(size_t sz, size_t& nextSize, size_t& nextOffset) noexcept;
+
 	enum EData
 	{
 		eD_Size = 0,
@@ -125,7 +53,10 @@ protected:
 class CByteOutputStream : private CByteStreamPacker
 {
 public:
-	CByteOutputStream( IStreamAllocator * pSA, size_t initSize = 16, void * caller = 0 ) : m_pSA(pSA), m_capacity(initSize), m_buffer((uint8*)pSA->Alloc(initSize, caller? caller : UP_STACK_PTR)) 
+	CByteOutputStream( IStreamAllocator* pSA, size_t initSize = 16ull, void* caller = 0 ) :
+		m_pSA(pSA),
+		m_capacity(initSize),
+		m_buffer((uint8*)pSA->Alloc(initSize, caller? caller : UP_STACK_PTR))
 	{
 		memset(m_buffer, 0, initSize);
 	}
@@ -174,9 +105,9 @@ public:
 private:
 	void Grow( size_t sz );
 
-	IStreamAllocator * m_pSA;
-	uint32 m_capacity;
-	uint8 * m_buffer;
+	IStreamAllocator* m_pSA;
+	size_t m_capacity;
+	uint8* m_buffer;
 };
 
 class CByteInputStream : private CByteStreamPacker
@@ -190,16 +121,16 @@ public:
 	{
 	}
 
-	ILINE void Get( void * pWhere, size_t sz )
+	ILINE void Get( void* pWhere, size_t sz )
 	{
 		NET_ASSERT(sz <= m_data[eD_Size]);
 		memcpy(pWhere, Get(sz), sz);
 	}
 
-	ILINE const void * Get( size_t sz )
+	ILINE const void* Get( size_t sz )
 	{
 		uint32 where = GetNextOfs(sz);
-		NET_ASSERT((where + sz) <= m_capacity);
+		NET_ASSERT(where <= m_capacity && sz <= m_capacity - where);
 		return m_pData + where;
 	}
 
@@ -207,7 +138,7 @@ public:
 	ILINE const T& GetTyped()
 	{
 		uint32 where = GetNextOfs_Fixed(NTypelist::Int2Type<sizeof(T)>());
-		NET_ASSERT((where + sizeof(T)) <= m_capacity);
+		NET_ASSERT(where <= m_capacity && sizeof(T) <= m_capacity - where);
 		return *static_cast<const T*>(static_cast<const void*>(m_pData + where));
 	}
 
@@ -230,7 +161,7 @@ public:
 	}
 
 private:
-	const uint8 * m_pData;
+	const uint8* m_pData;
 	size_t m_capacity;
 };
 

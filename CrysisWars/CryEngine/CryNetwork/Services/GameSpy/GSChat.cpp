@@ -178,11 +178,14 @@ void	CGSChat::NC_ListUsers()
 
 void  CGSChat::NC_SetChatKeys(std::vector<string> keys, std::vector<string> values)
 {
-	if(!m_chat)
+	if(!m_chat || keys.size() != values.size())
+		return;
+	int keyCount = 0;
+	if (!CryTryNarrowSize(keys.size(), keyCount))
 		return;
 	std::vector<const char*> p_keys(keys.size());
 	std::vector<const char*> p_values(values.size());
-	for(int i=0;i<keys.size();++i)
+	for(size_t i=0;i<keys.size();++i)
 	{
 		p_keys[i] = keys[i].c_str();
 		p_values[i] = values[i].c_str();
@@ -193,7 +196,7 @@ void  CGSChat::NC_SetChatKeys(std::vector<string> keys, std::vector<string> valu
 	{
 		CryFixedStringT<32> nick = pr.m_uniquenick.c_str();
 		nick += GAMESPY_NAMESPACE_EXT;
-		chatSetChannelKeys(m_chat,GAMESPY_CHANNEL_NAME, nick.c_str(), keys.size(),&p_keys[0],&p_values[0]);
+		chatSetChannelKeys(m_chat,GAMESPY_CHANNEL_NAME, nick.c_str(), keyCount, p_keys.data(), p_values.data());
 	}
 }
 
@@ -201,8 +204,11 @@ void  CGSChat::NC_GetChatKeys(string user, std::vector<string> keys)
 {
 	if(!m_chat)
 		return;
+	int keyCount = 0;
+	if (!CryTryNarrowSize(keys.size(), keyCount))
+		return;
 	std::vector<const char*> p_keys(keys.size());
-	for(int i=0;i<keys.size();++i)
+	for(size_t i=0;i<keys.size();++i)
 	{
 		p_keys[i] = keys[i].c_str();
 	}
@@ -212,7 +218,7 @@ void  CGSChat::NC_GetChatKeys(string user, std::vector<string> keys)
 	cb.pChat = this;
 	cb.user = user;
 	m_getkeysList.push_front(cb);
-	chatGetChannelKeys(m_chat,GAMESPY_CHANNEL_NAME, nick.c_str(), keys.size(),&p_keys[0], GetKeysCallback, &m_getkeysList.front(), CHATFalse);
+	chatGetChannelKeys(m_chat,GAMESPY_CHANNEL_NAME, nick.c_str(), keyCount, p_keys.data(), GetKeysCallback, &m_getkeysList.front(), CHATFalse);
 }
 
 void	CGSChat::GC_Joined(CHATEnterResult res)
@@ -270,14 +276,19 @@ void	CGSChat::GC_OnKeys(string user, std::vector<string> keys, std::vector<strin
 {
 	if(m_listener)
 	{
+		if (keys.size() != values.size())
+			return;
+		int keyCount = 0;
+		if (!CryTryNarrowSize(keys.size(), keyCount))
+			return;
 		std::vector<const char*> p_keys(keys.size());
 		std::vector<const char*> p_values(values.size());
-		for(int i=0;i<keys.size();++i)
+		for(size_t i=0;i<keys.size();++i)
 		{
 			p_keys[i] = keys[i].c_str();
 			p_values[i] = values[i].c_str();
 		}
-		m_listener->OnChatKeys(user,keys.size(),&p_keys[0], &p_values[0]);
+		m_listener->OnChatKeys(user, keyCount, p_keys.data(), p_values.data());
 	}
 }
 

@@ -1,5 +1,7 @@
 #include "StdAfx.h"
 #include "NetAddress.h"
+
+#include <CryCheckedArithmetic.h>
 #include "Network.h"
 
 #if defined(LINUX)
@@ -220,11 +222,15 @@ private:
 
 	bool VisitIP( const sockaddr * pAddr, size_t len, bool bracket )
 	{
+		socklen_t socketAddressLength = 0;
+		if (!CryTryNarrowSize(len, socketAddressLength))
+			return false;
+
 		char host[NI_MAXHOST];
 		char serv[NI_MAXSERV];
 		static const size_t addrLen = NI_MAXHOST+3+NI_MAXSERV+1;
 		char addr[addrLen];
-		int rv = getnameinfo( pAddr, len, host, NI_MAXHOST, serv, NI_MAXSERV, NI_DGRAM|NI_NUMERICSERV );
+		int rv = getnameinfo( pAddr, socketAddressLength, host, NI_MAXHOST, serv, NI_MAXSERV, NI_DGRAM|NI_NUMERICSERV );
 		if (0 != rv)
 		{
 #ifdef WIN32

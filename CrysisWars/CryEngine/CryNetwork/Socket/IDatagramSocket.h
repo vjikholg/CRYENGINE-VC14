@@ -43,7 +43,7 @@ struct IDatagramSocket : public CMultiThreadRefCount
 	virtual void UnregisterBackoffAddress( TNetAddress addr ) = 0;
   virtual SOCKET GetSysSocket() {return INVALID_SOCKET;}
 
-	virtual void GetMemoryStatistics(ICrySizer* pSizer) { /* do nothing */ }
+	virtual void GetMemoryStatistics(ICrySizer*) { /* do nothing */ }
 };
 
 TYPEDEF_AUTOPTR(IDatagramSocket);

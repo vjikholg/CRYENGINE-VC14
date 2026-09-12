@@ -138,7 +138,7 @@ void CGSNetworkProfile::RemoveListener(INetworkProfileListener* lst)
 
 bool CGSNetworkProfile::CheckNick(const char* nick)
 {
-	int n_l = strlen(nick);
+	const size_t n_l = strlen(nick);
 	if(!n_l)
 	{
 		LoginError(eNPE_nickEmpty, "Please, enter your nickname.");
@@ -174,7 +174,7 @@ bool CGSNetworkProfile::CheckNick(const char* nick)
 
 bool CGSNetworkProfile::CheckPassword(const char* pass)
 {
-	int p_l = strlen(pass);
+	const size_t p_l = strlen(pass);
 	if(!p_l)
 	{
 		LoginError(eNPE_passEmpty,"Please, enter your account password.");
@@ -190,7 +190,7 @@ bool CGSNetworkProfile::CheckPassword(const char* pass)
 
 bool CGSNetworkProfile::CheckEmail(const char* email)
 {
-	int m_l = strlen(email);
+	const size_t m_l = strlen(email);
 	if(!m_l)
 	{
 		LoginError(eNPE_mailEmpty, "Please, enter your email address.");

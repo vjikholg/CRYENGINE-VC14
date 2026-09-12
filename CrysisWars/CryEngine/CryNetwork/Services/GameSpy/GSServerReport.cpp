@@ -23,6 +23,15 @@
 #include "GameSpy/gcdkey/gcdkeys.h"
 #include "GameSpy/gcdkey/gcdkeyc.h"
 
+#ifdef max
+#undef max
+#endif
+
+// remove gamespy helpers - pupper
+#ifdef min
+#undef min
+#endif
+
 static const float UPDATE_INTERVAL = 0.01f;
 static const bool VERBOSE = true;
 
@@ -332,7 +341,7 @@ void  CGSServerReport::NC_StartReport(INetNub* net_nub, IServerReportListener* l
   NC_SetServerValue("anticheat",isPbSvEnabled()?"1":"0");
 #endif
 
-  NC_SetServerValue("voicecomm",CVARS.EnableVoiceChat!=0?"1":"0");
+  NC_SetServerValue("voicecomm",CRYNETWORK_ENABLE_VOICE_CHAT && CVARS.EnableVoiceChat!=0?"1":"0");
   NC_SetServerValue("dedicated",gEnv->pSystem->IsDedicated()?"1":"0");
 
 	if ( ICVar * pCVar = gEnv->pConsole->GetCVar("sv_requireinputdevice") )
@@ -594,12 +603,23 @@ int CGSServerReport::QR2CountCallback(qr2_key_type keytype, void* obj)
 	switch(keytype)
 	{
 	case key_player:
-		return pReport->m_playersInfo.size();
+		return CheckedQR2Count(pReport->m_playersInfo.size());
 	case key_team:
-		return pReport->m_teamsInfo.size();
+		return CheckedQR2Count(pReport->m_teamsInfo.size());
 	default:
 		return 0;
 	}
+}
+
+int CGSServerReport::CheckedQR2Count(size_t count)
+{
+	// check state. gslib blackbox boundary makes it so we can't promote int->size_t above.
+	if (count > static_cast<size_t>(std::numeric_limits<int>::max()))
+	{
+		return 0;
+	}
+
+	return static_cast<int>(count);
 }
 
 void CGSServerReport::QR2KeyListCallback(qr2_key_type keytype, qr2_keybuffer_t keybuffer, void* obj)

@@ -75,7 +75,7 @@ typename Map::iterator LookupAddress( const TNetAddress& addr, Map& m, uint32 fl
 		if (const SIPv4Addr * pAddr = addr.GetPtr<SIPv4Addr>())
 		{
 			int count = 0;
-			Map::iterator itOut = m.end();
+			typename Map::iterator itOut = m.end();
 			for (typename Map::iterator it = m.begin(); it != m.end(); ++it)
 			{
 				if (const SIPv4Addr * pKey = it->first.GetPtr<SIPv4Addr>())
@@ -628,7 +628,7 @@ bool CNetNub::SendPendingConnect( SPendingConnection& pc )
 
 		uint8 * pBuffer = (uint8*) alloca(1 + (VERSION_SIZE)*sizeof(uint32) + sizeof(uint32) + cslen);
 
-		uint32 cur_size = 0;
+		size_t cur_size = 0;
 		pBuffer[cur_size] = Frame_IDToHeader[eH_ConnectionSetup];
 		cur_size ++;
 		memcpy( pBuffer + cur_size, v, VERSION_SIZE*sizeof(uint32) );

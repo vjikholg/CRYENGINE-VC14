@@ -79,15 +79,15 @@ private:
 class CStatsCollector
 {
 public:
-	ILINE CStatsCollector( const char * filename = "" ) {}
-	ILINE void BeginPacket( const TNetAddress& to, CTimeValue nTime, uint32 id ) {}
-	ILINE void AddOverheadBits( const char * describe, float bits ) {}
-	ILINE void Message( const char * message, float bits ) {}
-	ILINE void BeginGroup( const char * name ) {}
-	ILINE void AddData( const char * name, float bits ) {}
+	ILINE CStatsCollector( const char * = "" ) {}
+	ILINE void BeginPacket( const TNetAddress&, CTimeValue, uint32 ) {}
+	ILINE void AddOverheadBits( const char *, float ) {}
+	ILINE void Message( const char *, float ) {}
+	ILINE void BeginGroup( const char * ) {}
+	ILINE void AddData( const char *, float ) {}
 	ILINE void EndGroup() {}
-	ILINE void EndPacket( uint32 nSize ) {}
-	ILINE void LostPacket( uint32 id ) {}
+	ILINE void EndPacket( uint32 ) {}
+	ILINE void LostPacket( uint32 ) {}
 	ILINE void SetDebugKit(bool) {}
 };
 

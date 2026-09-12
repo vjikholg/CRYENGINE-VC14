@@ -9,7 +9,7 @@
 
 struct SSocketID
 {
-	static const uint16 InvalidId = ~uint16(0);
+	static const uint16 InvalidId = 0xffffu;
 
 	SSocketID() : id(InvalidId), salt(0) {}
 	SSocketID(uint16 i, uint16 s) : id(i), salt(s) {}

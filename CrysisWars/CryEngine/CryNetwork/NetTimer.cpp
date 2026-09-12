@@ -2,6 +2,8 @@
 #include "NetTimer.h"
 #include "Network.h"
 
+#include <limits>
+
 CNetTimer::CNetTimer() : m_curSlot(0)
 {
 	// null callback
@@ -35,7 +37,13 @@ NetTimerId CNetTimer::AddTimer( CTimeValue when, NetTimerCallback callback, void
 	int id = -1;
 	if (m_freeCallbacks.empty())
 	{
-		id = m_callbacks.size();
+		if (m_callbacks.size() >= static_cast<size_t>((std::numeric_limits<NetTimerId>::max)()))
+		{
+			NET_ASSERT(false);
+			NetWarning("NetTimer: exhausted callback identifiers");
+			return 0;
+		}
+		id = static_cast<NetTimerId>(m_callbacks.size());
 		m_callbacks.push_back(SCallbackInfo());
 	}
 	else
@@ -79,7 +87,7 @@ NetTimerId CNetTimer::AddTimer( CTimeValue when, NetTimerCallback callback, void
 void * CNetTimer::CancelTimer( NetTimerId& id )
 {
 	ASSERT_GLOBAL_LOCK;
-	if (id <= 0 || id >= m_callbacks.size())
+	if (id <= 0 || static_cast<size_t>(id) >= m_callbacks.size())
 	{
 		id = 0;
 		return NULL;

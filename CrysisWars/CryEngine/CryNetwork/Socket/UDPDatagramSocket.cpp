@@ -1,5 +1,7 @@
 #include "StdAfx.h"
 #include "UDPDatagramSocket.h"
+
+#include <CryCheckedArithmetic.h>
 #include "NetCVars.h"
 
 #include "Network.h"
@@ -163,7 +165,10 @@ bool CUDPDatagramSocket::Init( int af, uint32 flags, void * pSockAddr, size_t si
 		}
 	}
 
-	if (bind(m_socket, static_cast<sockaddr*>(pSockAddr), sizeSockAddr))
+	socklen_t socketAddressLength = 0;
+	if (!CryTryNarrowSize(sizeSockAddr, socketAddressLength))
+		return false;
+	if (bind(m_socket, static_cast<sockaddr*>(pSockAddr), socketAddressLength))
 		return InitWinError();
 
 	return true;

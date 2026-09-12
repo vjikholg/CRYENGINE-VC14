@@ -93,7 +93,7 @@ public:
 
 		m_cached = true;
 		STATIC_CHECK(N > 3, NotEnoughElements);
-		int sz = Size();
+		const int sz = m_count > N ? N : m_count;
 		if (sz < 3)
 			return m_result = false;
 		CTimeValue averageX = 0.0f;

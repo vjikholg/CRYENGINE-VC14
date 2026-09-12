@@ -50,7 +50,7 @@ private:
 class CEncCRC
 {
 protected:
-	ILINE void AddEncToCRC( uint64 tot, uint32 low, uint32 sym ) {}
+	ILINE void AddEncToCRC( uint64, uint32, uint32 ) {}
 	ILINE void ResetCRC() {}
 };
 #endif
@@ -111,7 +111,7 @@ public:
 #if ENABLE_DEBUG_KIT
 	void EnableLog( bool flag = true ) { m_bLog = flag; }
 #else
-	void EnableLog( bool flag = true ) {}
+	void EnableLog( bool = true ) {}
 #endif
 
 	// encode a probability:
@@ -536,7 +536,7 @@ public:
 #if ENABLE_DEBUG_KIT
 	void EnableLog( bool flag = true ) { m_bLog = flag; }
 #else
-	void EnableLog( bool flag = true ) {}
+	void EnableLog( bool = true ) {}
 #endif
 
 	// fetch the bonus byte

@@ -32,7 +32,7 @@ struct SIPv4Addr
 
 struct SNullAddr 
 {
-	ILINE bool operator<( const SNullAddr& rhs ) const
+	ILINE bool operator<( const SNullAddr& ) const
 	{
 		return false;
 	}

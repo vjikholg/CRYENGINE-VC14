@@ -52,19 +52,19 @@ SSystemBranchCounters g_systemBranchCounters;
 SObjectCounters g_objcnt;
 static SSystemBranchCounters g_lastSystemBranchCounters;
 
-static CAutoConfigDownloader * g_pFileDownloader;
+static CAutoConfigDownloader* g_pFileDownloader;
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
-CNetwork * CNetwork::m_pThis = 0;
+CNetwork* CNetwork::m_pThis = 0;
 
 int g_QuickLogY;
 CTimeValue g_QuickLogTime;
 CTimeValue g_time;
 int g_lockCount = 0;
 
-struct CNetwork::SNetError CNetwork::m_neNetErrors[]=
+struct CNetwork::SNetError CNetwork::m_neNetErrors[] =
 {
 	{NET_OK, "No Error"},
 	{NET_FAIL, "Generic Error"},
@@ -144,7 +144,7 @@ public:
 
 	void Run()
 	{
-		CryThreadSetName( -1,"Network" );
+		CryThreadSetName(-1, "Network");
 
 		while (Get()->UpdateTick(true))
 			;
@@ -159,7 +159,7 @@ public:
 class CNetwork::CBufferWakeups
 {
 public:
-	CBufferWakeups( bool release, CNetwork * pNet ) : m_release(false), m_pNet(pNet) { m_pNet->m_bufferWakeups++; }
+	CBufferWakeups(bool release, CNetwork* pNet) : m_release(false), m_pNet(pNet) { m_pNet->m_bufferWakeups++; }
 	~CBufferWakeups()
 	{
 		if (0 == --m_pNet->m_bufferWakeups)
@@ -173,16 +173,16 @@ public:
 
 private:
 	bool m_release;
-	CNetwork * m_pNet;
+	CNetwork* m_pNet;
 };
 
 CNetwork::CNetwork() : m_bQuitting(false), m_pResolver(0), m_bufferWakeups(0), m_wokenUp(false), m_nextCleanup(0.0f), m_cleanupMember(0), m_isMultithreaded(false), m_occasionalCounter(OCCASIONAL_TICKS), m_cpuCount(1), m_forceLock(true), m_isPbSvActive(false), m_isPbClActive(false)
 {
-	NET_ASSERT( !m_pThis );
+	NET_ASSERT(!m_pThis);
 	m_pThis = this;
 	g_time = gEnv->pTimer->GetAsyncTime();
 
-	for (int i=0; i<sizeof(m_inSync)/sizeof(*m_inSync); i++)
+	for (int i = 0; i < sizeof(m_inSync) / sizeof(*m_inSync); i++)
 		m_inSync[i] = 0;
 
 	SCOPED_GLOBAL_LOCK;
@@ -201,21 +201,21 @@ CNetwork::CNetwork() : m_bQuitting(false), m_pResolver(0), m_bufferWakeups(0), m
 #if ENABLE_DEBUG_KIT
 	m_pNetInspector = CNetworkInspector::CreateInstance();
 #endif
-	m_pServiceManager.reset( new CServiceManager );
+	m_pServiceManager.reset(new CServiceManager);
 
 
-//#if defined(WIN32) || defined(WIN64)
-//	m_needSleeping = false;
-//	m_sink.m_pNetwork = this;
-//#endif
+	//#if defined(WIN32) || defined(WIN64)
+	//	m_needSleeping = false;
+	//	m_sink.m_pNetwork = this;
+	//#endif
 }
 
 CNetwork::~CNetwork()
 {
-	NET_ASSERT( m_pThis == this );
+	NET_ASSERT(m_pThis == this);
 
-	SyncWithGame( eNGS_Shutdown );
-	NET_ASSERT( m_vMembers.empty() );
+	SyncWithGame(eNGS_Shutdown);
+	NET_ASSERT(m_vMembers.empty());
 
 	if (m_isMultithreaded)
 	{
@@ -275,10 +275,10 @@ void CNetwork::FastShutdown()
 
 void CNetwork::SetCDKey(const char* key)
 {
-  m_CDKey = key;
+	m_CDKey = key;
 }
 
-void CNetwork::AddExecuteString( const string& toExec )
+void CNetwork::AddExecuteString(const string& toExec)
 {
 	if (IsPrimaryThread())
 		gEnv->pConsole->ExecuteString(toExec.c_str());
@@ -292,18 +292,18 @@ bool CNetwork::PbConsoleCommand(const char* command, int length)
 #ifdef __WITH_PB__
 	SCOPED_GLOBAL_LOCK;
 
-	if ( !strnicmp ( command, "pb_sv", 5 )  ) {
-		PbSvAddEvent ( PB_EV_CMD, -1, length, (char *)command ) ;
-		return true ;
+	if (!strnicmp(command, "pb_sv", 5)) {
+		PbSvAddEvent(PB_EV_CMD, -1, length, (char*)command);
+		return true;
 	}
-	else if (!strnicmp ( command, "pb_", 3 ) ) {
-		PbClAddEvent ( PB_EV_CMD, length, (char *)command ) ;
-		return true ;
+	else if (!strnicmp(command, "pb_", 3)) {
+		PbClAddEvent(PB_EV_CMD, length, (char*)command);
+		return true;
 	}
 	else
-		return false ;
+		return false;
 #else
-		return true ;
+	return true;
 #endif
 }
 
@@ -314,7 +314,7 @@ void CNetwork::PbCaptureConsoleLog(const char* output, int length)
 #ifdef __WITH_PB__
 	SCOPED_GLOBAL_LOCK_NO_LOG;
 
-	PbCaptureConsoleOutput ( (char *)output, length ) ;
+	PbCaptureConsoleOutput((char*)output, length);
 #endif
 
 }
@@ -325,8 +325,8 @@ void CNetwork::PbServerAutoComplete(const char* command, int length)
 #ifdef __WITH_PB__
 	SCOPED_GLOBAL_LOCK;
 
-	PbServerCompleteCommand ( (char *)command, length ) ;
-	return ;
+	PbServerCompleteCommand((char*)command, length);
+	return;
 #endif
 }
 
@@ -336,8 +336,8 @@ void CNetwork::PbClientAutoComplete(const char* command, int length)
 #ifdef __WITH_PB__
 	SCOPED_GLOBAL_LOCK;
 
-	PbClientCompleteCommand ( (char *)command, length ) ;
-	return ;
+	PbClientCompleteCommand((char*)command, length);
+	return;
 #endif
 }
 
@@ -426,7 +426,7 @@ bool CNetwork::HasNetworkConnectivity()
 	return m_detection.HasNetworkConnectivity();
 }
 
-bool CNetwork::Init( int ncpu )
+bool CNetwork::Init(int ncpu)
 {
 	m_cpuCount = ncpu;
 
@@ -448,9 +448,9 @@ bool CNetwork::Init( int ncpu )
 	memset(&xnsp, 0, sizeof(xnsp));
 	xnsp.cfgSizeOfStruct = sizeof(XNetStartupParams);
 	xnsp.cfgFlags = XNET_STARTUP_BYPASS_SECURITY;
-	if( XNetStartup( &xnsp ) != 0 )
+	if (XNetStartup(&xnsp) != 0)
 	{
-		NetWarning( "XNetStartup() failed." );
+		NetWarning("XNetStartup() failed.");
 		return false;
 	}
 #endif // XENON
@@ -481,10 +481,10 @@ bool CNetwork::Init( int ncpu )
 		return false;
 	CryLogAlways("[net] using %s socket io management", m_pSocketIOManager->GetName());
 
-	int n=0;
-	while (m_neNetErrors[n].sErrorDescription!='\0')
+	int n = 0;
+	while (m_neNetErrors[n].sErrorDescription != nullptr)
 	{
-		m_mapErrors[m_neNetErrors[n].nrErrorCode]=m_neNetErrors[n].sErrorDescription;
+		m_mapErrors[m_neNetErrors[n].nrErrorCode] = m_neNetErrors[n].sErrorDescription;
 		n++;
 	}
 
@@ -494,7 +494,7 @@ bool CNetwork::Init( int ncpu )
 	InitFrameTypes();
 
 #if ENABLE_DISTRIBUTED_LOGGER
-	m_pLogger.reset( new CDistributedLogger );
+	m_pLogger.reset(new CDistributedLogger);
 #endif
 
 	g_pFileDownloader = new CAutoConfigDownloader;
@@ -507,14 +507,14 @@ void DownloadConfig()
 	g_pFileDownloader->TriggerRefresh();
 }
 
-void CNetwork::EnableMultithreading( bool enable )
+void CNetwork::EnableMultithreading(bool enable)
 {
 	m_mutex.Lock();
 	if (enable != m_isMultithreaded)
 	{
 		if (enable)
 		{
-			m_pThread.reset( new CNetworkThread() );
+			m_pThread.reset(new CNetworkThread());
 			m_pThread->Start();
 		}
 		else
@@ -538,9 +538,9 @@ void CNetwork::WakeThread()
 		m_pSocketIOManager->PushUserMessage(-2);
 }
 
-void CNetwork::BroadcastNetDump( ENetDumpType type )
+void CNetwork::BroadcastNetDump(ENetDumpType type)
 {
-	for (size_t i=0; i<m_vMembers.size(); i++)
+	for (size_t i = 0; i < m_vMembers.size(); i++)
 	{
 		INetworkMemberPtr pMember = m_vMembers[i];
 		pMember->NetDump(type);
@@ -548,9 +548,9 @@ void CNetwork::BroadcastNetDump( ENetDumpType type )
 }
 
 //////////////////////////////////////////////////////////////////////////
-INetNub * CNetwork::CreateNub( const char * address, IGameNub * pGameNub, 
-															 IGameSecurity * pSecurity, 
-															 IGameQuery * pGameQuery )
+INetNub* CNetwork::CreateNub(const char* address, IGameNub* pGameNub,
+	IGameSecurity* pSecurity,
+	IGameQuery* pGameQuery)
 {
 	SCOPED_GLOBAL_LOCK;
 	TNetAddressVec addrs;
@@ -563,12 +563,12 @@ INetNub * CNetwork::CreateNub( const char * address, IGameNub * pGameNub,
 			NetLogAlways("Name resolution for '%s' failed", address);
 			return NULL;
 		}
-//		GetResolver()->FromString( address, addrs );
+		//		GetResolver()->FromString( address, addrs );
 	}
 	else
 	{
 		SIPv4Addr addr; // defaults to 0,0
-		addrs.push_back( TNetAddress( addr ) );
+		addrs.push_back(TNetAddress(addr));
 	}
 	if (addrs.empty())
 	{
@@ -577,8 +577,8 @@ INetNub * CNetwork::CreateNub( const char * address, IGameNub * pGameNub,
 	}
 
 	//NetLog( "Resolved name as %s", GetResolver()->ToNumericString(addrs[0]).c_str() );
-	CNetNub * pNub = new CNetNub( addrs[0], pGameNub, 
-																pSecurity, pGameQuery );
+	CNetNub* pNub = new CNetNub(addrs[0], pGameNub,
+		pSecurity, pGameQuery);
 	if (!pNub->Init(this))
 	{
 		NetWarning("Failed creating network nub at %s", address);
@@ -591,31 +591,31 @@ INetNub * CNetwork::CreateNub( const char * address, IGameNub * pGameNub,
 	return pNub;
 }
 
-ILanQueryListener * CNetwork::CreateLanQueryListener( IGameQueryListener * pGameQueryListener )
+ILanQueryListener* CNetwork::CreateLanQueryListener(IGameQueryListener* pGameQueryListener)
 {
 	SCOPED_GLOBAL_LOCK;
-	CLanQueryListener * pLanQueryListener = new CLanQueryListener(pGameQueryListener);
+	CLanQueryListener* pLanQueryListener = new CLanQueryListener(pGameQueryListener);
 	if (!pLanQueryListener->Init())
 	{
 		delete pLanQueryListener;
 		return NULL;
 	}
 
-	AddMember( pLanQueryListener );
+	AddMember(pLanQueryListener);
 	CNetwork::Get()->WakeThread();
 	return pLanQueryListener;
 }
 
-INetContext * CNetwork::CreateNetContext( IGameContext * pGameContext, uint32 flags )
+INetContext* CNetwork::CreateNetContext(IGameContext* pGameContext, uint32 flags)
 {
 	SCOPED_GLOBAL_LOCK;
-	CNetContext * pContext = new CNetContext(pGameContext, flags);
-	AddMember( pContext );
+	CNetContext* pContext = new CNetContext(pGameContext, flags);
+	AddMember(pContext);
 	CNetwork::Get()->WakeThread();
 	return pContext;
 }
 
-const char *CNetwork::EnumerateError(NRESULT err)
+const char* CNetwork::EnumerateError(NRESULT err)
 {
 	TErrorMap::iterator i = m_mapErrors.find(err);
 	if (i != m_mapErrors.end())
@@ -627,15 +627,15 @@ const char *CNetwork::EnumerateError(NRESULT err)
 
 void CNetwork::Release()
 {
-//	SCOPED_GLOBAL_LOCK;
-	
-//	if (m_nNetworkInitialized)
-//		;
+	//	SCOPED_GLOBAL_LOCK;
+
+	//	if (m_nNetworkInitialized)
+	//		;
 
 	delete this;
 }
 
-void CNetwork::GetMemoryStatistics(ICrySizer *pSizer)
+void CNetwork::GetMemoryStatistics(ICrySizer* pSizer)
 {
 	SCOPED_GLOBAL_LOCK;
 	SIZER_COMPONENT_NAME(pSizer, "CNetwork");
@@ -643,11 +643,11 @@ void CNetwork::GetMemoryStatistics(ICrySizer *pSizer)
 	if (!pSizer->Add(*this))
 		return;
 
-	pSizer->AddObject(m_neNetErrors,sizeof(m_neNetErrors));
+	pSizer->AddObject(m_neNetErrors, sizeof(m_neNetErrors));
 	pSizer->AddContainer(m_vMembers);
 
 	for (VMembers::iterator i = m_vMembers.begin(); i != m_vMembers.end(); ++i)
-		(*i)->GetMemoryStatistics( pSizer );
+		(*i)->GetMemoryStatistics(pSizer);
 
 	m_toGame.GetMemoryStatistics(pSizer);
 	m_fromGame.GetMemoryStatistics(pSizer);
@@ -661,8 +661,8 @@ void CNetwork::GetMemoryStatistics(ICrySizer *pSizer)
 		m_fromGame_otherThreadQueue.GetMemoryStatistics(pSizer);
 	}
 
-//	for (int i=0; i<eMMT_NUM_TYPES; i++)
-//		m_mmm[i].GetMemoryStatistics(pSizer);
+	//	for (int i=0; i<eMMT_NUM_TYPES; i++)
+	//		m_mmm[i].GetMemoryStatistics(pSizer);
 
 	m_compressionManager.GetMemoryStatistics(pSizer);
 
@@ -682,15 +682,15 @@ void CNetwork::GetMemoryStatistics(ICrySizer *pSizer)
 class CInSync
 {
 public:
-	CInSync( int& inSync ) : m_inSync(inSync) 
-	{ 
+	CInSync(int& inSync) : m_inSync(inSync)
+	{
 		ASSERT_PRIMARY_THREAD;
-		++m_inSync; 
+		++m_inSync;
 	}
-	~CInSync() 
-	{ 
+	~CInSync()
+	{
 		ASSERT_PRIMARY_THREAD;
-		--m_inSync; 
+		--m_inSync;
 	}
 private:
 	int& m_inSync;
@@ -699,23 +699,23 @@ private:
 //////////////////////////////////////////////////////////////////////////
 void CNetwork::SyncWithGame(ENetworkGameSync type)
 {
-//#if defined(WIN32) || defined(WIN64)
-//	// HACK: to make the WMI thread responsive on single core
-//	if (type == eNGS_FrameEnd && m_cpuCount < 2 && m_needSleeping)
-//		Sleep(1);
-//#endif
+	//#if defined(WIN32) || defined(WIN64)
+	//	// HACK: to make the WMI thread responsive on single core
+	//	if (type == eNGS_FrameEnd && m_cpuCount < 2 && m_needSleeping)
+	//		Sleep(1);
+	//#endif
 
 	static CThreadProfilerEvent evt_start("net_startframe");
 	CThreadProfilerEvent::Instance show_evt_start(evt_start, type == eNGS_FrameStart);
 
-	FUNCTION_PROFILER( GetISystem(), PROFILE_NETWORK );
+	FUNCTION_PROFILER(GetISystem(), PROFILE_NETWORK);
 
 #if _DEBUG && defined(USER_craig)
 	//SCOPED_ENABLE_FLOAT_EXCEPTIONS;
 #endif
 
 	int totSync = 0;
-	for (int i=0; i<sizeof(m_inSync)/sizeof(*m_inSync); i++)
+	for (int i = 0; i < sizeof(m_inSync) / sizeof(*m_inSync); i++)
 		totSync += m_inSync[i];
 
 	switch (type)
@@ -726,7 +726,7 @@ void CNetwork::SyncWithGame(ENetworkGameSync type)
 		break;
 	case eNGS_FrameStart:
 	case eNGS_FrameEnd:
-		if (totSync && totSync != (m_inSync[eNGS_Shutdown] + m_inSync[eNGS_NUM_ITEMS+1]))
+		if (totSync && totSync != (m_inSync[eNGS_Shutdown] + m_inSync[eNGS_NUM_ITEMS + 1]))
 			return;
 		break;
 	}
@@ -738,9 +738,9 @@ void CNetwork::SyncWithGame(ENetworkGameSync type)
 		DoSyncWithGame(type);
 	}
 
-	if (!m_inSync[eNGS_NUM_ITEMS+1])
+	if (!m_inSync[eNGS_NUM_ITEMS + 1])
 	{
-		CInSync inSyncFlush(m_inSync[eNGS_NUM_ITEMS+1]);
+		CInSync inSyncFlush(m_inSync[eNGS_NUM_ITEMS + 1]);
 		m_toGameLazyProcessing.Flush(false);
 	}
 }
@@ -748,9 +748,9 @@ void CNetwork::SyncWithGame(ENetworkGameSync type)
 #if ENABLE_OBJECT_COUNTING
 struct SObjCntDisplay
 {
-	const char * name;
+	const char* name;
 	int n;
-	bool operator<( const SObjCntDisplay& r ) const
+	bool operator<(const SObjCntDisplay& r) const
 	{
 		return n > r.n;
 	}
@@ -765,13 +765,13 @@ static void DumpObjCnt()
 
 	std::sort(v.begin(), v.end());
 
-	if (ITextModeConsole * pTMC = gEnv->pSystem->GetITextModeConsole())
+	if (ITextModeConsole* pTMC = gEnv->pSystem->GetITextModeConsole())
 	{
 		char buf[256];
 		int y = 20;
 
 		PROCESS_MEMORY_COUNTERS memcnt;
-		GetProcessMemoryInfo( GetCurrentProcess(), &memcnt, sizeof(memcnt) );
+		GetProcessMemoryInfo(GetCurrentProcess(), &memcnt, sizeof(memcnt));
 		float kils = memcnt.WorkingSetSize / 1024.0f;
 		sprintf(buf, "MEM: %.2f kilobyte", kils);
 		pTMC->PutText(0, y++, buf);
@@ -787,85 +787,85 @@ static void DumpObjCnt()
 #endif
 
 //////////////////////////////////////////////////////////////////////////
-void CNetwork::DoSyncWithGame( ENetworkGameSync type )
+void CNetwork::DoSyncWithGame(ENetworkGameSync type)
 {
 	bool continuous = false;
 
 	switch (type)
 	{
 	case eNGS_FrameStart:
-		{
-			FRAME_PROFILER("Network:FrameStart", gEnv->pSystem, PROFILE_NETWORK);
-			if (gEnv->pSystem->IsDedicated())
-				g_pFileDownloader->Update();
-			if (!gEnv->pSystem->IsEditor())
-				m_gameTime = gEnv->pTimer->GetFrameStartTime();
-			else
-				m_gameTime = gEnv->pTimer->GetAsyncCurTime();
-			//NetQuickLog(false, 0, "Local: %f", m_gameTime.GetSeconds());
-			FlushNetLog(false);
-			m_toGame.Flush(true);
-			if (!m_inSync[eNGS_NUM_ITEMS+1])
-				m_toGameLazyBuilding.Swap(m_toGameLazyProcessing);
+	{
+		FRAME_PROFILER("Network:FrameStart", gEnv->pSystem, PROFILE_NETWORK);
+		if (gEnv->pSystem->IsDedicated())
+			g_pFileDownloader->Update();
+		if (!gEnv->pSystem->IsEditor())
+			m_gameTime = gEnv->pTimer->GetFrameStartTime();
+		else
+			m_gameTime = gEnv->pTimer->GetAsyncCurTime();
+		//NetQuickLog(false, 0, "Local: %f", m_gameTime.GetSeconds());
+		FlushNetLog(false);
+		m_toGame.Flush(true);
+		if (!m_inSync[eNGS_NUM_ITEMS + 1])
+			m_toGameLazyBuilding.Swap(m_toGameLazyProcessing);
 
 #if ENABLE_DEBUG_KIT
-			if (CNetCVars::Get().PerfCounters)
+		if (CNetCVars::Get().PerfCounters)
+		{
+			if (ITextModeConsole* pTMC = gEnv->pSystem->GetITextModeConsole())
 			{
-				if (ITextModeConsole * pTMC = gEnv->pSystem->GetITextModeConsole())
-				{
-					int y = 0;
-					char buf[256];
+				int y = 0;
+				char buf[256];
 #define DUMP_COUNTER(name) sprintf(buf, #name ": %d (%d)", g_systemBranchCounters.name, g_systemBranchCounters.name - g_lastSystemBranchCounters.name); pTMC->PutText(0, y++, buf)
-					DUMP_COUNTER(updateTickMain);
-					DUMP_COUNTER(updateTickSkip);
-					DUMP_COUNTER(iocpReapSleep);
-					DUMP_COUNTER(iocpReapSleepCollect);
-					DUMP_COUNTER(iocpReapImmediate);
-					DUMP_COUNTER(iocpReapImmediateCollect);
-					DUMP_COUNTER(iocpIdle);
-					DUMP_COUNTER(iocpBackoffCheck);
-					DUMP_COUNTER(iocpForceSync);
+				DUMP_COUNTER(updateTickMain);
+				DUMP_COUNTER(updateTickSkip);
+				DUMP_COUNTER(iocpReapSleep);
+				DUMP_COUNTER(iocpReapSleepCollect);
+				DUMP_COUNTER(iocpReapImmediate);
+				DUMP_COUNTER(iocpReapImmediateCollect);
+				DUMP_COUNTER(iocpIdle);
+				DUMP_COUNTER(iocpBackoffCheck);
+				DUMP_COUNTER(iocpForceSync);
 #undef DUMP_COUNTER
-					g_lastSystemBranchCounters = g_systemBranchCounters;
-				}
+				g_lastSystemBranchCounters = g_systemBranchCounters;
 			}
+		}
 #endif
 
 #if ENABLE_OBJECT_COUNTING
-			DumpObjCnt();
+		DumpObjCnt();
 #endif
-		}
-		break;
+	}
+	break;
 	case eNGS_FrameEnd:
+	{
+		FRAME_PROFILER("Network:FrameEnd", gEnv->pSystem, PROFILE_NETWORK);
+
+		//NetQuickLog( gEnv->pSystem->IsDedicated(), 0, "locks/frame: %d", g_lockCount );
+		g_lockCount = 0;
+
+		FlushNetLog(true);
+		m_fromGame.Flush(true);
 		{
-			FRAME_PROFILER("Network:FrameEnd", gEnv->pSystem, PROFILE_NETWORK);
-
-			//NetQuickLog( gEnv->pSystem->IsDedicated(), 0, "locks/frame: %d", g_lockCount );
-			g_lockCount = 0;
-
-			FlushNetLog(true);
-			m_fromGame.Flush(true);
-			{
-				CryAutoLock<NetFastMutex> lk(m_fromGame_otherThreadLock);
-				m_fromGame_otherThreadQueue.Flush(true);
-			}
-//			for (int i=0; i<eMMT_NUM_TYPES; i++)
-//				m_mmm[i].DebugDraw(i);
+			CryAutoLock<NetFastMutex> lk(m_fromGame_otherThreadLock);
+			m_fromGame_otherThreadQueue.Flush(true);
+		}
+		//			for (int i=0; i<eMMT_NUM_TYPES; i++)
+		//				m_mmm[i].DebugDraw(i);
 
 #if ENABLE_DEBUG_KIT
-			CDebugKit::Get().Update();
+		CDebugKit::Get().Update();
 #endif
 #if STATS_COLLECTOR_INTERACTIVE
-			GetStats()->InteractiveUpdate();
+		GetStats()->InteractiveUpdate();
 #endif
 
-			if (CServerProfiler::ShouldSaveAndCrash())
-			{
-				gEnv->pConsole->ExecuteString("SaveLevelStats");
-				_exit(0);
-			}
+		if (CServerProfiler::ShouldSaveAndCrash())
+		{
+			gEnv->pConsole->ExecuteString("SaveLevelStats");
+			_exit(0);
 		}
-		break;
+	}
+	break;
 	case eNGS_Shutdown:
 		FlushNetLog(true);
 		continuous = true;
@@ -884,7 +884,7 @@ void CNetwork::DoSyncWithGame( ENetworkGameSync type )
 		bool suicidal = false;
 		{
 			m_toGame.Flush(true);
-			UpdateLoop( type );
+			UpdateLoop(type);
 			emptied = m_vMembers.empty();
 			if (!emptied)
 				suicidal = AllSuicidal();
@@ -900,7 +900,7 @@ void CNetwork::DoSyncWithGame( ENetworkGameSync type )
 				if (suicidal)
 				{
 					{
-						CInSync inSyncFlush(m_inSync[eNGS_NUM_ITEMS+1]);
+						CInSync inSyncFlush(m_inSync[eNGS_NUM_ITEMS + 1]);
 						if (m_isMultithreaded)
 							m_mutex.Unlock();
 						m_toGameLazyProcessing.Flush(false);
@@ -916,7 +916,7 @@ void CNetwork::DoSyncWithGame( ENetworkGameSync type )
 	}
 #if ENABLE_DISTRIBUTED_LOGGER
 	if (m_pLogger.get())
-		m_pLogger->Update( g_time );
+		m_pLogger->Update(g_time);
 #endif
 #if ENABLE_DEBUG_KIT
 	if (m_cvars.NetInspector)
@@ -925,18 +925,18 @@ void CNetwork::DoSyncWithGame( ENetworkGameSync type )
 #endif
 }
 
-void CNetwork::UpdateLoop( ENetworkGameSync type )
+void CNetwork::UpdateLoop(ENetworkGameSync type)
 {
 	FUNCTION_PROFILER(gEnv->pSystem, PROFILE_NETWORK);
 	if (type == eNGS_FrameEnd)
 	{
-		for (size_t i=0; i<m_vMembers.size(); i++)
+		for (size_t i = 0; i < m_vMembers.size(); i++)
 		{
 			INetworkMemberPtr pMember = m_vMembers[i];
 			if (pMember->IsDead())
 			{
-				m_vMembers.erase( m_vMembers.begin() + i );
-				i --;
+				m_vMembers.erase(m_vMembers.begin() + i);
+				i--;
 			}
 			else
 			{
@@ -947,7 +947,7 @@ void CNetwork::UpdateLoop( ENetworkGameSync type )
 	}
 	else
 	{
-		for (size_t i=0; i<m_vMembers.size(); i++)
+		for (size_t i = 0; i < m_vMembers.size(); i++)
 		{
 			ENSURE_REALTIME;
 			m_vMembers[i]->SyncWithGame(type);
@@ -970,7 +970,7 @@ void CNetwork::UpdateLoop( ENetworkGameSync type )
 		}
 
 		ASSERT_PRIMARY_THREAD;
-		for (size_t i=0; i<m_consoleCommandsToExec.size(); i++)
+		for (size_t i = 0; i < m_consoleCommandsToExec.size(); i++)
 			gEnv->pConsole->ExecuteString(m_consoleCommandsToExec[i].c_str());
 		m_consoleCommandsToExec.resize(0);
 	}
@@ -982,11 +982,11 @@ void CNetwork::UpdateLoop( ENetworkGameSync type )
 	}
 }
 
-bool CNetwork::UpdateTick( bool mt )
+bool CNetwork::UpdateTick(bool mt)
 {
 	float waitTime = 0.0f;
 
-	ITimer * pTimer = gEnv->pTimer;
+	ITimer* pTimer = gEnv->pTimer;
 	bool mustLock = m_forceLock;
 	m_forceLock = false;
 	CTimeValue now = pTimer->GetAsyncTime();
@@ -1004,12 +1004,12 @@ bool CNetwork::UpdateTick( bool mt )
 		isLocked = m_mutex.TryLock();
 		m_lastUpdateLock = now;
 	}
-		
+
 	if (isLocked)
 	{
 		FUNCTION_PROFILER(gEnv->pSystem, PROFILE_NETWORK);
 
-		g_systemBranchCounters.updateTickMain ++;
+		g_systemBranchCounters.updateTickMain++;
 
 		waitTime = (TIMER.Update() - g_time).GetSeconds();
 		m_pThis->m_intQueue.Flush(true);
@@ -1019,25 +1019,25 @@ bool CNetwork::UpdateTick( bool mt )
 			INetworkMemberPtr pMember = m_vMembers[m_cleanupMember % m_vMembers.size()];
 			if (!pMember->IsDead())
 				pMember->PerformRegularCleanup();
-			m_cleanupMember ++;
+			m_cleanupMember++;
 		}
 
 		waitTime *= 1000.0f;
-		if (waitTime > 600.0f*1000)
-			waitTime = 600.0f*1000;
+		if (waitTime > 600.0f * 1000)
+			waitTime = 600.0f * 1000;
 		else if (waitTime < 10) // min 10ms sleep
 			waitTime = 10;
 		waitTime += 3.0f * rand() / RAND_MAX; // random extra sleep to save any coherency effects with the main thread
 
 		if (!mt)
 			waitTime = 0;
-		
+
 		m_mutex.Unlock();
 	}
 	else
 	{
 		waitTime = 1;
-		g_systemBranchCounters.updateTickSkip ++;
+		g_systemBranchCounters.updateTickSkip++;
 	}
 
 	bool ret = true;
@@ -1069,20 +1069,20 @@ namespace
 {
 	struct CompareMembers
 	{
-		bool operator()( INetworkMemberPtr p1, INetworkMemberPtr p2 ) const
+		bool operator()(INetworkMemberPtr p1, INetworkMemberPtr p2) const
 		{
 			return p1->UpdateOrder < p2->UpdateOrder;
 		}
 	};
 }
 
-void CNetwork::AddMember( INetworkMemberPtr pMember )
+void CNetwork::AddMember(INetworkMemberPtr pMember)
 {
 	m_vMembers.push_back(pMember);
 	std::stable_sort(m_vMembers.begin(), m_vMembers.end(), CompareMembers());
 }
 
-const char * CNetwork::GetHostName()
+const char* CNetwork::GetHostName()
 {
 	static char buf[256];
 #ifdef XENON
@@ -1103,19 +1103,19 @@ uint32 CNetwork::GetHostLocalIp()
 
 	char	buf[256];
 
-	if(!gethostname(buf, sizeof(buf))) 
+	if (!gethostname(buf, sizeof(buf)))
 	{
 		CNameRequestPtr nr = RESOLVER.RequestNameLookup(buf);
 		nr->Wait();
 		uint32 ip = 0;
 		TNetAddressVec ips;
-		if(nr->GetResult(ips) == eNRR_Succeeded)
+		if (nr->GetResult(ips) == eNRR_Succeeded)
 		{
-			for(int i=0;i<ips.size();++i)
+			for (int i = 0;i < ips.size();++i)
 			{
-				if(SIPv4Addr* addr = ips[i].GetPtr<SIPv4Addr>())
+				if (SIPv4Addr* addr = ips[i].GetPtr<SIPv4Addr>())
 				{
-					if(RESOLVER.IsPrivateAddr(ips[i]))
+					if (RESOLVER.IsPrivateAddr(ips[i]))
 					{
 						ip = addr->addr;
 						break;
@@ -1123,7 +1123,7 @@ uint32 CNetwork::GetHostLocalIp()
 					else if (!ip)
 					{
 						ip = addr->addr;
-					}						
+					}
 				}
 			}
 		}
@@ -1138,24 +1138,24 @@ void CNetwork::LogNetworkInfo()
 #if defined(WIN32) || defined(LINUX)
 	char	buf[256];
 
-	if(!gethostname(buf, sizeof(buf))) 
+	if (!gethostname(buf, sizeof(buf)))
 	{
 		NetLogAlways("network hostname: %s", buf);
 		CNameRequestPtr nr = RESOLVER.RequestNameLookup(buf);
 		nr->Wait();
 		uint32 ip = 0;
 		TNetAddressVec ips;
-		if(nr->GetResult(ips) == eNRR_Succeeded)
+		if (nr->GetResult(ips) == eNRR_Succeeded)
 		{
-			for(int i=0;i<ips.size();++i)
+			for (int i = 0;i < ips.size();++i)
 			{
-				if(SIPv4Addr* addr = ips[i].GetPtr<SIPv4Addr>())
+				if (SIPv4Addr* addr = ips[i].GetPtr<SIPv4Addr>())
 				{
 					NetLogAlways("  ip:%d.%d.%d.%d",		//  port:%d  family:%x",	
-						((addr->addr>>24)&0xFF),
-						((addr->addr>>16)&0xFF),
-						((addr->addr>>8)&0xFF),
-						(addr->addr&0xFF));
+						((addr->addr >> 24) & 0xFF),
+						((addr->addr >> 16) & 0xFF),
+						((addr->addr >> 8) & 0xFF),
+						(addr->addr & 0xFF));
 				}
 			}
 		}
@@ -1163,7 +1163,7 @@ void CNetwork::LogNetworkInfo()
 #endif //#if defined(WIN32) || defined(LINUX)
 }
 
-const char * GetTimestampString()
+const char* GetTimestampString()
 {
 #ifndef WIN32
 	return "";
@@ -1176,7 +1176,7 @@ const char * GetTimestampString()
 #endif
 }
 
-INetworkServicePtr CNetwork::GetService( const char * name )
+INetworkServicePtr CNetwork::GetService(const char* name)
 {
 	return m_pServiceManager->GetService(name);
 }
@@ -1194,19 +1194,19 @@ ISimpleHttpServer* CNetwork::GetSimpleHttpServerSingleton()
 void CNetwork::ReloadScheduler()
 {
 	ASSERT_GLOBAL_LOCK;
-	
-	CMessageQueue::CConfig * old = m_pMessageQueueConfig;
+
+	CMessageQueue::CConfig* old = m_pMessageQueueConfig;
 	m_pMessageQueueConfig = CMessageQueue::LoadConfig("Game/Scripts/Network/Scheduler.xml");
 	if (m_pMessageQueueConfig)
 	{
 		CMessageQueue::DestroyConfig(old);
-		m_schedulerVersion ++;
+		m_schedulerVersion++;
 	}
 	else
 		m_pMessageQueueConfig = old;
 }
 
-void CNetwork::SetNetGameInfo( SNetGameInfo info )
+void CNetwork::SetNetGameInfo(SNetGameInfo info)
 {
 	SCOPED_GLOBAL_LOCK;
 	m_gameInfo = info;
@@ -1218,10 +1218,12 @@ SNetGameInfo CNetwork::GetNetGameInfo()
 	return m_gameInfo;
 }
 
-int CNetwork::RegisterForFastLookup(CNetChannel * pChannel)
+size_t CNetwork::RegisterForFastLookup(CNetChannel* pChannel)
 {
-	size_t i;
-	for (i=0; i<m_vFastChannelLookup.size(); i++)
+	size_t i{ 0 };
+	// if empty -> skip lookup, push to back of vec
+	// else, search for first available slot, insert then return handle
+	for (; i < m_vFastChannelLookup.size(); i++)
 	{
 		if (!m_vFastChannelLookup[i])
 		{
@@ -1233,18 +1235,18 @@ int CNetwork::RegisterForFastLookup(CNetChannel * pChannel)
 	return i;
 }
 
-void CNetwork::UnregisterFastLookup(int id)
+void CNetwork::UnregisterFastLookup(size_t id)
 {
-	NET_ASSERT(id>=0);
-	NET_ASSERT(id<m_vFastChannelLookup.size());
+	NET_ASSERT(id >= 0);
+	NET_ASSERT(id < m_vFastChannelLookup.size());
 	NET_ASSERT(m_vFastChannelLookup[id]);
 	m_vFastChannelLookup[id] = 0;
 }
 
-CNetChannel * CNetwork::GetChannelByFastLookupId(int id)
+CNetChannel* CNetwork::GetChannelByFastLookupId(int id)
 {
-	NET_ASSERT(id>=0);
-	if (id<m_vFastChannelLookup.size())
+	NET_ASSERT(id >= 0);
+	if (id < m_vFastChannelLookup.size())
 		return m_vFastChannelLookup[id];
 	else
 		return 0;
@@ -1285,17 +1287,17 @@ void CEnsureRealtime::Failed()
 
 struct ImprovedTest
 {
-	uint32 nValue; 
-	uint32 nLeft; 
-	uint32 nRight; 
-	uint32 nHeight; 
+	uint32 nValue;
+	uint32 nLeft;
+	uint32 nRight;
+	uint32 nHeight;
 	uint32 nRange;
 	uint8  nInRangePercentage;
 	uint8  nMaxBits;
 };
 
 
-struct ITestPolyQueue 
+struct ITestPolyQueue
 {
 	virtual void Poo() = 0;
 };
@@ -1305,20 +1307,20 @@ struct CTestPolyQueue : public ITestPolyQueue
 {
 	CTestPolyQueue(int i) : m_val(i) {}
 	int m_val;
-	int padding[N*100];
-	void Poo() 
+	int padding[N * 100];
+	void Poo()
 	{
 		//		CryLogAlways("%d", m_val);
-		if (rand()>RAND_MAX/2)
+		if (rand() > RAND_MAX / 2)
 			testq.Add(CTestPolyQueue(m_val + 10000000));
 	}
 };
-void TestPolyQueue( ITestPolyQueue * p )
+void TestPolyQueue(ITestPolyQueue* p)
 {
 	p->Poo();
 }
 
-bool TestStringToKey( const char * x, uint32 n )
+bool TestStringToKey(const char* x, uint32 n)
 {
 	uint32 m;
 	if (!StringToKey(x, m))
@@ -1337,25 +1339,25 @@ class CStressTestMMM
 public:
 	void Run(int iters)
 	{
-		for (int i=0; i<iters; i++)
+		for (int i = 0; i < iters; i++)
 		{
-			bool alloc = rand() > RAND_MAX/3;
+			bool alloc = rand() > RAND_MAX / 3;
 			bool resize = false;
 			if (m_alloced.size() > 15000)
 				alloc = false;
 			if (m_alloced.empty())
 				alloc = true;
-			if (alloc && !m_alloced.empty() && rand() < RAND_MAX/2)
+			if (alloc && !m_alloced.empty() && rand() < RAND_MAX / 2)
 				resize = true;
 			VerifyAll();
 			size_t sz = rand() % 2070;
-			int which = m_alloced.empty()? 0 : rand() % m_alloced.size();
+			int which = m_alloced.empty() ? 0 : rand() % m_alloced.size();
 			if (alloc)
 			{
 				if (resize)
 				{
 					std::map<TMemHdl, size_t>::iterator it = m_alloced.begin();
-					for (int j=0; j<which; j++)
+					for (int j = 0; j < which; j++)
 						++it;
 					m_mmm.ResizeHdl(it->first, sz);
 					if (m_mmm.GetHdlSize(it->first) == sz)
@@ -1370,7 +1372,7 @@ public:
 					TMemHdl hdl = m_mmm.AllocHdl(sz);
 					if (hdl != CMementoMemoryManager::InvalidHdl)
 					{
-						m_alloced.insert( std::make_pair(hdl, sz) );
+						m_alloced.insert(std::make_pair(hdl, sz));
 						Init(hdl);
 					}
 					//					VerifyAll();
@@ -1379,7 +1381,7 @@ public:
 			else
 			{
 				std::map<TMemHdl, size_t>::iterator it = m_alloced.begin();
-				for (int j=0; j<which; j++)
+				for (int j = 0; j < which; j++)
 					++it;
 				m_mmm.FreeHdl(it->first);
 				m_alloced.erase(it);
@@ -1392,13 +1394,13 @@ private:
 	CMementoMemoryManager m_mmm;
 	std::map<TMemHdl, size_t> m_alloced;
 
-	void Init( TMemHdl hdl )
+	void Init(TMemHdl hdl)
 	{
 		std::map<TMemHdl, size_t>::iterator it = m_alloced.find(hdl);
 		NET_ASSERT(it != m_alloced.end());
 		NET_ASSERT(m_mmm.GetHdlSize(hdl) == it->second);
-		uint8 * p = (uint8 *)m_mmm.PinHdl(hdl);
-		for (int i=0; i<it->second; i++)
+		uint8* p = (uint8*)m_mmm.PinHdl(hdl);
+		for (int i = 0; i < it->second; i++)
 		{
 			uint8 b = i;
 			p[i] = b;
@@ -1412,16 +1414,16 @@ private:
 			Verify(it->first);
 	}
 
-	void Verify( TMemHdl hdl )
+	void Verify(TMemHdl hdl)
 	{
 		std::map<TMemHdl, size_t>::iterator it = m_alloced.find(hdl);
 		NET_ASSERT(it != m_alloced.end());
 		NET_ASSERT(m_mmm.GetHdlSize(hdl) == it->second);
-		uint8 * p = (uint8 *)m_mmm.PinHdl(hdl);
-		for (int i=0; i<it->second; i++)
+		uint8* p = (uint8*)m_mmm.PinHdl(hdl);
+		for (int i = 0; i < it->second; i++)
 		{
 			uint8 b = i;
-			NET_ASSERT( p[i] == b );
+			NET_ASSERT(p[i] == b);
 		}
 	}
 };
@@ -1436,34 +1438,34 @@ struct SAlphabetTestOp
 void CNetwork::RunTests()
 {
 #if 0
-/*
-	for (int SZ=15; SZ<10000; SZ*=1.5f)
-	{
-		CDefaultStreamAllocator alloc;
-		CCommOutputStream os(&alloc, 1024);
-		CArithLargeAlphabetOrder0<21,15> alphabet(SZ);
+	/*
+		for (int SZ=15; SZ<10000; SZ*=1.5f)
+		{
+			CDefaultStreamAllocator alloc;
+			CCommOutputStream os(&alloc, 1024);
+			CArithLargeAlphabetOrder0<21,15> alphabet(SZ);
 
-		for (int j=0; j<100000; j++)
-			alphabet.WriteSymbol(os, cry_rand32()%SZ);
-		for (int j=0; j<100000; j++)
-			alphabet.WriteSymbol(os, SZ/2);
-	}
-*/
+			for (int j=0; j<100000; j++)
+				alphabet.WriteSymbol(os, cry_rand32()%SZ);
+			for (int j=0; j<100000; j++)
+				alphabet.WriteSymbol(os, SZ/2);
+		}
+	*/
 	std::vector<SAlphabetTestOp> ops;
 	static const int INISZ = 20;
 	CDefaultStreamAllocator alloc;
 	CCommOutputStream os(&alloc, 1024);
-	typedef CArithLargeAlphabetOrder0<21,15> TA;
+	typedef CArithLargeAlphabetOrder0<21, 15> TA;
 	typedef std::vector<TA> VTA;
 	VTA alphas;
 	TA a(INISZ);
-	for (int i=0; i<100; i++)
-	 alphas.push_back(a);
+	for (int i = 0; i < 100; i++)
+		alphas.push_back(a);
 	VTA alphas0 = alphas;
-	for (int i=0; i<1000; i++)
+	for (int i = 0; i < 1000; i++)
 	{
 		SAlphabetTestOp op;
-		switch (cry_rand32()%10)
+		switch (cry_rand32() % 10)
 		{
 		case 0:
 			op.what = 0;
@@ -1474,10 +1476,10 @@ void CNetwork::RunTests()
 		case 1:
 			op.what = 1;
 			op.buffer = cry_rand32() % alphas.size();
-			do 
+			do
 			{
 				op.value = cry_rand32() % alphas.size();
-			} while(op.value == op.buffer);
+			} while (op.value == op.buffer);
 			alphas[op.buffer] = alphas[op.value];
 			break;
 		default:
@@ -1503,11 +1505,11 @@ void CNetwork::RunTests()
 			alphas[it->buffer] = alphas[it->value];
 			break;
 		case 2:
-			{
-				uint32 r = alphas[it->buffer].ReadSymbol(is);
-				NET_ASSERT(r == it->value);
-			}
-			break;
+		{
+			uint32 r = alphas[it->buffer].ReadSymbol(is);
+			NET_ASSERT(r == it->value);
+		}
+		break;
 		}
 	}
 #endif
@@ -1521,24 +1523,24 @@ void CNetwork::RunTests()
 	scs.Load("scripts/network/wrld.xml");
 	CDefaultStreamAllocator dsa;
 	CCommOutputStream os(&dsa, 1024);
-	int32 test[3] = {-11154, -197, -122};
+	int32 test[3] = { -11154, -197, -122 };
 	scs.Encode(os, test, 3);
 #endif
 
 #if 0
-	for (int loop=0; loop<5000; loop++)
+	for (int loop = 0; loop < 5000; loop++)
 	{
 		int sizes[] = {
 			1, 2, 4, 3, 5, 8, 12, 16, 83, 11, 97
 		};
 		static const int nsizes = sizeof(sizes) / sizeof(*sizes);
-		for (int i=0; i<nsizes; i++)
-			std::swap(sizes[rand()%nsizes], sizes[rand()%nsizes]);
+		for (int i = 0; i < nsizes; i++)
+			std::swap(sizes[rand() % nsizes], sizes[rand() % nsizes]);
 		CDefaultStreamAllocator alloc;
-		CByteOutputStream os(&alloc,1);
-		for (int i=0; i<nsizes*20; i++)
+		CByteOutputStream os(&alloc, 1);
+		for (int i = 0; i < nsizes * 20; i++)
 		{
-			switch (sizes[i%nsizes])
+			switch (sizes[i % nsizes])
 			{
 			case 1:
 				os.PutByte('x');
@@ -1550,58 +1552,58 @@ void CNetwork::RunTests()
 				os.PutTyped<uint32>() = 19283442;
 				break;
 			case 12:
-				os.PutTyped<Vec3>() = Vec3(0,1,2);
+				os.PutTyped<Vec3>() = Vec3(0, 1, 2);
 				break;
 			case 16:
 				os.PutTyped<Quat>() = IDENTITY;
 				break;
 			default:
-				{
-					uint8 * temp = new uint8[sizes[i%nsizes]];
-					for (int j=0; j<sizes[i%nsizes]; j++)
-						temp[j] = j;
-					os.Put( temp, sizes[i%nsizes] );
-					delete[] temp;
-				}
+			{
+				uint8* temp = new uint8[sizes[i % nsizes]];
+				for (int j = 0; j < sizes[i % nsizes]; j++)
+					temp[j] = j;
+				os.Put(temp, sizes[i % nsizes]);
+				delete[] temp;
+			}
 			}
 		}
-		CByteInputStream is( os.GetBuffer(), os.GetSize() );
-		for (int i=0; i<nsizes*20; i++)
+		CByteInputStream is(os.GetBuffer(), os.GetSize());
+		for (int i = 0; i < nsizes * 20; i++)
 		{
-			switch (sizes[i%nsizes])
+			switch (sizes[i % nsizes])
 			{
 			case 1:
-				NET_ASSERT( is.GetByte() == 'x' );
+				NET_ASSERT(is.GetByte() == 'x');
 				break;
 			case 2:
-				NET_ASSERT( is.GetTyped<uint16>() == 1824 );
+				NET_ASSERT(is.GetTyped<uint16>() == 1824);
 				break;
 			case 4:
-				NET_ASSERT( is.GetTyped<uint32>() == 19283442 );
+				NET_ASSERT(is.GetTyped<uint32>() == 19283442);
 				break;
 			case 12:
-				NET_ASSERT( is.GetTyped<Vec3>() == Vec3(0,1,2) );
+				NET_ASSERT(is.GetTyped<Vec3>() == Vec3(0, 1, 2));
 				break;
 			case 16:
-				NET_ASSERT( is.GetTyped<Quat>().IsIdentity() );
+				NET_ASSERT(is.GetTyped<Quat>().IsIdentity());
 				break;
 			default:
-				{
-					uint8 * temp = new uint8[sizes[i%nsizes]];
-					for (int j=0; j<sizes[i%nsizes]; j++)
-						temp[j] = j;
-					NET_ASSERT( 0 == memcmp(temp, is.Get( sizes[i%nsizes] ), sizes[i%nsizes]) );
-					delete[] temp;
-				}
+			{
+				uint8* temp = new uint8[sizes[i % nsizes]];
+				for (int j = 0; j < sizes[i % nsizes]; j++)
+					temp[j] = j;
+				NET_ASSERT(0 == memcmp(temp, is.Get(sizes[i % nsizes]), sizes[i % nsizes]));
+				delete[] temp;
+			}
 			}
 		}
 	}
 #endif
 
 #if 0
-	for (int i=0; i<1000000; i++)
+	for (int i = 0; i < 1000000; i++)
 	{
-		switch (rand()%10)
+		switch (rand() % 10)
 		{
 		case 0:
 			testq.Add(CTestPolyQueue<10>(i));
@@ -1634,8 +1636,8 @@ void CNetwork::RunTests()
 			testq.Add(CTestPolyQueue<9>(i));
 			break;
 		}
-		if (rand()%100000 == 0)
-			testq.Flush( TestPolyQueue );
+		if (rand() % 100000 == 0)
+			testq.Flush(TestPolyQueue);
 	}
 #endif
 
@@ -1701,10 +1703,10 @@ void CNetwork::RunTests()
 
 }
 
-CNetChannel * CNetwork::FindFirstClientChannel()
+CNetChannel* CNetwork::FindFirstClientChannel()
 {
 	for (VMembers::const_iterator iter = m_vMembers.begin(); iter != m_vMembers.end(); ++iter)
-		if (CNetChannel * pChan = (*iter)->FindFirstClientChannel())
+		if (CNetChannel* pChan = (*iter)->FindFirstClientChannel())
 			return pChan;
 	return 0;
 }

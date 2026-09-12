@@ -110,7 +110,7 @@ class CMessageQueue::CConfig
 public:
 	bool Read( XmlNodeRef n )
 	{
-		for (size_t i=0; i<n->getChildCount(); i++)
+		for (int i=0; i<n->getChildCount(); i++)
 		{
 			XmlNodeRef child = n->getChild(i);
 			if (0 == strcmp("Group", child->getTag()))
@@ -602,7 +602,7 @@ CMessageQueue::SMsgSlot* CMessageQueue::AllocSlot( SSendableHandle& hdl, EMsgSlo
 	uint32 id;
 
 	bool found = false;
-	for (int i=0; i<m_freeSlotNumElems.size(); i++)
+	for (size_t i=0; i<m_freeSlotNumElems.size(); i++)
 	{
 		if (m_freeSlotNumElems[i] > 0)
 		{
@@ -613,7 +613,12 @@ CMessageQueue::SMsgSlot* CMessageQueue::AllocSlot( SSendableHandle& hdl, EMsgSlo
 	}
 	if (!found)
 	{
-		id = m_slots.size();
+		if (m_slots.size() >= (std::numeric_limits<uint32>::max)())
+		{
+			CryError("Message queue exhausted its 32-bit slot ID space");
+			return NULL;
+		}
+		id = static_cast<uint32>(m_slots.size());
 		m_slots.resize(m_slots.size()+1);
 		if (m_salt.size() < m_slots.size())
 			m_salt.resize(m_slots.size());
@@ -734,7 +739,12 @@ void CMessageQueue::AddDependencyToSlot( SSendableHandle hdl, SMsgSlot * pSlot )
 	uint32 id = InvalidDepNodeId;
 	if (m_freeDepLinks.empty())
 	{
-		id = m_depNodes.size();
+		if (m_depNodes.size() >= InvalidDepNodeId)
+		{
+			CryError("Message queue exhausted its 32-bit dependency ID space");
+			return;
+		}
+		id = static_cast<uint32>(m_depNodes.size());
 		m_depNodes.push_back(SDepNode());
 	}
 	else
@@ -1197,7 +1207,7 @@ void CMessageQueue::WriteMessages( IMessageOutput * pOut, const SSchedulingParam
 	ValidateHandles();
 
 	uint32 newReliableSeq = m_reliableSeq;
-	uint32 stopAfterBytes = params.targetBytes - 8;
+	const size_t stopAfterBytes = params.targetBytes > 8 ? params.targetBytes - 8 : 0;
 
 	CCommOutputStream * pStm = pOut->GetStream();
 
@@ -1288,7 +1298,7 @@ void CMessageQueue::WriteMessages( IMessageOutput * pOut, const SSchedulingParam
 		}
 #endif
 
-		uint32 sizeBefore = pStm->GetApproximateSize();
+		const size_t sizeBefore = pStm->GetApproximateSize();
 		EWriteMessageResult writeResult = eWMR_Fail_Finish;
 		{
 			//FRAME_PROFILER("CMessageQueue::WriteMessages.EncodeMessage", gEnv->pSystem, PROFILE_NETWORK);
@@ -1296,7 +1306,7 @@ void CMessageQueue::WriteMessages( IMessageOutput * pOut, const SSchedulingParam
 			// need to recache pEntSend (it may have changed during the WriteMessage call)
 			pEntSend = &m_slots[idxEntSend];
 		}
-		uint32 sizeAfter = pStm->GetApproximateSize();
+		const size_t sizeAfter = pStm->GetApproximateSize();
 		if (writeResult == eWMR_Delay)
 			pEntSend->liveness = eL_Fresh;
 		else if (writeResult == eWMR_Fail_Finish || writeResult == eWMR_Fail_Continue)
@@ -1313,11 +1323,12 @@ void CMessageQueue::WriteMessages( IMessageOutput * pOut, const SSchedulingParam
 		}
 		if (pEntSend->pAG && sizeAfter > sizeBefore)
 		{
-			pEntSend->pAG->totBandwidthUsed += sizeAfter - sizeBefore;
-			pEntSend->pAG->bandwidthThisFrame += sizeAfter - sizeBefore;
+			const float bandwidth = static_cast<float>(sizeAfter - sizeBefore);
+			pEntSend->pAG->totBandwidthUsed += bandwidth;
+			pEntSend->pAG->bandwidthThisFrame += bandwidth;
 			if (pEntSend->pAG->sends.Full())
 				pEntSend->pAG->PopSend();
-			pEntSend->pAG->sends.Push( SSentEnt(params.now, sizeAfter - sizeBefore) );
+			pEntSend->pAG->sends.Push( SSentEnt(params.now, bandwidth) );
 		}
 		if (writeResult == eWMR_Ok_Finish || writeResult == eWMR_Fail_Finish)
 			break;

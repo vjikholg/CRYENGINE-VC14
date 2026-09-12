@@ -1,6 +1,8 @@
 #include "StdAfx.h"
 #include "SocketIOManagerIOCP.h"
 
+#include <CryCheckedArithmetic.h>
+
 #if defined(HAS_SOCKETIOMANAGER_IOCP)
 
 #include "Network.h"
@@ -420,18 +422,25 @@ SSocketID CSocketIOManagerIOCP::RegisterSocket( SOCKET sock )
 	ASSERT_GLOBAL_LOCK;
 	SCOPED_COMM_LOCK;
 
-	int id;
-	for (id=0; id<m_registeredSockets.size(); id++)
+	size_t id = 0;
+	for (; id < m_registeredSockets.size(); ++id)
 	{
 		if (!m_registeredSockets[id].inUse)
 			break;
 	}
 	if (id == m_registeredSockets.size())
+	{
+		if (id >= static_cast<size_t>(SSocketID::InvalidId))
+		{
+			NET_ASSERT(false);
+			return SSocketID();
+		}
 		m_registeredSockets.push_back(SRegisteredSocket(123)); // 123 is an arbitrary number that's somewhat larger than zero
+	}
 
 	SRegisteredSocket& rs = m_registeredSockets[id];
 	rs = SRegisteredSocket(rs.salt + 1);
-	SSocketID sockid(id, rs.salt);
+	SSocketID sockid(static_cast<uint16>(id), rs.salt);
 
 	if (!CreateIoCompletionPort( (HANDLE)sock, m_iocp, sockid.AsInt()+1, 0 ))
 	{
@@ -487,7 +496,7 @@ CSocketIOManagerIOCP::SRegisteredSocket * CSocketIOManagerIOCP::GetRegisteredSoc
 {
 	ASSERT_COMM_LOCK;
 
-	if (sockid.id < 0 || sockid.id >= m_registeredSockets.size())
+	if (static_cast<size_t>(sockid.id) >= m_registeredSockets.size())
 	{
 		NET_ASSERT(false);
 		return 0;
@@ -625,6 +634,8 @@ bool CSocketIOManagerIOCP::RequestSendTo( SSocketID sockid, const TNetAddress& a
 bool CSocketIOManagerIOCP::DoRequestSendTo( SRegisteredSocket * rs, const TNetAddress& addr, const uint8 * pData, size_t len, CTimeValue now )
 {
 	ASSERT_COMM_LOCK;
+	if (len > MAX_UDP_PACKET_SIZE)
+		return false;
 
 	SIORequest * pReq = AllocIORequest();
 	CAutoFreeIORequest freeReq(this, pReq);
@@ -653,8 +664,12 @@ bool CSocketIOManagerIOCP::DoRequestSendTo( SRegisteredSocket * rs, const TNetAd
 	pReq->flags = 0;
 	pReq->iort = eIORT_SendTo;
 	memcpy(pReq->dataBuffer, pData, len);
-	pReq->bytesReceived = len;
-	pReq->wsaBuffer[0].len = len;
+	DWORD requestLength = 0;
+	ULONG bufferLength = 0;
+	if (!CryTryNarrowSize(len, requestLength) || !CryTryNarrowSize(len, bufferLength))
+		return false;
+	pReq->bytesReceived = requestLength;
+	pReq->wsaBuffer[0].len = bufferLength;
 	if (!ConvertAddr(addr, (sockaddr*)pReq->addrBuffer, &pReq->addrLength))
 		return false;
 	int sendret = WSASendTo( rs->sock, pReq->wsaBuffer, 1, &pReq->bytesReceived, 0, (sockaddr*)pReq->addrBuffer, pReq->addrLength, &pReq->overlapped, NULL );
@@ -721,8 +736,12 @@ bool CSocketIOManagerIOCP::RequestSend( SSocketID sockid, const uint8 * pData, s
 		pReq->iort = eIORT_Send;
 		size_t ncp = std::min(len, size_t(MAX_UDP_PACKET_SIZE));
 		memcpy(pReq->dataBuffer, pData, ncp);
-		pReq->bytesReceived = ncp;
-		pReq->wsaBuffer[0].len = ncp;
+		DWORD requestLength = 0;
+		ULONG bufferLength = 0;
+		if (!CryTryNarrowSize(ncp, requestLength) || !CryTryNarrowSize(ncp, bufferLength))
+			return false;
+		pReq->bytesReceived = requestLength;
+		pReq->wsaBuffer[0].len = bufferLength;
 		int sendret = WSASend( rs->sock, pReq->wsaBuffer, 1, &pReq->bytesReceived, 0, &pReq->overlapped, NULL );
 		if (sendret == SOCKET_ERROR && (ERROR_IO_PENDING != WSAGetLastError()))
 		{

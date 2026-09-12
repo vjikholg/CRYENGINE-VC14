@@ -1,5 +1,7 @@
 #include "StdAfx.h"
 #include "SocketIOManagerSelect.h"
+
+#include <CryCheckedArithmetic.h>
 #include "Network.h"
 #include "UDPDatagramSocket.h"
 
@@ -323,16 +325,23 @@ void CSocketIOManagerSelect::WakeUp()
 
 SSocketID CSocketIOManagerSelect::RegisterSocket( SOCKET sock )
 {
-	int id;
-	for (id=0; id<m_socketInfo.size(); id++)
+	size_t id = 0;
+	for (; id < m_socketInfo.size(); ++id)
 		if (!m_socketInfo[id].isActive)
 			break;
 	if (id == m_socketInfo.size())
+	{
+		if (id >= static_cast<size_t>(SSocketID::InvalidId))
+		{
+			NET_ASSERT(false);
+			return SSocketID();
+		}
 		m_socketInfo.push_back(SSocketInfo());
+	}
 	m_socketInfo[id].isActive = true;
 	do m_socketInfo[id].salt ++; while (!m_socketInfo[id].salt);
 	m_socketInfo[id].sock = sock;
-	return SSocketID(id, m_socketInfo[id].salt);
+	return SSocketID(static_cast<uint16>(id), m_socketInfo[id].salt);
 }
 
 void CSocketIOManagerSelect::UnregisterSocket( SSocketID sockid )
@@ -360,7 +369,7 @@ void CSocketIOManagerSelect::UnregisterBackoffAddressForSocket( TNetAddress addr
 
 CSocketIOManagerSelect::SSocketInfo * CSocketIOManagerSelect::GetSocketInfo( SSocketID id )
 {
-	if (id.id >= m_socketInfo.size())
+	if (static_cast<size_t>(id.id) >= m_socketInfo.size())
 		return 0;
 	if (m_socketInfo[id.id].salt != id.salt)
 		return 0;
@@ -441,6 +450,9 @@ bool CSocketIOManagerSelect::RequestSendTo( SSocketID sockid, const TNetAddress&
 {
 	if (len > MAX_UDP_PACKET_SIZE)
 		return false;
+	int packetLength = 0;
+	if (!CryTryNarrowSize(len, packetLength))
+		return false;
 
 	if (SSocketInfo * pSI = GetSocketInfo(sockid))
 	{
@@ -450,7 +462,7 @@ bool CSocketIOManagerSelect::RequestSendTo( SSocketID sockid, const TNetAddress&
 			{
 delaysend:
 				pSI->outgoingAddressed.push_back(SOutgoingAddressedData());
-				pSI->outgoingAddressed.back().nLength = len;
+				pSI->outgoingAddressed.back().nLength = packetLength;
 				memcpy(pSI->outgoingAddressed.back().data, pData, len);
 				WakeUp();
 			}
@@ -460,7 +472,7 @@ delaysend:
 				int addrlen = _SS_MAXSIZE;
 				if (ConvertAddr( addr, (sockaddr*)address, &addrlen ))
 				{
-					int r = sendto(pSI->sock, (char*)pData, len, 0, (sockaddr*)address, addrlen);
+					int r = sendto(pSI->sock, (char*)pData, packetLength, 0, (sockaddr*)address, addrlen);
 					switch (r)
 					{
 					case 0:
@@ -526,9 +538,12 @@ bool CSocketIOManagerSelect::RequestSend( SSocketID sockid, const uint8 * pData,
 		{
 			while (len)
 			{
-				pSI->outgoing.push_back(SOutgoingData());
 				size_t ncp = std::min(len, size_t(MAX_UDP_PACKET_SIZE));
-				pSI->outgoing.back().nLength = ncp;
+				int packetLength = 0;
+				if (!CryTryNarrowSize(ncp, packetLength))
+					return false;
+				pSI->outgoing.push_back(SOutgoingData());
+				pSI->outgoing.back().nLength = packetLength;
 				memcpy(pSI->outgoing.back().data, pData, ncp);
 				pData += ncp;
 				len -= ncp;

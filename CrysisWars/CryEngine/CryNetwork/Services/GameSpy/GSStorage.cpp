@@ -107,8 +107,9 @@ struct CGSStorage::SCreateRecord : public CGSStorage::SRequestBase
 
   bool Execute()
   {
-    m_data.mFields = &m_record.m_fields[0];
-    m_data.mNumFields = m_record.m_fields.size();
+		if (m_record.m_fields.empty() || !CryTryNarrowSize(m_record.m_fields.size(), m_data.mNumFields))
+			return false;
+    m_data.mFields = m_record.m_fields.data();
     m_data.mTableId = (char*)m_table.c_str();
     m_request = sakeCreateRecord(m_storage->m_sake, &m_data, &CGSStorage::SRequestBase::SAKERequestCallback, this);
 		return m_request != NULL;
@@ -160,8 +161,9 @@ struct CGSStorage::SUpdateRecord : public CGSStorage::SRequestBase
 
   bool Execute()
   {
-    m_data.mFields = &m_record.m_fields[0];
-    m_data.mNumFields = m_record.m_fields.size();
+		if (m_record.m_fields.empty() || !CryTryNarrowSize(m_record.m_fields.size(), m_data.mNumFields))
+			return false;
+    m_data.mFields = m_record.m_fields.data();
     m_data.mTableId = (char*)m_table.c_str();
     m_data.mRecordId = m_recordId;
     m_request = sakeUpdateRecord(m_storage->m_sake, &m_data, &CGSStorage::SRequestBase::SAKERequestCallback, this);
@@ -211,8 +213,9 @@ struct CGSStorage::SReadRecords : public CGSStorage::SRequestBase
 
   bool Execute()
   {
-    m_data.mNumFields = m_fieldnames.size();
-    m_data.mFieldNames = &m_fieldnames[0];
+		if (m_fieldnames.empty() || !CryTryNarrowSize(m_fieldnames.size(), m_data.mNumFields))
+			return false;
+    m_data.mFieldNames = m_fieldnames.data();
     m_data.mTableId = (char*)m_table.c_str();
     m_request = sakeGetMyRecords(m_storage->m_sake, &m_data, &CGSStorage::SRequestBase::SAKERequestCallback, this);
 		return m_request != NULL;
@@ -357,14 +360,16 @@ struct CGSStorage::SSearchForRecords : public CGSStorage::SRequestBase
 
   bool Execute()
   {
-    m_data.mNumFields = m_fieldnames.size();
-    m_data.mFieldNames = &m_fieldnames[0];
+		if (m_fieldnames.empty() || !CryTryNarrowSize(m_fieldnames.size(), m_data.mNumFields))
+			return false;
+    m_data.mFieldNames = m_fieldnames.data();
     m_data.mTableId = (char*)m_table.c_str();
     m_data.mFilter = (char*)m_filter.c_str();
     m_data.mSort = (char*)m_sort.c_str();
 		m_data.mMaxRecords = 50;
 		m_data.mOffset = 0;
-		m_data.mTargetRecordFilter="";
+		static char emptyTargetRecordFilter[] = "";
+		m_data.mTargetRecordFilter = emptyTargetRecordFilter;
 		m_data.mSurroundingRecordsCount = 0;
 		m_data.mOwnerIds = 0;
 		m_data.mNumOwnerIds = 0;
@@ -545,8 +550,9 @@ void  CGSStorage::Think()
 
 	if(m_requests.size() < MAX_SIMULTANEOUS_REQUESTS)
 	{
-		int to_add = min(MAX_SIMULTANEOUS_REQUESTS-m_requests.size(),m_queue.size());
-		for(int i=0;i<to_add;++i)
+		const size_t available = static_cast<size_t>(MAX_SIMULTANEOUS_REQUESTS) - m_requests.size();
+		const size_t to_add = (std::min)(available, m_queue.size());
+		for(size_t i=0;i<to_add;++i)
 		{
 			m_requests.push_back(m_queue[i]);
 			NetLog("Executed request %p", m_queue[i]);

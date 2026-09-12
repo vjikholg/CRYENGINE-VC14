@@ -217,8 +217,8 @@ public:
   CServiceManager* GetServiceManager(){return m_pServiceManager.get();}
 
 	// fast lookup of channels (mainly for punkbuster)
-	int RegisterForFastLookup(CNetChannel * pChannel);
-	void UnregisterFastLookup(int id);
+	size_t RegisterForFastLookup(CNetChannel * pChannel);
+	void UnregisterFastLookup(size_t id);
 	CNetChannel * GetChannelByFastLookupId(int id);
 
 	void AddExecuteString( const string& toExec );
@@ -302,9 +302,9 @@ private:
 	NetFastMutex m_commMutex;
 	NetFastMutex m_logMutex;
 
-  CTimeValue m_gameTime;
+	CTimeValue m_gameTime;
   
-  string m_CDKey;
+	string m_CDKey;
 
 	class CBufferWakeups;
 	int m_bufferWakeups;

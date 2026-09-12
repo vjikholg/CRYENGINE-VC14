@@ -43,7 +43,7 @@ bool equiv( const T& a, const T& b )
 class CCRC8
 {
 public:
-	CCRC8() : m_crc(-1) {}
+	CCRC8() : m_crc(0xffu) {}
 
 	ILINE void Add( uint8 x )
 	{

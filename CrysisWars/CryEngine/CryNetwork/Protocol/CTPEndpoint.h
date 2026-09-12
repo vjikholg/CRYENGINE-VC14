@@ -135,7 +135,7 @@ private:
 	// in all 128 sequence states (2*64) if at all possible
 	struct SBigEndpointState
 	{
-		SBigEndpointState( size_t acks, CMessageMapper& msgMapper, Rijndael::Direction dir, const uint8* key, uint8* initVec );
+		SBigEndpointState( unsigned acks, CMessageMapper& msgMapper, Rijndael::Direction dir, const uint8* key, uint8* initVec );
 		SBigEndpointState( const SBigEndpointState& cp ) : 
 			m_AckAlphabet(cp.m_AckAlphabet),
 			m_MsgAlphabet(cp.m_MsgAlphabet),
@@ -173,23 +173,35 @@ private:
 		void Encrypt( uint8 * pBuf, size_t len )
 		{
 #if ALLOW_ENCRYPTION
-			uint8 * buf = (uint8*)alloca(len);
-			NET_ASSERT(0 == (len&15));
-			m_crypt.blockEncrypt( pBuf, len*8, buf );
+			int inputBitCount = 0;
+			const bool validLength = Rijndael::TryGetBlockBitCount(len, inputBitCount);
+			NET_ASSERT(validLength);
+			if (!validLength)
+				return;
+
+			uint8 * buf = (uint8*) alloca(len);
+			if (m_crypt.blockEncrypt( pBuf, inputBitCount, buf ) != inputBitCount)
+				return;
 			memcpy(pBuf, buf, len);
 #endif
 		}
 		void Decrypt( uint8 * pBuf, size_t len )
 		{
 #if ALLOW_ENCRYPTION
-			uint8 * buf = (uint8*)alloca(len);
-			NET_ASSERT(0 == (len&15));
-			m_crypt.blockDecrypt( pBuf, len*8, buf );
+			int inputBitCount = 0;
+			const bool validLength = Rijndael::TryGetBlockBitCount(len, inputBitCount);
+			NET_ASSERT(validLength);
+			if (!validLength)
+				return;
+
+			uint8* buf = (uint8*) alloca(len);
+			if (m_crypt.blockDecrypt( pBuf, inputBitCount, buf ) != inputBitCount)
+				return;
 			memcpy(pBuf, buf, len);
 #endif
 		}
 
-		size_t GetSize() { return m_AckAlphabet.GetSize() + /*m_MsgAlphabet.GetSize() +*/ m_ArithModel.GetSize(); }
+		size_t GetSize() { return m_AckAlphabet.GetSize() + m_ArithModel.GetSize(); }
 		TAckAlphabet m_AckAlphabet;
 		TMsgAlphabet m_MsgAlphabet;
 		CArithModel m_ArithModel;
@@ -202,13 +214,7 @@ private:
 	class CBigEndpointStateManager
 	{
 	public:
-		CBigEndpointStateManager()
-		{
-			m_nAlloced = 0;
-			m_minFree = 0;
-			m_operationsSinceCleanup = 0;
-		}
-
+		CBigEndpointStateManager() = default;
 		~CBigEndpointStateManager()
 		{
 			FlushAll();
@@ -225,26 +231,26 @@ private:
 			}
 		}
 
-		SBigEndpointState * Create( size_t a, CMessageMapper& m, Rijndael::Direction dir, const uint8* key, uint8* initVec )
+		SBigEndpointState* Create( unsigned a, CMessageMapper& m, Rijndael::Direction dir, const uint8* key, uint8* initVec )
 		{
 			m_nAlloced ++;
 			return new SBigEndpointState( a, m, dir, key, initVec );
 		}
 
-		SBigEndpointState * Clone( SBigEndpointState * pState )
+		SBigEndpointState* Clone( SBigEndpointState * pState )
 		{
 			FRAME_PROFILER("SBigEndpointsState:Clone", GetISystem(), PROFILE_NETWORK);
 			m_nAlloced ++;
 
 			m_operationsSinceCleanup ++;
 
-			SBigEndpointState * pCloned;
+			SBigEndpointState* pCloned;
 			if (m_vBuffer.size())
 			{
 				pCloned = m_vBuffer.back();
 				m_vBuffer.pop_back();
 				*pCloned = *pState;
-				m_minFree = std::min( m_minFree, uint32(m_vBuffer.size()) );
+				m_minFree = std::min( m_minFree, m_vBuffer.size() );
 			}
 			else
 			{
@@ -268,7 +274,7 @@ private:
 
 		size_t SpareSize()
 		{
-			size_t n = 0;
+			size_t n{ 0ull };
 			for (size_t i=0; i<m_vBuffer.size(); i++)
 				n += m_vBuffer[i]->GetSize();
 			return n;
@@ -280,7 +286,7 @@ private:
 				return;
 
 			NET_ASSERT(m_minFree <= m_vBuffer.size());
-			for (uint32 i=0; i<m_minFree; i++)
+			for (size_t i=0; i<m_minFree; i++)
 			{
 				delete m_vBuffer.back();
 				m_vBuffer.pop_back();
@@ -299,10 +305,10 @@ private:
 		}
 
 	private:
-		std::vector<SBigEndpointState*> m_vBuffer;
-		uint32 m_nAlloced;
-		uint32 m_minFree;
-		int m_operationsSinceCleanup;
+		std::vector<SBigEndpointState*> m_vBuffer{};
+		uint32 m_nAlloced{ 0u };
+		size_t m_minFree{ 0ull };
+		int m_operationsSinceCleanup{ 0 };
 	};
 
 	// this tracks the state we were in at each sent packet

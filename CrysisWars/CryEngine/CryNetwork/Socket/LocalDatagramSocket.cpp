@@ -2,6 +2,8 @@
 #include "LocalDatagramSocket.h"
 #include "Network.h"
 
+#include <CryCheckedArithmetic.h>
+
 CLocalDatagramSocket::CManager * CLocalDatagramSocket::m_pManager = NULL;
 
 CLocalDatagramSocket::CLocalDatagramSocket() : m_addr(0), m_pListener(NULL), m_isDead(false)
@@ -85,7 +87,13 @@ void CLocalDatagramSocket::OnRead()
 		m_packets.pop();
 		SPacketCleanup cleanupPacket( pPacket );
 
-		m_pListener->OnPacket( TNetAddress(pPacket->addr), pPacket->vData, pPacket->nBytes );
+		uint32 packetLength = 0;
+		if (!CryTryNarrowSize(pPacket->nBytes, packetLength))
+		{
+			NET_ASSERT(false);
+			return;
+		}
+		m_pListener->OnPacket( TNetAddress(pPacket->addr), pPacket->vData, packetLength );
 	}
 }
 

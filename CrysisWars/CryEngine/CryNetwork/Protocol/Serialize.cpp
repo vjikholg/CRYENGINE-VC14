@@ -60,7 +60,10 @@ ESerializeChunkResult CNetOutputSerializeImpl::SerializeChunk( ChunkID chunk, ui
 			Value("_tstamp", *pTimeInfo, 'tPhy');
 		}
 		CNetwork::Get()->GetCompressionManager().BufferToStream( chunk, profile, in, *this );
-		return eSCR_Ok;
+
+		if (Ok())
+			return eSCR_Ok;
+		return eSCR_Failed;
 	}
 }
 

@@ -162,7 +162,11 @@ void CRemoteControlServerInternal::SendResult(uint32 commandId, string result)
 		return;
 	SRCONServerMsgRConResult msg_result;
 	msg_result.commandId = commandId;
-	msg_result.resultLen = result.size();
+	if (!CryTryNarrowSize(result.size(), msg_result.resultLen))
+	{
+		NetWarning("Remote-console result exceeds the 32-bit protocol limit");
+		return;
+	}
 	m_pSocketSession->Send((uint8*)&msg_result, sizeof(msg_result));
 	m_pSocketSession->Send((const uint8*)result.data(), result.size());
 }

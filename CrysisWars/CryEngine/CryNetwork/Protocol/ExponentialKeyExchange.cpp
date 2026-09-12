@@ -52,7 +52,10 @@ CExponentialKeyExchange::~CExponentialKeyExchange()
 int CExponentialKeyExchange::RandFunc(unsigned char *bytes, size_t nbytes, const unsigned char *seed, size_t slen)
 {
 	NET_ASSERT(slen % sizeof(uint32) == 0);
-	CMTRand_int32 r( (const uint32*)seed, slen / sizeof(uint32) );
+	const size_t seedWordCount = slen / sizeof(uint32);
+	if (seedWordCount > static_cast<size_t>((std::numeric_limits<int>::max)()))
+		return -1;
+	CMTRand_int32 r( (const uint32*)seed, static_cast<int>(seedWordCount) );
 	while ( nbytes >= sizeof(uint32) )
 	{
 		*(uint32*)bytes = r.Generate();

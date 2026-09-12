@@ -18,7 +18,7 @@ struct SSchedulingParams
 	CTimeValue now;
 	CTimeValue next;
 	float transportLatency;
-	uint32 targetBytes;
+	size_t targetBytes;
 	uint32 nSeq;
 
 	bool haveWitnessPosition;
@@ -479,7 +479,7 @@ private:
 	void VerifyBlocking() const;
 	void ValidateHandles() const;
 
-	ILINE EMsgSlotState GetState( uint32 slot )
+	ILINE EMsgSlotState GetState( size_t slot )
 	{
 		return m_slotState[slot].state;
 	}

@@ -171,6 +171,7 @@ private:
 
 	ILINE void ConditionalPrelude( const char * name )
 	{
+		static_cast<void>(name);
 		DEBUGKIT_ANNOTATION( string("begin: ") + name );
 #if STATS_COLLECTOR
 # if ENABLE_ACCURATE_BANDWIDTH_PROFILING
@@ -189,6 +190,7 @@ private:
 
 	ILINE void ConditionalPostlude( const char * name )
 	{
+		static_cast<void>(name);
 #if STATS_COLLECTOR
 # if ENABLE_ACCURATE_BANDWIDTH_PROFILING
 		STATS.AddData( name, m_output.GetBitSize() - m_sizeAtPrelude );
@@ -291,6 +293,7 @@ private:
 
 	ILINE void ConditionalPrelude( const char * name )
 	{
+		static_cast<void>(name);
 		DEBUGKIT_ANNOTATION( string("begin: ") + name );
 #if CHECK_ENCODING
 		string temp;
@@ -315,6 +318,7 @@ private:
 
 	ILINE void ConditionalPostlude( const char * name )
 	{
+		static_cast<void>(name);
 #if CHECK_ENCODING
 		string temp;
 		GetArithModel()->ReadString( m_input, temp );
