@@ -66,7 +66,8 @@ CNetContextState::CNetContextState( CNetContext* pContext, int token, CNetContex
 		for (size_t i=0; i<m_vObjects.size(); i++)
 		{
 			m_vObjects[i].salt = pPrev->m_vObjects[i].salt + 2;
-			m_freeObjects.push(i);
+			NET_ASSERT(i < SNetObjectID::InvalidId);
+			m_freeObjects.push(static_cast<uint16>(i));
 		}
 	}
 
@@ -293,7 +294,8 @@ void CNetContextState::SendSetAspectProfileEventsTo( INetContextListenerPtr pLis
 		if (m_vObjects[it].bAllocated)
 		{
 			//event.id = SNetObjectID(iter - m_vObjects.begin());
-			event.id = SNetObjectID(it, m_vObjects[it].salt);
+			NET_ASSERT(it < SNetObjectID::InvalidId);
+			event.id = SNetObjectID(static_cast<uint16>(it), m_vObjects[it].salt);
 			CBitIter itAspects(m_pContext->ServerManagedProfileAspects());
 			int i;
 			while (itAspects.Next(i))
@@ -519,7 +521,7 @@ void CNetContextState::PropogateChangesToGame()
 				NetLog("[buf] push %s:%s", iter->obj.GetText(), m_pContext->GetAspectName(iter->aspect));
 #endif
 			const void * pData = MMM().PinHdl(obj.xtra->vRemoteAspectData[iter->aspect]);
-			int nLength = MMM().GetHdlSize(obj.xtra->vRemoteAspectData[iter->aspect]);
+			const size_t nLength = MMM().GetHdlSize(obj.xtra->vRemoteAspectData[iter->aspect]);
 			CByteInputStream in( (const uint8*) pData, nLength );
 			bool failed = false;
 
@@ -575,12 +577,12 @@ void CNetContextState::PropogateChangesToGame()
 					bool take = true;
 					if (targetHdl != CMementoMemoryManager::InvalidHdl && MMM().GetHdlSize(targetHdl) == MMM().GetHdlSize(newHdl))
 					{
-						int ofs = 0;
+						size_t ofs = 0;
 						if (isTimeStamped)
 							ofs += sizeof(CTimeValue);
 						const char * pOld = (const char *)MMM().PinHdl(targetHdl);
 						const char * pNew = (const char *)MMM().PinHdl(newHdl);
-						int cmpSz = MMM().GetHdlSize(newHdl) - ofs;
+						const size_t cmpSz = MMM().GetHdlSize(newHdl) - ofs;
 						if (cmpSz > 0 && 0 == memcmp(pOld + ofs, pNew + ofs, cmpSz))
 							take = false;
 						else if (!cmpSz)
@@ -635,7 +637,8 @@ void CNetContextState::SendBindAspectsTo( INetContextListenerPtr pListener )
 				continue;
 
 			SContextObjectEx& objx = m_vObjectsEx[netID];
-			event.id = SNetObjectID(netID, m_vObjects[netID].salt);
+			NET_ASSERT(netID < SNetObjectID::InvalidId);
+			event.id = SNetObjectID(static_cast<uint16>(netID), m_vObjects[netID].salt);
 			event.aspects = objx.nAspectsEnabled;
 			SendEventTo( &event, pListener );
 		}
@@ -1080,7 +1083,7 @@ void CNetContextState::RebindObject( SNetObjectID netId, EntityId userId )
 
 				// probe object for which serialization chunks it will use for various profiles
 				for (size_t c=0; c<MaxProfilesPerAspect; c++)
-					objx.vAspectProfileChunks[i][c] = CNetwork::Get()->GetCompressionManager().GameContextGetChunkID( m_pGameContext, userId, 1<<i, c );
+					objx.vAspectProfileChunks[i][c] = CNetwork::Get()->GetCompressionManager().GameContextGetChunkID( m_pGameContext, userId, 1<<i, static_cast<uint8>(c) );
 			}
 
 			TurnAspectsOn(netId, 8);
@@ -1315,9 +1318,12 @@ bool CNetContextState::AllocateObject( EntityId userID, SNetObjectID netID, uint
 	{
 		if (m_freeObjects.empty())
 		{
-			if (m_vObjects.size() == SNetObjectID::InvalidId)
+			if (m_vObjects.size() >= SNetObjectID::InvalidId)
+			{
 				CryError( "WAY too many synchronized objects" );
-			netID.id = m_vObjects.size();
+				return false;
+			}
+			netID.id = static_cast<uint16>(m_vObjects.size());
 			m_vObjects.push_back( SContextObject() );
 			if (m_multiplayer)
 				m_vObjectsEx.push_back( SContextObjectEx() ); // IMPORTANT: make sure m_vObjectsEx matches m_vObjects in multiplayer game
@@ -1422,7 +1428,7 @@ bool CNetContextState::AllocateObject( EntityId userID, SNetObjectID netID, uint
 
 				// probe object for which serialization chunks it will use for various profiles
 				for (size_t c=0; c<MaxProfilesPerAspect; c++)
-					objx.vAspectProfileChunks[i][c] = CNetwork::Get()->GetCompressionManager().GameContextGetChunkID( m_pGameContext, userID, 1<<i, c );
+					objx.vAspectProfileChunks[i][c] = CNetwork::Get()->GetCompressionManager().GameContextGetChunkID( m_pGameContext, userID, 1<<i, static_cast<uint8>(c) );
 			}
 		}
 		else
@@ -1859,12 +1865,12 @@ uint8 CNetContextState::UpdateAspectData( SNetObjectID id, uint8 fetchAspects )
 				{
 					if (stm.GetSize() == MMM().GetHdlSize(oldHdl))
 					{
-						int ofs = 0;
+						size_t ofs = 0;
 						if (m_pContext->TimestampedAspects() & (1<<i))
 							ofs += sizeof(CTimeValue);
 						const char * pOld = (const char *)MMM().PinHdl(oldHdl);
 						const char * pNew = (const char *)MMM().PinHdl(streamAllocatorForNewState.GetHdl());
-						int cmpSz = stm.GetSize() - ofs;
+						const size_t cmpSz = stm.GetSize() - ofs;
 						if (cmpSz > 0 && 0 == memcmp(pOld + ofs, pNew + ofs, cmpSz))
 							take = false;
 						else if (!cmpSz)

@@ -148,7 +148,7 @@ namespace
 	struct SAlignedData
 	{
 		int16 delta;
-		int16 off;
+		uint16 off;
 		int32 lastValue;
 	};
 }

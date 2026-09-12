@@ -24,7 +24,12 @@ namespace
 
 	ILINE void CopyToBuffer( const SSerializeString& value, CByteOutputStream& s )
 	{
-		uint32 len = value.size();
+		uint32 len = 0;
+		if (!CryTryNarrowSize(value.size(), len))
+		{
+			CryError("Serialization string exceeds the 32-bit byte-stream format");
+			return;
+		}
 		s.PutTyped<uint32>() = len;
 		s.Put(value.c_str(), value.length());
 	}
@@ -348,7 +353,7 @@ private:
 	}
 
 	CSerializationChunk * m_pChunk;
-	std::vector<uint8> m_resolveConditions;
+	std::vector<size_t> m_resolveConditions;
 	std::vector<uint8> m_inOptionalGroup;
 #if CRC8_ASPECT_FORMAT
 	CCRC8 m_crc;

@@ -114,7 +114,14 @@ public:
 	uint8 DeclaredAspects() const { return m_declaredAspects; }
 	uint8 TimestampedAspects() const { return m_timestampedAspects; }
 
-	CVoiceContext *GetVoiceContextImpl() { return m_pVoiceContext; }
+	CVoiceContext *GetVoiceContextImpl()
+	{
+#if CRYNETWORK_ENABLE_VOICE_CHAT
+		return m_pVoiceContext;
+#else
+		return nullptr;
+#endif
+	}
 
 	void SetLevelName(const char * levelName);
 

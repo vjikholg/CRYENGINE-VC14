@@ -1497,7 +1497,8 @@ void CContextView::ClearAllState()
 	{
 		for (size_t i=0; i<m_objectsEx.size(); i++)
 		{
-			SNetObjectID id( i, m_objects[i].salt );
+			NET_ASSERT(i < SNetObjectID::InvalidId);
+			SNetObjectID id( static_cast<uint16>(i), m_objects[i].salt );
 			if (IsObjectBound(id))
 				ClearHistory(id);
 		}

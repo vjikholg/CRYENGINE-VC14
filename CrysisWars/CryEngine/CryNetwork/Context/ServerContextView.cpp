@@ -1092,7 +1092,14 @@ void CServerContextView::SendUnbindMessage( SNetObjectID netID, bool bFromBind, 
 #endif
 		GetSendablesDependentOnObject( netID, m_dependencyStaging );
 
-		Parent()->AddSendable( new CUnbindObjectMessage(netID, this, lk), m_dependencyStaging.size(), m_dependencyStaging.empty()? NULL : &m_dependencyStaging[0], NULL );
+		int dependencyCount = 0;
+		if (!CryTryNarrowSize(m_dependencyStaging.size(), dependencyCount))
+		{
+			m_dependencyStaging.clear();
+			CryError("Unbind message dependency count exceeds the sendable API limit");
+			return;
+		}
+		Parent()->AddSendable( new CUnbindObjectMessage(netID, this, lk), dependencyCount, m_dependencyStaging.data(), NULL );
 		m_dependencyStaging.resize(0);
 	}
 }
@@ -1140,7 +1147,13 @@ public:
 			waits.push_back(*m_pHandle);
 			for (std::map<EntityId, SSendableHandle>::iterator it = m_waitHandles.begin(); it != m_waitHandles.end(); ++it)
 				waits.push_back(it->second);
-			m_pChannel->NetAddSendable( pSendable, waits.size(), &waits[0], m_pHandle );
+			int waitCount = 0;
+			if (!CryTryNarrowSize(waits.size(), waitCount))
+			{
+				CryError("Breakage dependency count exceeds the sendable API limit");
+				return;
+			}
+			m_pChannel->NetAddSendable( pSendable, waitCount, waits.data(), m_pHandle );
 			m_waitHandles.clear();
 		}
 	}
@@ -1183,7 +1196,13 @@ void CServerContextView::GotBreakage( const SNetIntBreakDescription * pDesc )
 	std::sort(waitForInitial.begin(), waitForInitial.end());
 	waitForInitial.resize( std::unique(waitForInitial.begin(), waitForInitial.end()) - waitForInitial.begin() );
 
-	Parent()->NetAddSendable( new CBeginBreakStream(m_breakStreamHandles[0].id), waitForInitial.size(), &waitForInitial[0], &hdl );
+	int initialWaitCount = 0;
+	if (!CryTryNarrowSize(waitForInitial.size(), initialWaitCount))
+	{
+		CryError("Initial break-stream dependency count exceeds the sendable API limit");
+		return;
+	}
+	Parent()->NetAddSendable( new CBeginBreakStream(m_breakStreamHandles[0].id), initialWaitCount, waitForInitial.data(), &hdl );
 	for (int i=0; i<pDesc->spawnedObjects.size(); i++)
 	{
 		EntityId ent = pDesc->spawnedObjects[i];

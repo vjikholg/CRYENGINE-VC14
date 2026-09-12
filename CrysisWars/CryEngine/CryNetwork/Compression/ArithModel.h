@@ -110,18 +110,20 @@ public:
 	void SetNetContextState( CNetContextState * pContext ) { m_pNetContext = pContext; }
 	CNetContextState * GetNetContextState() { return m_pNetContext; }
 
-	void WriteString( CCommOutputStream&, const string& szString );
+	bool WriteString( CCommOutputStream&, const string& szString );
+	[[nodiscard]] bool TryWriteString(CCommOutputStream&, const string& szString);
+	[[nodiscard]] bool CanWriteString(const string& szString);
 	void WriteChar( CCommOutputStream&, char c );
 	bool ReadString( CCommInputStream&, string& szString );
 	char ReadChar( CCommInputStream& );
 	float EstimateSizeOfString( const string& szString ) const;
 	float EstimateSizeOfChar( char c ) const;
 
-	ILINE void TableWriteString( CCommOutputStream& out, const string& szString )
+	bool TableWriteString( CCommOutputStream& out, const string& szString )
 	{
-		m_stringTable.WriteString(out, szString, this);
+		return m_stringTable.WriteString(out, szString, this);
 	}
-	ILINE void TableReadString( CCommInputStream& in, string& szString )
+	void TableReadString( CCommInputStream& in, string& szString )
 	{
 		m_stringTable.ReadString(in, szString, this);
 	}

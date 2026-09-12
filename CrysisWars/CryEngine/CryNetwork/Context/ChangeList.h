@@ -13,6 +13,9 @@ public:
 
 	bool AddChange( SNetObjectID id, const T& what )
 	{
+		if (!id)
+			return false;
+
 		bool firstChangeInThisChangeList = false;
 		size_t sizeStart = m_changeListLoc.size();
 		uint16 slot = id.id;
@@ -20,7 +23,12 @@ public:
 			m_changeListLoc.resize(slot+1, SNetObjectID::InvalidId);
 		if (m_changeListLoc[slot] == SNetObjectID::InvalidId)
 		{
-			m_changeListLoc[slot] = m_objects.size();
+			if (m_objects.size() >= SNetObjectID::InvalidId)
+			{
+				NET_ASSERT(false && "Change list exhausted its 16-bit index space");
+				return false;
+			}
+			m_changeListLoc[slot] = static_cast<uint16>(m_objects.size());
 			m_objects.push_back( std::make_pair(id,what) );
 			firstChangeInThisChangeList = true;
 		}

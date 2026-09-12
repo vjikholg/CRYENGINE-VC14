@@ -242,7 +242,17 @@ ChunkID CCompressionManager::GameContextGetChunkID( IGameContext * pCtx, EntityI
 	std::map<CSerializationChunkPtr, ChunkID, CCompareChunks>::iterator iter = m_chunkToId.find(pChunk);
 	if (iter == m_chunkToId.end())
 	{
-		iter = m_chunkToId.insert( std::make_pair(pChunk, m_chunks.size()) ).first;
+		const size_t nextChunkIndex = m_chunks.size();
+		// handle index overflow gracefully
+		if (nextChunkIndex >= static_cast<size_t>(InvalidChunkID))
+		{
+			NetWarning("Serialization chunk table exhausted while probing entity %u, aspect 0x%02x, profile %u (%zu registered layouts)",
+				id, static_cast<unsigned>(nAspect), static_cast<unsigned>(nProfile), nextChunkIndex);
+			return InvalidChunkID;
+		}
+
+		const ChunkID chunkID = static_cast<ChunkID>(nextChunkIndex);
+		iter = m_chunkToId.insert( std::make_pair(pChunk, chunkID) ).first;
 		m_chunks.push_back(pChunk);
 #if ENABLE_DEBUG_KIT
 		pChunk->Dump(iter->second);

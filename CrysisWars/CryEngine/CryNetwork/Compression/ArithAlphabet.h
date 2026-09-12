@@ -259,7 +259,7 @@ public:
 	public:
 		CEstimator( const CArithAlphabetNull& alphabet ) : m_alphabet(alphabet) {}
 
-		float EstimateSymbol( unsigned nSymbol )
+		float EstimateSymbol( unsigned )
 		{
 			return cry_logf(m_alphabet.m_nSymbols)/cry_logf(2);
 		}
@@ -273,6 +273,7 @@ public:
 	float EstimateSymbolSizeInBits( unsigned nSymbol ) const
 	{
 		NET_ASSERT( nSymbol < m_nSymbols );
+		static_cast<void>(nSymbol);
 		return cry_logf(m_nSymbols)/cry_logf(2);
 	}
 
@@ -349,8 +350,8 @@ namespace
 	template <>
 	struct CArithAlphabetRow_InitHelper<uint8>
 	{
-		ILINE static void Init( uint8 * p, int sz ) {}
-		ILINE static void Uninit( uint8 * p, int sz ) {}
+		ILINE static void Init( uint8 *, int ) {}
+		ILINE static void Uninit( uint8 *, int ) {}
 		ILINE static void Move( uint8 * pDest, uint8 * pSrc, int sz )
 		{
 			memcpy( pDest, pSrc, sz*sizeof(uint8) );
@@ -359,8 +360,8 @@ namespace
 	template <>
 	struct CArithAlphabetRow_InitHelper<uint16>
 	{
-		ILINE static void Init( uint16 * p, int sz ) {}
-		ILINE static void Uninit( uint16 * p, int sz ) {}
+		ILINE static void Init( uint16 *, int ) {}
+		ILINE static void Uninit( uint16 *, int ) {}
 		ILINE static void Move( uint16 * pDest, uint16 * pSrc, int sz )
 		{
 			memcpy( pDest, pSrc, sz*sizeof(uint16) );
@@ -369,8 +370,8 @@ namespace
 	template <>
 	struct CArithAlphabetRow_InitHelper<uint32>
 	{
-		ILINE static void Init( uint32 * p, int sz ) {}
-		ILINE static void Uninit( uint32 * p, int sz ) {}
+		ILINE static void Init( uint32 *, int ) {}
+		ILINE static void Uninit( uint32 *, int ) {}
 		ILINE static void Move( uint32 * pDest, uint32 * pSrc, int sz )
 		{
 			memcpy( pDest, pSrc, sz*sizeof(uint32) );
@@ -1063,7 +1064,7 @@ public:
 		return nSymbol;
 	}
 
-	void GetMemoryStatistics(ICrySizer* pSizer, bool countingThis = false)
+	void GetMemoryStatistics(ICrySizer*, bool = false)
 	{
 	}
 

@@ -175,9 +175,9 @@ void CServerDefence::SendNextRequest()
 	{
 		file = m_protectedFiles->begin()->second;
 
-		uint32 oldPrio = m_protectedFiles->begin()->first;
+		size_t oldPrio = m_protectedFiles->begin()->first;
 		m_protectedFiles->erase( m_protectedFiles->begin() );
-		uint32 newPrio = (uint32) (oldPrio + (0.7f + 0.3f*cry_frand())*m_protectedFiles->size());
+		size_t newPrio = oldPrio + (0.7f + 0.3f*cry_frand())*m_protectedFiles->size();
 		//		NetLog("new priority: %u (was %u)", newPrio, oldPrio);
 		m_protectedFiles->insert( std::make_pair( newPrio, file ) );
 	} 

@@ -1,6 +1,9 @@
 #ifndef _RIJNDAEL_H_
 #define _RIJNDAEL_H_
 
+#include <cstddef>
+#include <limits>
+
 //
 // File : rijndael.h
 // Creation date : Sun Nov 5 2000 03:21:05 CEST
@@ -84,6 +87,22 @@ typedef unsigned short UINT16;
 class Rijndael
 {	
 public:
+	static constexpr size_t BlockSizeBytes = 16;
+	static constexpr size_t BitsPerByte = 8;
+
+	static constexpr bool TryGetBlockBitCount(size_t inputBytes, int& bitCount) noexcept
+	{
+		if (inputBytes % BlockSizeBytes != 0 ||
+			inputBytes > static_cast<size_t>((std::numeric_limits<int>::max)()) / BitsPerByte)
+		{
+			bitCount = 0;
+			return false;
+		}
+
+		bitCount = static_cast<int>(inputBytes * BitsPerByte);
+		return true;
+	}
+
 	enum Direction { Encrypt , Decrypt };
 	enum Mode { ECB , CBC , CFB1 };
 	enum KeyLength { Key16Bytes , Key24Bytes , Key32Bytes };

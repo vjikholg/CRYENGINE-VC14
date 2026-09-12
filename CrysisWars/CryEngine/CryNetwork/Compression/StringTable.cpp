@@ -1,36 +1,12 @@
 #include "StdAfx.h"
 #include "StringTable.h"
-#include <StlHashMap.h>
 #include "ArithModel.h"
+#include <limits>
+#include <memory>
 
-static const uint32 LOG2_NUM_STRING_IDS = 16;
-static const uint32 NUM_STRING_IDS = 1 << LOG2_NUM_STRING_IDS;
 
-class CStringTableRep
-{
-public:
-	static CStringTableRepPtr Create() { return new CStringTableRep(); }
-	static CStringTableRepPtr Create( const CStringTableRep& r ) { return new CStringTableRep(r); }
-
-	void AddRef() { ++m_nRefs; }
-	void Release() { if (--m_nRefs <= 0) DeleteThis(); }
-
-	bool IsUnique() { return m_nRefs == 1; }
-
-	using StrToIdMap = stl::CryHashMap<string, uint32, stl::hash_strcmp<string> >;
-	typedef std::vector<string> StrVec;
-	StrToIdMap m_strToId;
-	StrVec m_strings;
-
-private:
-	CStringTableRep() : m_nRefs(0) {}
-	CStringTableRep( const CStringTableRep& r ) : m_nRefs(0), m_strToId(r.m_strToId), m_strings(r.m_strings) {}
-	~CStringTableRep() {}
-
-	void DeleteThis() { delete this; }
-
-	int m_nRefs;
-};
+static constexpr uint32 LOG2_NUM_STRING_IDS = 16;
+static constexpr uint32 NUM_STRING_IDS = 1 << LOG2_NUM_STRING_IDS;
 
 CStringTable::CStringTable() : m_pRep(CStringTableRep::Create())
 {
@@ -43,43 +19,60 @@ CStringTable::~CStringTable()
 {
 }
 
-CStringTable::CStringTable( const CStringTable& s ) : m_pRep(s.m_pRep)
+CStringTable::CStringTable( const CStringTable& other ) : m_pRep(other.m_pRep)
 {
 }
 
-CStringTable& CStringTable::operator =( const CStringTable& s )
+CStringTable& CStringTable::operator =( const CStringTable& other )
 {
-	m_pRep = s.m_pRep;
+	m_pRep = other.m_pRep;
 	return *this;
 }
 
-void CStringTable::WriteString( CCommOutputStream& out, const string& s, CArithModel * pModel )
+bool CStringTable::WriteString(CCommOutputStream& out, const string& s, CArithModel* pModel)
 {
-	CStringTableRep::StrToIdMap::iterator it = m_pRep->m_strToId.find(s);
-	bool newString = false;
-	if (it == m_pRep->m_strToId.end())
+	auto existing = m_pRep->m_strToId.find(s);
+
+	if (existing != m_pRep->m_strToId.end())
 	{
-		if (!m_pRep->IsUnique())
-			m_pRep = CStringTableRep::Create(*m_pRep);
-		NET_ASSERT(m_pRep->IsUnique());
-		it = m_pRep->m_strToId.insert( std::make_pair(s, m_pRep->m_strings.size()) ).first;
-		m_pRep->m_strings.push_back( s );
-		newString = true;
+		NET_ASSERT(existing->second < NUM_STRING_IDS);
+		out.WriteBits(existing->second, LOG2_NUM_STRING_IDS);
+		return true;
 	}
-	NET_ASSERT(it->second < NUM_STRING_IDS);
-	out.WriteBits( it->second, LOG2_NUM_STRING_IDS );
-	if (newString)
-	{
-		pModel->WriteString( out, s );
-	}
+
+	uint16 stringId;
+	if (!TryGetStringID(m_pRep->m_strings.size(), stringId))
+		return false;
+
+	if (!pModel->CanWriteString(s))
+		return false;
+
+	// detach shared table if necessary
+	if (m_pRep->IsUnique())
+		m_pRep = CStringTableRep::Create(*m_pRep);
+	NET_ASSERT(m_pRep->IsUnique());
+
+	// write bits
+	out.WriteBits(stringId, LOG2_NUM_STRING_IDS);
+	const bool wroteString = pModel->WriteString(out, s);
+	NET_ASSERT(wroteString);
+	if (!wroteString)
+		return false;
+
+	// insert into dict
+	m_pRep->m_strToId.insert(std::make_pair(s, stringId));
+	m_pRep->m_strings.push_back(s);
+
+	return true;
 }
+
 
 void CStringTable::ReadString( CCommInputStream& in, string& s, CArithModel * pModel )
 {
 	uint32 id = in.ReadBits(LOG2_NUM_STRING_IDS);
 	if (id >= m_pRep->m_strings.size() || (id && m_pRep->m_strings[id].empty()))
 	{
-		if (!m_pRep->IsUnique())
+		if (m_pRep.use_count() != 1)
 			m_pRep = CStringTableRep::Create(*m_pRep);
 		NET_ASSERT(m_pRep->IsUnique());
 		pModel->ReadString( in, s );
@@ -92,4 +85,16 @@ void CStringTable::ReadString( CCommInputStream& in, string& s, CArithModel * pM
 	{
 		s = m_pRep->m_strings[id];
 	}
+}
+
+bool CStringTable::TryGetStringID(size_t sz, StringID& out) const
+{
+	if (sz > static_cast<size_t>((std::numeric_limits<StringID>::max)()))
+	{
+		NetWarning("String table exhausted");
+		return false;
+	}
+
+	out = static_cast<StringID>(sz);
+	return true;
 }

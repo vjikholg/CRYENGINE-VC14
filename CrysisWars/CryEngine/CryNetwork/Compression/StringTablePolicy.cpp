@@ -31,10 +31,9 @@ public:
 		value = s.c_str();
 		return true;
 	}
-	bool WriteValue( CCommOutputStream& out, const SSerializeString& value, CArithModel * pModel, uint32 age ) const
+	inline bool WriteValue( CCommOutputStream& out, const SSerializeString& value, CArithModel * pModel, uint32 age ) const
 	{
-		pModel->TableWriteString( out, string(value.c_str()) );
-		return true;
+		return pModel->TableWriteString( out, string(value.c_str()) );
 	}
 
 	template <class T>

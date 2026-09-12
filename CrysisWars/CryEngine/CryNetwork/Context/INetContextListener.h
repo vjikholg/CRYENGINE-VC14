@@ -204,7 +204,7 @@ struct INetContextListener : public CMultiThreadRefCount
 	virtual void OnObjectEvent( CNetContextState * pState, SNetObjectEvent * pEvent ) = 0;
 	virtual void OnChannelEvent( CNetContextState * pState, INetChannel * pFrom, SNetChannelEvent * pEvent ) = 0;
 	virtual string GetName() = 0;
-	virtual SObjectMemUsage GetObjectMemUsage( SNetObjectID id ) { return SObjectMemUsage(); }
+	virtual SObjectMemUsage GetObjectMemUsage( SNetObjectID ) { return SObjectMemUsage(); }
 	virtual void PerformRegularCleanup() = 0;
 	virtual INetChannel * GetAssociatedChannel() { return NULL; }
 	virtual void Die() = 0;

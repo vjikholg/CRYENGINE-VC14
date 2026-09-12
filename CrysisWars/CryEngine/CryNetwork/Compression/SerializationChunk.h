@@ -29,7 +29,7 @@ template <class T> struct TypeToId;
 #undef SERIALIZATION_TYPE
 
 typedef uint16 ChunkID;
-static const ChunkID InvalidChunkID = ~ChunkID(0);
+static const ChunkID InvalidChunkID = 0xffffu;
 
 class CSerializationChunk : public CMultiThreadRefCount
 {
@@ -68,7 +68,7 @@ private:
 	struct SOp
 	{
 		EOps type;
-		int8 skipFalse;
+		size_t skipFalse;
 		ICompressionPolicyPtr pPolicy;
 #if TRACK_ENCODING
 		string name;

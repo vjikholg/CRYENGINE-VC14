@@ -447,6 +447,7 @@ private:
 	bool UnboundObject( SNetObjectID nID, const char * reason );
 	void BoundObject( SNetObjectID nID, const char * reason ) 
 	{ 
+		static_cast<void>(reason);
 		LockObject( nID, eCOL_Reference ); 
 		// debug
 #if CHECKING_BIND_REFCOUNTS

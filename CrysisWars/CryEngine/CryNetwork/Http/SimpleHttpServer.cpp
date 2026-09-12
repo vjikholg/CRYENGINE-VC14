@@ -168,8 +168,10 @@ void CSimpleHttpServerInternal::SendWebpage(string webpage)
 	string response = "HTTP/1.1 200 OK" CRLF;
 	response += "Content-Type: text/rfc822" CRLF;
 	//std::stringstream contentLength; contentLength << webpage.size();
-	char contentLength[33]; _snprintf(contentLength, sizeof(contentLength)-1, "%u", (unsigned)webpage.size()); contentLength[sizeof(contentLength)-1] = 0;
-	response += string("Content-Length: ") + string(contentLength) + string(CRLF) + string(CRLF);
+	response += "Content-Length: ";
+	response += std::to_string(webpage.size()).c_str();
+	response += CRLF;
+	response += CRLF;
 
 	response += webpage;
 	m_pSocketSession->Send((const uint8*)response.data(), response.size());
@@ -489,9 +491,8 @@ void CSimpleHttpServerInternal::BuildNormalResponse(string& response, ISimpleHtt
 	response += s_contentTypes[contentType];
 	response += CRLF;
 
-	char buf[33]; ltoa(content.size(), buf, 10);
 	response += "Content-Length: ";
-	response += buf;
+	response += std::to_string(content.size()).c_str();
 	response += CRLF;
 	response += CRLF;
 

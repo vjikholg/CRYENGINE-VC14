@@ -162,11 +162,13 @@ CNetContext::CNetContext( IGameContext * pGameContext, uint32 flags ) :
 	m_pState = new CNetContextState(this, m_ctxSerial++, NULL);
 //	ChangeSubscription( new CFowardingNetContextListener<CNetContext>(this), NULL, eNCE_InGame | eNCE_ChannelDestroyed );
 
+#if CRYNETWORK_ENABLE_VOICE_CHAT
 	if (m_multiplayer)
 	{
 		// voice stuff disabled in single player game
 		m_pVoiceContext = new CVoiceContext(this);
 	}
+#endif
 }
 
 bool CNetContext::IsDead()
@@ -589,7 +591,11 @@ void CNetContext::PulseObject(EntityId objId, uint32 pulseType)
 
 IVoiceContext * CNetContext::GetVoiceContext()
 {
+#if CRYNETWORK_ENABLE_VOICE_CHAT
 	return GetVoiceContextImpl();
+#else
+	return nullptr;
+#endif
 }
 
 int CNetContext::RegisterPredictedSpawn(INetChannel * pChannel, EntityId id)

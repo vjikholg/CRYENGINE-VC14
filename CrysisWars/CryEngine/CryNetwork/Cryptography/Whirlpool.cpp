@@ -4,11 +4,7 @@
 // The number of rounds of the internal dedicated block cipher.
 static const int NumRounds = 10;
 
-#if defined(__GNUC__)
 #define LL(x) x##ULL
-#else
-#define LL(x) x##i64
-#endif
 
 static const uint64 C0[256] = {
   LL(0x18186018c07830d8), LL(0x23238c2305af4626), LL(0xc6c63fc67ef991b8), LL(0xe8e887e8136fcdfb),
@@ -932,7 +928,7 @@ void CWhirlpoolCalculator::AddBits(const uint8 * pSrc, size_t srcBits)
      * all remaining data fits on buffer[bufferPos],
      * and there still remains some space.
      */
-		bufferBits += srcBits;
+		bufferBits += static_cast<int>(srcBits); // srcBits is constrained to [0, 7] here.
 	} 
 	else 
 	{

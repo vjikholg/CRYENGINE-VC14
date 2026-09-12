@@ -108,7 +108,7 @@ void CSegmentedCompressionSpace::Encode(CCommOutputStream &stm, const int32 *pVa
 	NET_ASSERT(inCompressibleSpace);
 
 	uint32 chunk = 0;
-	const uint32 numChunks = m_data.size() / m_chunkSize;
+	const size_t numChunks = m_data.size() / static_cast<size_t>(m_chunkSize);
 	int32 chunkSpaceSize = m_outerSizeSpace;
 
 	int32 extremaSmall[MAX_DIMENSION];
@@ -152,7 +152,7 @@ void CSegmentedCompressionSpace::Decode(CCommInputStream& stm, int32 * pValue, i
 	NET_ASSERT(dim == m_dimensions);
 
 	uint32 chunk = 0;
-	const uint32 numChunks = m_data.size() / m_chunkSize;
+	const size_t numChunks = m_data.size() / static_cast<size_t>(m_chunkSize);
 	int32 chunkSpaceSize = m_outerSizeSpace;
 
 	int32 extremaSmall[MAX_DIMENSION];

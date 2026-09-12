@@ -21,6 +21,7 @@
 #include "CrySizer.h"
 #include "Context/NetContextState.h"
 
+static constexpr size_t MaxStringLength = size_t{ 1 } << 12;
 int CCheckForNullEntityEncoding::m_check = 0;
 
 enum ESpecialEntityIds
@@ -67,13 +68,31 @@ CArithModel& CArithModel::operator =( const CArithModel& mdl )
 	return *this;
 }
 
-void CArithModel::WriteString( CCommOutputStream& stm, const string& szString )
+bool CArithModel::TryWriteString( CCommOutputStream& stm, const string& szString )
 {
-	uint32 size = szString.size();
-	NET_ASSERT(size < (1<<12));
-	stm.WriteBits(size, 12);
+	const size_t size = szString.size();
+	if (size >= MaxStringLength)
+	{
+		NetWarning("[CArithModel]: String length %zu exceeds the 12-bit wire limit", size);
+		return false;
+	}
+
+	stm.WriteBits(static_cast<uint32>(size), 12);
+
 	for (string::const_iterator iter = szString.begin(); iter != szString.end(); ++iter)
 		m_alphabet.WriteSymbol( stm, CharToAlphabet(*iter) );
+
+	return true;
+}
+
+bool CArithModel::CanWriteString(const string& szString)
+{
+	return szString.size() < MaxStringLength;
+}
+
+bool CArithModel::WriteString( CCommOutputStream& stm, const string& szString )
+{
+	return TryWriteString(stm, szString);
 }
 
 void CArithModel::WriteChar( CCommOutputStream& stm, char c )
@@ -117,7 +136,7 @@ void CArithModel::GetMemoryStatistics( ICrySizer * pSizer, bool countingThis )
 	m_entityIDAlphabet.GetMemoryStatistics(pSizer);
 }
 
-void CArithModel::STimeAdaption::STimeDelta::Update( uint16 encodedDelta, bool hit )
+void CArithModel::STimeAdaption::STimeDelta::Update( uint16 encodedDelta, bool )
 {
 //	NetLog( "in - rate:%.4x error:%.4x encodedDelta:%.4x [%s]",
 //		rate, error, encodedDelta, hit? "hit" : "miss" );
@@ -156,7 +175,7 @@ void CArithModel::WriteTime( CCommOutputStream& stm, ETimeStream time, CTimeValu
 #endif
 
 	int64 delta = value.GetMilliSecondsAsInt64() - oldTime.GetMilliSecondsAsInt64();
-	uint16 encodedDelta;
+	uint16 encodedDelta = 0;
 	bool isLarge = false;
 	if (delta < -32768)
 		isLarge = true;
@@ -300,7 +319,7 @@ float CArithModel::EstimateSizeOfTime( ETimeStream time, CTimeValue value ) cons
 	}
 
 	int64 delta = (value - oldTime).GetMilliSecondsAsInt64();
-	uint16 encodedDelta;
+	uint16 encodedDelta = 0;
 	bool isLarge = false;
 	if (delta < -32768)
 		isLarge = true;

@@ -53,12 +53,13 @@ private:
 	CNetChannel * m_pParent;
 	CMementoMemoryManagerPtr m_pMMM;
 
-	using TPFValue = std::pair<const uint32, CDefenceData::SProtectedFile>;
+	using TPFKeyValue = size_t;
+	using TPFValue = std::pair<const TPFKeyValue, CDefenceData::SProtectedFile>;
 	using TPFAllocator = STLMementoAllocator<TPFValue>;
 	using TPFMap = std::multimap<
-		uint32,
+		TPFKeyValue,
 		CDefenceData::SProtectedFile,
-		std::less<uint32>,
+		std::less<TPFKeyValue>,
 		TPFAllocator>;
 
 	std::unique_ptr<TPFMap> m_protectedFiles;

@@ -32,8 +32,6 @@
 // and on 128 bit blocks
 //
 
-#define _RIJNDAEL_CPP_
-
 // crytek change
 #include "StdAfx.h"
 #if defined(XENON) || defined(PS3)
@@ -1056,7 +1054,7 @@ int Rijndael::blockEncrypt(const UINT8 *input,int inputLen,UINT8 *outBuffer)
 
 	if(input == 0 || inputLen <= 0)return 0;
 
-	numBlocks = inputLen/128;
+	numBlocks = inputLen/128; // 2^57
 	
 	switch(m_mode){
 		case ECB: 
