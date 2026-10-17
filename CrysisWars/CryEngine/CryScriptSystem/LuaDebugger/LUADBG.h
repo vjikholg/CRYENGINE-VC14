@@ -42,6 +42,8 @@ struct BreakPoint
 typedef std::vector<BreakPoint> BreakPoints;
 //////////////////////////////////////////////////////////////////////////
 
+DWORD CALLBACK EditStreamCallback(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LONG* pcb);
+
 class CSourceEdit : public _TinyWindow
 {
 	public:
@@ -70,6 +72,22 @@ public:
 	
 	BOOL Create(DWORD dwStyle=WS_VISIBLE,DWORD dwExStyle=0,const RECT* pRect=NULL,_TinyWindow *pParentWnd=NULL,ULONG nID=0);
 
+	friend DWORD CALLBACK EditStreamCallback(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LONG* pcb)
+	{
+		char*** pppText = reinterpret_cast<char***> (dwCookie);
+		char** ppText = *pppText;
+		LONG iLen = (LONG)strlen(*ppText) /*- 1*/;
+		*pcb = __min(cb, iLen);
+		if (*pcb == 0)
+		{
+			delete pppText;
+			return 0;
+		}
+		memcpy(pbBuff, (*ppText), *pcb);
+		*ppText += *pcb;
+		return 0;
+	};
+
 	BOOL SetText(char *pszText)
 	{
 		EDITSTREAM strm;
@@ -80,22 +98,6 @@ public:
 		strm.pfnCallback = EditStreamCallback;
 		m_wEditWindow.SendMessage(EM_LIMITTEXT, 0x7FFFFFF, 0);
 		return m_wEditWindow.SendMessage(EM_STREAMIN, SF_RTF, (LPARAM) &strm);
-	};
-
-	friend DWORD CALLBACK EditStreamCallback(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LONG *pcb)
-	{
-		char ***pppText = reinterpret_cast<char ***> (dwCookie);
-		char **ppText = *pppText;
-		LONG iLen = (LONG)strlen(* ppText) /*- 1*/;
-		*pcb = __min(cb, iLen);
-		if (*pcb == 0)
-		{
-			delete pppText;
-			return 0;
-		}
-		memcpy(pbBuff, (* ppText), *pcb);
-		*ppText += *pcb;
-		return 0;
 	};
 
 	void SetSourceFile(const char *pszFileName)

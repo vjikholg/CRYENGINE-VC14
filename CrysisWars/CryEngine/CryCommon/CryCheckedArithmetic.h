@@ -2,6 +2,7 @@
 #include <cstddef>
 #include <limits>
 #include <type_traits>
+#include <Bits.h>
 
 constexpr bool CryTryAddSize(
 	size_t left,
@@ -58,6 +59,27 @@ constexpr Destination CrySaturateSize(size_t value) noexcept
 		? result
 		: (std::numeric_limits<Destination>::max)();
 }
+
+// template <class L, class R>
+// constexpr bool CryTrySubtract(L& left, R& right)
+// {
+// 	// sizeof(T) = 4 or 8 in almost every numerical type
+// 	uint32 check = static_cast<uint32>(
+// 		std::bit_cast<uint64>(right) >> 32
+// 	); // either 0 or not 0
+//
+// 	if (!check)
+// 	{
+// 		left -= right;
+// 		return true;
+// 	}
+//
+// 	uint32 checkLeft = static_cast<uint32>(
+//
+// 	);
+//
+//
+// }
 
 constexpr bool CryIsRangeWithinSize(
 	size_t totalSize,

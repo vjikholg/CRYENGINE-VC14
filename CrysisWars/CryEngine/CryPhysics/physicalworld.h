@@ -16,14 +16,16 @@
 
 #include "physicalentity.h"
 
-const int NSURFACETYPES = 512;
-const int PLACEHOLDER_CHUNK_SZLG2 = 8;
-const int PLACEHOLDER_CHUNK_SZ = 1<<PLACEHOLDER_CHUNK_SZLG2;
-const int QUEUE_SLOT_SZ = 8192;
+#include <vector>
 
-const int PENT_SETPOSED = 1<<16;
-const int PENT_QUEUED_BIT = 17;
-const int PENT_QUEUED = 1<<PENT_QUEUED_BIT;
+constexpr int NSURFACETYPES = 512;
+constexpr int PLACEHOLDER_CHUNK_SZLG2 = 8;
+constexpr int PLACEHOLDER_CHUNK_SZ = 1<<PLACEHOLDER_CHUNK_SZLG2;
+constexpr int QUEUE_SLOT_SZ = 8192;
+
+constexpr int PENT_SETPOSED = 1<<16;
+constexpr int PENT_QUEUED_BIT = 17;
+constexpr int PENT_QUEUED = 1<<PENT_QUEUED_BIT;
 
 class CPhysicalPlaceholder;
 class CPhysicalEntity;
@@ -39,7 +41,7 @@ struct EventClient {
 	float priority;
 };
 
-const int EVENT_CHUNK_SZ = 8192-sizeof(void*);
+constexpr int EVENT_CHUNK_SZ = 8192-sizeof(void*);
 struct EventChunk {
 	EventChunk *next;
 };
@@ -336,6 +338,7 @@ public:
 
 	CPhysicalEntity *m_pTypedEnts[8],*m_pTypedEntsPerm[8];
 	CPhysicalEntity **m_pTmpEntList,**m_pTmpEntList1,**m_pTmpEntList2;
+	std::vector<int> m_drawHelperEntityIdCache[2];
 	float *m_pGroupMass,*m_pMassList;
 	int *m_pGroupIds,*m_pGroupNums;
 	grid m_entgrid;
@@ -452,6 +455,10 @@ public:
 	int m_pwiQueueHead,m_pwiQueueTail;
 	int m_pwiQueueSz,m_pwiQueueAlloc;
 	volatile int m_lockPwiQueue;
+
+private:
+	static bool IsDrawHelperSimulationClassSelected(int drawFlags, int simulationClass);
+	bool DrawSelectedEntityHelpers(IPhysRenderer* pRenderer, int iCaller);
 };
 
 

@@ -2064,6 +2064,8 @@ L_done:;
 	//////////////////////////////////////////////////////////////////////////
 	// NETWORK
 	//////////////////////////////////////////////////////////////////////////
+	const bool physicsRegressionTest =
+		m_pCmdLine->FindArg(eCLAT_Pre, "PhysicsRegressionTest") != nullptr;
 	if (!startupParams.bPreview)
 	{
 		CryLogAlways("Network initialization");
@@ -2080,6 +2082,11 @@ L_done:;
 		CryLogAlways("Physics initialization");
 		if (!InitPhysics())
 			return false;
+	}
+	if (physicsRegressionTest)
+	{
+		CryLogAlways("Physics regression runtime initialized");
+		return true;
 	}
 
 	//////////////////////////////////////////////////////////////////////////

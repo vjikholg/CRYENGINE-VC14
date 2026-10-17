@@ -10,11 +10,19 @@ CryTestRunner::CryTestRunner()
 
 void CryTestRunner::Run(const char* testName, TestFunction testFunction)
 {
-	const int failuresBeforeTest = m_failureCount;
-	++m_testCount;
-
+	const int failuresBeforeTest = BeginTest();
 	testFunction(*this);
+	EndTest(testName, failuresBeforeTest);
+}
 
+int CryTestRunner::BeginTest()
+{
+	++m_testCount;
+	return m_failureCount;
+}
+
+void CryTestRunner::EndTest(const char* testName, int failuresBeforeTest)
+{
 	if (m_failureCount == failuresBeforeTest)
 	{
 		std::printf("[PASS] %s\n", testName);
@@ -35,6 +43,16 @@ void CryTestRunner::Check(bool condition, const char* expression, const char* fi
 
 	++m_failureCount;
 	std::printf("  %s(%d): check failed: %s\n", file, line, expression);
+}
+
+int CryTestRunner::TestCount() const
+{
+	return m_testCount;
+}
+
+int CryTestRunner::FailureCount() const
+{
+	return m_failureCount;
 }
 
 int CryTestRunner::ExitCode() const

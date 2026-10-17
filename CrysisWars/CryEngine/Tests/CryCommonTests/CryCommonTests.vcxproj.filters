@@ -30,11 +30,20 @@
     <Filter Include="Header Files\CryNetwork Compatibility">
       <UniqueIdentifier>{765117A8-E9C5-4B18-A934-EF484254B26D}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Physics Regression">
+      <UniqueIdentifier>{223A5937-A117-4C04-B418-BB79E65BCBB1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Physics Regression">
+      <UniqueIdentifier>{CD1D689D-E18D-4832-B2BA-72C047ACBDA5}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Test Data\DXT Compatibility">
       <UniqueIdentifier>{95A38909-0F7D-4452-8291-3D087BF5B3D8}</UniqueIdentifier>
     </Filter>
     <Filter Include="Test Data\Animation Compatibility">
       <UniqueIdentifier>{BFAC6D51-960D-49A6-81BE-6A2274EDE3CD}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Test Data\Physics Regression">
+      <UniqueIdentifier>{E85316AA-C909-40B1-B7F9-6039E13D3111}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -42,6 +51,9 @@
       <Filter>Header Files\Animation Compatibility</Filter>
     </ClInclude>
     <ClInclude Include="ComparisonCompatibilityTests.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RuntimeModuleCompatibilityTests.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="CryFileNameTests.h">
@@ -104,12 +116,18 @@
     <ClInclude Include="ZlibCompatibilityTests.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="PhysicsRegressionTests.h">
+      <Filter>Header Files\Physics Regression</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AnimationAssetTests.cpp">
       <Filter>Source Files\Animation Compatibility</Filter>
     </ClCompile>
     <ClCompile Include="ComparisonCompatibilityTests.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RuntimeModuleCompatibilityTests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="CryFileNameTests.cpp">
@@ -177,6 +195,9 @@
     </ClCompile>
     <ClCompile Include="ZlibCompatibilityTests.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PhysicsRegressionTests.cpp">
+      <Filter>Source Files\Physics Regression</Filter>
     </ClCompile>
     <ClCompile Include="..\..\CryNetwork\Cryptography\rijndael.cpp">
       <Filter>Source Files\CryNetwork Compatibility</Filter>
@@ -248,6 +269,9 @@
   <ItemGroup>
     <None Include="TestData\AnimationCompatibility\README.md">
       <Filter>Test Data\Animation Compatibility</Filter>
+    </None>
+    <None Include="TestData\PhysicsRegression\README.md">
+      <Filter>Test Data\Physics Regression</Filter>
     </None>
     <None Include="TestData\DxtCompatibility\mwll_dot_dxt3.dds">
       <Filter>Test Data\DXT Compatibility</Filter>

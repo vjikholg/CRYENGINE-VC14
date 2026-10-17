@@ -3146,7 +3146,7 @@ int CScriptBind_System::SetSystemShaderRenderFlags(IFunctionHandler *pH)
 	typedef struct
 	{
 		int dwFlagValue;
-		char * szFlagName;
+		const char* szFlagName;
 	} flagsDesc;
 
 	static flagsDesc arrFlags[] =

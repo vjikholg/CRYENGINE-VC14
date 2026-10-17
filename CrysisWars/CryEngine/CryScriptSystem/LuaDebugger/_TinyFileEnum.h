@@ -25,7 +25,7 @@ public:
 		return true;
 	}
 
-	bool StartEnumeration(const char *pszEnumPathAndPattern, __finddata64_t *pFile) {
+	bool StartEnumeration(const char* pszEnumPathAndPattern, __finddata64_t *pFile) {
 		if (m_hEnumFile != -1L) {
 			_findclose(m_hEnumFile);
 			m_hEnumFile = -1L;
@@ -38,7 +38,7 @@ public:
 		return true;
 	}
 	
-	bool StartEnumeration(char *pszEnumPath, char *pszEnumPattern, __finddata64_t *pFile) {
+	bool StartEnumeration(const char* pszEnumPath, const char* pszEnumPattern, __finddata64_t *pFile) {
 		char szPath[_MAX_PATH];
 		strcpy(szPath, pszEnumPath);
 		if (szPath[strlen(szPath)] != '\\' &&

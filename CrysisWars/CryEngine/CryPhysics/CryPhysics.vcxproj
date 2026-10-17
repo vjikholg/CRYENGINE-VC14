@@ -426,7 +426,6 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <BaseAddress>0x35000000</BaseAddress>
       <TargetMachine>MachineX64</TargetMachine>
     </Link>
   </ItemDefinitionGroup>
@@ -875,6 +874,12 @@
     <ResourceCompile Include="CryPhysics.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ItemDefinitionGroup Condition="'$(Platform)'=='x64'">
+    <Link>
+      <OutputFile>$(TargetPath)</OutputFile>
+      <ProgramDatabaseFile>$(TargetDir)$(TargetName).pdb</ProgramDatabaseFile>
+    </Link>
+  </ItemDefinitionGroup>
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
 </Project>

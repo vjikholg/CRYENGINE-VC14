@@ -1353,9 +1353,16 @@ void CPhysicalEntity::GetMemoryStatistics(ICrySizer *pSizer)
 
 int CPhysicalEntity::GetStateSnapshotTxt(char *txtbuf,int szbuf, float time_back) 
 {
+	if (!txtbuf || szbuf <= 0)
+		return 0;
 	CStream stm;
 	GetStateSnapshot(stm,time_back);
-	return bin2ascii(stm.GetPtr(),(stm.GetSize()-1>>3)+1,(unsigned char*)txtbuf);
+	const size_t bitCount = stm.GetSize();
+	const size_t byteCount = bitCount / 8 + (bitCount % 8 != 0);
+	const size_t groups = byteCount / 3 + (byteCount % 3 != 0);
+	if (groups > static_cast<size_t>(szbuf) / 4)
+		return 0;
+	return bin2ascii(stm.GetPtr(), byteCount, (unsigned char*)txtbuf);
 }
 
 void CPhysicalEntity::SetStateFromSnapshotTxt(const char *txtbuf,int szbuf)

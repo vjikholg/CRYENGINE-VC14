@@ -18,6 +18,7 @@ History:
 # pragma once
 #endif
 
+#include <cstddef>
 #include <utility>
 
 #include <IEntity.h>
@@ -248,11 +249,11 @@ struct SVehicleImpls
 {
   void Add(const string& impl){ vImpls.push_back(impl); }
   
-  int Count() const { return vImpls.size(); }
+  std::size_t Count() const { return vImpls.size(); }
 
-  string GetAt(int idx) const
+  string GetAt(std::size_t idx) const
   {
-    if (idx >= 0 && idx < vImpls.size())
+    if (idx < vImpls.size())
       return vImpls[idx];
     return "";
   }  

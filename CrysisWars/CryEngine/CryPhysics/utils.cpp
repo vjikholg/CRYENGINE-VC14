@@ -14,6 +14,9 @@
 
 #include "utils.h"
 #include "primitives.h"
+#include <algorithm>
+#include <array>
+#include <limits>
 
 #if defined(WIN64) 
 __declspec(noinline) int float2int(float x) 
@@ -1027,9 +1030,9 @@ void CalcMediumResistance(const Vec3 *ptsrc,int npt, const Vec3& n, const plane 
 
 
 static const int g_nRanges = 5;
-static int g_rngb2a[] = { 0,'A',26,'a',52,'0',62,'+',63,'/' };
-static int g_rnga2b[] = { '+',62,'/',63,'0',52,'A',0,'a',26 };
-inline int mapsymb(int symb, int *pmap,int n) {
+static constexpr int g_rngb2a[] = { 0,'A',26,'a',52,'0',62,'+',63,'/' };
+static constexpr int g_rnga2b[] = { '+',62,'/',63,'0',52,'A',0,'a',26 };
+inline int mapsymb(int symb, const int *pmap,int n) {
 	int i,j;
 	for(i=j=0;j<n;j++) i+=isneg(symb-pmap[j*2]); i=n-1-i;
 	return symb-pmap[i*2]+pmap[i*2+1];
@@ -1043,17 +1046,30 @@ struct ComputeBitCount {
 };
 static ComputeBitCount computeBitCount;
 
-int bin2ascii(const unsigned char *pin,int sz, unsigned char *pout) 
+int bin2ascii(const unsigned char *pin, size_t sz, unsigned char *pout)
 {
-	int a0,a1,a2,i,j,nout,chr[4];
-	for(i=nout=0;i<sz;i+=3,nout+=4) {
-		a0 = pin[i]; j=isneg(i+1-sz); a1 = pin[i+j]&-j; j=isneg(i+2-sz); a2 = pin[i+j*2]&-j;
-		chr[0] = a0>>2; chr[1] = a0<<4&0x30 | (a1>>4)&0x0F; 
-		chr[2] = a1<<2&0x3C | a2>>6&0x03; chr[3] = a2&0x03F;
-		for(j=0;j<4;j++)
-			*pout++ = mapsymb(chr[j],g_rngb2a,5);
+	const size_t groups = sz / 3 + (sz % 3 != 0);
+	if ((sz != 0 && (!pin || !pout)) ||
+		groups > static_cast<size_t>((std::numeric_limits<int>::max)()) / 4)
+		return 0;
+
+	int nout = 0;
+	for (size_t i = 0; i < sz; i += 3, nout += 4)
+	{
+		const size_t remaining = sz - i;
+		const int a0 = pin[i];
+		const int a1 = remaining > 1 ? pin[i + 1] : 0;
+		const int a2 = remaining > 2 ? pin[i + 2] : 0;
+		const std::array<int, 4> characters{
+			a0 >> 2,
+			((a0 << 4) & 0x30) | ((a1 >> 4) & 0x0F),
+			((a1 << 2) & 0x3C) | ((a2 >> 6) & 0x03),
+			a2 & 0x3F
+		};
+		for (int character : characters)
+			*pout++ = mapsymb(character, g_rngb2a, 5);
 	}
-	return nout;	
+	return nout;
 }
 
 int ascii2bin(const unsigned char *pin,int sz, unsigned char *pout)

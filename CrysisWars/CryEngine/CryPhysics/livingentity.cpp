@@ -1680,7 +1680,7 @@ int CLivingEntity::Step(float time_interval)
 								GetContactMatrix(pcontacts[ncont].center, 0, K);
 							bPushOther = (m_flags & lef_push_objects) && (pentlist[i]->m_flags & pef_pushable_by_players);
 							bPushOther |= iszero(pentlist[i]->m_iSimClass-2);
-							bPushOther &= iszero((int)pentlist[i]-(int)m_pLastGroundCollider)^1;
+							bPushOther &= pentlist[i] != m_pLastGroundCollider;
 							if (bPushOther)
 								pentlist[i]->GetContactMatrix(pcontacts[ncont].center, j, K);
 							else if (!(m_flags & pef_pushable_by_players))
@@ -1853,7 +1853,7 @@ int CLivingEntity::Step(float time_interval)
 							bPushOther = (m_flags & (pentlist[imin]->m_iSimClass==3 ? lef_push_players : lef_push_objects)) && 
 								(pentlist[imin]->m_flags & pef_pushable_by_players) && 
 								(pentlist[imin]->m_iSimClass | m_pWorld->m_vars.bPlayersCanBreak | pentlist[imin]->m_flags & pef_players_can_break);
-							bPushOther &= iszero((int)pentlist[imin]-(int)m_pLastGroundCollider)^1;
+							bPushOther &= pentlist[imin] != m_pLastGroundCollider;
 							bPushOther |= bUnmovable;
 							if (bPushOther)
 								pentlist[imin]->GetContactMatrix(ptcontact, jmin, K);

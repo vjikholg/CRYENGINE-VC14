@@ -99,6 +99,7 @@
   <ItemGroup>
     <ClInclude Include="AnimationAssetTests.h" />
     <ClInclude Include="ComparisonCompatibilityTests.h" />
+    <ClInclude Include="RuntimeModuleCompatibilityTests.h" />
     <ClInclude Include="CryFileNameTests.h" />
     <ClInclude Include="CryNetworkCompatibilityTests.h" />
     <ClInclude Include="CryStringCompatibilityTests.h" />
@@ -113,6 +114,7 @@
     <ClInclude Include="MM08Tests.h" />
     <ClInclude Include="MM09Tests.h" />
     <ClInclude Include="MM03BenchmarkEnvironment.h" />
+    <ClInclude Include="PhysicsRegressionTests.h" />
     <ClInclude Include="SafeAllocTests.h" />
     <ClInclude Include="SerializedSizeTests.h" />
     <ClInclude Include="StlHashMapAdapterTests.h" />
@@ -123,6 +125,7 @@
   <ItemGroup>
     <ClCompile Include="AnimationAssetTests.cpp" />
     <ClCompile Include="ComparisonCompatibilityTests.cpp" />
+    <ClCompile Include="RuntimeModuleCompatibilityTests.cpp" />
     <ClCompile Include="CryFileNameTests.cpp" />
     <ClCompile Include="CryNetworkCompatibilityTests.cpp" />
     <ClCompile Include="CryStringCompatibilityTests.cpp" />
@@ -139,6 +142,7 @@
     <ClCompile Include="MM07Tests.cpp" />
     <ClCompile Include="MM08Tests.cpp" />
     <ClCompile Include="MM09Tests.cpp" />
+    <ClCompile Include="PhysicsRegressionTests.cpp" />
     <ClCompile Include="SafeAllocTests.cpp" />
     <ClCompile Include="SerializedSizeTests.cpp" />
     <ClCompile Include="StlHashMapAdapterTests.cpp" />
@@ -147,6 +151,7 @@
     <ClCompile Include="ZlibCompatibilityTests.cpp" />
     <ClCompile Include="..\..\CryNetwork\Cryptography\rijndael.cpp">
       <AdditionalIncludeDirectories>$(MSBuildProjectDirectory)\..\..\CryNetwork;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32_LEAN_AND_MEAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <ClCompile Include="..\..\RenderDll\Common\Textures\Image\Squish\alpha.cpp" />
     <ClCompile Include="..\..\RenderDll\Common\Textures\Image\Squish\clusterfit.cpp" />
@@ -196,6 +201,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="TestData\AnimationCompatibility\README.md" />
+    <None Include="TestData\PhysicsRegression\README.md" />
     <None Include="TestData\DxtCompatibility\mwll_dot_dxt3.dds">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <TargetPath>TestData\DxtCompatibility\mwll_dot_dxt3.dds</TargetPath>

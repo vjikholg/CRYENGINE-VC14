@@ -2961,36 +2961,86 @@ void CPhysicalWorld::PurgeDeletedEntities()
 }
 
 
-void CPhysicalWorld::DrawPhysicsHelperInformation(IPhysRenderer *pRenderer, int iCaller)
+bool CPhysicalWorld::IsDrawHelperSimulationClassSelected(int drawFlags, int simulationClass)
 {
-	int entype; CPhysicalEntity *pent=0;
-	m_pRenderer = pRenderer;
+	return (drawFlags & (0x100 << simulationClass)) != 0;
+}
 
-	if (m_vars.iDrawHelpers) {
-		int i,n=0,nEntListAllocs,nGEA;
-		CPhysicalEntity **pEntList;
-		{ WriteLock lock0(m_lockCaller[iCaller]);
-			if (m_pHeightfield[iCaller] && m_vars.iDrawHelpers & 128)
-				pRenderer->DrawGeometry(m_pHeightfield[iCaller]->m_parts[0].pPhysGeom->pGeom,0,0);
-			nEntListAllocs=m_nEntListAllocs; nGEA=m_nGEA[iCaller];
 
-			pEntList = iCaller ? m_pTmpEntList2:m_pTmpEntList, *pent;
-			{ ReadLock lock(m_lockList);
-				for(entype=0;entype<=6;entype++) if (m_vars.iDrawHelpers & 0x100<<entype)
-				for(pent=m_pTypedEnts[entype]; pent && nEntListAllocs==m_nEntListAllocs && nGEA==m_nGEA[iCaller]; pent=pent->m_next)
-					pEntList[n++] = (CPhysicalEntity*)pent->m_id;
-				if (pent)
-					return;
+bool CPhysicalWorld::DrawSelectedEntityHelpers(IPhysRenderer* pRenderer, int iCaller)
+{
+	int entityListAllocations;
+	int entityGeneration;
+	bool snapshotValid = true;
+	std::vector<int> entityIds;
+
+	{
+		WriteLock callerLock(m_lockCaller[iCaller]);
+		std::vector<int>& reusableIds = m_drawHelperEntityIdCache[iCaller];
+		entityIds.swap(reusableIds);
+		entityIds.clear();
+
+		if (m_pHeightfield[iCaller] && (m_vars.iDrawHelpers & 128))
+			pRenderer->DrawGeometry(m_pHeightfield[iCaller]->m_parts[0].pPhysGeom->pGeom, 0, 0);
+
+		entityListAllocations = m_nEntListAllocs;
+		entityGeneration = m_nGEA[iCaller];
+		{
+			ReadLock entityListLock(m_lockList);
+			for (int simulationClass = 0; simulationClass <= 6 && snapshotValid; ++simulationClass)
+			{
+				if (!IsDrawHelperSimulationClassSelected(m_vars.iDrawHelpers, simulationClass))
+					continue;
+
+				for (CPhysicalEntity* entity = m_pTypedEnts[simulationClass]; entity;
+					entity = entity->m_next)
+				{
+					if (entityListAllocations != m_nEntListAllocs ||
+						entityGeneration != m_nGEA[iCaller])
+					{
+						snapshotValid = false;
+						break;
+					}
+					entityIds.push_back(entity->m_id);
+				}
 			}
 		}
-		for(i=0;i<n;i++) {
-			int id = *(int*)(pEntList+i);
-			if (nEntListAllocs!=m_nEntListAllocs || nGEA!=m_nGEA[iCaller])
+	}
+
+	if (snapshotValid)
+	{
+		for (int entityId : entityIds)
+		{
+			if (entityListAllocations != m_nEntListAllocs || entityGeneration != m_nGEA[iCaller])
 				break;
-			if ((pent=(CPhysicalEntity*)GetPhysicalEntityById(id|1<<30)) && m_vars.iDrawHelpers & 0x80<<pent->m_iSimClass+1)
-				pent->DrawHelperInformation(pRenderer, m_vars.iDrawHelpers);
+
+			CPhysicalEntity* entity =
+				static_cast<CPhysicalEntity*>(GetPhysicalEntityById(entityId | (1 << 30)));
+			if (entity && IsDrawHelperSimulationClassSelected(
+				m_vars.iDrawHelpers,
+				entity->m_iSimClass))
+				entity->DrawHelperInformation(pRenderer, m_vars.iDrawHelpers);
 		}
 	}
+
+	{
+		WriteLock callerLock(m_lockCaller[iCaller]);
+		std::vector<int>& reusableIds = m_drawHelperEntityIdCache[iCaller];
+		if (entityIds.capacity() > reusableIds.capacity())
+			reusableIds.swap(entityIds);
+	}
+
+	return snapshotValid;
+}
+
+
+void CPhysicalWorld::DrawPhysicsHelperInformation(IPhysRenderer* pRenderer, int iCaller)
+{
+	CPhysicalEntity* pent = 0;
+	m_pRenderer = pRenderer;
+
+	if (m_vars.iDrawHelpers && !DrawSelectedEntityHelpers(pRenderer, iCaller))
+		return;
 
 	if (m_vars.iDrawHelpers & 8192 && m_nOccRes) {
 		float zscale,xscale,xoffs,z;
@@ -3363,8 +3413,17 @@ CPhysicalEntity *CPhysicalWorld::CheckColliderListsIntegrity()
 
 void CPhysicalWorld::GetMemoryStatistics(ICrySizer *pSizer)
 {
-	static char *entnames[] = { "static entities", "physical entities", "physical entities", "living entities", "detached entities", 
-		"areas","triggers", "deleted entities" };
+	constexpr const char* entnames[] = {
+		"static entities",
+		"physical entities",
+		"physical entities",
+		"living entities",
+		"detached entities",
+		"areas",
+		"triggers",
+		"deleted entities"
+	};
+
 	int i,j,n;
 	CPhysicalEntity *pent;
 
@@ -3386,6 +3445,10 @@ void CPhysicalWorld::GetMemoryStatistics(ICrySizer *pSizer)
 		pSizer->AddObject(m_pTmpEntList, m_nEntsAlloc*sizeof(m_pTmpEntList[0]));
 		pSizer->AddObject(m_pTmpEntList1, m_nEntsAlloc*sizeof(m_pTmpEntList1[0]));
 		pSizer->AddObject(m_pTmpEntList2, m_nEntsAlloc*sizeof(m_pTmpEntList2[0]));
+		for (int caller = 0; caller < 2; ++caller)
+			pSizer->AddObject(
+				m_drawHelperEntityIdCache[caller].data(),
+				m_drawHelperEntityIdCache[caller].capacity() * sizeof(int));
 		pSizer->AddObject(m_pGroupMass, m_nEntsAlloc*sizeof(m_pGroupMass[0]));
 		pSizer->AddObject(m_pMassList, m_nEntsAlloc*sizeof(m_pMassList[0]));
 		pSizer->AddObject(m_pGroupIds, m_nEntsAlloc*sizeof(m_pGroupIds[0]));

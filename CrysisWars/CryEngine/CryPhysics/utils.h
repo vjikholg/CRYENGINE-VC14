@@ -549,7 +549,7 @@ struct jgrid_checker {
 };
 
 
-int bin2ascii(const unsigned char *pin,int sz, unsigned char *pout);
+int bin2ascii(const unsigned char *pin, size_t sz, unsigned char *pout);
 int ascii2bin(const unsigned char *pin,int sz, unsigned char *pout);
 
 template<class T> inline T *_align16(T *ptr) { return (T*)(((INT_PTR)ptr-1&~15)+16); }

@@ -22,6 +22,7 @@
 #include <platform.h>
 #include MATH_H
 #include "Cry_ValidNumber.h"
+#include <bit>
 
 #ifdef LINUX
 #include <values.h>
@@ -474,17 +475,26 @@ inline int32 sgn(int32 x) {
 
 
 inline int32 isneg(f64 x) {
-	union { f32 f; uint32 i; } u;
-	u.f=(f32)x; return (int32)(u.i>>31);
-}
-inline int32 isneg(f32 x) {
-	union { f32 f; uint32 i; } u;
-	u.f=x; return (int32)(u.i>>31);
-}
-inline int32 isneg(int32 x) {
-	return (int32)((uint32)x>>31);
+	return static_cast<int32>(
+		std::bit_cast<uint64_t>(x) >> 63
+	);
 }
 
+inline int32 isneg(f32 x) {
+	return static_cast<int32>(
+		std::bit_cast<uint32_t>(x) >> 31
+	);
+}
+
+inline int32 isneg(int32 x) {
+	return static_cast<int32>(
+		std::bit_cast<uint32_t>(x) >> 31
+	);
+}
+inline int32 isneg(const size_t& left, const size_t& right)
+{
+	return (left < right);
+}
 
 
 inline int32 isnonneg(f64 x) {

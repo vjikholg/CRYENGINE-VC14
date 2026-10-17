@@ -14,6 +14,8 @@
 #define rigidentity_h
 #pragma once
 
+#include <vector>
+
 typedef uint64 masktype;
 #define getmask(i) ((uint64)1<<(i))
 const int NMASKBITS = 64;
@@ -153,7 +155,6 @@ class CRigidEntity : public CPhysicalEntity {
 	int m_bProhibitUnprojection,m_bEnforceContacts;
 	Vec3 m_prevUnprojDir;
 	int m_bCollisionCulling;
-	int m_bJustLoaded;
 	int m_bStable;
 	int m_bHadSeverePenetration;
 	unsigned int m_nRestMask;
@@ -217,6 +218,14 @@ class CRigidEntity : public CPhysicalEntity {
 
 	checksum_item m_checksums[NCHECKSUMS];
 	int m_iLastChecksum;
+
+private:
+	void ClearSnapshotContacts();
+	bool PrepareSnapshotColliderStorage(int colliderCount);
+	void ReadSnapshotContact(CStream& stream, entity_contact& contact);
+	void SkipSnapshotContacts(CStream& stream);
+	bool RestoreSnapshotContact(entity_contact& contact, CPhysicalEntity* collider);
+	std::vector<int> m_pendingSnapshotColliderIds;
 };
 
 extern CPhysicalEntity *g_CurColliders[128];

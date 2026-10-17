@@ -35,7 +35,7 @@ inline void relocate_ptritem(qhtritem *&ptr,intptr_t diff) {
 	ptr = (qhtritem*)((intptr_t)ptr+diff & ~-iszero((intptr_t)ptr));	// offset the pointer, but leave out 0s
 }
 
-inline void relocate_tritem(qhtritem *ptr,int diff) {
+inline void relocate_tritem(qhtritem *ptr,intptr_t diff) {
 	relocate_ptritem(ptr->next,diff); relocate_ptritem(ptr->prev,diff);
 	relocate_ptritem(ptr->buddy[0],diff); relocate_ptritem(ptr->buddy[1],diff);	relocate_ptritem(ptr->buddy[2],diff);
 }
@@ -401,7 +401,7 @@ int qhull(strided_pointer<Vec3> pts, int npts, index_t*& pTris)
 						relocate_ptritem(trend,diff); relocate_ptritem(trstart,diff);
 						relocate_ptritem(trnext,diff);relocate_ptritem(tr,diff);
 						relocate_ptritem(trbest,diff);relocate_ptritem(trnew,diff);
-						if (trdata!=trbuf) delete trdata;
+						if (trdata!=trbuf) delete[] trdata;
 						trdata = trdata_new;
 					}
 					trend->idx[0] = ptmax-ptlist;

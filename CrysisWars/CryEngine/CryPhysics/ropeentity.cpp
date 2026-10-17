@@ -2100,7 +2100,8 @@ int CRopeEntity::GetStateSnapshot(TSerialize ser, float time_back, int flags)
 		ser.Value("pos_start", m_segs[0].pt);
 		ser.Value("pos_end", m_segs[m_nSegs].pt);
 	} else {
-		ser.Value("strained", false);
+		bool strained = false;
+		ser.Value("strained", strained);
 		ser.Value("awake", bAwake = m_bAwake!=0);
 
 		ser.BeginGroup("Segs");

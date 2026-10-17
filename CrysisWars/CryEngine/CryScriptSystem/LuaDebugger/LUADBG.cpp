@@ -1041,7 +1041,7 @@ void CLUADbg::GetStackAndLocals()
 		m_pIVariable = NULL;
 	}
 	else
-		m_wLocals.AddItemToTree("No Locals Available");
+		m_wLocals.AddItemToTree("No Locals Available"); // horrifically bad solution. Need to fix later. -pupper
 	m_pTreeToAdd = NULL;
 
 	

@@ -9,6 +9,13 @@
 #include "CryPodArray.h"
 #include <stddef.h>
 #include <CryCheckedArithmetic.h>
+#ifdef min
+#undef min
+#endif
+
+#ifdef max
+#undef max
+#endif
 
 //---------------------------------------------------------------------------
 // Very simple array class, suitable as universal class for array access, 

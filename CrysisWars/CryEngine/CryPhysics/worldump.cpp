@@ -1,6 +1,8 @@
 #include "StdAfx.h"
 
 #ifdef PHYSWORLD_SERIALIZATION
+#include <algorithm>
+#include <cstddef>
 #include "vector"
 #include "map"
 
@@ -37,14 +39,30 @@
 #include "physicalworld.h"
 
 
-enum fieldTypes { ft_int=0,ft_uint=1,ft_short=2,ft_ushort=3,ft_uint64=4,ft_float=5,ft_vector=6,ft_quaternion=7,ft_entityptr=8,ft_proc=9 };
-static char *g_strFormats[2][9] = {{ "%i","%X","%hd","%hu","%I64X","%.8g","(%.8g %.8g %.8g)", "(%f (%f %f %f))", "%d" },
-																	 { "%i","%X","%hd","%hu","%I64X","%g", "(%g %g %g)", "(%f (%f %f %f))", "%d" }};
-static char g_strTabs[17] = "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t";
+enum fieldTypes {
+	ft_int=0,
+	ft_uint=1,
+	ft_short=2,
+	ft_ushort=3,
+	ft_uint64=4,
+	ft_float=5,
+	ft_vector=6,
+	ft_quaternion=7,
+	ft_entityptr=8,
+	ft_proc=9
+};
+
+static constexpr const char* g_strFormats[2][9] = {
+	{ "%i","%X","%hd","%hu","%I64X","%.8g","(%.8g %.8g %.8g)", "(%f (%f %f %f))", "%d" },
+	{ "%i","%X","%hd","%hu","%I64X","%g", "(%g %g %g)", "(%f (%f %f %f))", "%d" }
+};
+
+static constexpr const char g_strTabs[17] = "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t";
 
 struct parse_item;
 struct parse_context;
 struct Serializer;
+
 typedef std::map<string,parse_item*> parse_map;
 typedef std::vector<parse_item*> parse_list;
 typedef int (Serializer::*ParseProc)(parse_context&, char*);
@@ -57,15 +75,14 @@ float g_getHeightCallback(int ix,int iy) { return g_hfData[g_hfStride*Vec2i(ix,i
 unsigned char g_getSurfTypeCallback(int ix,int iy) { return g_hfFlags[g_hfStride*Vec2i(ix,iy)]; };
 
 union parse_data {
-	void *ptr;
+	std::ptrdiff_t offset;
 	ParseProc func;
 };
 
 struct parse_item {
-	char *name;
+	const char* name;
 	int itype;
 	parse_data data;
-	int idx;
 };
 
 struct parse_context {
@@ -80,11 +97,14 @@ struct parse_context {
 	CTriMesh **pGeoms;
 	int nGeoms,nGeomsAlloc;
 
-	parse_context() { 
+	parse_context()
+	{
 		pLattices=0; nLattices=nLatticesAlloc=0; 
 		pGeoms=0; nGeoms=nGeomsAlloc=0;
 	}
-	~parse_context() {
+
+	~parse_context()
+	{
 		int i;
 		for(i=0;i<nLattices;i++) pLattices[i]->m_flags &= 0xFF;
 		if (pLattices) delete[] pLattices;
@@ -92,12 +112,15 @@ struct parse_context {
 		if (pGeoms) delete[] pGeoms;
 	}
 
-	void PushState() { 
+	void PushState()
+	{
 		if (iStackPos<sizeof(pSerializerStack)/sizeof(pSerializerStack[0])) {
 			pSerializerStack[++iStackPos] = pSerializer; pObjStack[iStackPos] = pobj;
 		}
 	}
-	void PopState() { 
+
+	void PopState()
+	{
 		if (iStackPos>=0) {
 			pSerializer = pSerializerStack[iStackPos]; pobj = pObjStack[iStackPos--];
 		}
@@ -105,38 +128,56 @@ struct parse_context {
 };
 
 
-#define DECLARE_MEMBER(strname,type,member) { \
-	parse_item *pitem;\
-	parse_map::iterator itor = map.find(strname);\
-	if (itor!=map.end()) {\
-		pitem = itor->second; list.erase(list.begin()+pitem->idx);\
-	} else pitem = new parse_item;\
-	pitem->itype = type; pitem->name = strname;\
-	pitem->data.ptr = (void*)((char*)&trg.member-(char*)&trg);\
-	parse_list::iterator litor = list.insert(list.end(),pitem);\
-	pitem->idx = litor-list.begin(); map[strname] = pitem; \
-}
-#define DECLARE_PROC(strname,proc) { \
-	parse_item *pitem;\
-	parse_map::iterator itor = map.find(strname);\
-	if (itor!=map.end()) {\
-		pitem = itor->second; list.erase(list.begin()+pitem->idx);\
-	} else pitem = new parse_item;\
-	pitem->itype = ft_proc; pitem->name = strname;\
-	pitem->data.func = (ParseProc)proc;\
-	parse_list::iterator litor = list.insert(list.end(),pitem);\
-	pitem->idx = litor-list.begin(); map[strname] = pitem; \
-}
+#define DECLARE_MEMBER(strname,type,member) \
+	DeclareMember(strname, type, reinterpret_cast<const char*>(&trg.member) - reinterpret_cast<const char*>(&trg));
+
+#define DECLARE_PROC(strname,proc) \
+	DeclareProc(strname, static_cast<ParseProc>(proc));
 
 struct Serializer {
 	parse_map map;
 	parse_list list;
 
-	~Serializer() {
+	~Serializer()
+	{
 		for(unsigned int i=0; i<list.size(); i++)
 			delete list[i];
 	}
 
+protected:
+	parse_item& RegisterItem(const char* name, int type)
+	{
+		parse_item* item;
+		const auto existing = map.find(name);
+		if (existing != map.end())
+		{
+			item = existing->second;
+			// Overrides retain their object but move to the end of serialization order.
+			const auto position = std::find(list.begin(), list.end(), item);
+			std::rotate(position, position + 1, list.end());
+		}
+		else
+		{
+			item = new parse_item{};
+			list.push_back(item);
+			map.emplace(name, item);
+		}
+		item->name = name;
+		item->itype = type;
+		return *item;
+	}
+
+	void DeclareMember(const char* name, int type, std::ptrdiff_t offset)
+	{
+		RegisterItem(name, type).data.offset = offset;
+	}
+
+	void DeclareProc(const char* name, ParseProc procedure)
+	{
+		RegisterItem(name, ft_proc).data.func = procedure;
+	}
+
+public:
 	virtual void Serialize(parse_context &ctx) {
 		char str[1024],*ptr0,*ptr1;
 
@@ -147,19 +188,19 @@ struct Serializer {
 					continue;
 				ptr0 = str+sprintf(str, "%.*s%s ", ctx.iStackPos+1,g_strTabs, list[i]->name);
 				switch (list[i]->itype) {
-					case ft_int: sprintf(ptr0, g_strFormats[0][list[i]->itype], *(int*)((char*)ctx.pobj+(int)list[i]->data.ptr)); break;
-					case ft_uint: sprintf(ptr0, g_strFormats[0][list[i]->itype], *(unsigned int*)((char*)ctx.pobj+(int)list[i]->data.ptr)); break;
-					case ft_short: sprintf(ptr0, g_strFormats[0][list[i]->itype], *(short*)((char*)ctx.pobj+(int)list[i]->data.ptr)); break;
-					case ft_ushort: sprintf(ptr0, g_strFormats[0][list[i]->itype], *(unsigned short*)((char*)ctx.pobj+(int)list[i]->data.ptr)); break;
-					case ft_uint64: sprintf(ptr0, g_strFormats[0][list[i]->itype], *(long long*)((char*)ctx.pobj+(int)list[i]->data.ptr)); break;
-					case ft_float: sprintf(ptr0, g_strFormats[0][list[i]->itype], *(float*)((char*)ctx.pobj+(int)list[i]->data.ptr)); break;
-					case ft_vector: {	Vec3 *v = (Vec3*)((char*)ctx.pobj+(int)list[i]->data.ptr); 
+					case ft_int: sprintf(ptr0, g_strFormats[0][list[i]->itype], *(int*)((char*)ctx.pobj+list[i]->data.offset)); break;
+					case ft_uint: sprintf(ptr0, g_strFormats[0][list[i]->itype], *(unsigned int*)((char*)ctx.pobj+list[i]->data.offset)); break;
+					case ft_short: sprintf(ptr0, g_strFormats[0][list[i]->itype], *(short*)((char*)ctx.pobj+list[i]->data.offset)); break;
+					case ft_ushort: sprintf(ptr0, g_strFormats[0][list[i]->itype], *(unsigned short*)((char*)ctx.pobj+list[i]->data.offset)); break;
+					case ft_uint64: sprintf(ptr0, g_strFormats[0][list[i]->itype], *(long long*)((char*)ctx.pobj+list[i]->data.offset)); break;
+					case ft_float: sprintf(ptr0, g_strFormats[0][list[i]->itype], *(float*)((char*)ctx.pobj+list[i]->data.offset)); break;
+					case ft_vector: {	Vec3 *v = (Vec3*)((char*)ctx.pobj+list[i]->data.offset);
 						sprintf(ptr0, g_strFormats[0][list[i]->itype], v->x,v->y,v->z); 
 					} break;
-					case ft_quaternion: {	quaternionf *q = (quaternionf*)((char*)ctx.pobj+(int)list[i]->data.ptr); 
+					case ft_quaternion: {	quaternionf *q = (quaternionf*)((char*)ctx.pobj+list[i]->data.offset);
 						sprintf(ptr0, g_strFormats[0][list[i]->itype], q->w,q->v.x,q->v.y,q->v.z); 
 					}	break;
-					case ft_entityptr: ppc = *(CPhysicalPlaceholder**)((char*)ctx.pobj+(int)list[i]->data.ptr);
+					case ft_entityptr: ppc = *(CPhysicalPlaceholder**)((char*)ctx.pobj+list[i]->data.offset);
 														 ppc ? ltoa(ppc->m_id,ptr0,10) : strcpy(ptr0,"NULL"); break;
 					case ft_proc: 
 						if ((this->*list[i]->data.func)(ctx,ptr0))
@@ -186,14 +227,14 @@ struct Serializer {
 					pitem = itor->second;
 					switch (pitem->itype) {
 						case ft_int: case ft_uint: case ft_short: case ft_ushort: case ft_uint64: case ft_float: 
-							sscanf(ptr1, g_strFormats[1][pitem->itype], (char*)ctx.pobj+(int)pitem->data.ptr); break;
-						case ft_vector: {	Vec3 *v = (Vec3*)((char*)ctx.pobj+(int)pitem->data.ptr); 
+							sscanf(ptr1, g_strFormats[1][pitem->itype], (char*)ctx.pobj+pitem->data.offset); break;
+						case ft_vector: {	Vec3 *v = (Vec3*)((char*)ctx.pobj+pitem->data.offset);
 							sscanf(ptr1, g_strFormats[1][pitem->itype], &v->x,&v->y,&v->z); 
 						} break;
-						case ft_quaternion: {	quaternionf *q = (quaternionf*)((char*)ctx.pobj+(int)pitem->data.ptr); 
+						case ft_quaternion: {	quaternionf *q = (quaternionf*)((char*)ctx.pobj+pitem->data.offset);
 							sscanf(ptr1, g_strFormats[1][pitem->itype], &q->w,&q->v.x,&q->v.y,&q->v.z); 
 						}	break;
-						case ft_entityptr: *(IPhysicalEntity**)((char*)ctx.pobj+(int)pitem->data.ptr) = 
+						case ft_entityptr: *(IPhysicalEntity**)((char*)ctx.pobj+pitem->data.offset) =
 																 *ptr1!='N' ? ctx.pWorld->GetPhysicalEntityById(atol(ptr1)) : 0; break;
 						case ft_proc: (this->*pitem->data.func)(ctx,ptr1);
 					}
@@ -581,9 +622,13 @@ struct CPhysGeometrySerializer : Serializer {
 		Serializer *pSerializer;
 
 		if (ctx.bSaving) {
-			char *name;
-			switch (pgeom->pGeom->GetType()) {
-				case GEOM_TRIMESH: pSerializer=pMeshSerializer; name="Mesh"; break;
+			const char *name;
+			switch (pgeom->pGeom->GetType())
+			{
+				case GEOM_TRIMESH:
+					pSerializer=pMeshSerializer;
+					name="Mesh";
+					break;
 				case GEOM_HEIGHTFIELD: pSerializer=pHeightfieldSerializer; name="Heightfield"; break;
 				case GEOM_BOX: pSerializer=pBoxSerializer; name="Box"; break;
 				case GEOM_CYLINDER: pSerializer=pCylinderSerializer; pCylinderSerializer->bCapsule=0; name="Cylinder"; break;
@@ -1758,7 +1803,7 @@ struct CPhysicalWorldSerializer : Serializer {
 			for(i=0;i<5;i++) {
 				for(pent=pWorld->m_pTypedEnts[i]; pent && pent->m_next; pent=pent->m_next);
 				for(; pent; pent=pent->m_prev) {
-					char *name = "Static";
+					const char *name = "Static";
 					Serializer *pSerializer = pStaticEntitySerializer;
 					switch (pent->GetType()) {
 						case PE_RIGID: pSerializer = pRigidEntitySerializer; name = "Rigid Body"; break;

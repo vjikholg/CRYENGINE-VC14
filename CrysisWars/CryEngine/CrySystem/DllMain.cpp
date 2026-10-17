@@ -83,7 +83,8 @@ extern "C"
 #ifndef _DEBUG
 #ifdef WIN32
 		// Install exception handler in Release modes.
-		if (strstr(startupParams.szSystemCmdLine, "-AssetCompatibilityTest") == nullptr)
+		if (strstr(startupParams.szSystemCmdLine, "-AssetCompatibilityTest") == nullptr &&
+			strstr(startupParams.szSystemCmdLine, "-PhysicsRegressionTest") == nullptr)
 			DebugCallStack::instance()->installErrorHandler( pSystem );
 #endif
 #endif

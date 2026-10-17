@@ -30,6 +30,9 @@
 #include "ISerialize.h"
 #include "IGameFramework.h"
 
+#include <limits>
+#include <memory>
+
 
 inline Vec3 Loc2Glob(const entity_contact &cnt, int i)
 {
@@ -82,7 +85,6 @@ CRigidEntity::CRigidEntity(CPhysicalWorld *pWorld) : CPhysicalEntity(pWorld)
 	m_EminWater = sqr(0.01f);
 	m_bFloating = 0;
 	m_bProhibitUnprojection = m_bEnforceContacts = -1;
-	m_bJustLoaded = 0;
 	m_bCollisionCulling = 0;
 	m_maxw = 20.0f;
 	m_iLastChecksum = 0;
@@ -882,6 +884,9 @@ int CRigidEntity::RemoveCollider(CPhysicalEntity *pCollider, bool bRemoveAlways)
 
 int CRigidEntity::AddCollider(CPhysicalEntity *pCollider)
 {
+	if (!m_pendingSnapshotColliderIds.empty())
+		ClearSnapshotContacts();
+
 	int nColliders=m_nColliders, nCollidersAlloc=m_nCollidersAlloc, i=CPhysicalEntity::AddCollider(pCollider);
 
 	if (m_nCollidersAlloc>nCollidersAlloc) {
@@ -901,8 +906,6 @@ int CRigidEntity::AddCollider(CPhysicalEntity *pCollider)
 		m_pColliderContacts[i] = 0;
 		m_pColliderConstraints[i] = 0;
 	}
-	m_bJustLoaded = 0;
-
 	return i;
 }
 
@@ -3343,7 +3346,8 @@ int CRigidEntity::SetStateFromSnapshot(CStream &stm, int flags)
 			stm.Seek(stm.GetReadPos()+2);
 		}
 
-		ReadContacts(stm, flags);
+		if (!ReadContacts(stm, flags))
+			return 0;
 	}
 
 	return 1;
@@ -3504,162 +3508,259 @@ int CRigidEntity::SetStateFromSnapshot( TSerialize ser, int flags )
 	return 1;
 }
 
-int CRigidEntity::ReadContacts(CStream &stm, int flags)
+void CRigidEntity::ClearSnapshotContacts()
 {
-	int i,j,id; bool bnz;
-	pe_status_id si;
-	int idPrevColliders[16],nPrevColliders=0;
-	masktype iPrevConstraints[16];
-	entity_contact *pContact,*pContactNext;
+	entity_contact* contact = m_pContactStart;
+	while (contact != CONTACT_END(m_pContactStart))
+	{
+		entity_contact* next = contact->next;
+		m_pWorld->FreeContact(contact);
+		contact = next;
+	}
+	m_pContactStart = m_pContactEnd = CONTACT_END(m_pContactStart);
+	m_nContacts = 0;
 
-	if (!(flags & ssf_no_update)) {
-		for(i=0;i<m_nColliders;i++) {
-			if (m_pColliderConstraints[i] && nPrevColliders<16) {
-				idPrevColliders[nPrevColliders] = m_pWorld->GetPhysicalEntityId(m_pColliders[i]);
-				iPrevConstraints[nPrevColliders++] = m_pColliderConstraints[i];
-			}
-			if (m_pColliders[i]!=this) {
-				m_pColliders[i]->RemoveCollider(this);
-				m_pColliders[i]->Release();
-			}
-		}
+	const size_t colliderCount = std::max(
+		static_cast<size_t>(m_nColliders), m_pendingSnapshotColliderIds.size());
+	for (size_t index = 0; index < colliderCount; ++index)
+	{
+		m_pColliders[index] = nullptr;
+		m_pColliderContacts[index] = nullptr;
+		m_pColliderConstraints[index] = 0;
+	}
+	m_pendingSnapshotColliderIds.clear();
+}
 
-		ReadPacked(stm,m_nColliders);
-		if (m_nCollidersAlloc<m_nColliders) {
-			if (m_pColliders) delete[] m_pColliders;
-			if (m_pColliderContacts) delete[] m_pColliderContacts;
-			m_nCollidersAlloc = (m_nColliders-1&~7)+8;
-			m_pColliders = new CPhysicalEntity*[m_nCollidersAlloc];
-			m_pColliderContacts = new entity_contact*[m_nCollidersAlloc];
-			memset(m_pColliderConstraints = new masktype[m_nCollidersAlloc],0,m_nCollidersAlloc*sizeof(m_pColliderConstraints[0]));
-		}
-		for(pContact=m_pContactStart; pContact!=CONTACT_END(m_pContactStart); pContact=pContactNext) {
-			pContactNext=pContact; m_pWorld->FreeContact(pContact);
-		}
 
-		for(i=0;i<m_nColliders;i++) {
-			ReadPacked(stm,id); --id;
-			m_pColliders[i] = (CPhysicalEntity*)(UINT_PTR)id;
-			m_pColliderConstraints[i] = 0;
-			while(true) {
-				stm.Read(bnz);
-				if (!bnz) break;
-				pContact = m_pWorld->AllocContact();
-				AttachContact(pContact,i);
+bool CRigidEntity::PrepareSnapshotColliderStorage(int colliderCount)
+{
+	if (colliderCount < 0 || colliderCount > (std::numeric_limits<int>::max)() - 7)
+		return false;
 
-				stm.Read(pContact->ptloc[0]);
-				stm.Read(pContact->ptloc[1]);
-				stm.Read(pContact->nloc);
-				ReadPacked(stm, pContact->ipart[0]);
-				ReadPacked(stm, pContact->ipart[1]);
-				ReadPacked(stm, pContact->iPrim[0]);
-				ReadPacked(stm, pContact->iPrim[1]);
-				ReadPacked(stm, pContact->iFeature[0]);
-				ReadPacked(stm, pContact->iFeature[1]);
-				ReadPacked(stm, pContact->iNormal);
-				stm.Read(bnz); pContact->flags = bnz ? contact_2b_verified : 0;
-				stm.Read(bnz); //pContact->vsep = bnz ? m_pWorld->m_vars.minSeparationSpeed : 0;
-				stm.Read(pContact->penetration);
+	if (colliderCount > m_nCollidersAlloc)
+	{
+		const int capacity = (colliderCount + 7) & ~7;
+		auto colliders = std::make_unique<CPhysicalEntity*[]>(capacity);
+		auto contacts = std::make_unique<entity_contact*[]>(capacity);
+		auto constraints = std::make_unique<masktype[]>(capacity);
+		delete[] m_pColliders;
+		delete[] m_pColliderContacts;
+		delete[] m_pColliderConstraints;
+		m_pColliders = colliders.release();
+		m_pColliderContacts = contacts.release();
+		m_pColliderConstraints = constraints.release();
+		m_nCollidersAlloc = capacity;
+	}
 
-				pContact->pent[0] = this;
-				pContact->pent[1] = (CPhysicalEntity*)(UINT_PTR)id;
-				pContact->pbody[0] = pContact->pent[0]->GetRigidBody(pContact->ipart[0]);
-				si.ipart = pContact->ipart[0];
-				si.iPrim = pContact->iPrim[0];
-				si.iFeature = pContact->iFeature[0];
-				pContact->pent[0]->GetStatus(&si);
-				pContact->id[0] = si.id;
-				//pContact->penetration = 0;
-				pContact->pt[0] = pContact->pt[1] = 
-					pContact->pbody[0]->q*pContact->ptloc[0]+pContact->pbody[0]->pos;
-			}
-		}
-		for(i=0;i<nPrevColliders;i++)	{
-#if defined(PS3)
-			for(j=0;(uint64)j<m_nColliders && (UINT_PTR)m_pColliders[j]!=(UINT_PTR)idPrevColliders[i];j++);
-#else
-			for(j=0;j<m_nColliders && (int)m_pColliders[j]!=idPrevColliders[i];j++);
-#endif
-			if (j<m_nColliders)
-				m_pColliderConstraints[j] = iPrevConstraints[i];
-		}
-		m_bJustLoaded = m_nColliders;
+	m_pendingSnapshotColliderIds.resize(colliderCount);
+	for (int index = 0; index < colliderCount; ++index)
+	{
+		m_pColliders[index] = nullptr;
+		m_pColliderContacts[index] = nullptr;
+		m_pColliderConstraints[index] = 0;
+	}
+	return true;
+}
 
-		m_nColliders = 0; // so that no1 thinks we have colliders until postload is called
-		if (!m_nParts && m_bJustLoaded) {
-			m_pWorld->m_pLog->LogError("Error: Rigid Body (@%.1f,%.1f,%.1f; id %d) lost its geometry after loading",m_pos.x,m_pos.y,m_pos.z,m_id);
-			m_bJustLoaded = 0;
+
+void CRigidEntity::ReadSnapshotContact(CStream& stream, entity_contact& contact)
+{
+	stream.Read(contact.ptloc[0]);
+	stream.Read(contact.ptloc[1]);
+	stream.Read(contact.nloc);
+	ReadPacked(stream, contact.ipart[0]);
+	ReadPacked(stream, contact.ipart[1]);
+	ReadPacked(stream, contact.iPrim[0]);
+	ReadPacked(stream, contact.iPrim[1]);
+	ReadPacked(stream, contact.iFeature[0]);
+	ReadPacked(stream, contact.iFeature[1]);
+	ReadPacked(stream, contact.iNormal);
+	bool verified = false;
+	bool unusedSeparationFlag = false;
+	stream.Read(verified);
+	stream.Read(unusedSeparationFlag);
+	stream.Read(contact.penetration);
+	contact.flags = verified ? contact_2b_verified : 0;
+	contact.pent[0] = this;
+	contact.pent[1] = nullptr;
+	contact.pbody[0] = contact.pbody[1] = nullptr;
+}
+
+
+void CRigidEntity::SkipSnapshotContacts(CStream& stream)
+{
+	int colliderCount = 0;
+	ReadPacked(stream, colliderCount);
+	for (int index = 0; index < colliderCount; ++index)
+	{
+		int ignoredId;
+		ReadPacked(stream, ignoredId);
+		bool hasContact = false;
+		while (stream.Read(hasContact) && hasContact)
+		{
+			stream.Seek(stream.GetReadPos() + 3 * sizeof(Vec3) * 8);
+			for (int field = 0; field < 7; ++field)
+				ReadPacked(stream, ignoredId);
+			stream.Seek(stream.GetReadPos() + 2 + sizeof(float) * 8);
 		}
-	} else {
-		int nColliders;
-		ReadPacked(stm,nColliders); ReadPacked(stm,id);
-		for(i=0;i<nColliders;i++) {
-			ReadPacked(stm,id); 
-			while(true) {
-				stm.Read(bnz); if (!bnz) break;
-				stm.Seek(stm.GetReadPos()+3*sizeof(Vec3)*8);
-				ReadPacked(stm,id);ReadPacked(stm,id);ReadPacked(stm,id);ReadPacked(stm,id);
-				ReadPacked(stm,id);ReadPacked(stm,id);ReadPacked(stm,id);
-				stm.Seek(stm.GetReadPos()+2+sizeof(float)*8);
-			}
+	}
+}
+
+
+int CRigidEntity::ReadContacts(CStream& stream, int flags)
+{
+	if (flags & ssf_no_update)
+	{
+		SkipSnapshotContacts(stream);
+		return 1;
+	}
+
+	constexpr int maxPreservedConstraints = 16;
+	int previousColliderIds[maxPreservedConstraints];
+	masktype previousConstraintMasks[maxPreservedConstraints];
+	int previousConstraintCount = 0;
+	for (int index = 0; index < m_nColliders; ++index)
+	{
+		CPhysicalEntity* collider = m_pColliders[index];
+		if (m_pColliderConstraints[index] && previousConstraintCount < maxPreservedConstraints)
+		{
+			previousColliderIds[previousConstraintCount] = m_pWorld->GetPhysicalEntityId(collider);
+			previousConstraintMasks[previousConstraintCount++] = m_pColliderConstraints[index];
+		}
+		if (collider != this)
+		{
+			collider->RemoveCollider(this);
+			collider->Release();
+		}
+	}
+	ClearSnapshotContacts();
+	m_nColliders = 0;
+
+	int colliderCount = 0;
+	ReadPacked(stream, colliderCount);
+	if (!PrepareSnapshotColliderStorage(colliderCount))
+		return 0;
+
+	for (int index = 0; index < colliderCount; ++index)
+	{
+		int encodedId = 0;
+		ReadPacked(stream, encodedId);
+		if (encodedId < 0)
+		{
+			ClearSnapshotContacts();
+			return 0;
+		}
+		m_pendingSnapshotColliderIds[index] = encodedId - 1;
+		bool hasContact = false;
+		while (stream.Read(hasContact) && hasContact)
+		{
+			entity_contact* contact = m_pWorld->AllocContact();
+			ReadSnapshotContact(stream, *contact);
+			const int savedFlags = contact->flags;
+			AttachContact(contact, index);
+			contact->flags |= savedFlags;
 		}
 	}
 
+	for (int index = 0; index < previousConstraintCount; ++index)
+	{
+		const auto collider = std::find(m_pendingSnapshotColliderIds.begin(),
+			m_pendingSnapshotColliderIds.end(), previousColliderIds[index]);
+		if (collider != m_pendingSnapshotColliderIds.end())
+			m_pColliderConstraints[collider - m_pendingSnapshotColliderIds.begin()] =
+				previousConstraintMasks[index];
+	}
+
+	// Keep live collider pointers unpublished until the world finishes loading.
+	if (!m_nParts && colliderCount != 0)
+	{
+		m_pWorld->m_pLog->LogError(
+			"Error: Rigid Body (@%.1f,%.1f,%.1f; id %d) lost its geometry after loading",
+			m_pos.x, m_pos.y, m_pos.z, m_id);
+		ClearSnapshotContacts();
+	}
 	return 1;
+}
+
+
+bool CRigidEntity::RestoreSnapshotContact(entity_contact& contact, CPhysicalEntity* collider)
+{
+	contact.pent[1] = collider;
+	if (!collider || static_cast<unsigned int>(contact.ipart[0]) >= static_cast<unsigned int>(m_nParts) ||
+		static_cast<unsigned int>(contact.ipart[1]) >= static_cast<unsigned int>(collider->m_nParts) ||
+		static_cast<unsigned int>(contact.iNormal) >= 2)
+		return false;
+
+	contact.pbody[0] = GetRigidBody(contact.ipart[0]);
+	contact.pbody[1] = collider->GetRigidBody(contact.ipart[1], 1);
+	if (!contact.pbody[0] || !contact.pbody[1])
+		return false;
+
+	pe_status_id status;
+	for (int side = 0; side < 2; ++side)
+	{
+		status.ipart = contact.ipart[side];
+		status.iPrim = contact.iPrim[side];
+		status.iFeature = contact.iFeature[side];
+		if (!contact.pent[side]->GetStatus(&status))
+			return false;
+		contact.id[side] = status.id;
+	}
+	contact.pt[0] = contact.pt[1] =
+		contact.pbody[0]->q * contact.ptloc[0] + contact.pbody[0]->pos;
+	contact.n = contact.pbody[contact.iNormal]->q * contact.nloc;
+	contact.vreq = contact.n * min(1.2f, contact.penetration * 10.0f);
+	contact.K.SetZero();
+	GetContactMatrix(contact.pt[0], contact.ipart[0], contact.K);
+	collider->GetContactMatrix(contact.pt[1], contact.ipart[1], contact.K);
+	// Dynamic relative velocity is recomputed by VerifyExistingContacts before solving.
+	contact.vrel.zero();
+	contact.friction = m_pWorld->GetFriction(contact.id[0], contact.id[1]);
+	return true;
 }
 
 
 int CRigidEntity::PostSetStateFromSnapshot()
 {
-	if (m_bJustLoaded) {
-		pe_status_id si;
-		int i,j;
-		entity_contact *pContact,*pContactNext;
-		m_nColliders = m_bJustLoaded;
-		m_bJustLoaded = 0;
-
-		for(pContact=m_pContactStart; pContact!=CONTACT_END(m_pContactStart); pContact=pContactNext) {
-			pContactNext = pContact;
-			pContact->pent[1] = (CPhysicalEntity*)m_pWorld->GetPhysicalEntityById((INT_PTR)pContact->pent[1]);
-			if (pContact->pent[1] && (unsigned int)pContact->ipart[0]<(unsigned int)pContact->pent[0]->m_nParts &&
-					(unsigned int)pContact->ipart[1]<(unsigned int)pContact->pent[1]->m_nParts) 
+	const int pendingCount = static_cast<int>(m_pendingSnapshotColliderIds.size());
+	int restoredCount = 0;
+	for (int index = 0; index < pendingCount; ++index)
+	{
+		CPhysicalEntity* collider = static_cast<CPhysicalEntity*>(
+			m_pWorld->GetPhysicalEntityById(m_pendingSnapshotColliderIds[index]));
+		entity_contact* contact = m_pColliderContacts[index];
+		while (contact)
+		{
+			entity_contact* next = contact->next;
+			const bool lastContact = (contact->flags & contact_last) != 0;
+			if (!RestoreSnapshotContact(*contact, collider))
 			{
-				pContact->pbody[1] = pContact->pent[1]->GetRigidBody(pContact->ipart[1],1);
-				si.ipart = pContact->ipart[1];
-				si.iPrim = pContact->iPrim[1];
-				si.iFeature = pContact->iFeature[1];
-				if (pContact->pent[1]->GetStatus(&si)) {
-					pContact->id[1] = si.id;
-					pContact->n = pContact->pbody[pContact->iNormal]->q*pContact->nloc;
-					pContact->vreq = pContact->n*min(1.2f,pContact->penetration*10.0f);
-					pContact->K.SetZero();
-					pContact->pent[0]->GetContactMatrix(pContact->pt[0], pContact->ipart[0], pContact->K);
-					pContact->pent[1]->GetContactMatrix(pContact->pt[1], pContact->ipart[1], pContact->K);
-					// assume that the contact is static here, for if it's dynamic, VerifyContacts will update it before passing to the solver
-					pContact->vrel.zero();
-					pContact->friction = m_pWorld->GetFriction(pContact->id[0],pContact->id[1]);
-				}	else {
-					DetachContact(pContact,-1,0); m_pWorld->FreeContact(pContact);
-				}
-			} else {
-				DetachContact(pContact,-1,0);	m_pWorld->FreeContact(pContact);
+				DetachContact(contact, index, 0);
+				m_pWorld->FreeContact(contact);
 			}
+			contact = lastContact ? nullptr : next;
 		}
 
-		for(i=m_nColliders-1;i>=0;i--) {
-			if (!(m_pColliders[i] = (CPhysicalEntity*)m_pWorld->GetPhysicalEntityById((INT_PTR)m_pColliders[i])) || 
-					!m_pColliderContacts[i] && !m_pColliderConstraints[i]) 
-			{
-				for(j=i;j<m_nColliders;j++) {
-					m_pColliders[j] = m_pColliders[j+1];
-					m_pColliderContacts[j] = m_pColliderContacts[j+1];
-					m_pColliderConstraints[j] = m_pColliderConstraints[j+1];
-				}
-				m_nColliders--;
-			}
+		if (collider && (m_pColliderContacts[index] || m_pColliderConstraints[index]))
+		{
+			m_pColliders[restoredCount] = collider;
+			m_pColliderContacts[restoredCount] = m_pColliderContacts[index];
+			m_pColliderConstraints[restoredCount] = m_pColliderConstraints[index];
+			if (collider != this)
+				collider->AddRef();
+			++restoredCount;
 		}
-		for(i=0;i<m_nColliders;i++)
-			m_pColliders[i]->AddRef();
+	}
+	if (pendingCount != 0)
+	{
+		for (int index = restoredCount; index < pendingCount; ++index)
+		{
+			m_pColliders[index] = nullptr;
+			m_pColliderContacts[index] = nullptr;
+			m_pColliderConstraints[index] = 0;
+		}
+		m_nColliders = restoredCount;
+		m_pendingSnapshotColliderIds.clear();
 	}
 	return 1;
 }
@@ -4120,4 +4221,5 @@ void CRigidEntity::GetMemoryStatistics(ICrySizer *pSizer)
 	pSizer->AddObject(m_pContactStart, m_nContacts*sizeof(m_pContactStart[0]));
 	pSizer->AddObject(m_pConstraints, m_nConstraintsAlloc*sizeof(m_pConstraints[0]));
 	pSizer->AddObject(m_pConstraintInfos, m_nConstraintsAlloc*sizeof(m_pConstraintInfos[0]));
+	pSizer->AddObject(m_pendingSnapshotColliderIds.data(), m_pendingSnapshotColliderIds.capacity() * sizeof(int));
 }

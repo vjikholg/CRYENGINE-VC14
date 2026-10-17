@@ -13,6 +13,8 @@
 #include "MM07Tests.h"
 #include "MM08Tests.h"
 #include "MM09Tests.h"
+#include "PhysicsRegressionTests.h"
+#include "RuntimeModuleCompatibilityTests.h"
 #include "SafeAllocTests.h"
 #include "SerializedSizeTests.h"
 #include "StlHashMapAdapterTests.h"
@@ -26,6 +28,32 @@
 
 int main(int argc, char* argv[])
 {
+	if ((argc == 4 || argc == 5) &&
+		std::strcmp(argv[1], "--physics-regression") == 0)
+	{
+		const std::filesystem::path runtimeDirectory(argv[2]);
+		const std::filesystem::path gameRoot(argv[3]);
+		const std::filesystem::path reportPath = argc == 5
+			? std::filesystem::path(argv[4])
+			: std::filesystem::current_path() / "PhysicsRegression.tsv";
+		return RunPhysicsRegressionPipeline(
+			runtimeDirectory.c_str(),
+			gameRoot.c_str(),
+			reportPath.c_str());
+	}
+
+	if (argc == 6 && std::strcmp(argv[1], "--physics-regression-case") == 0)
+	{
+		const std::filesystem::path runtimeDirectory(argv[2]);
+		const std::filesystem::path gameRoot(argv[3]);
+		const std::filesystem::path reportPath(argv[5]);
+		return RunPhysicsRegressionCase(
+			runtimeDirectory.c_str(),
+			gameRoot.c_str(),
+			argv[4],
+			reportPath.c_str());
+	}
+
 	if ((argc == 3 || argc == 4) &&
 		std::strcmp(argv[1], "--animation-asset-format") == 0)
 	{
@@ -155,7 +183,8 @@ int main(int argc, char* argv[])
 	if (argc != 1)
 	{
 		std::printf(
-			"Usage: CryCommonTests.exe [--animation-asset-format <asset-root> [report.tsv] | "
+			"Usage: CryCommonTests.exe [--physics-regression <runtime-dir> <game-root> [report.tsv] | "
+			"--animation-asset-format <asset-root> [report.tsv] | "
 			"--animation-assets <runtime-dir> <game-root> <asset-root> [report.tsv] | "
 			"--mm01-trace | --mm02-layout | -mm03-trace | "
 			"--mm02-trace <CrySystem.dll> | --mm04-trace [CrySystem.dll] | "
@@ -167,6 +196,7 @@ int main(int argc, char* argv[])
 
 	CryTestRunner runner;
 	RunComparisonCompatibilityTests(runner);
+	RunRuntimeModuleCompatibilityTests(runner);
 	RunCryFileNameTests(runner);
 	RunCryNetworkCompatibilityTests(runner);
 	RunCryStringCompatibilityTests(runner);

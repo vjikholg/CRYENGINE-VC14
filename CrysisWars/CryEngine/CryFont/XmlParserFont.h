@@ -818,7 +818,7 @@ public:
 		}
 	}
 
-	long find ( char * srchStr, long offset, long length = -1 )
+	long find ( const char * srchStr, long offset, long length = -1 )
 	{
 		// if no length set to length to
 		// end of parse buffer

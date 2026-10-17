@@ -12,6 +12,7 @@ History:
 
 *************************************************************************/
 #include "StdAfx.h"
+#include <CryCheckedArithmetic.h>
 #include "ICryAnimation.h"
 #include "ActorSystem.h"
 #include "IGameFramework.h"
@@ -139,8 +140,13 @@ int CScriptBind_VehicleSystem::GetVehicleImplementations(IFunctionHandler* pH)
   
   m_pVehicleSystem->GetVehicleImplementations(impls);
 
-  //CryLog("Scriptbind got %i vehicles", impls.Count());
-  for (int i=0; i<impls.Count(); ++i)
+  int count = 0;
+  if (!CryTryNarrowSize(impls.Count(), count))
+  {
+    GameWarning("Vehicle implementation count exceeds the script table index limit");
+    return pH->EndFunction();
+  }
+  for (int i=0; i<count; ++i)
   { 
     tableImpls->SetAt(i+1, impls.GetAt(i).c_str());
   }
