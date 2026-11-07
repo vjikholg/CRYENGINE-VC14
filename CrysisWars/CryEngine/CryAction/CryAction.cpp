@@ -13,6 +13,7 @@
 
 *************************************************************************/
 #include "StdAfx.h"
+#include "CryActionWindows.h"
 #include "CryAction.h"
 
 #if _WIN32_WINNT < 0x0500 
@@ -3161,50 +3162,32 @@ void CCryAction::ClearStoredServerInfo()
 	m_pStoredServerConnectionInfo = NULL;
 }
 
-static const char* g_regLocation = "SOFTWARE\\Electronic Arts\\Electronic Arts\\Crysis Wars\\ergc\\";
-
 void CCryAction::ReadCDKey()
 {
-#if (defined(WIN32) || defined(WIN64))
-	HKEY  key;
-	DWORD type;
-	// Open the appropriate registry key
-	LONG result = RegOpenKeyEx( HKEY_CURRENT_USER, g_regLocation, 0, KEY_READ|KEY_WOW64_32KEY, &key );
-	if( ERROR_SUCCESS == result )
-	{
-		std::vector<char> cdkey(32);
-
-		DWORD size=cdkey.size();
-
-		result = RegQueryValueEx( key, NULL, NULL, &type, (LPBYTE)&cdkey[0], &size );
-
-		if(ERROR_SUCCESS==result && type==REG_SZ)
-		{
-			m_pNetwork->SetCDKey(&cdkey[0]);
-			m_cdKeyOK = true;
-		}
-		else
-			result = ERROR_BAD_FORMAT;
-	}
-	if(ERROR_SUCCESS != result)
-		GameWarning("Failed to read CDKey from registry");
+#if defined(WIN32) || defined(WIN64)
+ char cdkey[32] = {};
+ const LONG result = CryActionWindows::ReadKey(HKEY_CURRENT_USER,
+  CryActionWindows::RegistryPath(), cdkey, sizeof(cdkey));
+ if (result == ERROR_SUCCESS)
+ {
+#if defined(CRY_ACTION_REGRESSION_TESTS)
+  if (CryActionWindows::keyObserver) CryActionWindows::keyObserver(cdkey);
+  else
+#endif
+   m_pNetwork->SetCDKey(cdkey);
+  m_cdKeyOK = true;
+ }
+ else GameWarning("Failed to read CDKey from registry");
 #endif
 }
 
 void CCryAction::SaveCDKey(const char* cdKey)
 {
-#if (defined(WIN32) || defined(WIN64))
-	HKEY  key;
-	// Open the appropriate registry key, creating it if it doesn't exist
-	LONG result = RegCreateKeyEx( HKEY_CURRENT_USER, g_regLocation, NULL, NULL, REG_OPTION_NON_VOLATILE, KEY_WRITE|KEY_WOW64_32KEY, NULL, &key, NULL);
-	if( ERROR_SUCCESS == result )
-	{
-		DWORD size=strlen(cdKey);
-
-		result = RegSetValueEx( key, NULL, NULL, REG_SZ, (LPBYTE)&cdKey[0], size );
-	}
-	if(ERROR_SUCCESS != result)
-		GameWarning("Failed to set CDKey in registry: result is %ld", result);
+#if defined(WIN32) || defined(WIN64)
+ const LONG result = CryActionWindows::WriteKey(HKEY_CURRENT_USER,
+  CryActionWindows::RegistryPath(), cdKey, cdKey ? strlen(cdKey) : 0);
+ if (result != ERROR_SUCCESS)
+  GameWarning("Failed to set CDKey in registry: result is %ld", result);
 #endif
 }
 

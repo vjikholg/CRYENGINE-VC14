@@ -1078,6 +1078,8 @@
     <ClCompile Include="ActionGame.cpp" />
     <ClCompile Include="AIFaceManager.cpp" />
     <ClCompile Include="CallbackTimer.cpp" />
+    <ClCompile Include="CryActionWindows.cpp" />
+    <ClCompile Include="ViewNote.cpp" />
     <ClCompile Include="CryAction.cpp" />
     <ClCompile Include="CryActionCVars.cpp" />
     <ClCompile Include="DevMode.cpp" />
@@ -1093,6 +1095,7 @@
     <ClInclude Include="UISystem.h">
       <Filter>UI Files</Filter>
     </ClInclude>
+    <ClInclude Include="CryActionWindows.h" />
     <ClInclude Include="ViewNote.h">
       <Filter>UI Files</Filter>
     </ClInclude>

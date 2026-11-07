@@ -708,6 +708,8 @@
     <ClCompile Include="AnimationGraph\StateIndex.cpp" />
     <ClCompile Include="BreakablePlane.cpp" />
     <ClCompile Include="CallbackTimer.cpp" />
+    <ClCompile Include="CryActionWindows.cpp" />
+    <ClCompile Include="ViewNote.cpp" />
     <ClCompile Include="CryAction.cpp">
       <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='CRYSIS_BETA|Win32'">AssemblyAndSourceCode</AssemblerOutput>
       <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='CRYSIS_BETA|x64'">AssemblyAndSourceCode</AssemblerOutput>
@@ -1273,6 +1275,7 @@
     <ClInclude Include="VehicleSystem\VehicleViewBase.h" />
     <ClInclude Include="VehicleSystem\VehicleViewFirstPerson.h" />
     <ClInclude Include="VehicleSystem\VehicleViewThirdPerson.h" />
+    <ClInclude Include="CryActionWindows.h" />
     <ClInclude Include="ViewNote.h" />
     <ClInclude Include="ViewSystem\View.h" />
     <ClInclude Include="ViewSystem\ViewSystem.h" />
