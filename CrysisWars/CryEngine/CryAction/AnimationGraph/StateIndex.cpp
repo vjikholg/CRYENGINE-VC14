@@ -712,20 +712,13 @@ void CStateIndex::Builder::RestrictStateToInputValues( StateID state, InputID in
 	MapRestrictions::iterator iR = m_restrictions.find(input);
 	if (iR == m_restrictions.end())
 		iR = m_restrictions.insert( std::make_pair(input, MapValueStates()) ).first;
-	// strike out this state from being available on all other tables for this input, except the one
-	// that we're restricted to
+	// An allowed value needs a selector even when no state has been excluded
+	// from it, so Init can retain its explicit matches.
 	for (SetInputValues::const_iterator iX = iI->second.begin(); iX != iI->second.end(); ++iX)
 	{
-		if (std::binary_search(pValues, pValues + numValues, *iX))
-			continue;
-		MapValueStates::iterator iV = iR->second.find(*iX);
-		if (iV == iR->second.end())
-		{
-			// we haven't initialized this table yet, suppose we'd better!
-			iV = iR->second.insert( std::make_pair(*iX, SetStates()) ).first;
-			iV->second = m_declaredStates;
-		}
-		iV->second.erase( state );
+		auto eligible = iR->second.try_emplace(*iX, m_declaredStates).first;
+		if (!std::binary_search(pValues, pValues + numValues, *iX))
+			eligible->second.erase(state);
 	}
 
 	iR = m_explicit.find(input);
