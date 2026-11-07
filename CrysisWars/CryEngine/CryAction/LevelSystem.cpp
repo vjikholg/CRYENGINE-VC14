@@ -735,11 +735,12 @@ uint64 CLevelSystem::CalcLevelChecksum(const char *levelName)
 
 	const uint32 probeSize=2*1024*1024;
 	
-	ctx.nSize=min(probeSize, nFileSize);
+	// The minimum cannot exceed the fixed two-MiB probe size.
+	ctx.nSize = static_cast<uint32>((std::min<uint64>)(probeSize, nFileSize));
 	ctx.nOffset=0;
 	gEnv->pSystem->GetIDataProbe()->GetCode( ctx );
 	
-	uint64 checksum=ctx.nCode<<32;
+	uint64 checksum = static_cast<uint64>(ctx.nCode) << 32;
 	if (checksum!=0)
 	{
 		ctx.nOffset=nFileSize-ctx.nSize;
