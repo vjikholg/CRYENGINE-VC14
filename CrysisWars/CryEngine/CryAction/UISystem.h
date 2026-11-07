@@ -114,6 +114,7 @@ public:
 	const wchar_t *ToWideString(const char *src);
 
 private:
+	bool Prepare2D(EUIPrimitiveType type, int texture, size_t vertices, size_t indices);
 	void OnScissorChanged();
 	void RegisterCVars();
 	void UnregisterCVars();
@@ -126,6 +127,7 @@ private:
 
 	EUIPrimitiveType				m_lastPrimitiveType;
 	int											m_lastTexId;
+	int m_blendState;
 
 	int											m_scissorLeft;
 	int											m_scissorTop;

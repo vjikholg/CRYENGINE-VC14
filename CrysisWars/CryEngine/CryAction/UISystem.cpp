@@ -12,6 +12,7 @@
 *************************************************************************/
 #include "StdAfx.h"
 #include <cstdint>
+#include <limits>
 #include <IEntityRenderState.h>
 #include <Cry_Camera.h>
 #include "UISystem.h"
@@ -80,6 +81,7 @@ CUISystem::CUISystem(ISystem *pSystem, IGameFramework *pGameFramework)
 	m_pScriptUI(0),
 	m_lastPrimitiveType(eUIPT_None),
 	m_lastTexId(-1),
+	m_blendState(GS_BLSRC_SRCALPHA | GS_BLDST_ONEMINUSSRCALPHA | GS_NODEPTHTEST),
 	m_scissorLeft(0),
 	m_scissorTop(0),
 	m_scissorWidth(0),
@@ -317,6 +319,8 @@ bool CUISystem::OnInputEvent(const SInputEvent &event)
 //------------------------------------------------------------------------
 void CUISystem::Begin2D(int width, int height)
 {
+	Flush2D();
+	m_blendState = GS_BLSRC_SRCALPHA | GS_BLDST_ONEMINUSSRCALPHA | GS_NODEPTHTEST;
 	m_width = width;
 	m_height = height;
 }
@@ -343,26 +347,37 @@ void CUISystem::SetScissor(int l, int t, int w, int h)
 //------------------------------------------------------------------------
 void CUISystem::SetBlend(int src, int dst)
 {
-	src |= dst;
+	const int state = src | dst | GS_NODEPTHTEST;
+	if (state != m_blendState)
+		Flush2D();
+	m_blendState = state;
+	m_pRenderer->SetState(state);
+}
 
-	m_pRenderer->SetState(src | GS_NODEPTHTEST);
+// Every submitted primitive must fit the uint16 index domain. Flush before
+// appending it; a full 65,536-vertex batch is legal (last index 65,535).
+bool CUISystem::Prepare2D(EUIPrimitiveType type, int texture, size_t vertices, size_t indices)
+{
+	const int rendererCapacity = m_pRenderer->GetDynVBSize();
+	if (rendererCapacity <= 0) return false;
+	const size_t capacity = min(size_t(rendererCapacity), size_t(std::numeric_limits<uint16>::max()) + 1);
+	// DrawDynVB's D3D9/D3D10 dynamic index buffer is 32,768 entries.
+	const size_t indexCapacity = 32768;
+	if (vertices > capacity || indices > indexCapacity) return false;
+	if (m_lastPrimitiveType != type || m_lastTexId != texture ||
+		m_vertexList.size() > capacity - vertices || m_indexList.size() > indexCapacity - indices)
+		Flush2D();
+	m_lastPrimitiveType = type;
+	m_lastTexId = texture;
+	return true;
 }
 
 //------------------------------------------------------------------------
 void CUISystem::DrawLine(float x, float y, float x2, float y2, const ColorB &color)
 {
-	if ((m_lastPrimitiveType != eUIPT_Line) || (m_lastTexId != -1))
-	{
-		Flush2D();
-	}
-
-	m_lastPrimitiveType = eUIPT_Line;
-	m_lastTexId = -1;
-
-	if (m_scissorWidth >= 0.001f || m_scissorHeight >= 0.001)
-	{
-		LiangBarskyClipLine(x, y, x2, y2, m_scissorLeft, m_scissorTop, m_scissorLeft+m_scissorWidth, m_scissorTop+m_scissorHeight);
-	}
+	if (!Prepare2D(eUIPT_Line, -1, 2, 2)) return;
+	if (m_scissorWidth >= 0.001f || m_scissorHeight >= 0.001f)
+		LiangBarskyClipLine(x, y, x2, y2, m_scissorLeft, m_scissorTop, m_scissorLeft + m_scissorWidth, m_scissorTop + m_scissorHeight);
 
 	int		rgb = (m_pRenderer->GetFeatures() & RFT_RGBA);
 	uint32	dcolor = rgb ? RGBA8(color.r, color.g, color.b, color.a) : RGBA8(color.b, color.g, color.r, color.a);
@@ -398,13 +413,7 @@ void CUISystem::DrawLine(float x, float y, float x2, float y2, const ColorB &col
 //------------------------------------------------------------------------
 void CUISystem::DrawTri(float x0, float y0, float x1, float y1, float x2, float y2, int texId, const ColorB &color, float *texCoords)
 {
-	if ((m_lastPrimitiveType != eUIPT_Tri) || (m_lastTexId != texId))
-	{
-		Flush2D();
-	}
-
-	m_lastPrimitiveType = eUIPT_Tri;
-	m_lastTexId = texId;
+	if (!Prepare2D(eUIPT_Tri, texId, 3, 3)) return;
 
 	int		rgb = (m_pRenderer->GetFeatures() & RFT_RGBA);
 	uint32	dcolor = rgb ? RGBA8(color.r, color.g, color.b, color.a) : RGBA8(color.b, color.g, color.r, color.a);
@@ -450,13 +459,7 @@ void CUISystem::DrawTri(float x0, float y0, float x1, float y1, float x2, float 
 //------------------------------------------------------------------------
 void CUISystem::DrawQuad(float l, float t, float w, float h, int texId, const ColorB &color, float *texCoords,float angleZ,float rx,float ry)
 {
-	if ((m_lastPrimitiveType != eUIPT_Tri) || (m_lastTexId != texId))
-	{
-		Flush2D();
-	}
-
-	m_lastPrimitiveType = eUIPT_Tri;
-	m_lastTexId = texId;
+	if (!Prepare2D(eUIPT_Tri, texId, 4, 6)) return;
 
 	if (!color.a || (w*h <= 0.001f))
 	{
@@ -601,53 +604,37 @@ void CUISystem::DrawQuad(float l, float t, float w, float h, int texId, const Co
 //------------------------------------------------------------------------
 void CUISystem::DrawCircle(float x, float y, float radius, int slices, const ColorB &color)
 {
-	if ((m_lastPrimitiveType != eUIPT_Tri) || (m_lastTexId != -1))
-	{
-		Flush2D();
-	}
-
-	m_lastPrimitiveType = eUIPT_Tri;
-	m_lastTexId = -1;
-
-	if (radius <= 0.001f)
-	{
+	if (radius <= 0.001f || slices < 3)
 		return;
-	}
-
-	int		rgb = (m_pRenderer->GetFeatures() & RFT_RGBA);
-	uint32	dcolor = rgb ? RGBA8(color.r, color.g, color.b, color.a) : RGBA8(color.b, color.g, color.r, color.a);
-	int			base = m_vertexList.size();
-
-	static TUIVertex v;
-
-	// center
-	v.xyz.x = x;
-	v.xyz.y = y;
-	v.xyz.z = 0.0f;
-	v.st[0] = 0.0f;
-	v.st[1] = 0.0f;
-	v.color.dcolor = dcolor;
-	m_vertexList.push_back(v);
-
-	float slice = DEG2RAD(360.0f/(float)slices);
-
-	for(int i = 0; i <= slices; i++)
+	const int rgb = m_pRenderer->GetFeatures() & RFT_RGBA;
+	const uint32 dcolor = rgb ? RGBA8(color.r, color.g, color.b, color.a) : RGBA8(color.b, color.g, color.r, color.a);
+	const float slice = DEG2RAD(360.0f / static_cast<float>(slices));
+	const int vertexLimit = min(m_pRenderer->GetDynVBSize(), 65536);
+	if (vertexLimit < 3) return;
+	// Split a single oversized fan as well as flushing an existing full batch.
+	// Each segment repeats its center and shared boundary vertex.
+	for (int first = 0; first < slices; )
 	{
-		v.xyz.x = x+radius * cosf(i*slice);
-		v.xyz.y = y+radius * sinf(i*slice);
-		v.xyz.z = 0.0f;
-		v.st[0] = 0.0f;
-		v.st[1] = 0.0f;
+		const int count = min(slices - first, min(vertexLimit - 2, 32768 / 3));
+		if (!Prepare2D(eUIPT_Tri, -1, static_cast<size_t>(count) + 2, static_cast<size_t>(count) * 3)) return;
+		const int base = static_cast<int>(m_vertexList.size());
+		TUIVertex v;
+		v.xyz = Vec3(x, y, 0);
+		v.st[0] = v.st[1] = 0;
 		v.color.dcolor = dcolor;
-
 		m_vertexList.push_back(v);
-	}
-
-	for (int f = 0; f < slices; f++)
-	{
-		m_indexList.push_back(base + 0);
-		m_indexList.push_back(base + f + 1);
-		m_indexList.push_back(base + f + 2);
+		for (int i = 0; i <= count; ++i)
+		{
+			v.xyz = Vec3(x + radius * cosf((first + i) * slice), y + radius * sinf((first + i) * slice), 0);
+			m_vertexList.push_back(v);
+		}
+		for (int i = 0; i < count; ++i)
+		{
+			m_indexList.push_back(static_cast<uint16>(base));
+			m_indexList.push_back(static_cast<uint16>(base + i + 1));
+			m_indexList.push_back(static_cast<uint16>(base + i + 2));
+		}
+		first += count;
 	}
 }
 //------------------------------------------------------------------------
@@ -660,7 +647,7 @@ void CUISystem::Flush2D()
 
 	//m_pRenderer->ResetToDefault();
 
-	m_pRenderer->SetState(GS_BLSRC_SRCALPHA | GS_BLDST_ONEMINUSSRCALPHA | GS_NODEPTHTEST);
+	m_pRenderer->SetState(m_blendState);
   
   // Reset texture states and set default color operation for fixed pipeline stuff (else it will use previous states)
   m_pRenderer->SetColorOp(255, 255, eCA_Texture | (eCA_Diffuse<<3), eCA_Texture | (eCA_Diffuse<<3));
@@ -689,12 +676,12 @@ void CUISystem::Flush2D()
 	{
 	case eUIPT_Line:
 		{
-			m_pRenderer->DrawDynVB((TUIVertex *)&m_vertexList[0], (uint16 *)&m_indexList[0], m_vertexList.size(), m_indexList.size(), R_PRIMV_LINES);
+			m_pRenderer->DrawDynVB((TUIVertex *)&m_vertexList[0], (uint16 *)&m_indexList[0], static_cast<int>(m_vertexList.size()), static_cast<int>(m_indexList.size()), R_PRIMV_LINES);
 		}
 		break;
 	case eUIPT_Tri:
 		{
-			m_pRenderer->DrawDynVB((TUIVertex *)&m_vertexList[0], (uint16 *)&m_indexList[0], m_vertexList.size(), m_indexList.size(), R_PRIMV_TRIANGLES);
+			m_pRenderer->DrawDynVB((TUIVertex *)&m_vertexList[0], (uint16 *)&m_indexList[0], static_cast<int>(m_vertexList.size()), static_cast<int>(m_indexList.size()), R_PRIMV_TRIANGLES);
 		}
 		break;
 	}
