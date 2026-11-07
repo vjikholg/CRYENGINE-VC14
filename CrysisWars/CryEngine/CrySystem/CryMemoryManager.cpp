@@ -11,6 +11,10 @@
 #include <new>
 #include <stdio.h>
 
+#if defined(__SANITIZE_ADDRESS__)
+#include <sanitizer/asan_interface.h>
+#endif
+
 #if defined(MM_TRACE_ADDRS)
 // Populate this array from the debugger to break when a selected address is
 // allocated or freed.
@@ -67,6 +71,11 @@ static void* CryAllocateWithHeader(size_t requestedSize, size_t& allocated)
 		return 0;
 	}
 
+#if defined(__SANITIZE_ADDRESS__)
+	// A reused pool slot can retain STL container shadow poison from its former
+	// owner. Establish the new allocation before touching its header or payload.
+	__asan_unpoison_memory_region(rawMemory, allocationSize);
+#endif
 	SCryAllocationHeader* const header =
 		::new (rawMemory) SCryAllocationHeader{requestedSize, allocationSize};
 	void* const userMemory = CryGetAllocationUserMemory(header);
@@ -159,6 +168,11 @@ size_t CryFree(void* memory)
 	SCryAllocationHeader* const header = CryGetAllocationHeader(memory);
 	const size_t size = header->allocationSize;
 	g_totalAllocatedMemory.Remove(size);
+#if defined(__SANITIZE_ADDRESS__)
+	// Leave the pool's intrusive free-list/header storage accessible, but diagnose
+	// accesses through a released user pointer until this slot is allocated again.
+	__asan_poison_memory_region(memory, header->requestedSize);
+#endif
 	g_GlobPageBucketAllocator.dealloc(header, size);
 	return size;
 }
