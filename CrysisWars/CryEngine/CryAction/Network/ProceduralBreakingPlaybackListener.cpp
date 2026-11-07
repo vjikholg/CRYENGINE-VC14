@@ -35,13 +35,15 @@ void CProceduralBreakingPlaybackListener::UpdateJointBreaks()
 #endif
 
 	// replay breaks
-	for (size_t i=0; i<jbs.size(); ++i)
+	for (int i=0; i<jbs.size();)
 	{
 #if BREAK_HIERARCHICAL_TRACKING
-		if (m_createdObjects.find(jbs[i].idxRef) == m_createdObjects.end())
+		if (m_createdObjects.find(jbs[i].idxRef) == m_createdObjects.end() ||
+			m_playbackFrame != jbs[i].frame)
+		{
+			++i;
 			continue;
-		if (m_playbackFrame != jbs[i].frame)
-			continue;
+		}
 #endif
 
 		CObjectSelector obj = GetObjectSelector(jbs[i].idxRef);
@@ -78,10 +80,9 @@ void CProceduralBreakingPlaybackListener::UpdateJointBreaks()
 			GameWarning("Unable to find object %s to break joint-id %d on", obj.GetDescription().c_str(), pj.id);
 
 		if (succeeded)
-		{
 			jbs.erase(i);
-			--i;
-		}
+		else
+			++i;
 	}
 }
 
@@ -92,7 +93,7 @@ void CProceduralBreakingPlaybackListener::Start()
 	DumpSpawnRecs(m_pStream->m_spawnRecs, m_pStream->m_jointBreaks, message);
 #if BREAK_HIERARCHICAL_TRACKING
 	DynArray<SJointBreakRec>& jbs = m_pStream->m_jointBreaks;
-	for (size_t i=0; i<jbs.size(); ++i)
+	for (int i=0; i<jbs.size(); ++i)
 		if (jbs[i].idxRef < 0)
 			m_createdObjects.insert(jbs[i].idxRef);
 #endif
@@ -198,7 +199,7 @@ bool CProceduralBreakingPlaybackListener::AllowComplete()
 {
 	if (!m_pStream->m_jointBreaks.empty())
 		return false;
-	for (size_t i=0; i<m_pStream->m_spawnRecs.size(); i++)
+	for (int i=0; i<m_pStream->m_spawnRecs.size(); i++)
 		if (m_pStream->m_spawnRecs[i].op != eNBO_NUM_OPERATIONS)
 			return false;
 	return true;
@@ -223,13 +224,14 @@ bool CProceduralBreakingPlaybackStream::GotExplosiveObjectState( const SExplosiv
 
 bool CProceduralBreakingPlaybackStream::GotJointBreakRec( const SJointBreakRec* rec )
 {
-	m_jointBreaks.push_back(*rec);
+	if (!rec || rec->idxRef == INT_MIN) return false;
+    m_jointBreaks.push_back(*rec);
 	return true;
 }
 
 bool CProceduralBreakingPlaybackStream::GotProceduralSpawnRec( const SProceduralSpawnRec* rec )
 {
-	assert( rec->op >= eNBO_Create && rec->op < eNBO_NUM_OPERATIONS );
+	if (!rec || rec->op < eNBO_Create || rec->op >= eNBO_NUM_OPERATIONS) return false;
 	m_spawnRecs.push_back(*rec);
 	return true;
 }

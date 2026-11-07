@@ -100,7 +100,7 @@ void CProceduralBreakingBaseListener::EndEvent( INetContext * pCtx )
 	}
 	else 
 	{
-		for (size_t i=0; i<m_justSpawnedObjects.size(); i++)
+		for (int i=0; i<m_justSpawnedObjects.size(); i++)
 		{
 			SJustSpawnedObject o = m_justSpawnedObjects[i];
 			FinishBreakOp( o.op, o.idxRef, o.to, o.virtId );
@@ -179,6 +179,8 @@ bool CProceduralBreakingBaseListener::AcceptIfRelated( IPhysicalEntity * pEnt, E
 
 CObjectSelector CProceduralBreakingBaseListener::GetObjectSelector(int idx)
 {
+	if (idx == INT_MIN)
+		return CObjectSelector();
 	if (idx < 0)
 		return m_pBreakType->GetObjectSelector(-idx);
 	else
@@ -197,7 +199,7 @@ void DumpSpawnRecs( const DynArray<SProceduralSpawnRec>& recs, const DynArray<SJ
 	if (CNetworkCVars::Get().BreakageLog)
 	{
 		CryLog("-- spawn records: %s --------------------------------------------", title);
-		for (size_t i=0; i<joints.size(); i++)
+		for (int i=0; i<joints.size(); i++)
 		{
 #if BREAK_HIERARCHICAL_TRACKING
 			CryLog("       .break %d on %d epipart=%d @ frame %d", int(joints[i].id), int(joints[i].idxRef), joints[i].epicenter, int(joints[i].frame));
@@ -208,7 +210,7 @@ void DumpSpawnRecs( const DynArray<SProceduralSpawnRec>& recs, const DynArray<SJ
 #if BREAK_HIERARCHICAL_TRACKING
 		int frameno = 0;
 #endif
-		for (size_t i=0; i<recs.size(); i++)
+		for (int i=0; i<recs.size(); i++)
 		{
 			const char * name = "!!!!!!";
 			switch (recs[i].op)

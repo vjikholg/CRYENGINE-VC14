@@ -85,6 +85,7 @@ CObjectSelector CJointBreak::GetObjectSelector( int idx )
 
 bool CJointBreak::GotExplosiveObjectState( const SExplosiveObjectState * pState )
 {
+	if (!pState || m_states.size() >= INT_MAX) return false;
 	m_states.push_back(*pState);
 	return true;
 }

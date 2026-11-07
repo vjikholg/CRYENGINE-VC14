@@ -441,6 +441,16 @@ IStatObj *CBreakablePlane::ProcessImpact(const Vec3 &pthit, const Vec3 &hitvel,f
 																				 ISurfaceType *pMat, IMaterial *pRenderMat, int bStatic, 
 																				 SBreakEvent &bev, std::vector<EntityId> &chunkIds, bool bLoading)
 {
+ // Recorded chunk indices must fit SBreakEvent's signed fields. Reject invalid
+ // loaded ranges before geometry or entity creation can have side effects.
+ if (chunkIds.size() > INT_MAX || (bLoading &&
+     (bev.idxChunkId0 < 0 || bev.nChunks < 0 ||
+      size_t(bev.idxChunkId0) > chunkIds.size() ||
+      size_t(bev.nChunks) > chunkIds.size() - size_t(bev.idxChunkId0))))
+ {
+  GameWarning("Breakable plane has an invalid chunk range");
+  return pStatObj;
+ }
 	CBreakablePlane *pPlane;
 	IStatObj *pNewStatObj = pStatObj;
 	phys_geometry *pPhysGeom;
@@ -470,7 +480,7 @@ IStatObj *CBreakablePlane::ProcessImpact(const Vec3 &pthit, const Vec3 &hitvel,f
 	ppp.areaCheckPeriod = 0;
 	if (!bLoading)
 	{
-		bev.idxChunkId0 = chunkIds.size();
+		bev.idxChunkId0 = static_cast<int>(chunkIds.size());
 		bev.seed = *(int*)&pthit.x+*(int*)&pthit.y+*(int*)&pthit.z & 0x7FFFFFFF;
 	}
 	iChunk = bev.idxChunkId0;
@@ -599,11 +609,26 @@ IStatObj *CBreakablePlane::ProcessImpact(const Vec3 &pthit, const Vec3 &hitvel,f
 							g_nPieces++; g_maxPieceLifetime = max(g_maxPieceLifetime, curTime+lifetime);
 						} else
 						{
+							if ((bLoading && iChunk - bev.idxChunkId0 >= bev.nChunks) ||
+							    (!bLoading && chunkIds.size() == INT_MAX))
+							{
+							    GameWarning("Breakable plane exhausted its chunk range");
+							    pNewStatObj->Release();
+							    pNewStatObj = 0;
+							    continue;
+							}
 							if (bLoading)
-								params.id = chunkIds[iChunk++];
+							    params.id = chunkIds[iChunk++];
 							pEntity = pEntitySystem->SpawnEntity(params);
+							if (!pEntity)
+							{
+							    GameWarning("Breakable plane could not spawn a chunk");
+							    pNewStatObj->Release();
+							    pNewStatObj = 0;
+							    continue;
+							}
 							if (!bLoading)
-								chunkIds.push_back(pEntity->GetId());
+							    chunkIds.push_back(pEntity->GetId());
 							pEntity->CreateProxy(ENTITY_PROXY_RENDER);
 							pEntity->SetStatObj(pNewStatObj, 0,false);
 							//if (!bRigidBody)
@@ -645,7 +670,7 @@ IStatObj *CBreakablePlane::ProcessImpact(const Vec3 &pthit, const Vec3 &hitvel,f
 		}
 	}
 	if (!bLoading)
-		bev.nChunks = chunkIds.size()-bev.idxChunkId0;
+		bev.nChunks = static_cast<int>(chunkIds.size()) - bev.idxChunkId0;
 
 	return pNewStatObj;
 }
