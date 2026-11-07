@@ -111,6 +111,8 @@ public:
 	void DrawText(float x, float y, const wchar_t *str, float size, const ColorB &color, int halign, int valign);
 	vector2f GetTextSize(const wchar_t *str, float size);
 
+	// Current CRT locale; borrowed until the next call. Invalid input returns empty.
+	// Overflow truncates at a complete character, reserving the final NUL slot.
 	const wchar_t *ToWideString(const char *src);
 
 private:

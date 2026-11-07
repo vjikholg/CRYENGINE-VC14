@@ -12,6 +12,8 @@
 *************************************************************************/
 #include "StdAfx.h"
 #include <cstdint>
+#include <cwchar>
+#include <climits>
 #include <limits>
 #include <IEntityRenderState.h>
 #include <Cry_Camera.h>
@@ -914,17 +916,26 @@ const wchar_t *CUISystem::ToWideString(const char *src)
 {
 	static wchar_t aux[2048];
 	aux[0] = 0;
-
-	int len = strlen(src);
-	const char *psrc = src;
-	wchar_t *pdst = aux;
-
-	for (int i = 0; i < len; i++)
+	if (!src)
+		return aux;
+	std::mbstate_t state{};
+	size_t output = 0;
+	const char *cursor = src;
+	while (*cursor && output < sizeof(aux) / sizeof(aux[0]) - 1)
 	{
-		mbtowc((wchar_t *)pdst++, psrc++, 1);
+		wchar_t character = 0;
+		const size_t consumed = std::mbrtowc(&character, cursor, MB_CUR_MAX, &state);
+		if (consumed == size_t(-1) || consumed == size_t(-2))
+		{
+			aux[0] = 0;
+			return aux;
+		}
+		if (consumed == 0)
+			break;
+		aux[output++] = character;
+		cursor += consumed;
 	}
-	*pdst = 0;
-
+	aux[output] = 0;
 	return aux;
 }
 
