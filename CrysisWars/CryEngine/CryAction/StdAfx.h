@@ -97,7 +97,7 @@ inline void GameWarning( const char *format,... )
 	vsprintf_s(buffer, sizeof(buffer), format, args);
 	va_end(args);
 
-	gEnv->pSystem->Warning(VALIDATOR_MODULE_GAME, VALIDATOR_WARNING, 0, 0, buffer);
+	gEnv->pSystem->Warning(VALIDATOR_MODULE_GAME, VALIDATOR_WARNING, 0, 0, "%s", buffer);
 }
 
 template<class T>

@@ -2706,7 +2706,6 @@ void CAnimationGraphState::DebugDisplay()
 
 
 	IRenderer * pRend = gEnv->pRenderer;
-	IRenderAuxGeom * pAux = pRend->GetIRenderAuxGeom();
 	float white[4] = {1,1,1,1};
 	float red[4] = {1,0,0,1};
 	float yellow[4] = {1,1,0,1};
@@ -2718,29 +2717,29 @@ void CAnimationGraphState::DebugDisplay()
 	static const int YSPACE = 12;
 	static const int XSPACE = 150;
 	if (m_state == &CAnimationGraphState::Update_InitialState)
-		sprintf(buf, "initial state");
+		snprintf(buf, sizeof(buf), "initial state");
 	else if (m_state == &CAnimationGraphState::Update_SteadyState)
-		sprintf(buf, "steady state %s", m_pGraph->m_states[m_currentStateID].id.c_str());
+		snprintf(buf, sizeof(buf), "steady state %s", m_pGraph->m_states[m_currentStateID].id.c_str());
 	else if (m_state == &CAnimationGraphState::Update_EphemeralState)
-		sprintf(buf, "ephemeral state %s", m_pGraph->m_states[m_currentStateID].id.c_str());
+		snprintf(buf, sizeof(buf), "ephemeral state %s", m_pGraph->m_states[m_currentStateID].id.c_str());
 	else if (m_state == &CAnimationGraphState::Update_TransitionState)
-		sprintf(buf, "transitioning states %s -> %s", m_pGraph->m_states[m_currentStateID].id.c_str(), m_pGraph->m_states[m_nextStateID].id.c_str());
+		snprintf(buf, sizeof(buf), "transitioning states %s -> %s", m_pGraph->m_states[m_currentStateID].id.c_str(), m_pGraph->m_states[m_nextStateID].id.c_str());
 	else
-		sprintf(buf, "<<unknown state>>");
-	pRend->Draw2dLabel( x, y, 2, white, false, buf );
+		snprintf(buf, sizeof(buf), "<<unknown state>>");
+	pRend->Draw2dLabel( x, y, 2, white, false, "%s", buf );
 	y += YSPACE*2;
 
 	if (m_queriedStateID != INVALID_STATE)
-		sprintf(buf, "queried %s", m_pGraph->m_states[m_queriedStateID].id.c_str());
+		snprintf(buf, sizeof(buf), "queried %s", m_pGraph->m_states[m_queriedStateID].id.c_str());
 	else
 		strcpy(buf, "queried <<no state>>");
 	if (m_debugBreak)
 		pRend->Draw2dLabel( x, y, 2, red, false, "BREAK: %s", buf );
 	else
-		pRend->Draw2dLabel( x, y, 2, white, false, buf );
+		pRend->Draw2dLabel( x, y, 2, white, false, "%s", buf );
 	y += YSPACE*2;
 
-	pRend->Draw2dLabel( x, y, 2, white, false, buf );
+	pRend->Draw2dLabel( x, y, 2, white, false, "%s", buf );
 	y += YSPACE*2;
 
 	int mainTopY = y;
@@ -2768,13 +2767,13 @@ void CAnimationGraphState::DebugDisplay()
 			y += YSPACE;
 		}
 	}
-	pRend->Draw2dLabel( x, y, 1, white, false, "Pending left states: %d", m_pendingLeftStates.size() );
+	pRend->Draw2dLabel( x, y, 1, white, false, "Pending left states: %zu", m_pendingLeftStates.size() );
 	y += YSPACE;
 	pRend->Draw2dLabel( x, y, 1, white, false, "Pause state: [%s] %.8x", m_basicState.isPaused? "PAUSED" : "RUNNING", m_pauseState );
 	y += YSPACE;
 	pRend->Draw2dLabel( x, y, 1, white, false, "Input Locks: %.8x", m_inputLocks );
 	y += YSPACE;
-	pRend->Draw2dLabel( x, y, 1, white, false, "Num sub-updates per-frame: %d", m_updateNodes.size() );
+	pRend->Draw2dLabel( x, y, 1, white, false, "Num sub-updates per-frame: %zu", m_updateNodes.size() );
 	y += YSPACE;
 	pRend->Draw2dLabel( x, y, 1, white, false, "Next allowed transition: %f", (m_nextAllowedTransition - m_pTimer->GetFrameStartTime()).GetSeconds() );
 	y += YSPACE;
@@ -2873,13 +2872,14 @@ void CAnimationGraphState::DebugDisplay()
 			clr[3] = 0.5f;
 
 		char queryBuffer[512];
-		char * pQueryBuffer = queryBuffer;
-		pQueryBuffer += sprintf(pQueryBuffer, "  %.20s: [%d] %s", m_pGraph->m_inputValues[id]->name.c_str(), m_inputValueCache[m_inputValueCacheIndex][id], buf);
+		snprintf(queryBuffer, sizeof(queryBuffer), "  %.20s: [%d] %.320s", m_pGraph->m_inputValues[id]->name.c_str(), m_inputValueCache[m_inputValueCacheIndex][id], buf);
+		size_t used = strlen(queryBuffer);
 		if (m_inputQueryIDs[id])
-			pQueryBuffer += sprintf(pQueryBuffer, " [query %d]", (int)m_inputQueryIDs);
+			snprintf(queryBuffer + used, sizeof(queryBuffer) - used, " [query %u]", unsigned(m_inputQueryIDs[id]));
+		used = strlen(queryBuffer);
 		if (m_queryChangedInputIDs[id])
-			pQueryBuffer += sprintf(pQueryBuffer, " [onchange %d]", m_queryChangedInputIDs[id]);
-		pRend->Draw2dLabel( x, y, 1, clr, false, queryBuffer );
+			snprintf(queryBuffer + used, sizeof(queryBuffer) - used, " [onchange %u]", unsigned(m_queryChangedInputIDs[id]));
+		pRend->Draw2dLabel( x, y, 1, clr, false, "%s", queryBuffer );
 		y += YSPACE;
 
 		clr[3] = 1.0f;
@@ -2933,7 +2933,7 @@ void CAnimationGraphState::DebugDisplay()
 			const char * category = pStateNode->GetFactory()->GetCategory();
 			const char * name = pStateNode->GetFactory()->GetName();
 
-			pRend->Draw2dLabel(x, y, 1, white, false, "%s.%s[%.8x]: %s%s%s", category, name, (uint32)pStateNode->GetFactory(), enteredText, canLeave, updated);
+			pRend->Draw2dLabel(x, y, 1, white, false, "%s.%s[%p]: %s%s%s", category, name, static_cast<void*>(pStateNode->GetFactory()), enteredText, canLeave, updated);
 			y += YSPACE;
 
 			pStateNode->DebugDraw( m_basicState, pRend, x+10, y, YSPACE );
@@ -2990,12 +2990,10 @@ void CAnimationGraphState::DebugDisplay()
 		const char * id = "<invalid>";
 		if (iter->stateID != INVALID_STATE)
 			id = m_pGraph->m_states[iter->stateID].id.c_str();
-		int pos = 0;
-		pos += sprintf( buf+pos, "%s", id );
 		if (iter->queryID)
-		{
-			pos += sprintf( buf+pos, "[%d]", iter->queryID );
-		}
+			snprintf(buf, sizeof(buf), "%.480s[%u]", id, unsigned(iter->queryID));
+		else
+			snprintf(buf, sizeof(buf), "%s", id);
 
 		pRend->Draw2dLabel( x, y, 1, white, false, "%s", buf );
 		y += YSPACE;
