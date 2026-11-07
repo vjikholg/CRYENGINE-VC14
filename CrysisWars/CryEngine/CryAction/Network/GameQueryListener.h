@@ -41,7 +41,7 @@ class CGameQueryListener : public IGameQueryListener
 
 		bool Compare(SGameServer &server)
 		{
-			if(server.m_target.compare(m_target) == 0 && server.m_description.compare(m_data) == 0)
+			if(server.m_target.compare(m_target) == 0 && server.m_description.compare(m_description) == 0)
 				return true;
 			return false;
 		}
