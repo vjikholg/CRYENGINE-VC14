@@ -1355,8 +1355,8 @@ struct IGameQueryListener
 	virtual void RemoveServer(string address) = 0;
 	//add a received server pong
 	virtual void AddPong(string address, uint32 ping) = 0;
-	//returns a vector of running servers (as const char*)
-	//please delete the list (not the servers!) afterwards!
+	// Caller deletes the returned pointer list with delete[]. Address strings are
+	// read-only and remain owned by the listener until the next enumeration.
 	virtual void GetCurrentServers(char*** pastrServers, int& o_amount) = 0;
 	//return a specific server by number (NULL if not available)
 	virtual void GetServer(int number, char** server, char** data, int& ping) = 0;

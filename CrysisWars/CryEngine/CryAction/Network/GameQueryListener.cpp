@@ -14,25 +14,13 @@ History:
 #include "StdAfx.h"
 #include "GameQueryListener.h"
 #include "CryAction.h"
+#include <memory>
 
-CGameQueryListener::CGameQueryListener() :
-		m_pNetListener(NULL)
-		//m_bSortingNeeded(false)
+CGameQueryListener::CGameQueryListener() : m_pNetListener(NULL)
 {
-	m_iServers = 50;
-	for(int iServer=0; iServer<m_iServers; iServer++)
-	{
-		m_astrServers[iServer] = new char[256];
-	}
 }
 
-CGameQueryListener::~CGameQueryListener()
-{
-	for(int iServer=0; iServer<m_iServers; iServer++)
-	{
-		delete [] m_astrServers[iServer];
-	}
-}
+CGameQueryListener::~CGameQueryListener() = default;
 
 void CGameQueryListener::Update()
 {	
@@ -140,34 +128,36 @@ void CGameQueryListener::GetServer(int number, char** server, char** data, int& 
 void CGameQueryListener::GetCurrentServers(char*** pastrServers, int &o_amount)
 {
 	FUNCTION_PROFILER(GetISystem(), PROFILE_NETWORK);
-	if(m_servers.size() == 0)
-	{
-		o_amount = 0;
+	o_amount = 0;
+	if (!pastrServers)
 		return;
-	}
-	o_amount = m_servers.size();
+	*pastrServers = NULL;
+	if (m_servers.empty() || m_servers.size() > INT_MAX)
+		return;
 
-	if(o_amount > m_iServers)// || o_amount < 0.1f*m_iServers)
+	size_t bytes = 0;
+	for (const auto& server : m_servers)
 	{
-		for(int iServer=0; iServer<m_iServers; iServer++)
-		{
-			delete [] m_astrServers[iServer];
-		}
-		m_iServers = std::max(o_amount, int(120));
-		for(int iServer=0; iServer<m_iServers; iServer++)
-		{
-			m_astrServers[iServer] = new char[256];
-		}
+		const size_t length = server.m_target.length();
+		if (length >= m_serverAddresses.max_size() - bytes)
+			return;
+		bytes += length + 1;
 	}
 
-	//servers = new char*[m_servers.size()];
-	*pastrServers = m_astrServers;
-
-	std::vector<SGameServer>::iterator it = m_servers.begin();
-	for(int s = 0; it != m_servers.end(); ++it, ++s)		//copy server address to return-vector
+	// The caller owns the pointer list. The listener owns the address snapshot.
+	std::unique_ptr<char*[]> addresses(new char*[m_servers.size()]);
+	m_serverAddresses.resize(bytes);
+	char* destination = m_serverAddresses.data();
+	for (size_t index = 0; index < m_servers.size(); ++index)
 	{
-		strcpy(m_astrServers[s],(*it).m_target.c_str());
+		const auto& address = m_servers[index].m_target;
+		const size_t length = address.length() + 1;
+		addresses[index] = destination;
+		memcpy(destination, address.c_str(), length);
+		destination += length;
 	}
+	o_amount = static_cast<int>(m_servers.size());
+	*pastrServers = addresses.release();
 }
 
 void CGameQueryListener::CleanUpServers()
@@ -321,5 +311,5 @@ void CGameQueryListener::GetMemoryStatistics(ICrySizer * s)
 		s->Add(m_servers[i].m_description);
 		s->Add(m_servers[i].m_data);
 	}
-	s->AddObject(m_astrServers, m_iServers * 256);
+	s->AddContainer(m_serverAddresses);
 }

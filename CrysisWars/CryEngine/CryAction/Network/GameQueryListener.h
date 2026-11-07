@@ -120,8 +120,7 @@ private:
 
 	//a vector of servers currently running (from NetQueryListener)
 	std::vector<SGameServer>	m_servers;
-	char											*m_astrServers[120];
-	int												m_iServers;
+	std::vector<char> m_serverAddresses;
 	
 	//flag for server sorting
 	bool		m_bSortingNeeded;
