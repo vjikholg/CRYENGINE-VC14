@@ -635,15 +635,23 @@ void CStateIndex::SerializeAsFile(bool reading, AG_FILE* pAGI)
 	FileSerializationHelper h(reading, pAGI);
 	int inputs = m_inputData.size();  //number of input data
 	h.Value(&inputs);
+	if (reading && !h.CheckCount(inputs, 1))
+		return;
 	if(reading)
 	{
 		m_inputData.clear();
 		m_inputData.resize(inputs);
 	}
 	for(int i = 0; i < inputs; ++i)
+	{
 		m_inputData[i].SerializeAsFile(reading, pAGI);
+		if (reading && !h.Good())
+			return;
+	}
 	int stateIds = m_database.size();
 	h.Value(&stateIds);
+	if (reading && !h.CheckCount(stateIds, sizeof(m_database[0]._value)))
+		return;
 	if(reading)
 	{
 		m_database.clear();
@@ -655,6 +663,8 @@ void CStateIndex::SerializeAsFile(bool reading, AG_FILE* pAGI)
 	h.Value(&m_numStates._value);
 	int queryInputs = m_queryInputs.size();
 	h.Value(&queryInputs);
+	if (reading && !h.CheckCount(queryInputs, 1))
+		return;
 	if(reading)
 	{
 		m_queryInputs.clear();

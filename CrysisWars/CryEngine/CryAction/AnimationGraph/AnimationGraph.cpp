@@ -154,8 +154,8 @@ void CAnimationGraph::SStateInfo::SerializeAsFile(bool reading, AG_FILE *pAGI, C
 		{
 			uint8 input;
 			uint16 opCode;
-			h.Value(&input);
-			h.Value(&opCode);
+			if (!h.Value(&input) || !h.Value(&opCode))
+				return;
 			guards[i].input = input;
 			guards[i].opCode = opCode;
 		}
@@ -289,6 +289,8 @@ public:
 		h.Value(&ranges);
 		if(reading)
 		{
+			if (!h.CheckCount(ranges, sizeof(m_ranges[0].minimum) + sizeof(m_ranges[0].maximum)))
+				return;
 			m_ranges.clear();
 			m_ranges.resize(ranges);
 		}
@@ -424,6 +426,8 @@ public:
 		h.Value(&ranges);
 		if(reading)
 		{
+			if (!h.CheckCount(ranges, sizeof(m_ranges[0].minimum) + sizeof(m_ranges[0].maximum)))
+				return;
 			m_ranges.clear();
 			m_ranges.resize(ranges);
 		}
@@ -599,20 +603,17 @@ public:
 		{
 			FileSerializationHelper h(reading, pAGI);
 			int values = 0;
-			h.Value(&values);
+			if (!h.Value(&values) || !h.CheckCount(values, sizeof(int) + 1 + sizeof(InputID)))
+				return;
 			m_values.clear();
 			m_values.reserve(values);
-			for(int i = 0; i < values; ++i)
+			for (int i = 0; i < values; ++i)
 			{
-				int nameLen = 0;
-				h.Value(&nameLen);
-				char* tempName = new char[nameLen];
-				h.Value(tempName, nameLen);
-				assert(string(tempName).length() == nameLen-1);
+				string name;
 				InputID id = 0;
-				h.Value(&id);
-				m_values[tempName] = id;
-				delete[] tempName;
+				if (!h.StringValue(&name) || !h.Value(&id))
+					return;
+				m_values[name] = id;
 			}
 			h.Value(&m_inputID);
 		}
@@ -850,11 +851,18 @@ CAnimationGraph::~CAnimationGraph()
 		delete *iter;
 	}
 
-	while (!m_inputValues.empty())
+	// XML blend entries borrow input values. Binary blend entries are separate objects.
+	for (size_t i = 0; i < m_blendWeightInputValues.size(); ++i)
 	{
-		m_inputValues.back()->Release();
-		m_inputValues.pop_back();
+		auto* value = m_blendWeightInputValues[i];
+		auto earlier = m_blendWeightInputValues.begin() + i;
+		if (value && std::find(m_inputValues.begin(), m_inputValues.end(), value) == m_inputValues.end() &&
+		    std::find(m_blendWeightInputValues.begin(), earlier, value) == earlier)
+			value->Release();
 	}
+	for (auto* value : m_inputValues)
+		if (value)
+			value->Release();
 }
 
 bool CAnimationGraph::Init( const XmlNodeRef& root )
@@ -950,6 +958,8 @@ bool CAnimationGraph::SerializeAsFile(const char* fileName, bool reading)
 	//this function serializes all members of the AnimationGraph to/from a file
 	ICryPak  *pPack = gEnv->pCryPak;
 	FILE * pAGI = NULL;
+	const auto closeFile = [pPack](FILE* file) { pPack->FClose(file); };
+	std::unique_ptr<FILE, decltype(closeFile)> fileHandle(nullptr, closeFile);
 
 	std::map<int, IAnimationStateNodeFactory*> idToFactory;
 	std::map<IAnimationStateNodeFactory*, int> factoryToId;
@@ -965,7 +975,9 @@ bool CAnimationGraph::SerializeAsFile(const char* fileName, bool reading)
 		pAGI = pPack->FOpen(fileName, "wb", ICryArchive::FLAGS_CREATE_NEW);
 		if(!pAGI)
 			return false;
-		pAGFile->SetFile( reading,pAGI );
+		fileHandle.reset(pAGI);
+		if (!pAGFile->SetFile(reading, pAGI))
+			return false;
 
 		FileSerializationHelper h(reading, pAGFile);
 
@@ -996,7 +1008,7 @@ bool CAnimationGraph::SerializeAsFile(const char* fileName, bool reading)
 		}
 		temp = m_factories.size();
 		h.Value(&temp);
-		h.Value( &m_factorySlotIndices[0], m_factorySlotIndices.size() );
+		h.Value(m_factorySlotIndices.data(), m_factorySlotIndices.size());
 		for (int i=0; i<temp; i++)
 		{
 			int id = factoryToId[m_factories[i]];
@@ -1121,197 +1133,199 @@ bool CAnimationGraph::SerializeAsFile(const char* fileName, bool reading)
 		pAGI = pPack->FOpen(fileName, "rb", 0);
 		if(!pAGI)
 			return false;
-		pAGFile->SetFile( reading,pAGI );
+		fileHandle.reset(pAGI);
+		if (!pAGFile->SetFile(reading, pAGI))
+			return false;
 
 		FileSerializationHelper h(reading, pAGFile);
 
 		int version = 0;
-		h.Value(&version);
 		int checksum = 0;
-		h.Value(&checksum);
-		if(version != AG_VERSION)
+		if (!h.Value(&version) || !h.Value(&checksum))
+			return false;
+		if (version != AG_VERSION)
 		{
 			GameWarning("Tried to read animation graph with different version! Filename=%s Current=%d File=%d", fileName, AG_VERSION, version);
 			return false;
 		}
 
-		// load state node factories
-		h.Value(&temp);
-		for (int id=0; id<temp; id++)
+		const auto readCount = [&](size_t minimumBytes)
+		{
+			return h.Value(&temp) && h.CheckCount(temp, minimumBytes);
+		};
+		if (!readCount(sizeof(int) + 1))
+			return false;
+		std::vector<std::unique_ptr<IAnimationStateNodeFactory>> loadedFactories;
+		loadedFactories.reserve(temp);
+		for (int id = 0; id < temp; ++id)
 		{
 			string name;
-			h.StringValue(&name);
-			IAnimationStateNodeFactory *pFactory = m_pManager->CreateStateFactory(name);
-			if (!pFactory)
+			if (!h.StringValue(&name))
+				return false;
+			std::unique_ptr<IAnimationStateNodeFactory> factory(m_pManager->CreateStateFactory(name));
+			if (!factory)
 			{
 				GameWarning("Unable to create factory %s; load aborted", name.c_str());
 				return false;
 			}
-			pFactory->SerializeAsFile( reading, pAGFile );
-			idToFactory[id] = pFactory;
-			factoryToId[pFactory] = id;
+			factory->SerializeAsFile(reading, pAGFile);
+			if (!h.Good())
+				return false;
+			idToFactory[id] = factory.get();
+			loadedFactories.push_back(std::move(factory));
 		}
-		h.Value(&temp);
+
+		if (!readCount(sizeof(m_factorySlotIndices[0]) + sizeof(int)))
+			return false;
 		m_factorySlotIndices.resize(temp);
-		m_factories.resize(0);
-		m_factories.reserve(temp);
-		h.Value(&m_factorySlotIndices[0], m_factorySlotIndices.size());
-		for (int i=0; i<temp; i++)
+		if (!h.Value(m_factorySlotIndices.data(), temp))
+			return false;
+		std::vector<IAnimationStateNodeFactory*> factorySlots;
+		factorySlots.reserve(temp);
+		std::vector<bool> usedFactories(loadedFactories.size());
+		for (int i = 0; i < temp; ++i)
 		{
-			int id;
-			h.Value(&id);
-			m_factories.push_back(idToFactory[id]);
+			int id = 0;
+			if (!h.Value(&id) || id < 0 || size_t(id) >= loadedFactories.size())
+				return false;
+			factorySlots.push_back(loadedFactories[id].get());
+			usedFactories[id] = true;
 		}
 
-		//load input values
-		h.Value(&temp);	//read inputValues vector length
-		m_inputValues.clear();
-		m_inputValues.resize(temp);
-		for(int i = 0; i < temp; ++i)
+		const auto loadInput = [&]() -> IInputValue*
 		{
-			int iType = 0;
-			h.Value(&iType);
-			IInputValue* tempVal;
-			if(iType == eAGIT_Float)
-				tempVal = (IInputValue*)(new CFloatInputValue);
-			else if(iType == eAGIT_Integer)
-				tempVal = (IInputValue*)(new CIntegerInputValue);
-			else if(iType == eAGIT_String)
-				tempVal = (IInputValue*)(new CKeyedInputValue);
-			else {GameWarning("AG File Serialization Failed!"); return false;}
-			m_inputValues[i] = tempVal;
-			m_inputValues[i]->SerializeAsFile(reading, pAGFile);
-		}
-		h.Value(&temp);
-		m_blendWeightInputValues.clear();
-		m_blendWeightInputValues.resize(temp);
-		for(int i = 0; i < temp; ++i)
-		{
-			bool set = false;
-			h.Value(&set);
-			if(set)
+			int type = 0;
+			if (!h.Value(&type))
+				return nullptr;
+			switch (type)
 			{
-				int iType = 0;
-				h.Value(&iType);
-				IInputValue* tempVal;
-				if(iType == eAGIT_Float)
-					tempVal = (IInputValue*)(new CFloatInputValue);
-				else if(iType == eAGIT_Integer)
-					tempVal = (IInputValue*)(new CIntegerInputValue);
-				else if(iType == eAGIT_String)
-					tempVal = (IInputValue*)(new CKeyedInputValue);
-				else {GameWarning("AG File Serialization Failed!"); return false;}
-				m_blendWeightInputValues[i] = tempVal;
-				m_blendWeightInputValues[i]->SerializeAsFile(reading, pAGFile);
+			case eAGIT_Float: return new CFloatInputValue;
+			case eAGIT_Integer: return new CIntegerInputValue;
+			case eAGIT_String: return new CKeyedInputValue;
+			default: return nullptr;
 			}
-			else
-				m_blendWeightInputValues[i] = NULL;
-		}
-		h.Value(m_blendWeightMoveSpeeds, 9);
-		h.Value(&m_numInputIDs);
+		};
 
-		//load states & links
-		h.Value(&temp); //number of states
-		m_states.clear();
+		if (!readCount(sizeof(int)))
+			return false;
+		m_inputValues.resize(temp, nullptr);
+		for (auto*& value : m_inputValues)
+		{
+			value = loadInput();
+			if (!value)
+				return false;
+			value->SerializeAsFile(reading, pAGFile);
+			if (!h.Good())
+				return false;
+		}
+
+		if (!readCount(sizeof(bool)))
+			return false;
+		m_blendWeightInputValues.resize(temp, nullptr);
+		for (auto*& value : m_blendWeightInputValues)
+		{
+			bool present = false;
+			if (!h.Value(&present))
+				return false;
+			if (!present)
+				continue;
+			value = loadInput();
+			if (!value)
+				return false;
+			value->SerializeAsFile(reading, pAGFile);
+			if (!h.Good())
+				return false;
+		}
+		if (!h.Value(m_blendWeightMoveSpeeds, 9) || !h.Value(&m_numInputIDs))
+			return false;
+
+		if (!readCount(sizeof(int) + 1) || temp > INVALID_STATE)
+			return false;
 		m_states.resize(temp);
-		for(int i = 0; i < temp; ++i)
-			m_states[i].SerializeAsFile(reading, pAGFile, m_pManager, idToFactory, factoryToId);
+		for (auto& state : m_states)
+		{
+			state.SerializeAsFile(reading, pAGFile, m_pManager, idToFactory, factoryToId);
+			if (!h.Good())
+				return false;
+		}
 
-		h.Value(&temp); //number of links
-		m_links.clear();
+		const size_t linkBytes = sizeof(m_links[0].from) + sizeof(m_links[0].to) +
+			sizeof(m_links[0].forceFollowChance) + sizeof(m_links[0].cost) + sizeof(m_links[0].overrideTransitionTime);
+		if (!readCount(linkBytes))
+			return false;
 		m_links.resize(temp);
-		for(int i = 0; i < temp; ++i)
-		{
-			h.Value(&m_links[i].from);
-			h.Value(&m_links[i].to);
-			h.Value(&m_links[i].forceFollowChance);
-			h.Value(&m_links[i].cost);
-			h.Value(&m_links[i].overrideTransitionTime);
-		}
+		for (auto& link : m_links)
+			if (!h.Value(&link.from) || !h.Value(&link.to) || !h.Value(&link.forceFollowChance) ||
+			    !h.Value(&link.cost) || !h.Value(&link.overrideTransitionTime))
+				return false;
 
-		h.Value(&temp); //stateToNameID count
+		if (!readCount(sizeof(int) + 1 + sizeof(StateID)))
+			return false;
 		m_stateNameToID.clear();
-		for(int i = 0; i < temp; ++i)
+		for (int i = 0; i < temp; ++i)
 		{
-			int nameLen = 0;
-			h.Value(&nameLen);
-			char *tempName = new char[nameLen];
-			h.Value(tempName, nameLen);
+			string name;
 			StateID id = 0;
-			h.Value(&id);
-			m_stateNameToID[tempName] = id;
-			delete[] tempName;
+			if (!h.StringValue(&name) || !h.Value(&id))
+				return false;
+			m_stateNameToID[name.c_str()] = id;
 		}
 
-		//stateIndex class
 		m_stateIndex.SerializeAsFile(reading, pAGFile);
+		if (!h.Value(&m_replaceMeAnimation) || !h.Value(&m_hasAnimDesc))
+			return false;
 
-		h.Value(&m_replaceMeAnimation);
-		h.Value(&m_hasAnimDesc);
-
-		h.Value(&temp);	//stringToOutputHigh Num
-		m_stringToOutputHigh.clear();
-		for(int i = 0; i < temp; ++i)
+		const auto readOutputNames = [&](VectorMap<string, int>& outputs)
 		{
-			int strLen = 0;
-			int secondVal = 0;
-			h.Value(&strLen);
-			char* tempStr = new char[strLen];
-			h.Value(tempStr, strLen);
-			h.Value(&secondVal);
-			m_stringToOutputHigh[tempStr] = secondVal;
-			delete[] tempStr;
-		}
+			if (!readCount(sizeof(int) * 2 + 1))
+				return false;
+			outputs.clear();
+			for (int i = 0; i < temp; ++i)
+			{
+				string name;
+				int value = 0;
+				if (!h.StringValue(&name) || !h.Value(&value))
+					return false;
+				outputs[name] = value;
+			}
+			return true;
+		};
+		if (!readOutputNames(m_stringToOutputHigh) || !readOutputNames(m_stringToOutputLow) ||
+		    !h.Value(&m_nextOutputHigh) || !h.Value(&m_nextOutputLow) ||
+		    !readCount(sizeof(int) * 3 + 2))
+			return false;
 
-		h.Value(&temp);	//stringToOutputLow Num
-		m_stringToOutputLow.clear();
-		for(int i = 0; i < temp; ++i)
-		{
-			int strLen = 0;
-			int secondVal = 0;
-			h.Value(&strLen);
-			char* tempStr = new char[strLen];
-			h.Value(tempStr, strLen);
-			h.Value(&secondVal);
-			m_stringToOutputLow[tempStr] = secondVal;
-			delete[] tempStr;
-		}
-
-		h.Value(&m_nextOutputHigh);
-		h.Value(&m_nextOutputLow);
-
-		h.Value(&temp);	//num of outputs
 		m_outputs.clear();
-		for(int i = 0; i < temp; ++i)
+		for (int i = 0; i < temp; ++i)
 		{
-			int firstVal = 0;
-			h.Value(&firstVal);
-			std::pair<string, string> secondVal;
-			h.StringValue((string *)(&secondVal.first));
-			h.StringValue((string *)(&secondVal.second));
-			m_outputs[firstVal] = secondVal;
+			int key = 0;
+			std::pair<string, string> values;
+			if (!h.Value(&key) || !h.StringValue(&values.first) || !h.StringValue(&values.second))
+				return false;
+			m_outputs[key] = values;
 		}
 
-		h.Value(&m_nextBlendValueID);
-
-		h.Value(&temp);
+		if (!h.Value(&m_nextBlendValueID) || !readCount(sizeof(int) + 1 + sizeof(uint8)))
+			return false;
 		m_blendValueIDs.clear();
-		for(int i = 0; i < temp; ++i)
+		for (int i = 0; i < temp; ++i)
 		{
-			int strLen = 0;
-			h.Value(&strLen);
-			char* tempStr = new char[strLen];
-			h.Value(tempStr, strLen);
-			uint8 secondVal = 0;
-			h.Value(&secondVal);
-			m_blendValueIDs[tempStr] = secondVal;
-			delete []tempStr;
+			string name;
+			uint8 value = 0;
+			if (!h.StringValue(&name) || !h.Value(&value))
+				return false;
+			m_blendValueIDs[name] = value;
 		}
 
 		m_statePathfindState.resize(m_states.size());
+		m_factories.swap(factorySlots);
+		for (size_t i = 0; i < loadedFactories.size(); ++i)
+			if (usedFactories[i])
+				loadedFactories[i].release();
+		std::set<IAnimationStateNodeFactory*> previousFactories(factorySlots.begin(), factorySlots.end());
+		for (auto* factory : previousFactories)
+			delete factory;
 	}
-
-	pPack->FClose(pAGI);
 	return true;
 }
 
