@@ -828,7 +828,7 @@ void CBreakableGrid2d::Generate(vector2df *ptsrc,int npt, const vector2di &nCell
 	jgc.bMarkCenters = 0;
 
 	if (seed!=-1)
-		srand((unsigned int)seed);
+		g_random_generator.seed(static_cast<uint32>(seed));
 
 	sz.set(nCells.x+2,nCells.y+3);
 	for(i=1,ptmin=ptmax=ptsrc[0]; i<npt; i++) {
@@ -914,7 +914,7 @@ int *CBreakableGrid2d::BreakIntoChunks(const vector2df &pt, float r, vector2df *
 	ptout = m_pt;
 
 	if (seed!=-1)
-		srand((unsigned int)seed);
+		g_random_generator.seed(static_cast<uint32>(seed));
 
 	nCells = m_coord.size.x*m_coord.size.y;
 	for(szQueue=8; szQueue<nCells>>2; szQueue<<=1);
