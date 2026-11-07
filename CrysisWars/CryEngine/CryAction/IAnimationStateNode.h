@@ -8,127 +8,100 @@
 
 struct AG_FILE
 {
-	FILE *file;
-	
+	FILE* file = NULL;
 	DynArray<uint8> m_buffer;
-	size_t m_curpos;
+	size_t m_curpos = 0;
 	DynArray<char> m_strBuffer;
+	bool m_readFailed = false;
 
-	void SetFile( bool read,FILE *f )
-	{
-		file = f;
-		if (read)
-		{
-			// Read all buffer.
-			m_curpos = gEnv->pCryPak->FTell(file);
-			size_t fileSize = gEnv->pCryPak->FGetSize(file);
-			m_buffer.resize(fileSize);
-			if (fileSize > 0)
-				gEnv->pCryPak->FReadRaw( &m_buffer[0],fileSize,1,file);
-		}
-	}
+	bool SetFile(bool read, FILE* f);
 };
 
-//helper for AG serialization
+// Helpers instantiated by nested serializers share the read failure on AG_FILE.
 struct FileSerializationHelper
 {
-	bool reading;
-	bool swappingEndian;
-	AG_FILE *ag_file;
-	FILE *file;
-	ICryPak *pak;
+	bool reading = false;
+	bool swappingEndian = false;
+	AG_FILE* ag_file = NULL;
+	FILE* file = NULL;
+	ICryPak* pak = NULL;
 
-	FileSerializationHelper() : file(NULL), pak(NULL)
-	{}
+	FileSerializationHelper() = default;
 
 	FileSerializationHelper(bool read, AG_FILE* f)
 	{
 		Init(read, f);
 	}
 
-	void Init(bool read, AG_FILE* f)
+	void Init(bool read, AG_FILE* f);
+
+	bool Good() const { return ag_file && !ag_file->m_readFailed; }
+
+	bool Fail()
 	{
-		reading = read;
-		ag_file = f;
-		file = f->file;
-		pak = gEnv->pCryPak;
-		swappingEndian = false;
-#ifdef NEED_ENDIAN_SWAP
-		swappingEndian = true;
-#endif
-	}
-	template <class T>
-	void ReadFromBuffer( T* data,int elements = 1 )
-	{
-		memcpy( data,&ag_file->m_buffer[ag_file->m_curpos],sizeof(T)*elements );
-		SwapEndian(data,elements);
-		ag_file->m_curpos += sizeof(T)*elements;
-		//pak->FRead(&val, 1, file, swappingEndian);
+		if (ag_file)
+			ag_file->m_readFailed = true;
+		return false;
 	}
 
-	void StringValue(string *s)
+	bool CheckCount(int count, size_t elementBytes)
 	{
-		if(!file)
-			return;
-		if(reading)
-		{
-			int size = 0;
-			ReadFromBuffer(&size);
-
-			ag_file->m_strBuffer.resize(size+1);
-			ReadFromBuffer(ag_file->m_strBuffer.begin(),size);
-			ag_file->m_strBuffer[size] = 0; // zero terminate
-			s->clear();
-			s->append( ag_file->m_strBuffer.begin() );
-			assert(s->length() == size-1);
-
-			/*
-			int size = 0;
-			pak->FRead(&size, 1, file, swappingEndian);
-			char *str = new char[size];
-			pak->FRead(str, size, file, swappingEndian);
-			s->clear();
-			s->append(str);
-			assert(s->length() == size-1);
-			delete[] str;
-			*/
-		}
-		else
-		{
-			int size = 1+ s->length();
-			pak->FWrite(&size, 1, file);
-			pak->FWrite(s->c_str(), size, file);
-		}
+		if (!Good() || count < 0 || elementBytes == 0 || ag_file->m_curpos > size_t(ag_file->m_buffer.size()))
+			return Fail();
+		const size_t remaining = size_t(ag_file->m_buffer.size()) - ag_file->m_curpos;
+		if (size_t(count) > remaining / elementBytes)
+			return Fail();
+		return true;
 	}
 
 	template<class T>
-	void Value(T* data, int elements = 1)
+	bool ReadFromBuffer(T* data, int elements = 1)
 	{
-		if(!file)
-			return;
-		if(reading)
-		{
-			ReadFromBuffer( data,elements );
-		}
-		else
-			pak->FWrite(data, elements, file);
+		if (!CheckCount(elements, sizeof(T)))
+			return false;
+		if (elements == 0)
+			return true;
+
+		const size_t bytes = size_t(elements) * sizeof(T);
+		memcpy(data, ag_file->m_buffer.begin() + ag_file->m_curpos, bytes);
+		SwapEndian(data, elements);
+		ag_file->m_curpos += bytes;
+		return true;
 	}
 
-	void Value(CCryName* data, int elements = 1)
+	bool StringValue(string* s);
+
+	template<class T>
+	bool Value(T* data, int elements = 1)
 	{
-		if(!file)
-			return;
-		for (int i=0; i<elements; i++)
+		if (!file)
+			return false;
+		if (reading)
+			return ReadFromBuffer(data, elements);
+		if (elements)
+			pak->FWrite(data, elements, file);
+		return true;
+	}
+
+	bool Value(CCryName* data, int elements = 1)
+	{
+		if (!file)
+			return false;
+		for (int i = 0; i < elements; ++i)
 		{
 			string temp = data[i].c_str();
-			StringValue(&temp);
-			data[i] = temp;
+			if (!StringValue(&temp))
+				return false;
+			if (reading)
+				data[i] = temp;
 		}
+		return true;
 	}
 
-	void Value(uint64* data, int elements = 1)
+	bool Value(uint64*, int = 1)
 	{
-		assert( !"Binary serialization of size_t data types is not supported!" );
+		assert(!"Binary serialization of size_t data types is not supported!");
+		return Fail();
 	}
 };
 

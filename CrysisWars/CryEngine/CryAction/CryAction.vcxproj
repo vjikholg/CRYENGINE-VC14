@@ -704,6 +704,7 @@
     <ClCompile Include="AnimationGraph\MGTheme.cpp" />
     <ClCompile Include="AnimationGraph\PreprocessLinksAndStates.cpp" />
     <ClCompile Include="AnimationGraph\RangeMerger.cpp" />
+    <ClCompile Include="AnimationGraph\AnimationGraphFile.cpp" />
     <ClCompile Include="AnimationGraph\StateIndex.cpp" />
     <ClCompile Include="BreakablePlane.cpp" />
     <ClCompile Include="CallbackTimer.cpp" />
