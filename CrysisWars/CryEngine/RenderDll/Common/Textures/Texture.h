@@ -999,6 +999,7 @@ private:
 	void* m_pDeviceDepthStencilSurf;
 	void* m_pDeviceDepthStencilCMSurfs[6];
 	void* m_pDeviceShaderResourceMS;
+	std::vector<byte> m_readbackPixels;
 #endif
 
 	short m_nWidth;

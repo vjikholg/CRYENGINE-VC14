@@ -3477,7 +3477,58 @@ byte *CTexture::LockData(int& nPitch, int nSide, int nLevel)
     }
   }
 #elif defined (DIRECT3D10)
-  assert(0);
+  nPitch = 0;
+  if (m_eTT != eTT_2D || nSide != 0 || nLevel != 0 ||
+      !GetDeviceTexture() || !m_readbackPixels.empty())
+    return NULL;
+
+  auto* source = static_cast<ID3D10Texture2D*>(GetDeviceTexture());
+  D3D10_TEXTURE2D_DESC desc;
+  source->GetDesc(&desc);
+  if (desc.Format != DXGI_FORMAT_R8G8B8A8_UNORM || desc.SampleDesc.Count != 1 ||
+      desc.ArraySize != 1 || desc.Width != m_nWidth || desc.Height != m_nHeight)
+    return NULL;
+  if (m_pDeviceTextureMSAA && !Resolve())
+    return NULL;
+
+  const size_t rowBytes = size_t(desc.Width) * 4;
+  std::vector<byte> pixels(rowBytes * desc.Height);
+  desc.MipLevels = 1;
+  desc.Usage = D3D10_USAGE_STAGING;
+  desc.BindFlags = 0;
+  desc.CPUAccessFlags = D3D10_CPU_ACCESS_READ;
+  desc.MiscFlags = 0;
+
+  auto* device = gcpRendD3D->m_pd3dDevice;
+  ID3D10Texture2D* staging = NULL;
+  if (FAILED(device->CreateTexture2D(&desc, NULL, &staging)))
+    return NULL;
+  device->CopySubresourceRegion(staging, 0, 0, 0, 0, source, 0, NULL);
+
+  D3D10_MAPPED_TEXTURE2D mapped;
+  if (FAILED(staging->Map(0, D3D10_MAP_READ, 0, &mapped)))
+  {
+    staging->Release();
+    return NULL;
+  }
+  for (UINT y = 0; y < desc.Height; ++y)
+  {
+    const byte* src = static_cast<const byte*>(mapped.pData) + size_t(y) * mapped.RowPitch;
+    byte* dst = pixels.data() + size_t(y) * rowBytes;
+    // Match the BGRA layout exposed by the legacy A8R8G8B8 lock.
+    for (UINT x = 0; x < desc.Width; ++x, src += 4, dst += 4)
+    {
+      dst[0] = src[2];
+      dst[1] = src[1];
+      dst[2] = src[0];
+      dst[3] = src[3];
+    }
+  }
+  staging->Unmap(0);
+  staging->Release();
+  m_readbackPixels.swap(pixels);
+  nPitch = static_cast<int>(rowBytes);
+  return m_readbackPixels.data();
 #endif
   return NULL;
 }
@@ -3523,7 +3574,8 @@ void CTexture::UnlockData(int nSide, int nLevel)
   if (m_eTT == eTT_3D)
     pID3DVolTexture->UnlockBox(nLevel);
 #elif defined (DIRECT3D10)
-  assert(0);
+  if (nSide == 0 && nLevel == 0)
+    std::vector<byte>().swap(m_readbackPixels);
 #endif
 }
 
