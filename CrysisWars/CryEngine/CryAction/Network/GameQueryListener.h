@@ -19,6 +19,9 @@ History:
 
 class CGameQueryListener : public IGameQueryListener
 {
+#if defined(CRY_ACTION_REGRESSION_TESTS)
+	friend class CryActionRegressionProbe;
+#endif
 
 	struct SGameServer
 	{

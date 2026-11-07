@@ -878,6 +878,7 @@
     <Link>
       <OutputFile>$(TargetPath)</OutputFile>
       <ProgramDatabaseFile>$(TargetDir)$(TargetName).pdb</ProgramDatabaseFile>
+      <ImportLibrary Condition="'$(CryActionRegressionTests)'=='true'">$(IntDir)$(TargetName).lib</ImportLibrary>
     </Link>
   </ItemDefinitionGroup>
   <ImportGroup Label="ExtensionTargets">

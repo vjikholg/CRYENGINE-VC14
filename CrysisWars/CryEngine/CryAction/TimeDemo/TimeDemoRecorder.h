@@ -19,6 +19,9 @@
 
 class CTimeDemoRecorder : public IFrameProfilePeakCallback,public IInputEventListener, IEntitySystemSink
 {
+#if defined(CRY_ACTION_REGRESSION_TESTS)
+	friend class CryActionRegressionProbe;
+#endif
 public:
 	CTimeDemoRecorder( ISystem *pSystem );
 	~CTimeDemoRecorder();

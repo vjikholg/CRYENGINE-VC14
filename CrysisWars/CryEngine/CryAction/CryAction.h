@@ -86,6 +86,9 @@ struct IAnimationGraphState;
 
 class CCryAction : public IGameFramework
 {
+#if defined(CRY_ACTION_REGRESSION_TESTS)
+    friend class CryActionRegressionBoundaryFixture;
+#endif
 public:
 	CCryAction();
 	virtual ~CCryAction();

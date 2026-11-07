@@ -17,6 +17,9 @@ struct AG_FILE;
 // as a support structure for animation selection
 class CStateIndex
 {
+#if defined(CRY_ACTION_REGRESSION_TESTS)
+    friend class CryActionRegressionProbe;
+#endif
 public:
 	typedef uint8 InputID;
 	typedef uint8 InputValue;

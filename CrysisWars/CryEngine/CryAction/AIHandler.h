@@ -37,6 +37,9 @@ class CAIHandler
 	, IAnimationGraphStateListener
 	, IAnimationGraphTargetPointVerifier
 {
+#if defined(CRY_ACTION_REGRESSION_TESTS)
+    friend class CryActionRegressionProbe;
+#endif
 friend class CAIProxy;
 friend class CAIReadabilityManager;
 

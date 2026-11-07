@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="UI Files">
@@ -1947,5 +1947,16 @@
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="CryAction.rc" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(CryActionRegressionTests)'=='true'">
+    <ClCompile Include="..\Tests\CryCommonTests\CryActionRegressionProbe.cpp" />
+    <ClCompile Include="..\Tests\CryCommonTests\CryActionRegressionComponents.cpp" />
+    <ClCompile Include="..\Tests\CryCommonTests\CryActionLinkRegression.cpp" />
+    <ClCompile Include="..\Tests\CryCommonTests\CryActionReaderRegression.cpp" />
+    <ClCompile Include="..\Tests\CryCommonTests\CryActionRuntimeRegression.cpp" />
+    <ClCompile Include="..\Tests\CryCommonTests\CryActionBoundaryCollaborators.cpp" />
+    <ClCompile Include="..\Tests\CryCommonTests\CryActionBoundaryRegression.cpp" />
+    <ClCompile Include="..\Tests\CryCommonTests\CryActionRepairRegression.cpp" />
+    <ClInclude Include="..\Tests\CryCommonTests\CryActionRepairRegression.h" />
   </ItemGroup>
 </Project>

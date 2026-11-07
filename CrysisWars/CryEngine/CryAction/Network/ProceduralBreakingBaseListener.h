@@ -22,6 +22,9 @@ void DumpSpawnRecs( const DynArray<SProceduralSpawnRec>& recs, const DynArray<SJ
 
 class CProceduralBreakingBaseListener : public IBreakReplicatorListener
 {
+#if defined(CRY_ACTION_REGRESSION_TESTS)
+    friend class CryActionRegressionProbe;
+#endif
 public:
 	CProceduralBreakingBaseListener( IProceduralBreakTypePtr pBreakType );
 	~CProceduralBreakingBaseListener();

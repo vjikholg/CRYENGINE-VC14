@@ -1283,7 +1283,31 @@
   <ItemGroup>
     <ResourceCompile Include="CryAction.rc" />
   </ItemGroup>
+  <ItemDefinitionGroup Condition="'$(CryActionRegressionTests)'=='true'">
+    <ClCompile>
+      <PreprocessorDefinitions>CRY_ACTION_REGRESSION_TESTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup Condition="'$(CryActionRegressionTests)'=='true'">
+    <ClCompile Include="..\Tests\CryCommonTests\CryActionRegressionProbe.cpp" />
+    <ClCompile Include="..\Tests\CryCommonTests\CryActionRegressionComponents.cpp" />
+    <ClCompile Include="..\Tests\CryCommonTests\CryActionLinkRegression.cpp" />
+    <ClCompile Include="..\Tests\CryCommonTests\CryActionReaderRegression.cpp" />
+    <ClCompile Include="..\Tests\CryCommonTests\CryActionRuntimeRegression.cpp" />
+    <ClCompile Include="..\Tests\CryCommonTests\CryActionBoundaryCollaborators.cpp" />
+    <ClCompile Include="..\Tests\CryCommonTests\CryActionBoundaryRegression.cpp" />
+    <ClCompile Include="..\Tests\CryCommonTests\CryActionRepairRegression.cpp" />
+    <ClInclude Include="..\Tests\CryCommonTests\CryActionRepairRegression.h" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ItemDefinitionGroup Condition="'$(CryActionRegressionTests)'=='true'">
+    <Link>
+      <OutputFile>$(TargetPath)</OutputFile>
+      <ProgramDatabaseFile>$(TargetDir)$(TargetName).pdb</ProgramDatabaseFile>
+      <ImportLibrary>$(TargetDir)$(TargetName).lib</ImportLibrary>
+      <MapFileName>$(TargetDir)$(TargetName).map</MapFileName>
+    </Link>
+  </ItemDefinitionGroup>
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
 </Project>

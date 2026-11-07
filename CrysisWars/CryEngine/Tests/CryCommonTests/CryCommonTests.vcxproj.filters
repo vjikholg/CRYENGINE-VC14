@@ -50,6 +50,11 @@
     <ClInclude Include="AnimationAssetTests.h">
       <Filter>Header Files\Animation Compatibility</Filter>
     </ClInclude>
+    <ClInclude Include="CryActionRegressionTests.h"><Filter>Header Files</Filter></ClInclude>
+    <ClInclude Include="CryActionRegressionHost.h"><Filter>Header Files</Filter></ClInclude>
+    <ClInclude Include="CryActionRegressionBridge.h"><Filter>Header Files</Filter></ClInclude>
+    <ClInclude Include="CryActionRegressionProbe.h"><Filter>Header Files</Filter></ClInclude>
+    <ClInclude Include="CryActionRegressionFixtures.h"><Filter>Header Files</Filter></ClInclude>
     <ClInclude Include="ComparisonCompatibilityTests.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -124,6 +129,7 @@
     <ClCompile Include="AnimationAssetTests.cpp">
       <Filter>Source Files\Animation Compatibility</Filter>
     </ClCompile>
+    <ClCompile Include="CryActionRegressionTests.cpp"><Filter>Source Files</Filter></ClCompile>
     <ClCompile Include="ComparisonCompatibilityTests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -294,5 +300,13 @@
     <None Include="TestData\DxtCompatibility\README.md">
       <Filter>Test Data\DXT Compatibility</Filter>
     </None>
+    <None Include="CryActionRegressionProbe.cpp"><Filter>Source Files</Filter></None>
+    <None Include="CryActionRegressionComponents.cpp"><Filter>Source Files</Filter></None>
+    <None Include="CryActionLinkRegression.cpp"><Filter>Source Files</Filter></None>
+    <None Include="CryActionReaderRegression.cpp"><Filter>Source Files</Filter></None>
+    <None Include="CryActionRuntimeRegression.cpp"><Filter>Source Files</Filter></None>
+    <None Include="CryActionRegressionHex.inl"><Filter>Source Files</Filter></None>
+    <None Include="RunCryActionRegression.ps1" />
+    <None Include="CryActionRegression.md" />
   </ItemGroup>
 </Project>

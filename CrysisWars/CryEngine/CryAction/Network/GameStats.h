@@ -31,6 +31,9 @@ class CGameStats:
 	public ILevelSystemListener,
 	public IGameFrameworkListener
 {
+#if defined(CRY_ACTION_REGRESSION_TESTS)
+    friend class CryActionRegressionProbe;
+#endif
 private:
 	
 	struct	SPlayerStats;

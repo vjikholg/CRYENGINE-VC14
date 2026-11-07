@@ -3,6 +3,17 @@
 
 CNetworkCVars * CNetworkCVars::s_pThis = 0;
 
+#if defined(CRY_ACTION_REGRESSION_TESTS)
+// Standalone local recording fixtures own this registry for their full lifetime.
+CNetworkCVars::~CNetworkCVars()
+{
+	for (const char* name : {"g_breakagelog", "cl_voice_volume", "net_phys_pingsmooth",
+		"net_phys_lagsmooth", "net_phys_debug", "g_breaktimeoutframes"})
+		gEnv->pConsole->UnregisterVariable(name, true);
+	s_pThis = nullptr;
+}
+#endif
+
 CNetworkCVars::CNetworkCVars()
 {
 	assert(!s_pThis);

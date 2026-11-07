@@ -125,6 +125,9 @@ class CLevelSystem :
 	public ILevelSystem,
 	public ISystem::ILoadingProgressListener
 {
+#if defined(CRY_ACTION_REGRESSION_TESTS)
+    friend class CryActionRegressionProbe;
+#endif
 public:
 	CLevelSystem(ISystem *pSystem, const char *levelsFolder);
 	virtual ~CLevelSystem();

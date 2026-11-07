@@ -7,6 +7,9 @@
 
 class CNetworkCVars
 {
+#if defined(CRY_ACTION_REGRESSION_TESTS)
+    friend class CryActionRegressionProbe;
+#endif
 public:
 	int BreakageLog;
 	float VoiceVolume;

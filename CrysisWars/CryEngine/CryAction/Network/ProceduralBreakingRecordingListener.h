@@ -18,6 +18,9 @@
 
 class CProceduralBreakingRecordingListener : public CProceduralBreakingBaseListener
 {
+#if defined(CRY_ACTION_REGRESSION_TESTS)
+    friend class CryActionRegressionProbe;
+#endif
 public:
 	CProceduralBreakingRecordingListener( IProceduralBreakTypePtr pBreakType );
 	~CProceduralBreakingRecordingListener();

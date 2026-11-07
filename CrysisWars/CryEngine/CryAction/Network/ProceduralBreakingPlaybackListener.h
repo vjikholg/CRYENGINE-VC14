@@ -23,6 +23,9 @@ class CDumpOnExitRoutine;
 
 class CProceduralBreakingPlaybackListener : public CProceduralBreakingBaseListener
 {
+#if defined(CRY_ACTION_REGRESSION_TESTS)
+    friend class CryActionRegressionProbe;
+#endif
 	friend class CDumpOnExitRoutine;
 
 public:
@@ -68,6 +71,9 @@ private:
 
 class CProceduralBreakingPlaybackStream : public IBreakPlaybackStream
 {
+#if defined(CRY_ACTION_REGRESSION_TESTS)
+    friend class CryActionRegressionProbe;
+#endif
 	friend class CProceduralBreakingPlaybackListener;
 	friend class CDumpOnExitRoutine;
 

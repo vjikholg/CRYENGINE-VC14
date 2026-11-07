@@ -56,6 +56,10 @@ class CGameObject :
 	public IEntityProxy,
 	public IGameObject
 {
+#if defined(CRY_ACTION_REGRESSION_TESTS)
+    friend class CryActionRegressionProbe;
+    friend class CryActionRegressionBoundaryFixture;
+#endif
 public:
 	CGameObject();
 	virtual ~CGameObject();

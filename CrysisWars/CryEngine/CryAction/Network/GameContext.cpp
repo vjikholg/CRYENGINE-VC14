@@ -84,6 +84,10 @@ static ILINE bool FromHexStr(string& x)
 	return true;
 }
 
+#if defined(CRY_ACTION_REGRESSION_TESTS)
+#include "../../Tests/CryCommonTests/CryActionRegressionHex.inl"
+#endif
+
 CGameContext::CGameContext( CCryAction * pFramework, CScriptRMI * pScriptRMI, CActionGame *pGame ) : 
 	m_pFramework(pFramework), 
 	m_pPhysicsSync(0),

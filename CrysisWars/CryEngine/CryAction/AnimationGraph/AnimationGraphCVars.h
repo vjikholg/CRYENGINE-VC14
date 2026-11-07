@@ -127,7 +127,10 @@ struct CAnimationGraphCVars
 	}
 
 private:
-	friend class CAnimationGraphManager; // Our only creator
+	friend class CAnimationGraphManager;
+#if defined(CRY_ACTION_REGRESSION_TESTS)
+ friend class CryActionRegressionProbe;
+#endif // Our only creator
 
 	CAnimationGraphCVars(); // singleton stuff
 	~CAnimationGraphCVars();

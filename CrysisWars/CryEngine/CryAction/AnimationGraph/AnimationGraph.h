@@ -52,6 +52,9 @@ namespace AnimGraphHelpers
 
 class CAnimationGraph : public IAnimationGraph
 {
+#if defined(CRY_ACTION_REGRESSION_TESTS)
+	friend class CryActionRegressionProbe;
+#endif
 	friend class CAnimationGraphState;
 	friend class CAnimationGraphExistanceQuery;
 	friend class CExactPositioning;

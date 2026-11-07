@@ -98,6 +98,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="AnimationAssetTests.h" />
+    <ClInclude Include="CryActionRegressionTests.h" />
+    <ClInclude Include="CryActionRegressionHost.h" />
+    <ClInclude Include="CryActionRegressionBridge.h" />
+    <ClInclude Include="CryActionRegressionProbe.h" />
+    <ClInclude Include="CryActionRegressionFixtures.h" />
+    <ClInclude Include="CryActionRuntimeRegression.h" />
     <ClInclude Include="ComparisonCompatibilityTests.h" />
     <ClInclude Include="RuntimeModuleCompatibilityTests.h" />
     <ClInclude Include="CryFileNameTests.h" />
@@ -124,6 +130,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AnimationAssetTests.cpp" />
+    <ClCompile Include="CryActionRegressionTests.cpp" />
     <ClCompile Include="ComparisonCompatibilityTests.cpp" />
     <ClCompile Include="RuntimeModuleCompatibilityTests.cpp" />
     <ClCompile Include="CryFileNameTests.cpp" />
@@ -227,6 +234,14 @@
       <TargetPath>TestData\DxtCompatibility\mwll_tankcolor_dxt1.nvdxt.rgba</TargetPath>
     </None>
     <None Include="TestData\DxtCompatibility\README.md" />
+    <None Include="CryActionRegressionProbe.cpp" />
+    <None Include="CryActionRegressionComponents.cpp" />
+    <None Include="CryActionLinkRegression.cpp" />
+    <None Include="CryActionReaderRegression.cpp" />
+    <None Include="CryActionRuntimeRegression.cpp" />
+    <None Include="CryActionRegressionHex.inl" />
+    <None Include="RunCryActionRegression.ps1" />
+    <None Include="CryActionRegression.md" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

@@ -1,6 +1,7 @@
 #include "AnimationAssetTests.h"
 #include "ComparisonCompatibilityTests.h"
 #include "CryFileNameTests.h"
+#include "CryActionRegressionTests.h"
 #include "CryNetworkCompatibilityTests.h"
 #include "CryStringCompatibilityTests.h"
 #include "DxtCompatibilityTests.h"
@@ -28,6 +29,17 @@
 
 int main(int argc, char* argv[])
 {
+	if ((argc == 5 || argc == 6) && std::strcmp(argv[1], "--cryaction-regression") == 0)
+	{
+		return RunCryActionRegressionPipeline(std::filesystem::path(argv[2]).c_str(),
+			std::filesystem::path(argv[3]).c_str(), std::filesystem::path(argv[4]).c_str(),
+			argc == 6 ? argv[5] : nullptr);
+	}
+	if (argc == 6 && std::strcmp(argv[1], "--cryaction-regression-case") == 0)
+	{
+		return RunCryActionRegressionCase(std::filesystem::path(argv[2]).c_str(),
+			std::filesystem::path(argv[3]).c_str(), argv[4], std::filesystem::path(argv[5]).c_str());
+	}
 	if ((argc == 4 || argc == 5) &&
 		std::strcmp(argv[1], "--physics-regression") == 0)
 	{
@@ -184,6 +196,7 @@ int main(int argc, char* argv[])
 	{
 		std::printf(
 			"Usage: CryCommonTests.exe [--physics-regression <runtime-dir> <game-root> [report.tsv] | "
+			"--cryaction-regression <runtime-dir> <game-root> <report.tsv> [family] | "
 			"--animation-asset-format <asset-root> [report.tsv] | "
 			"--animation-assets <runtime-dir> <game-root> <asset-root> [report.tsv] | "
 			"--mm01-trace | --mm02-layout | -mm03-trace | "

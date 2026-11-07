@@ -24,6 +24,15 @@ CProceduralBreakingRecordingListener::CProceduralBreakingRecordingListener( IPro
 , m_gotRemove(false)
 #endif
 {
+#if defined(CRY_ACTION_REGRESSION_TESTS)
+	// Local component recording has no network order owner and never calls Complete().
+	// All event acceptance, record construction, and serializers remain the production path.
+	if (!CBreakReplicator::Get())
+	{
+		m_orderId = -1;
+		return;
+	}
+#endif
 	m_orderId = CBreakReplicator::Get()->PullOrderId();
 }
 

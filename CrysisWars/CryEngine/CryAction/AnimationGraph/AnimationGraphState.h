@@ -26,6 +26,9 @@ class CExactPositioning;
 
 class CAnimationGraphState : public IAnimationGraphState
 {
+#if defined(CRY_ACTION_REGRESSION_TESTS)
+    friend class CryActionRegressionProbe;
+#endif
 	friend class CAnimationGraphDebug;
 	friend class CAnimationGraphExistanceQuery;
 

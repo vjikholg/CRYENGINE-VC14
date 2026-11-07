@@ -28,6 +28,9 @@ History:
 class CInventory :
 	public CGameObjectExtensionHelper<CInventory, IInventory>
 {
+#if defined(CRY_ACTION_REGRESSION_TESTS)
+    friend class CryActionRegressionProbe;
+#endif
 	typedef std::vector<EntityId>							TInventoryVector;
 	typedef TInventoryVector::const_iterator	TInventoryCIt;
 	typedef TInventoryVector::iterator				TInventoryIt;
