@@ -31,7 +31,15 @@
 #define CRYACTION_EXPORTS
 
 // Insert your headers here
+// Establish CRT policy before Windows headers include the CRT.
 #include <platform.h>
+#if defined(_WIN32)
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#include <windows.h>
+#undef GetUserName
+#endif
 //#include <algorithm>
 #include <vector>
 #include <map>

@@ -57,8 +57,8 @@ public:
 	int LoadLegacyInt() const noexcept
 	{
 		const uint64_t bytes = Load();
-		const uint64_t maximum = static_cast<uint64_t>(std::numeric_limits<int>::max());
-		return bytes > maximum ? std::numeric_limits<int>::max() : static_cast<int>(bytes);
+		const uint64_t maximum = static_cast<uint64_t>((std::numeric_limits<int>::max)());
+		return bytes > maximum ? (std::numeric_limits<int>::max)() : static_cast<int>(bytes);
 	}
 
 private:

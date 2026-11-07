@@ -107,7 +107,8 @@ void CVehicleSeatActionLights::Serialize(TSerialize ser, unsigned aspects)
 		// if waiting for lights to go off, save them in the off state
 		if(ser.IsWriting() && m_enabled && m_stopUseTime > 0.0f)
 		{
-			ser.Value("enabled", false);
+			bool enabled = false;
+			ser.Value("enabled", enabled);
 		}
 		else
 		{

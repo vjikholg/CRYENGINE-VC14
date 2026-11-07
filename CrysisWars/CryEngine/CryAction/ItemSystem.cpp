@@ -438,7 +438,7 @@ bool CItemSystem::ScanXML(XmlNodeRef &root, const char *xmlFile)
 	{
 		CItemParamsNode *params = new CItemParamsNode();
 		params->ConvertFromXML(root);
-		desc.configurations.insert(std::make_pair<string, CItemParamsNode *>(configName, params));
+		desc.configurations.emplace(configName, params);
 	}
 
 	return true;

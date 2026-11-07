@@ -755,7 +755,7 @@ INetAtSyncItem * CScriptRMI::HandleRMI( bool bClient, EntityId objID, uint8 func
 	if (!m_pParent)
 	{
 		GameWarning( "Trying to handle a remote method invocation with no game started... failing" );
-		return false;
+		return nullptr;
 	}
 
 	CCryMutex::CLock lkDispatch(m_dispatchMutex);

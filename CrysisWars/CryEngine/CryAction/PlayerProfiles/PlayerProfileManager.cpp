@@ -1020,11 +1020,11 @@ ILevelRotationFile* CPlayerProfileManager::GetLevelRotationFile(const char* user
   if (pEntry == 0) // no such user
   {
     GameWarning("[PlayerProfiles] GetLevelRotationFile: User '%s' not logged in", userId);
-    return false;
+    return nullptr;
   }
 
   if (pEntry->pCurrentProfile == 0 || pEntry->pCurrentProfile != pProfile)
-    return false;
+    return nullptr;
 
   return m_pImpl->GetLevelRotationFile(pEntry, name);
 }

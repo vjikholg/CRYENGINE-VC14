@@ -187,6 +187,13 @@ private:
 	T m_value;
 };
 
+// Keep payload construction dependent until a send wrapper is instantiated.
+template<class Channel, class Payload>
+void SendSimpleNetMessage(Channel* channel, const Payload& payload, const SNetMessageDef* definition)
+{
+	channel->SendMsg(new CSimpleNetMessage<Payload>(payload, definition));
+}
+
 // simple message types:
 // if we have a class that represents the parameters to a function, and that 
 // implements the ISerializable interface, then we can use 
@@ -214,7 +221,7 @@ private:
 	public:                                                                      \
 		template <class T>                                                         \
 		static void Send##name##With( const CClass& msg, T * pChannel )            \
-		{ pChannel->SendMsg( new CSimpleNetMessage<CClass>(msg, name) ); }  \
+		{ SendSimpleNetMessage(pChannel, msg, name); }  \
 		static const SNetMessageDef* const name
 
 #define NET_IMPLEMENT_SIMPLE_IMMEDIATE_MESSAGE( cls, name, reliability, parallelFlags ) \
@@ -273,7 +280,7 @@ private:
 	public:                                                                      \
 		template <class T>                                                         \
 		static void Send##name##With( const CClass& msg, T * pChannel )            \
-		{ pChannel->SendMsg( new CSimpleNetMessage<CClass>(msg, name) ); }  \
+		{ SendSimpleNetMessage(pChannel, msg, name); }  \
 		static const SNetMessageDef* const name
 
 #define NET_IMPLEMENT_SIMPLE_ATSYNC_MESSAGE( cls, name, reliability, parallelFlags ) \

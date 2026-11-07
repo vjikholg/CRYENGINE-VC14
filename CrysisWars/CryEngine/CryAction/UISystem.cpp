@@ -11,6 +11,7 @@
 
 *************************************************************************/
 #include "StdAfx.h"
+#include <cstdint>
 #include <IEntityRenderState.h>
 #include <Cry_Camera.h>
 #include "UISystem.h"
@@ -1017,7 +1018,7 @@ void CUISystem::OnLoadingProgress(ILevelInfo *pLevel, int progressAmount)
 		m_pScriptUI->CallScriptEvent(CScriptBind_UI::eUISE_OnLoadingProgress);
 	}
 
-	if (m_pRenderer->EF_Query(EFQ_RecurseLevel) <= 0)
+	if (reinterpret_cast<std::intptr_t>(m_pRenderer->EF_Query(EFQ_RecurseLevel)) <= 0)
 	{
 		m_pSystem->RenderBegin();
 
