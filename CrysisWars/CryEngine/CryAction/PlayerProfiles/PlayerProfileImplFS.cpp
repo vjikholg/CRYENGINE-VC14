@@ -937,10 +937,16 @@ ISaveGame* CCommonSaveGameHelper::CreateSaveGame(CPlayerProfileManager::SUserEnt
 
 		virtual uint8* SetThumbnail(const uint8* imageData, int width, int height, int depth)
 		{
+			if (width < 0 || height < 0 || (depth != 3 && depth != 4))
+				return nullptr;
+			const uint64 bytes = uint64(width) * height * depth;
+			if (bytes > INT_MAX || (bytes && !BMPHelper::CalcBMPSize(width, height, depth)))
+				return nullptr;
+
 			m_thumbnail.width = width;
 			m_thumbnail.height = height;
 			m_thumbnail.depth = depth;
-			size_t size = width*height*depth;
+			const size_t size = static_cast<size_t>(bytes);
 			m_thumbnail.data.resize(size);
 			if (imageData)
 				memcpy(m_thumbnail.data.begin(), imageData, size);
@@ -983,11 +989,14 @@ ISaveGame* CCommonSaveGameHelper::CreateSaveGame(CPlayerProfileManager::SUserEnt
 			if (bSuccess)
 			{
 				CPlayerProfileManager::SThumbnail thumbnail;
-				thumbnail.data.resize(width*height*depth);
+				const uint64 bytes = width > 0 && height > 0 ? uint64(width) * height * depth : 0;
+				if (!BMPHelper::CalcBMPSize(width, height, depth) || bytes > INT_MAX)
+					return false;
+				thumbnail.data.resize(static_cast<int>(bytes));
 				bSuccess = BMPHelper::LoadBMP(filename, thumbnail.data.begin(), width, height, depth, true);
 				if (bSuccess)
 				{
-					SetThumbnail(thumbnail.data.begin(), width, height, depth);
+					bSuccess = SetThumbnail(thumbnail.data.begin(), width, height, depth) != nullptr;
 				}
 			}
 			return bSuccess;

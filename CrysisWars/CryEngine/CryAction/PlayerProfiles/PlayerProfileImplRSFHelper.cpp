@@ -592,11 +592,17 @@ public:
 	// BGR or BGRA
 	virtual uint8* SetThumbnail(const uint8* imageData, int width, int height, int depth)
 	{
+		if (width < 0 || height < 0 || (depth != 3 && depth != 4))
+			return nullptr;
+		const uint64 bytes = uint64(width) * height * depth;
+		if (bytes > INT_MAX || (bytes && !BMPHelper::CalcBMPSize(width, height, depth)))
+			return nullptr;
+
 		m_thumbnailWidth = width;
 		m_thumbnailHeight = height;
 		m_thumbnailDepth = depth;
 
-		size_t size = width*height*depth;
+		const size_t size = static_cast<size_t>(bytes);
 		m_thumbnailData.resize(size);
 		if (imageData)
 			memcpy(m_thumbnailData.begin(), imageData, size);
@@ -639,32 +645,32 @@ public:
 		if (bSuccess)
 		{
 			CPlayerProfileManager::SThumbnail thumbnail;
-			thumbnail.data.resize(width*height*depth);
+			const uint64 bytes = width > 0 && height > 0 ? uint64(width) * height * depth : 0;
+			if (!BMPHelper::CalcBMPSize(width, height, depth) || bytes > INT_MAX)
+				return false;
+			thumbnail.data.resize(static_cast<int>(bytes));
 			bSuccess = BMPHelper::LoadBMP(filename, thumbnail.data.begin(), width, height, depth, true);
 			if (bSuccess)
 			{
-				SetThumbnail(thumbnail.data.begin(), width, height, depth);
+				bSuccess = SetThumbnail(thumbnail.data.begin(), width, height, depth) != nullptr;
 			}
 		}
 		return bSuccess;
 	}
 
-	size_t CalcThumbnailSize()
-	{
-		if (m_thumbnailWidth*m_thumbnailHeight*m_thumbnailDepth == 0)
-			return 0;
-		const size_t size = BMPHelper::CalcBMPSize(m_thumbnailWidth, m_thumbnailHeight, m_thumbnailDepth);
-		return size;
-	}
-
 	virtual bool Write( const char * filename, XmlNodeRef data )
 	{
+		const bool hasThumbnail = !m_thumbnailData.empty();
+		const size_t bmpSize = hasThumbnail ?
+			BMPHelper::CalcBMPSize(m_thumbnailWidth, m_thumbnailHeight, m_thumbnailDepth) : 0;
+		if (hasThumbnail && !bmpSize)
+			return false;
+		const DWORD thumbnailSize = static_cast<DWORD>(bmpSize);
+
 		ICryPak* pCryPak = gEnv->pCryPak;
 		FILE* pFile = pCryPak->FOpen(filename, "wb");
 		if (!pFile)
 			return false;
-
-		DWORD  thumbnailSize = CalcThumbnailSize();
 
 		const string fname (filename);
 		// fill in RSF
@@ -766,7 +772,11 @@ public:
 		// write out thumbnail into savegame
 		if (thumbnailSize > 0)
 		{
-			BMPHelper::SaveBMP(pFile, m_thumbnailData.begin(), m_thumbnailWidth, m_thumbnailHeight, m_thumbnailDepth, bFlipImage);
+			if (!BMPHelper::SaveBMP(pFile, m_thumbnailData.begin(), m_thumbnailWidth, m_thumbnailHeight, m_thumbnailDepth, bFlipImage))
+			{
+				pCryPak->FClose(pFile);
+				return false;
+			}
 		}
 
 		WriteXMLNode(RichSaveGames::RM_METADATA_TAG, data->findChild("Metadata"), pFile, false);

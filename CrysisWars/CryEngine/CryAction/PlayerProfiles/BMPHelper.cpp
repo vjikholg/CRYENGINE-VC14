@@ -32,117 +32,61 @@ namespace BMPHelper
 {
 	size_t CalcBMPSize(int width, int height, int depth)
 	{
-		int bytesPerLine = width * depth;
-		if (bytesPerLine & 0x0003)
-		{
-			bytesPerLine |= 0x0003;
-			++bytesPerLine;
-		}
-		size_t totalSize = bytesPerLine * height + sizeof(CryBitmapFileHeader) + sizeof(CryBitmapInfoHeader);
-		return totalSize;
+		if (width <= 0 || height <= 0 || (depth != 3 && depth != 4))
+			return 0;
+
+		const uint64 headerBytes = sizeof(CryBitmapFileHeader) + sizeof(CryBitmapInfoHeader);
+		const uint64 rowBytes = uint64(width) * depth;
+		const uint64 stride = (rowBytes + 3) & ~uint64(3);
+		if (stride > (uint64(0xffffffffu) - headerBytes) / height)
+			return 0;
+		return static_cast<size_t>(headerBytes + stride * height);
 	}
 
-	// pByteData: B G R A
-	// if pFile != 0 writes into file. otherwise opens a new file with filename 'filename'
-	// returns size of written bytes in outFileSize
-	// can be optimized quite a bit
+	// pByteData uses BGR or BGRA byte order.
 	bool InternalSaveBMP(const char* filename, FILE* pFile, uint8* pByteData, int width, int height, int depth, bool inverseY)
 	{
-		unsigned int i;
-		CryBitmapFileHeader bitmapfileheader;
-		CryBitmapInfoHeader bitmapinfoheader;
-
-		ICryPak* pCryPak = gEnv->pCryPak;
-		const bool bFileGiven = pFile != 0;
-		if (bFileGiven == false)
-			pFile = pCryPak->FOpen(filename, "wb");
-		if (pFile == 0)
+		const size_t totalSize = CalcBMPSize(width, height, depth);
+		if (!totalSize || !pByteData)
 			return false;
 
-		int origBytesPerLine = width * depth;
-		int bytesPerLine = origBytesPerLine;
-		if (bytesPerLine & 0x0003)
-		{
-			bytesPerLine |= 0x0003;
-			++bytesPerLine;
-		}
-		int padBytes = bytesPerLine - origBytesPerLine; // how many pad-bytes
+		CryBitmapFileHeader bitmapfileheader = {};
+		CryBitmapInfoHeader bitmapinfoheader = {};
+		const size_t headerBytes = sizeof(bitmapfileheader) + sizeof(bitmapinfoheader);
+		const size_t stride = (totalSize - headerBytes) / height;
+		const size_t rowBytes = size_t(width) * depth;
+		const size_t padBytes = stride - rowBytes;
+		const uint8 padding[3] = {};
 
-		uint8* pTempImage = new uint8[bytesPerLine*height]; // optimize and write one line only
-
-		i = 0;
-		for (int y = 0; y < height; y++)
-		{
-			int src_y=y;
-			if(inverseY)
-				src_y=(height-1)-y;
-
-			uint8* pDstLine = pTempImage+y*bytesPerLine;
-			uint8* pSrcLine = pByteData+src_y*origBytesPerLine;
-			if (depth == 3)
-			{
-				uint8 r,g,b;
-				for (int x = 0; x < width; x++)
-				{
-					b = *pSrcLine++;
-					g = *pSrcLine++;
-					r = *pSrcLine++;
-					*pDstLine++=b;
-					*pDstLine++=g;
-					*pDstLine++=r;
-				}
-			}
-			else
-			{
-				uint8 r,g,b,a;
-				for (int x = 0; x < width; x++)
-				{
-					b = *pSrcLine++;
-					g = *pSrcLine++;
-					r = *pSrcLine++;
-					a = *pSrcLine++;
-					*pDstLine++=b;
-					*pDstLine++=g;
-					*pDstLine++=r;
-					*pDstLine++=a;
-				}
-			}
-			for (int i=0; i<padBytes; ++i)
-			{
-				*pDstLine++ = 0;
-			}
-		}
-
-		// Fill in bitmap structures
 		bitmapfileheader.bfType = BF_TYPE;
-		bitmapfileheader.bfSize = bytesPerLine*height + sizeof(CryBitmapFileHeader) + sizeof(CryBitmapInfoHeader);
-		bitmapfileheader.bfReserved1 = 0;
-		bitmapfileheader.bfReserved2 = 0;
-		bitmapfileheader.bfOffBits = sizeof(CryBitmapFileHeader) + sizeof(CryBitmapInfoHeader);  
+		bitmapfileheader.bfSize = static_cast<uint32>(totalSize);
+		bitmapfileheader.bfOffBits = static_cast<uint32>(headerBytes);
 		bitmapinfoheader.biSize = sizeof(CryBitmapInfoHeader);
 		bitmapinfoheader.biWidth = width;
 		bitmapinfoheader.biHeight = height;
 		bitmapinfoheader.biPlanes = 1;
 		bitmapinfoheader.biBitCount = depth * 8;
 		bitmapinfoheader.biCompression = COMPRESSION_BI_RGB;
-		bitmapinfoheader.biSizeImage = 0;
-		bitmapinfoheader.biXPelsPerMeter = 0;
-		bitmapinfoheader.biYPelsPerMeter = 0;
-		bitmapinfoheader.biClrUsed = 0;
-		bitmapinfoheader.biClrImportant = 0;
 
-		pCryPak->FWrite(&bitmapfileheader, 1, pFile);
-		pCryPak->FWrite(&bitmapinfoheader, 1, pFile);
-		pCryPak->FWrite(pTempImage, bytesPerLine*height, 1, pFile);
+		ICryPak* pCryPak = gEnv->pCryPak;
+		const bool ownsFile = pFile == NULL;
+		if (ownsFile)
+			pFile = pCryPak->FOpen(filename, "wb");
+		if (!pFile)
+			return false;
 
-		if (bFileGiven == false)
-			pCryPak->FClose(pFile);
+		bool written = pCryPak->FWrite(&bitmapfileheader, sizeof(bitmapfileheader), 1, pFile) == 1 &&
+			pCryPak->FWrite(&bitmapinfoheader, sizeof(bitmapinfoheader), 1, pFile) == 1;
+		for (int y = 0; written && y < height; ++y)
+		{
+			const int sourceRow = inverseY ? height - 1 - y : y;
+			written = pCryPak->FWrite(pByteData + size_t(sourceRow) * rowBytes, 1, rowBytes, pFile) == rowBytes &&
+				(!padBytes || pCryPak->FWrite(padding, 1, padBytes, pFile) == padBytes);
+		}
 
-		delete[] pTempImage;
-
-		// Success
-		return true;
-
+		if (ownsFile && pCryPak->FClose(pFile) != 0)
+			written = false;
+		return written;
 	}
 
 	// fills data with BGR or BGRA 
