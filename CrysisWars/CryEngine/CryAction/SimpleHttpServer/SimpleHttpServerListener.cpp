@@ -249,21 +249,24 @@ void CSimpleHttpServerListener::OnRpcRequest(string xml)
 
 	string command;
 	XmlNodeRef root = gEnv->pSystem->LoadXmlFromString( xml.c_str() );
-	if ( root && root->isTag("methodCall") )
+	const int children = root ? root->getChildCount() : 0;
+	if (root && root->isTag("methodCall") && children >= 1 && children <= 2)
 	{
 		XmlNodeRef methodName = root->getChild(0);
 		if ( methodName && methodName->isTag("methodName") )
 		{
 			command = methodName->getContent(); // command name must go first
-			XmlNodeRef params = root->getChild(1);
-			if (params)
+			if (children == 2)
 			{
-				if ( params->isTag("params") )
+				XmlNodeRef params = root->getChild(1);
+				if (params && params->isTag("params"))
 				{
 					int nparams = params->getChildCount();
 					for (int i = 0; i < nparams; ++i)
 					{
 						XmlNodeRef param = params->getChild(i);
+						if (!param || !param->isTag("param") || param->getChildCount() != 1)
+							goto L_error;
 						XmlNodeRef value = param->getChild(0);
 						if ( value && value->isTag("value") )
 						{
