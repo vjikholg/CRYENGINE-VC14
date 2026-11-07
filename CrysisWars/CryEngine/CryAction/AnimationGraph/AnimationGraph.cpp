@@ -2159,30 +2159,7 @@ ILINE uint32 CAnimationGraph::CalculateCost( const SLinkInfo& link, const SState
 
 bool CAnimationGraph::IsDirectlyLinked(CStateIndex::StateID fromID, CStateIndex::StateID toID) const
 {
-	SLinkInfo query;
-	query.from = fromID;
-	query.to = toID;
-
-	int first = 0;
-	int last = m_links.size();
-	while (first <= last)
-	{
-		int mid = (first + last) / 2;
-		if (query < m_links[mid])
-		{
-			last = mid-1;
-		}
-		else if (m_links[mid] < query)
-		{
-			first = mid+1;
-		}
-		else
-		{
-			return true;
-		}
-	}
-
-	return false;
+	return FindLink(fromID, toID) != NULL;
 }
 
 const CAnimationGraph::SLinkInfo* CAnimationGraph::FindLink(CStateIndex::StateID fromID, CStateIndex::StateID toID) const
@@ -2191,14 +2168,15 @@ const CAnimationGraph::SLinkInfo* CAnimationGraph::FindLink(CStateIndex::StateID
 	query.from = fromID;
 	query.to = toID;
 
-	int first = 0;
-	int last = m_links.size() - 1;
-	while (first <= last)
+	size_t first = 0;
+	size_t end = m_links.size();
+	while (first < end)
 	{
-		int mid = (first + last) / 2;
+		// Keep the lower midpoint so duplicate links retain their selection order.
+		const size_t mid = first + (end - first - 1) / 2;
 		if (query < m_links[mid])
 		{
-			last = mid-1;
+			end = mid;
 		}
 		else if (m_links[mid] < query)
 		{
