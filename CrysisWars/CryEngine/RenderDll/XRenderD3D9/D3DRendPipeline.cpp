@@ -3505,10 +3505,10 @@ bool CD3D9Renderer::SF_UpdateTexture(int texId, int mipLevel, int numRects, cons
 	RECT rc = {pRects[0].dstX, pRects[0].dstY, pRects[0].dstX + pRects[0].width, pRects[0].dstY + pRects[0].height};
 	for (int i(1); i<numRects; ++i)
 	{
-		rc.left = std::min(rc.left, pRects[i].dstX);
-		rc.top = std::min(rc.top, pRects[i].dstY);
-		rc.right = std::max(rc.right, pRects[i].dstX + pRects[i].width);
-		rc.bottom = std::max(rc.bottom, pRects[i].dstY + pRects[i].height);
+		rc.left = std::min<LONG>(rc.left, pRects[i].dstX);
+		rc.top = std::min<LONG>(rc.top, pRects[i].dstY);
+		rc.right = std::max<LONG>(rc.right, pRects[i].dstX + pRects[i].width);
+		rc.bottom = std::max<LONG>(rc.bottom, pRects[i].dstY + pRects[i].height);
 	}
 
 	// lock surface and update all rects
