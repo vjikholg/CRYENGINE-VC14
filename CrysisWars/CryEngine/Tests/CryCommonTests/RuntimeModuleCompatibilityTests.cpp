@@ -11,6 +11,7 @@
 #include <utility>
 
 #include <CryCheckedArithmetic.h>
+#include <RenderNodeReference.h>
 #include <CryAction/IVehicleSystem.h>
 #include <CryFont/XmlParserFont.h>
 
@@ -59,8 +60,20 @@ static void TestFontParserDocument(CryTestRunner& runner)
 	CRY_TEST_CHECK(runner, parser.getValue() == "text");
 }
 
+static void TestStatObjectSpriteRenderNode(CryTestRunner& runner)
+{
+	constexpr std::uintptr_t spritePlaceholder = 0xFFFFFFFFu;
+	constexpr auto nativePlaceholder = (std::numeric_limits<std::uintptr_t>::max)();
+	std::uintptr_t storage = 0;
+	CRY_TEST_CHECK(runner, !CryHasRenderNode(nullptr));
+	CRY_TEST_CHECK(runner, !CryHasRenderNode(reinterpret_cast<IRenderNode*>(spritePlaceholder)));
+	CRY_TEST_CHECK(runner, !CryHasRenderNode(reinterpret_cast<IRenderNode*>(nativePlaceholder)));
+	CRY_TEST_CHECK(runner, CryHasRenderNode(reinterpret_cast<IRenderNode*>(&storage)));
+}
+
 void RunRuntimeModuleCompatibilityTests(CryTestRunner& runner)
 {
+	runner.Run("Cry3DEngine rejects sprite render-node placeholders", TestStatObjectSpriteRenderNode);
 	runner.Run("CryAction vehicle implementation enumeration and script limits", TestVehicleImplementationEnumeration);
 	runner.Run("CryFont parser accepts const search text without mutation", TestFontParserConstSearch);
 	runner.Run("CryFont parser preserves document parsing", TestFontParserDocument);

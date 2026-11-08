@@ -432,8 +432,6 @@ protected:
 	bool LoadCGF_Info( const char *filename );
 	void ParseProperties();
 
-	const bool IsValidRenderNode(const IRenderNode* node) const;
-
 	void CalcRadiuses();
 //	void PrepareShadowMaps(const Vec3 & obj_pos, ShadowMapFrustum * pLSource, const Vec3 & vSunPos);
 
