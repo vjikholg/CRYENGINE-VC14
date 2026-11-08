@@ -23,6 +23,7 @@
 #include <limits.h>
 #include <stdarg.h>
 #include <ctype.h>
+#include <atomic>
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
@@ -302,25 +303,15 @@ public:
 		size_t allocatedBytes,
 		size_t releasedBytes = 0)
 	{
-		static size_t s_used_memory = 0;
-		if (releasedBytes > s_used_memory)
-		{
-			CryStringFailFast(
-				"CryStringT::_usedMemory accounting underflow",
-				releasedBytes,
-				s_used_memory);
-		}
-		s_used_memory -= releasedBytes;
-		const size_t remaining = (std::numeric_limits<size_t>::max)() - s_used_memory;
-		if (allocatedBytes > remaining)
-		{
-			CryStringFailFast(
-				"CryStringT::_usedMemory accounting overflow",
-				allocatedBytes,
-				remaining);
-		}
-		s_used_memory += allocatedBytes;
-		return s_used_memory;
+		// A string can be allocated in one DLL and released in another.
+		// Keep a signed net balance per module and clamp only the reported statistic.
+		static std::atomic<std::int64_t> s_used_memory{0};
+		if (allocatedBytes)
+			s_used_memory.fetch_add(static_cast<std::int64_t>(allocatedBytes), std::memory_order_relaxed);
+		if (releasedBytes)
+			s_used_memory.fetch_sub(static_cast<std::int64_t>(releasedBytes), std::memory_order_relaxed);
+		const auto balance = s_used_memory.load(std::memory_order_relaxed);
+		return balance > 0 ? static_cast<size_t>(balance) : 0;
 	}
 
 private:
