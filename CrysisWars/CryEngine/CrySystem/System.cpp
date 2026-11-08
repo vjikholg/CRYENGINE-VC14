@@ -1533,6 +1533,13 @@ void CSystem::OpenBasicPaks()
 		{		
 			string paksModFolder = string("Mods\\") + string(pModArg->GetValue())+ string("\\") + string(DATA_FOLDER)+"\\*.pak";
 			GetIPak()->OpenPacks("", paksModFolder.c_str());
+
+			// Register MWLL captions before Scaleform initializes the menu.
+			if (!m_bPreviewMode && stricmp(pModArg->GetValue(), "MWLL") == 0)
+			{
+				GetLocalizationManager()->LoadExcelXmlSpreadsheet("Languages/ui_text_messages.xml");
+				GetLocalizationManager()->LoadExcelXmlSpreadsheet("Languages/mp_text_messages.xml");
+			}
 		}
 	}
 
