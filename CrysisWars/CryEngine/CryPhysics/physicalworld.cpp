@@ -237,10 +237,11 @@ void CPhysicalWorld::Init()
 	m_iActivePODCell0 = -1;	m_bHasPODGrid = 0; m_iLastPODUpdate = 1;
 	m_nProfileFunx=m_nProfileFunxAlloc = 0; m_pFuncProfileData = 0;
 	m_posViewer.zero();
-	memset(m_gthunks = new pe_gridthunk[m_thunkPoolSz=16384], 0, 16384*sizeof(pe_gridthunk));
-	for(i=1;i<1024-1;i++)	m_gthunks[i].inextOwned = i+1;
-	m_gthunks[i].inextOwned = 0;
-	m_gthunks[0].inext=m_gthunks[0].iprev = 0;
+	m_thunkPoolSz = 16384;
+	m_gthunks = new pe_gridthunk[m_thunkPoolSz]{};
+	// Index zero is reserved as the end-of-list sentinel.
+	for (i = 1; i < m_thunkPoolSz - 1; ++i)
+		m_gthunks[i].inextOwned = i + 1;
 	m_iFreeGThunk0=1; 
 	m_bCurGroupInvisible = 0;
 	m_nContactsAlloc = 0;
