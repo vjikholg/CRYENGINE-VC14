@@ -64,8 +64,8 @@ public:
 	}; 
 
 
-CCommandPlayerFmodEx400::CCommandPlayerFmodEx400();
-CCommandPlayerFmodEx400::~CCommandPlayerFmodEx400();
+CCommandPlayerFmodEx400();
+~CCommandPlayerFmodEx400();
 
 
 void RecordFile(const char* sFilename);

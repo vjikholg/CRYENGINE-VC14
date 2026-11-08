@@ -40,8 +40,8 @@ class CPlatformSoundFmodEx400;
 class CAudioDeviceFmodEx400 : public IAudioDevice
 {
 public:
-	CAudioDeviceFmodEx400::CAudioDeviceFmodEx400(void* hWnd);
-	CAudioDeviceFmodEx400::~CAudioDeviceFmodEx400();
+	CAudioDeviceFmodEx400(void* hWnd);
+	~CAudioDeviceFmodEx400();
 
 	virtual bool InitDevice(CSoundSystem* pSoundSystem);			// returns true if init went well 
 	virtual bool ShutDownDevice(void);												// shut down fmod and free system
@@ -104,7 +104,7 @@ public:
 #endif
 
 #ifdef FMOD_MEMORY_DEBUGGING_SIMPLE
-	static uint32 CAudioDeviceFmodEx400::nFMODMemUsage;
+	static uint32 nFMODMemUsage;
 #endif
 
 	//static tMemPair	m_Malloc[1000];
@@ -190,12 +190,12 @@ private:
 class CWavebankFmodEx400 : public IWavebank
 {
 public:
-	CWavebankFmodEx400::CWavebankFmodEx400(const char* sWavebankName) 
+	CWavebankFmodEx400(const char* sWavebankName)
 		{ 
 			m_sWavebankName = sWavebankName; 
 			m_WavebankInfo.nFileSize = 0;
 	}
-	CWavebankFmodEx400::~CWavebankFmodEx400();
+	~CWavebankFmodEx400();
 
 	virtual const char* GetName() { return m_sWavebankName.c_str(); }
 	virtual const char* GetPath() { return m_sWavebankPath.c_str(); }

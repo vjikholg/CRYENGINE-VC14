@@ -16,6 +16,7 @@
 
 
 #include "StdAfx.h"
+#include <StlAlgorithms.h>
 //#ifndef _XBOX
 #include <ISystem.h>
 #include <CrySizer.h>
@@ -605,7 +606,7 @@ ISound* CSoundSystem::CreateLineSound( const char *sSoundOrEventName, uint32 nFl
 	{
 		gEnv->pSystem->Warning(VALIDATOR_MODULE_SOUNDSYSTEM, VALIDATOR_WARNING, VALIDATOR_FLAG_SOUND, 0, "<Sound> Invalid input values (possible NaNs) on CreateLineSound"); 
 		assert(0);
-		return false;
+		return nullptr;
 	}
 	
 	ISound *pSound = NULL;
@@ -624,7 +625,7 @@ ISound* CSoundSystem::CreateSphereSound( const char *sSoundOrEventName, uint32 n
 	{
 		gEnv->pSystem->Warning(VALIDATOR_MODULE_SOUNDSYSTEM, VALIDATOR_WARNING, VALIDATOR_FLAG_SOUND, 0, "<Sound> Invalid input values (possible NaNs) on CreateSphereSound"); 
 		assert(0);
-		return false;
+		return nullptr;
 	}
 
 	ISound *pSound = NULL;

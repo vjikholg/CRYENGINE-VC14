@@ -1,4 +1,5 @@
 #include "StdAfx.h"
+#include <StlAlgorithms.h>
 
 #include <CryThread.h>
 #include "MusicSystem.h"
@@ -3212,21 +3213,21 @@ void CMusicSystem::Serialize( TSerialize ser )
 		ser.Value("Playing", m_bPlaying);
 
 		// themes
-		sTempName = m_pCurrTheme?m_pCurrTheme->sName:"";
+		sTempName = m_pCurrTheme?m_pCurrTheme->sName:string();
 		ser.Value("CurrTheme", sTempName);
 
-		sTempName = m_pNextTheme?m_pNextTheme->sName:"";
+		sTempName = m_pNextTheme?m_pNextTheme->sName:string();
 		ser.Value("NextTheme", sTempName);
 		
 		// moods
-		sTempName = m_pCurrMood?m_pCurrMood->sName:"";
+		sTempName = m_pCurrMood?m_pCurrMood->sName:string();
 		ser.Value("CurrMood", sTempName);
-		sTempName = (m_pCurrMood&&m_pCurrMood->pSpawnedFromTheme)?m_pCurrMood->pSpawnedFromTheme->sName:"";
+		sTempName = (m_pCurrMood&&m_pCurrMood->pSpawnedFromTheme)?m_pCurrMood->pSpawnedFromTheme->sName:string();
 		ser.Value("CurrMoodTheme", sTempName);
 
-		sTempName = m_pNextMood?m_pNextMood->sName:"";
+		sTempName = m_pNextMood?m_pNextMood->sName:string();
 		ser.Value("NextMood", sTempName);
-		sTempName = (m_pNextMood&&m_pNextMood->pSpawnedFromTheme)?m_pNextMood->pSpawnedFromTheme->sName:"";
+		sTempName = (m_pNextMood&&m_pNextMood->pSpawnedFromTheme)?m_pNextMood->pSpawnedFromTheme->sName:string();
 		ser.Value("NextMoodTheme", sTempName);
 
 		ser.Value("DefaultMood", m_sDefaultMood);
@@ -3246,9 +3247,9 @@ void CMusicSystem::Serialize( TSerialize ser )
 
 			ser.Value("Layer",pPlayInfo->nLayer);
 			int nBlendType = (int)pPlayInfo->eBlendType;
-			ser.Value("BlendType",(int)nBlendType);
+			ser.Value("BlendType",nBlendType);
 			int nPlayingType = (int)pPlayInfo->ePlayingType;
-			ser.Value("PlayingType",(int)nPlayingType);
+			ser.Value("PlayingType",nPlayingType);
 			float fPhase = (float)pPlayInfo->fPhase;
 			ser.Value("Phase",fPhase);
 			float fFadeTime = (float)pPlayInfo->fFadeTime;
