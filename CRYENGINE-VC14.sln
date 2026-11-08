@@ -35,11 +35,15 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pdcurses", "CrysisWars\SDKs
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Launcher", "CrysisWars\Game02\Launcher\launcher.vcxproj", "{FAC4A057-7584-48B5-8421-E1FFA3DE6ECB}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DedicatedLauncher", "CrysisWars\Game02\DedicatedLauncher\DedicatedLauncher.vcxproj", "{8F68D16E-6737-4001-BD6C-8FAA0C2D53C3}"
+EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GameDll", "CrysisWars\Game02\GameDll\GameDll.vcxproj", "{2EB52047-0A81-4343-B703-DF221CA5CC2A}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "XRenderD3D10", "CrysisWars\CryEngine\RenderDll\XRenderD3D9\XRenderD3D10.vcxproj", "{614119C2-30E9-41E5-AC66-E0A842C741FE}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "XRenderD3D9", "CrysisWars\CryEngine\RenderDll\XRenderD3D9\XRenderD3D9.vcxproj", "{6711B2B2-6829-4314-A491-D01A29365658}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "XRenderNULL", "CrysisWars\CryEngine\RenderDll\XRenderNULL\XRenderNULL.vcxproj", "{1EE58697-2D3E-454A-BA80-2455F7EA14A0}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CryCommonTests", "CrysisWars\CryEngine\Tests\CryCommonTests\CryCommonTests.vcxproj", "{8077BD7C-B061-4E70-92BF-23305981BF95}"
 EndProject
@@ -229,6 +233,13 @@ Global
 		{FAC4A057-7584-48B5-8421-E1FFA3DE6ECB}.Debug|x86.Build.0 = Debug|Win32
 		{FAC4A057-7584-48B5-8421-E1FFA3DE6ECB}.Profile|x64.ActiveCfg = Profile|x64
 		{FAC4A057-7584-48B5-8421-E1FFA3DE6ECB}.Profile|x64.Build.0 = Profile|x64
+		{8F68D16E-6737-4001-BD6C-8FAA0C2D53C3}.Debug|x64.ActiveCfg = Profile|x64
+		{8F68D16E-6737-4001-BD6C-8FAA0C2D53C3}.Debug|x86.ActiveCfg = Profile|x64
+		{8F68D16E-6737-4001-BD6C-8FAA0C2D53C3}.Profile|x64.ActiveCfg = Profile|x64
+		{8F68D16E-6737-4001-BD6C-8FAA0C2D53C3}.Profile|x64.Build.0 = Profile|x64
+		{8F68D16E-6737-4001-BD6C-8FAA0C2D53C3}.Profile|x86.ActiveCfg = Profile|x64
+		{8F68D16E-6737-4001-BD6C-8FAA0C2D53C3}.Release|x64.ActiveCfg = Profile|x64
+		{8F68D16E-6737-4001-BD6C-8FAA0C2D53C3}.Release|x86.ActiveCfg = Profile|x64
 		{FAC4A057-7584-48B5-8421-E1FFA3DE6ECB}.Profile|x86.ActiveCfg = Profile|Win32
 		{FAC4A057-7584-48B5-8421-E1FFA3DE6ECB}.Profile|x86.Build.0 = Profile|Win32
 		{FAC4A057-7584-48B5-8421-E1FFA3DE6ECB}.Release|x64.ActiveCfg = Release|x64
@@ -265,6 +276,13 @@ Global
 		{6711B2B2-6829-4314-A491-D01A29365658}.Debug|x86.Build.0 = Debug|Win32
 		{6711B2B2-6829-4314-A491-D01A29365658}.Profile|x64.ActiveCfg = Profile|x64
 		{6711B2B2-6829-4314-A491-D01A29365658}.Profile|x64.Build.0 = Profile|x64
+		{1EE58697-2D3E-454A-BA80-2455F7EA14A0}.Debug|x64.ActiveCfg = Profile|x64
+		{1EE58697-2D3E-454A-BA80-2455F7EA14A0}.Debug|x86.ActiveCfg = Profile|x64
+		{1EE58697-2D3E-454A-BA80-2455F7EA14A0}.Profile|x64.ActiveCfg = Profile|x64
+		{1EE58697-2D3E-454A-BA80-2455F7EA14A0}.Profile|x64.Build.0 = Profile|x64
+		{1EE58697-2D3E-454A-BA80-2455F7EA14A0}.Profile|x86.ActiveCfg = Profile|x64
+		{1EE58697-2D3E-454A-BA80-2455F7EA14A0}.Release|x64.ActiveCfg = Profile|x64
+		{1EE58697-2D3E-454A-BA80-2455F7EA14A0}.Release|x86.ActiveCfg = Profile|x64
 		{6711B2B2-6829-4314-A491-D01A29365658}.Profile|x86.ActiveCfg = Profile|Win32
 		{6711B2B2-6829-4314-A491-D01A29365658}.Profile|x86.Build.0 = Profile|Win32
 		{6711B2B2-6829-4314-A491-D01A29365658}.Release|x64.ActiveCfg = Release|x64

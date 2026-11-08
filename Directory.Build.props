@@ -21,6 +21,8 @@
                                   '$(MSBuildProjectName)' == 'CrySystem' Or
                                   '$(MSBuildProjectName)' == 'GameDll' Or
                                   '$(MSBuildProjectName)' == 'launcher' Or
+                                  '$(MSBuildProjectName)' == 'DedicatedLauncher' Or
+                                  '$(MSBuildProjectName)' == 'XRenderNULL' Or
                                   '$(MSBuildProjectName)' == 'XRenderD3D9' Or
                                   '$(MSBuildProjectName)' == 'XRenderD3D10'">true</CryRuntimeProject>
   </PropertyGroup>

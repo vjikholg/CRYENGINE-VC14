@@ -1,0 +1,148 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Profile|x64">
+      <Configuration>Profile</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{1EE58697-2D3E-454A-BA80-2455F7EA14A0}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <VcpkgEnabled>false</VcpkgEnabled>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v143</PlatformToolset>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <PropertyGroup>
+    <TargetName>CryRenderNULL</TargetName>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <PreprocessorDefinitions>_RELEASE;NDEBUG;NULL_RENDERER;_RENDERER;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>.;..;..\..\CryCommon;..\..\..\SDKs\DX9SDK\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>RenderPCH.h</PrecompiledHeaderFile>
+      <Optimization>MaxSpeed</Optimization>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <OutputFile>$(TargetPath)</OutputFile>
+      <ProgramDatabaseFile>$(TargetDir)$(TargetName).pdb</ProgramDatabaseFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ImportLibrary>$(IntDir)$(TargetName).lib</ImportLibrary>
+      <ModuleDefinitionFile>..\XRenderD3D9\Renderer.def</ModuleDefinitionFile>
+      <AdditionalDependencies>opengl32.lib;glu32.lib;winmm.lib;legacy_stdio_definitions.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="NULL_Font.cpp" />
+    <ClCompile Include="NULL_PostProcess.cpp" />
+    <ClCompile Include="NULL_Renderer.cpp" />
+    <ClCompile Include="NULL_RendPipeline.cpp" />
+    <ClCompile Include="NULL_REOcean.cpp" />
+    <ClCompile Include="NULL_RERender.cpp" />
+    <ClCompile Include="NULL_Shaders.cpp" />
+    <ClCompile Include="NULL_Shadows.cpp" />
+    <ClCompile Include="NULL_System.cpp" />
+    <ClCompile Include="NULL_Textures.cpp" />
+    <ClCompile Include="NULL_TexturesStreaming.cpp" />
+    <ClCompile Include="NULL_VertBuffer.cpp" />
+    <ClCompile Include="NULLRenderAuxGeom.cpp" />
+    <ClCompile Include="..\Common\3DUtils.cpp" />
+    <ClCompile Include="..\Common\CommonRender.cpp" />
+    <ClCompile Include="..\Common\CRT.cpp" />
+    <ClCompile Include="..\Common\MatrixStack.cpp" />
+    <ClCompile Include="..\Common\RenderAuxGeom.cpp" />
+    <ClCompile Include="..\Common\Renderer.cpp" />
+    <ClCompile Include="..\Common\RenderPipeline.cpp" />
+    <ClCompile Include="..\Common\ResFile.cpp" />
+    <ClCompile Include="..\Common\ShadowUtils.cpp" />
+    <ClCompile Include="..\Common\WaterUtils.cpp" />
+    <ClCompile Include="..\Common\RendElements\CREBeam.cpp" />
+    <ClCompile Include="..\Common\RendElements\CREClientPoly.cpp" />
+    <ClCompile Include="..\Common\RendElements\CREClientPoly2D.cpp" />
+    <ClCompile Include="..\Common\RendElements\CRECloud.cpp" />
+    <ClCompile Include="..\Common\RendElements\CREDummy.cpp" />
+    <ClCompile Include="..\Common\RendElements\CREFlares.cpp" />
+    <ClCompile Include="..\Common\RendElements\CREFogVolume.cpp" />
+    <ClCompile Include="..\Common\RendElements\CREHDRProcess.cpp" />
+    <ClCompile Include="..\Common\RendElements\CREImposter.cpp" />
+    <ClCompile Include="..\Common\RendElements\CREOcean.cpp" />
+    <ClCompile Include="..\Common\RendElements\CREOcLeaf.cpp" />
+    <ClCompile Include="..\Common\RendElements\CREOclusionQuery.cpp" />
+    <ClCompile Include="..\Common\RendElements\CREParticle.cpp" />
+    <ClCompile Include="..\Common\RendElements\CREParticleGPU.cpp" />
+    <ClCompile Include="..\Common\RendElements\CREPostProcess.cpp" />
+    <ClCompile Include="..\Common\RendElements\CRESky.cpp" />
+    <ClCompile Include="..\Common\RendElements\CRETempMesh.cpp" />
+    <ClCompile Include="..\Common\RendElements\CRETerrainSector.cpp" />
+    <ClCompile Include="..\Common\RendElements\CREVolumeObject.cpp" />
+    <ClCompile Include="..\Common\RendElements\CREWaterOcean.cpp" />
+    <ClCompile Include="..\Common\RendElements\CREWaterVolume.cpp" />
+    <ClCompile Include="..\Common\RendElements\CREWaterWave.cpp" />
+    <ClCompile Include="..\Common\RendElements\FFT_SSE.cpp" />
+    <ClCompile Include="..\Common\RendElements\RendElement.cpp" />
+    <ClCompile Include="..\Common\PostProcess\PostEffects.cpp" />
+    <ClCompile Include="..\Common\PostProcess\PostProcess.cpp" />
+    <ClCompile Include="..\Common\PostProcess\PostProcessUtils.cpp" />
+    <ClCompile Include="..\Common\RenderMesh.cpp" />
+    <ClCompile Include="..\Common\Textures\DynTexture.cpp" />
+    <ClCompile Include="..\Common\Textures\PowerOf2BlockPacker.cpp" />
+    <ClCompile Include="..\..\CryCommon\ResourceCompilerHelper.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\Common\Textures\Texture.cpp" />
+    <ClCompile Include="..\Common\Textures\TextureStreaming.cpp" />
+    <ClCompile Include="..\Common\Textures\Image\CImage.cpp" />
+    <ClCompile Include="..\Common\Textures\Image\DDSImage.cpp" />
+    <ClCompile Include="..\Common\Textures\Image\JpgImage.cpp" />
+    <ClCompile Include="..\Common\Textures\Image\TgaImage.cpp" />
+    <ClCompile Include="..\Common\Textures\Image\jpeg6\jcomapi.cpp" />
+    <ClCompile Include="..\Common\Textures\Image\jpeg6\jdapimin.cpp" />
+    <ClCompile Include="..\Common\Textures\Image\jpeg6\jdapistd.cpp" />
+    <ClCompile Include="..\Common\Textures\Image\jpeg6\jdatasrc.cpp" />
+    <ClCompile Include="..\Common\Textures\Image\jpeg6\jdcoefct.cpp" />
+    <ClCompile Include="..\Common\Textures\Image\jpeg6\jdcolor.cpp" />
+    <ClCompile Include="..\Common\Textures\Image\jpeg6\jddctmgr.cpp" />
+    <ClCompile Include="..\Common\Textures\Image\jpeg6\jdhuff.cpp" />
+    <ClCompile Include="..\Common\Textures\Image\jpeg6\jdinput.cpp" />
+    <ClCompile Include="..\Common\Textures\Image\jpeg6\jdmainct.cpp" />
+    <ClCompile Include="..\Common\Textures\Image\jpeg6\jdmarker.cpp" />
+    <ClCompile Include="..\Common\Textures\Image\jpeg6\jdmaster.cpp" />
+    <ClCompile Include="..\Common\Textures\Image\jpeg6\jdpostct.cpp" />
+    <ClCompile Include="..\Common\Textures\Image\jpeg6\jdsample.cpp" />
+    <ClCompile Include="..\Common\Textures\Image\jpeg6\jdtrans.cpp" />
+    <ClCompile Include="..\Common\Textures\Image\jpeg6\jerror.cpp" />
+    <ClCompile Include="..\Common\Textures\Image\jpeg6\jfdctflt.cpp" />
+    <ClCompile Include="..\Common\Textures\Image\jpeg6\jidctflt.cpp" />
+    <ClCompile Include="..\Common\Textures\Image\jpeg6\jmemmgr.cpp" />
+    <ClCompile Include="..\Common\Textures\Image\jpeg6\jmemnobs.cpp" />
+    <ClCompile Include="..\Common\Textures\Image\jpeg6\jutils.cpp" />
+    <ClCompile Include="..\Common\Shaders\Parser.cpp" />
+    <ClCompile Include="..\Common\Shaders\ParserBin.cpp" />
+    <ClCompile Include="..\Common\Shaders\ShaderComponents.cpp" />
+    <ClCompile Include="..\Common\Shaders\ShaderCore.cpp" />
+    <ClCompile Include="..\Common\Shaders\ShaderFXParseBin.cpp" />
+    <ClCompile Include="..\Common\Shaders\ShaderGraph.cpp" />
+    <ClCompile Include="..\Common\Shaders\ShaderParse.cpp" />
+    <ClCompile Include="..\Common\Shaders\ShaderScript.cpp" />
+    <ClCompile Include="..\Common\Shaders\ShaderTemplate.cpp" />
+    <ClCompile Include="..\RenderPCH.cpp">
+      <PrecompiledHeader>Create</PrecompiledHeader>
+    </ClCompile>
+    <ResourceCompile Include="XRenderNULL.rc" />
+    <ClInclude Include="NULL_Renderer.h" />
+    <ClInclude Include="NULLRenderAuxGeom.h" />
+    <ClInclude Include="resource.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>
