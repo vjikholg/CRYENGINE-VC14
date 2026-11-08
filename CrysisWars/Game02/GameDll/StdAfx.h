@@ -31,6 +31,9 @@
 
 // Insert your headers here
 #include <platform.h>
+#ifdef GetUserName
+#undef GetUserName
+#endif
 #include <algorithm>
 #include <vector>
 #include <memory>
@@ -45,6 +48,11 @@
 #include <ITimer.h>
 #include <ILog.h>
 #include <IGameplayRecorder.h>
+
+// RPC headers define small as a macro. The game uses it as an action ID.
+#ifdef small
+#undef small
+#endif
 
 #ifndef GAMEDLL_EXPORTS
 #define GAMEDLL_EXPORTS
