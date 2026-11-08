@@ -149,13 +149,22 @@ void CCharInstance::Render(const struct SRendParams& RendParams, const QuatTS& O
 	//extern f32 g_YLine;
 	//g_pIRenderer->Draw2dLabel( 1,g_YLine, 1.3f, fColor, false,"m_nLodLevel: %d",m_nLodLevel ); g_YLine+=0x10;
 
-	int32 numLODs = 0;
-	if (!CryTryNarrowSize(m_pModel->m_arrModelMeshes.size(), numLODs) || numLODs == 0)
-		return;
-	if(m_nLodLevel<m_pModel->m_nBaseLOD)
-		m_nLodLevel=m_pModel->m_nBaseLOD;
-	if(m_nLodLevel>=numLODs)
-		m_nLodLevel = numLODs-1;
+	const bool isCga = m_pModel->m_ObjectType == CGA;
+	if (isCga)
+	{
+		// CGA geometry is stored on joints. Each joint's static mesh handles its own LOD.
+		m_nLodLevel = 0;
+	}
+	else
+	{
+		int32 numLODs = 0;
+		if (!CryTryNarrowSize(m_pModel->m_arrModelMeshes.size(), numLODs) || numLODs == 0)
+			return;
+		if (m_nLodLevel < m_pModel->m_nBaseLOD)
+			m_nLodLevel = m_pModel->m_nBaseLOD;
+		if (m_nLodLevel >= numLODs)
+			m_nLodLevel = numLODs - 1;
+	}
 
 	if (!(RendParams.dwFObjFlags & FOB_RENDER_INTO_SHADOWMAP))
 		m_nMorphTargetLod = m_nLodLevel;
@@ -199,7 +208,7 @@ void CCharInstance::Render(const struct SRendParams& RendParams, const QuatTS& O
 		g_pAuxGeom->DrawLine(wpos,RGBA8(0x00,0x00,0x7f,0x00), wpos+axisZ,RGBA8(0x00,0x00,0xff,0x00) );
 	}
 
-	if (m_pModel->m_ObjectType==CGA)
+	if (isCga)
   {
     Matrix34 mRendMat34 = RenderMat34*Matrix34(Offset);
 
