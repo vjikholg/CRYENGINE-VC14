@@ -14,7 +14,7 @@ class CVoicePacket
 public:
 	static const int32 MAX_LENGTH = 320;
 
-	void Serialize( TSerialize ser );
+	bool Serialize( TSerialize ser );
 
 	void SetSeq( uint8 seq )
 	{
@@ -26,9 +26,9 @@ public:
 	}
 	void SetLength( int32 length )
 	{
-		if (length > MAX_LENGTH)
+		if (length < 0 || length > MAX_LENGTH)
 		{
-			NetWarning("[net] voice packet length %d too long; treating as no-data", length);
+			NetWarning("[net] voice packet length %d is out of range; treating as no-data", length);
 			m_length = 0;
 		}
 		else

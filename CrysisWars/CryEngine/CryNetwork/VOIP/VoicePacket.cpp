@@ -35,7 +35,7 @@ void CVoicePacket::Deallocate( CVoicePacket * pPkt )
 }
 #endif
 
-CVoicePacket::CVoicePacket() : m_cnt(0), m_length(0)
+CVoicePacket::CVoicePacket() : m_cnt(0), m_length(0), m_seq(0)
 {
 	m_count++;
 	++g_objcnt.voicePacket;
@@ -47,14 +47,18 @@ CVoicePacket::~CVoicePacket()
 	--g_objcnt.voicePacket;
 }
 
-void CVoicePacket::Serialize( TSerialize ser )
+bool CVoicePacket::Serialize( TSerialize ser )
 {
-	ser.Value( "seq", m_seq );
-	ser.EnumValue( "length", m_length, 0, MAX_LENGTH );
+	ser.Value("seq", m_seq);
+	ser.EnumValue("length", m_length, 0, MAX_LENGTH);
+	if (!ser.Ok() || m_length < 0 || m_length > MAX_LENGTH)
+		return false;
+
 	ser.BeginGroup("data");
-	for (uint32 i = 0; i<m_length; i++)
-		ser.Value( "voicebyte", m_data[i] );
+	for (int32 i = 0; i < m_length; ++i)
+		ser.Value("voicebyte", m_data[i]);
 	ser.EndGroup();
+	return ser.Ok();
 }
 
 int32 CVoicePacket::GetCount()

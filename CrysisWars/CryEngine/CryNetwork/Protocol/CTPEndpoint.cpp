@@ -1230,6 +1230,16 @@ void CCTPEndpoint::ProcessPacket( CTimeValue nTime, TMemHdl hdl, bool bQueueing,
 				EntityId entityId = m_entityId; // make sure internal structures don't get broken, entityId is passed by reference!
 				TNetMessageCallbackResult r = pDef->handler( pDef->nUser, pSink, TSerialize( &stm ), nCurrentSeq, nBasisSeq, &entityId, m_pParent );
 
+				if (!r.first)
+				{
+					if (r.second)
+						r.second->DeleteThis();
+					NetLog( "Protocol error handling message %s", pDef->description );
+					m_pParent->Disconnect( eDC_ProtocolError, pDef->description );
+					bCompletedParse = true;
+					break;
+				}
+
 #if CRC8_ENCODING_MESSAGE
 				{
 					uint8 crcStream = stmImpl.GetInput().GetCRC();
@@ -1242,15 +1252,7 @@ void CCTPEndpoint::ProcessPacket( CTimeValue nTime, TMemHdl hdl, bool bQueueing,
 				}
 #endif
 
-				if (!r.first)
-				{
-					if (r.second)
-						r.second->DeleteThis();
-					NetLog( "Protocol error handling message %s", pDef->description );
-					m_pParent->Disconnect( eDC_ProtocolError, pDef->description );
-					bCompletedParse = true;
-				}
-				else if (r.second)
+				if (r.second)
 				{
 					if (inSync)
 					{

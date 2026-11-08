@@ -513,7 +513,8 @@ NET_IMPLEMENT_IMMEDIATE_MESSAGE(CClientContextView, VoiceData, eNRT_UnreliableUn
 
 	ser.Value("object", id, 'eid');
 
-	pkt->Serialize(ser);
+	if (!pkt->Serialize(ser))
+		return false;
 
 	ReceivedVoice(id);
 	if (Context() && Context()->GetVoiceContextImpl())

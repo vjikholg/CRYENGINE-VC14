@@ -406,8 +406,7 @@ protected:
 			uint32 nBasisSeq )
 		{
 			serialize.Value("object", m_id, 'eid');
-			m_packet->Serialize(serialize);
-			return eMSR_SentOk;
+			return m_packet->Serialize(serialize) ? eMSR_SentOk : eMSR_FailedPacket;
 		}
 
 		virtual void UpdateState( uint32 nFromSeq, ENetSendableStateUpdate state )

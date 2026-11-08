@@ -855,7 +855,8 @@ NET_IMPLEMENT_IMMEDIATE_MESSAGE(CServerContextView, VoiceData, eNRT_UnreliableOr
 	TVoicePacketPtr pkt=CVoicePacket::Allocate();
 
 	ser.Value("object", id, 'eid');
-	pkt->Serialize(ser);
+	if (!pkt->Serialize(ser))
+		return false;
 	ReceivedVoice(id);
 	if (Context() && Context()->GetVoiceContextImpl())
 		Context()->GetVoiceContextImpl()->OnPacketFrom(id, eVD_From, pkt);
