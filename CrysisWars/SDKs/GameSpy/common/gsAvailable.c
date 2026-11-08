@@ -74,7 +74,7 @@ void GSIStartAvailableCheckA(const char * gamename)
 	// setup the hostname
 	override = GSIACHostname[0];
 	if(!override)
-		sprintf(hostname, "%s.available." GSI_DOMAIN_NAME, gamename);
+		strcpy(hostname, GSI_MWLL_BACKEND_HOST);
 
 	// get the master address
 	rcode = get_sockaddrin(override?GSIACHostname:hostname, MASTER_PORT, &AC.address);

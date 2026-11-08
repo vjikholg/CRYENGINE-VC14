@@ -194,7 +194,7 @@ qr2_error_t qr2_init_socketA(/*[out]*/qr2_t *qrec, SOCKET s, int boundport, cons
 	{
 		int override = qr2_hostname[0];
 		if(!override)
-			sprintf(hostname, "%s.master." GSI_DOMAIN_NAME, gamename);
+			strcpy(hostname, GSI_MWLL_BACKEND_HOST);
 		ret = get_sockaddrin(override?qr2_hostname:hostname, MASTER_PORT, &(cr->hbaddr), NULL);
 
 		if (ret == 1)

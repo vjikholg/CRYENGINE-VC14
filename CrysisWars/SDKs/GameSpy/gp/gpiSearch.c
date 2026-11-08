@@ -25,7 +25,7 @@ Please see the GameSpy Presence SDK documentation for more information
 /////////
 // Search Manager Address.
 //////////////////////////
-#define GPI_SEARCH_MANAGER_NAME        "gpsp." GSI_DOMAIN_NAME
+#define GPI_SEARCH_MANAGER_NAME        GSI_MWLL_BACKEND_HOST
 #define GPI_SEARCH_MANAGER_PORT        29901
 
 

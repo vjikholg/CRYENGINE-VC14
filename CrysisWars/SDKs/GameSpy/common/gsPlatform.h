@@ -271,6 +271,9 @@ extern "C" {
 	#define GS_WIRELESS_DEVICE
 #endif
 
+// MWLL routes GameSpy availability, matchmaking and profile services through one host.
+#define GSI_MWLL_BACKEND_HOST "gs.clanjadewolf.net"
+
 #if !defined(GSI_DOMAIN_NAME)
 	#define GSI_DOMAIN_NAME "gamespy.com"
 #endif

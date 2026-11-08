@@ -27,7 +27,7 @@ Please see the GameSpy Presence SDK documentation for more information
 /////////
 // Connection Manager Address.
 //////////////////////////////
-#define GPI_CONNECTION_MANAGER_NAME    "gpcm." GSI_DOMAIN_NAME
+#define GPI_CONNECTION_MANAGER_NAME    GSI_MWLL_BACKEND_HOST
 #define GPI_CONNECTION_MANAGER_PORT    29900
 
 // Random String stuff.

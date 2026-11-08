@@ -425,34 +425,11 @@ static void ErrorDisconnect(SBServerList *slist)
 	SBServerListDisconnect(slist);	
 }
 
-#define MULTIPLIER -1664117991
-static int StringHash(const char *s, int numbuckets)
-{
-	goa_uint32 hashcode = 0;
-	while (*s != 0)
-	{
-		hashcode = (goa_uint32)((int)hashcode * MULTIPLIER + tolower(*s));
-		s++;
-	}
-    return (int)(hashcode % numbuckets);
-
-}
-
-
-
 static SBError ServerListConnect(SBServerList *slist)
 {
 	struct   sockaddr_in saddr;
 	struct hostent *hent;
-	char masterHostname[128];
-	int masterIndex;
-	
-
-	masterIndex = StringHash(slist->queryforgamename, NUM_MASTER_SERVERS);
-	if (SBOverrideMasterServer != NULL)
-		strcpy(masterHostname, SBOverrideMasterServer);
-	else //use the default format...
-		sprintf(masterHostname,"%s.ms%d." GSI_DOMAIN_NAME, slist->queryforgamename, masterIndex);
+	const char *masterHostname = SBOverrideMasterServer != NULL ? SBOverrideMasterServer : GSI_MWLL_BACKEND_HOST;
 	saddr.sin_family = AF_INET;
 	saddr.sin_port = htons(MSPORT2);
 	saddr.sin_addr.s_addr = inet_addr(masterHostname);
