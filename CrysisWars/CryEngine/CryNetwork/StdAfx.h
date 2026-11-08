@@ -34,6 +34,9 @@
 #define CRYNETWORK_EXPORTS
 #define CRYNETWORK_RELEASEBUILD 1
 
+#if defined(_WIN32) && !defined(WIN32_LEAN_AND_MEAN)
+#define WIN32_LEAN_AND_MEAN
+#endif
 #include <platform.h>
 
 

@@ -48,6 +48,10 @@
 #include <IRenderer.h>
 #include <IRenderAuxGeom.h>
 #include <IEntityRenderState.h>
+// Keep the engine method name independent of the Windows DrawText macro.
+#ifdef DrawText
+#undef DrawText
+#endif
 #include <I3DEngine.h>
 #include <ICryPak.h>
 #include <CryFile.h>
