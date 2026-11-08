@@ -784,18 +784,41 @@ CVertexBuffer *CD3D9Renderer::CreateBuffer(int vertexcount,int vertexformat, con
     return newbuf;
   }
 
-  int size = m_VertexSize[vertexformat]*vertexcount;
+  const int stride = m_VertexSize[vertexformat];
+  const int size = stride * vertexcount;
+  const int vertexBytesBeforeRequest = m_CurVertBufferSize;
+  const int indexBytesBeforeRequest = m_CurIndexBufferSize;
   m_CurVertBufferSize += size;
   if (size+m_CurVertBufferSize+m_CurIndexBufferSize > m_MaxVertBufferSize)
   {
+    const bool usesPool = CV_d3d9_vbpools && size < CV_d3d9_vbpoolsize;
+    unsigned int evictionAttempts = 0;
+    unsigned int evictionsWithoutRecovery = 0;
+    char lastEvictionSource[256] = "<none>";
     CRenderMesh *pRM = CRenderMesh::m_Root.m_Prev;
     while (size+m_CurVertBufferSize+m_CurIndexBufferSize > m_MaxVertBufferSize)
     {
       if (pRM == &CRenderMesh::m_Root)
-        iConsole->Exit("Error: Pipeline buffer overflow. Current geometry cannot fit in video memory (%s)", gRenDev->GetStatusText(eRS_VidBuffer));
+      {
+        CryError(
+          "Error: Pipeline buffer overflow. Mesh='%.240s' vertices=%d format=%d stride=%d "
+          "requestBytes=%d budgetBytes=%d vbBefore=%d ibBefore=%d vbCharged=%d ibCurrent=%d "
+          "pool=%d poolBytes=%d evictionAttempts=%u noRecovery=%u lastEviction='%.240s' (%s)",
+          szSource && *szSource ? szSource : "<unknown>", vertexcount, vertexformat, stride,
+          size, m_MaxVertBufferSize, vertexBytesBeforeRequest, indexBytesBeforeRequest,
+          m_CurVertBufferSize, m_CurIndexBufferSize, usesPool ? 1 : 0, CV_d3d9_vbpoolsize,
+          evictionAttempts, evictionsWithoutRecovery, lastEvictionSource,
+          gRenDev->GetStatusText(eRS_VidBuffer));
+      }
 
       CRenderMesh *Next = pRM->m_Prev;
+      const char *source = pRM->GetSourceName();
+      snprintf(lastEvictionSource, sizeof(lastEvictionSource), "%s", source && *source ? source : "<unknown>");
+      const int64 liveBytesBeforeEviction = static_cast<int64>(m_CurVertBufferSize) + m_CurIndexBufferSize;
       pRM->Unload(true);
+      ++evictionAttempts;
+      if (static_cast<int64>(m_CurVertBufferSize) + m_CurIndexBufferSize >= liveBytesBeforeEviction)
+        ++evictionsWithoutRecovery;
       pRM = Next;
     }
   }
