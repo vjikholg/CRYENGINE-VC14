@@ -617,6 +617,9 @@ public:
 	uint32 SetHumanLimbIK(const Vec3& WGoal, uint32 limp);
 	uint32 SetLArmIK(const Vec3& goal);
 	uint32 SetRArmIK(const Vec3& goal);
+	bool IsFootIKJointInRange(int32 joint) const;
+	bool HasValidFootIKJoint(int32 joint) const;
+	bool HasValidFootIKChain(int32 thigh, int32 calf, int32 foot, int32 heel, int32 toe, int32 toeNub) const;
 	uint32 SetLFootIK(const Vec3& goal2);
 	uint32 SetRFootIK(const Vec3& goal2);
 	uint32 SetFootGroundAlignmentCCD( uint32 leg, const Plane& GroundPlane);

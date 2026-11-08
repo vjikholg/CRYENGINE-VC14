@@ -117,26 +117,43 @@ uint32 CSkeletonPose::SetCustomArmIK(const Vec3& localgoal,int32 idx0,int32 idx1
 
 
 
+bool CSkeletonPose::IsFootIKJointInRange(int32 joint) const
+{
+	return joint >= 0 && static_cast<size_t>(joint) < m_AbsolutePose.size()
+		&& static_cast<size_t>(joint) < m_RelativePose.size()
+		&& static_cast<size_t>(joint) < m_pModelSkeleton->m_arrModelJoints.size();
+}
+
+bool CSkeletonPose::HasValidFootIKJoint(int32 joint) const
+{
+	return IsFootIKJointInRange(joint) && IsFootIKJointInRange(m_parrModelJoints[joint].m_idxParent);
+}
+
+bool CSkeletonPose::HasValidFootIKChain(int32 thigh, int32 calf, int32 foot, int32 heel, int32 toe, int32 toeNub) const
+{
+	return m_parrModelJoints && HasValidFootIKJoint(thigh) && HasValidFootIKJoint(calf)
+		&& HasValidFootIKJoint(foot) && HasValidFootIKJoint(heel)
+		&& HasValidFootIKJoint(toe) && HasValidFootIKJoint(toeNub);
+}
+
 uint32 CSkeletonPose::SetLFootIK(const Vec3& localgoal )
 {
+	if (!m_pModelSkeleton)
+		return 0;
 	int32 b0	=	m_pModelSkeleton->m_IdxArray[eIM_LThighIdx];
 	int32 b1	=	m_pModelSkeleton->m_IdxArray[eIM_LCalfIdx];
 	int32 b2	=	m_pModelSkeleton->m_IdxArray[eIM_LFootIdx];
 	int32 b3	=	m_pModelSkeleton->m_IdxArray[eIM_LHeelIdx];
 	int32 b4	=	m_pModelSkeleton->m_IdxArray[eIM_LToe0Idx];
 	int32 b5	=	m_pModelSkeleton->m_IdxArray[eIM_LToe0NubIdx];
-	if (b0<0) return 0;
-	if (b1<0) return 0;
-	if (b2<0) return 0;
-	if (b3<0) return 0;
-	if (b4<0) return 0;
-	if (b5<0) return 0;
+	if (!HasValidFootIKChain(b0, b1, b2, b3, b4, b5))
+		return 0;
 	TwoBoneIK(b0,b1,b2,localgoal);
 	UpdateHumanLeg(b0,b1,b2,b3,b4,b5,-1,-1,-1);
 
 	int32 lKneeIdx		= m_pModelSkeleton->m_IdxArray[eIM_LKneeIdx];
 	int32 lKneeEndIdx	= m_pModelSkeleton->m_IdxArray[eIM_LKneeEndIdx];
-	if (lKneeIdx>0 && lKneeEndIdx>0)
+	if (lKneeIdx > 0 && lKneeEndIdx > 0 && IsFootIKJointInRange(lKneeIdx) && IsFootIKJointInRange(lKneeEndIdx))
 	{
 		m_AbsolutePose[lKneeIdx]		= m_AbsolutePose[b0]	* m_RelativePose[lKneeIdx];
 		m_AbsolutePose[lKneeEndIdx]	= m_AbsolutePose[lKneeIdx]	* m_RelativePose[lKneeEndIdx];
@@ -148,24 +165,22 @@ uint32 CSkeletonPose::SetLFootIK(const Vec3& localgoal )
 
 uint32 CSkeletonPose::SetRFootIK(const Vec3& localgoal )
 {
+	if (!m_pModelSkeleton)
+		return 0;
 	int32 b0	=	m_pModelSkeleton->m_IdxArray[eIM_RThighIdx];
 	int32 b1	=	m_pModelSkeleton->m_IdxArray[eIM_RCalfIdx];
 	int32 b2	=	m_pModelSkeleton->m_IdxArray[eIM_RFootIdx];
 	int32 b3	=	m_pModelSkeleton->m_IdxArray[eIM_RHeelIdx];
 	int32 b4	=	m_pModelSkeleton->m_IdxArray[eIM_RToe0Idx];
 	int32 b5	=	m_pModelSkeleton->m_IdxArray[eIM_RToe0NubIdx];
-	if (b0<0) return 0;
-	if (b1<0) return 0;
-	if (b2<0) return 0;
-	if (b3<0) return 0;
-	if (b4<0) return 0;
-	if (b5<0) return 0;
+	if (!HasValidFootIKChain(b0, b1, b2, b3, b4, b5))
+		return 0;
 	TwoBoneIK(b0,b1,b2,localgoal);
 	UpdateHumanLeg(b0,b1,b2,b3,b4,b5,-1,-1,-1);
 
 	int32 rKneeIdx		= m_pModelSkeleton->m_IdxArray[eIM_RKneeIdx];
 	int32 rKneeEndIdx	= m_pModelSkeleton->m_IdxArray[eIM_RKneeEndIdx];
-	if (rKneeIdx>0 && rKneeEndIdx>0)
+	if (rKneeIdx > 0 && rKneeEndIdx > 0 && IsFootIKJointInRange(rKneeIdx) && IsFootIKJointInRange(rKneeEndIdx))
 	{
 		m_AbsolutePose[rKneeIdx]		= m_AbsolutePose[b0]	* m_RelativePose[rKneeIdx];
 		m_AbsolutePose[rKneeEndIdx]	= m_AbsolutePose[rKneeIdx]	* m_RelativePose[rKneeEndIdx];
@@ -201,6 +216,8 @@ void CSkeletonPose::MoveSkeletonVertical( f32 vertical )
 //-------------------------------------------------------------------
 uint32 CSkeletonPose::SetFootGroundAlignmentCCD( uint32 leg, const Plane& GroundPlane)
 {
+	if (!m_pModelSkeleton || (leg != CA_LEG_LEFT && leg != CA_LEG_RIGHT))
+		return 0;
 	float fColor[4] = {0,1,0,1};
 	IRenderer* pIRenderer = g_pISystem->GetIRenderer();
 
@@ -228,6 +245,18 @@ uint32 CSkeletonPose::SetFootGroundAlignmentCCD( uint32 leg, const Plane& Ground
 		e1	=m_pModelSkeleton->m_IdxArray[eIM_RKneeEndIdx];
 		e2	=-1;// eIM_RLegPistol;
 	}
+
+	if (!HasValidFootIKChain(ThighIdx, CalfIdx, FootIdx, HeelIdx, Toe0Idx, ToeNIdx))
+	{
+		*pFootGroundAlign = 0.0f;
+		return 0;
+	}
+
+	// Optional knee helpers can be absent without disabling foot alignment.
+	if (!HasValidFootIKJoint(e0))
+		e0 = -1;
+	if (!HasValidFootIKJoint(e1))
+		e1 = -1;
 
 	uint32 IkProcess=0;
 	for (uint32 i=0; i<8; i++)
