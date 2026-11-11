@@ -24,6 +24,16 @@
 // must be greater than zero; scott chose this one (it's his birthday)
 TNetChannelID CNetChannel::m_nextLocalChannelID = 989;
 
+static uintptr_t BreadcrumbLockOwner()
+{
+#if defined(_WIN64)
+	CNetwork* network = CNetwork::Get();
+	return network ? network->GetMutex().ObservedOwnerThread() : 0;
+#else
+	return 0;
+#endif
+}
+
 int g_nChannels = 0;
 
 static const float STATS_UPDATE_INTERVAL = 0.1f;
@@ -68,7 +78,7 @@ CNetChannel::CNetChannel( const TNetAddress& ipRemote, const CExponentialKeyExch
 	m_pPing(0),
 #endif
 	m_nStrongCaptureRMIs(0),
-	m_fastLookupId(-1)
+	m_fastLookupId(InvalidFastLookupId)
 {
 	SCOPED_GLOBAL_LOCK;
 	++g_nChannels;
@@ -78,6 +88,8 @@ CNetChannel::CNetChannel( const TNetAddress& ipRemote, const CExponentialKeyExch
 CNetChannel::~CNetChannel()
 {
 	SCOPED_GLOBAL_LOCK;
+	CryCrashBreadcrumbs::Record(CryCrashBreadcrumbs::NetworkChannel, this, m_fastLookupId, 2,
+		&m_ctpEndpoint, m_localChannelID, BreadcrumbLockOwner());
 	MMM_REGION(m_pMMM);
 
 	--g_nChannels;
@@ -111,7 +123,7 @@ CNetChannel::~CNetChannel()
 
 	m_ctpEndpoint.ChangeSubscription( this, 0 );
 
-	if (m_fastLookupId >= 0)
+	if (m_fastLookupId != InvalidFastLookupId)
 		CNetwork::Get()->UnregisterFastLookup(m_fastLookupId);
 }
 
@@ -155,6 +167,8 @@ void CNetChannel::SetServer( INetContext * pServerContext, bool cheats )
 #endif //NOT_USE_DEFENCE
 
 	m_fastLookupId = CNetwork::Get()->RegisterForFastLookup(this);
+	CryCrashBreadcrumbs::Record(CryCrashBreadcrumbs::NetworkChannel, this, m_fastLookupId, 1,
+		&m_ctpEndpoint, m_localChannelID, BreadcrumbLockOwner());
 }
 
 void CNetChannel::PerformRegularCleanup()
@@ -403,6 +417,9 @@ public:
 		m_pChannel->m_pingLock = false;
 		m_pChannel->m_lastPingSent = g_time;
 		m_pChannel->m_pings.push(g_time);
+		CryCrashBreadcrumbs::Record(CryCrashBreadcrumbs::NetworkPing, m_pChannel,
+			CMementoMemoryRegion::Current(), m_pChannel->m_fastLookupId, 1, &pSender->ser,
+			m_pChannel->m_localChannelID, BreadcrumbLockOwner());
 		pSender->BeginMessage( CNetChannel::Ping );
 		pSender->ser.Value("when", g_time, 'ping');
 		return eMSR_SentOk; 
@@ -496,6 +513,8 @@ void CNetChannel::TimerCallback( NetTimerId id, void* pUser, CTimeValue time )
 
 NET_IMPLEMENT_IMMEDIATE_MESSAGE(CNetChannel, Ping, eNRT_UnreliableUnordered, 0)
 {
+	CryCrashBreadcrumbs::Record(CryCrashBreadcrumbs::NetworkPing, this, CMementoMemoryRegion::Current(),
+		m_fastLookupId, 2, &ser, m_localChannelID, BreadcrumbLockOwner());
 	CTimeValue when;
 	ser.Value("when", when, 'ping');
 	if (CPongMsg * pMsg = m_pingpongarena.Construct<CPongMsg>())
@@ -508,6 +527,8 @@ NET_IMPLEMENT_IMMEDIATE_MESSAGE(CNetChannel, Ping, eNRT_UnreliableUnordered, 0)
 
 NET_IMPLEMENT_IMMEDIATE_MESSAGE(CNetChannel, Pong, eNRT_UnreliableUnordered, 0)
 {
+	CryCrashBreadcrumbs::Record(CryCrashBreadcrumbs::NetworkPing, this, CMementoMemoryRegion::Current(),
+		m_fastLookupId, 3, &ser, m_localChannelID, BreadcrumbLockOwner());
 	CTimeValue when, elapsed, remote;
 	ser.Value("when", when, 'pong');
 	ser.Value("elapsed", elapsed, 'pelp');
@@ -792,18 +813,25 @@ void CNetChannel::GotPacket( EGotPacketType type )
 
 void CNetChannel::DoProcessPacket( TMemHdl hdl, bool inSync )
 {
-	MMM_REGION(m_pMMM);
-
-	if (m_bDead)
+	const size_t slot = m_fastLookupId;
+	const TNetChannelID channelId = m_localChannelID;
 	{
-		MMM().FreeHdl(hdl);
-		return;
+		MMM_REGION(m_pMMM);
+		CryCrashBreadcrumbs::Record(CryCrashBreadcrumbs::NetworkPacket, this, CMementoMemoryRegion::Current(),
+			slot, 1, inSync, channelId, BreadcrumbLockOwner());
+
+		if (m_bDead)
+		{
+			MMM().FreeHdl(hdl);
+			return;
+		}
+
+		GotPacket(eGPT_Normal);
+		m_ctpEndpoint.ProcessPacket( g_time, hdl, true, inSync );
+		UpdateTimer( g_time );
 	}
-
-	GotPacket(eGPT_Normal);
-	m_ctpEndpoint.ProcessPacket( g_time, hdl, true, inSync );
-
-	UpdateTimer( g_time );
+	CryCrashBreadcrumbs::Record(CryCrashBreadcrumbs::NetworkPacket, this, CMementoMemoryRegion::Current(),
+		slot, 2, inSync, channelId, BreadcrumbLockOwner());
 }
 
 void CNetChannel::PunkDetected( EPunkType punkType )

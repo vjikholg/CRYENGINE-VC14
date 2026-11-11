@@ -654,7 +654,12 @@ SContextObjectRef CNetContextState::GetContextObject_Slow( SNetObjectID nID ) co
 {
 	SContextObjectRef obj;
 	if (m_vObjects.size() <= nID.id || !m_vObjects[nID.id].bAllocated || m_vObjects[nID.id].salt != nID.salt)
+	{
+		if (nID)
+			CryCrashBreadcrumbs::Record(CryCrashBreadcrumbs::NetworkObjectMiss, this,
+				nID.id, nID.salt, m_vObjects.data(), m_vObjects.size());
 		return obj;
+	}
 	obj.main = &m_vObjects[nID.id];
 
 	static SContextObjectEx objx;
@@ -1066,6 +1071,8 @@ void CNetContextState::RebindObject( SNetObjectID netId, EntityId userId )
 		SContextObject& obj = m_vObjects[netId.id];
 		NET_ASSERT(!obj.userID);
 		obj.refUserID = obj.userID = userId;
+		CryCrashBreadcrumbs::Record(CryCrashBreadcrumbs::NetworkObject, this,
+			netId.id, netId.salt, userId, 1, m_vObjects.data(), m_vObjects.size());
 
 		for (int i = 0; i < NumAspects; ++i)
 			obj.vAspectProfiles[i] = obj.vAspectDefaultProfiles[i] = m_pGameContext->GetDefaultProfileForAspect(userId, 1<<i);
@@ -1166,6 +1173,8 @@ bool CNetContextState::UnbindObject( SNetObjectID netID, uint32 flags )
 
 	// Assumption: User-id 0 is null
 	EntityId userId = obj.userID;
+	CryCrashBreadcrumbs::Record(CryCrashBreadcrumbs::NetworkObject, this,
+		netID.id, netID.salt, userId, 2, m_vObjects.data(), m_vObjects.size());
 	obj.userID = 0;
 
 	SNetObjectEvent event;

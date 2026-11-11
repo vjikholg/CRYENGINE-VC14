@@ -40,11 +40,21 @@ public:
 	void Unlock() { LeaveCriticalSection(&m_cs); }
 	bool TryLock() { return TryEnterCriticalSection(&m_cs) != FALSE; }
 
+	// Diagnostic snapshot only. This does not establish ownership or synchronize with a caller.
+	ULONG_PTR ObservedOwnerThread() const
+	{
+#if defined(_WIN64)
+		return reinterpret_cast<ULONG_PTR>(ReadPointerNoFence(&m_cs.OwningThread));
+#else
+		return reinterpret_cast<ULONG_PTR>(m_cs.OwningThread);
+#endif
+	}
+
 #ifndef NDEBUG
 	bool IsLocked()
 	{
 		return m_cs.RecursionCount > 0 &&
-			reinterpret_cast<ULONG_PTR>(m_cs.OwningThread) ==
+			ObservedOwnerThread() ==
 			static_cast<ULONG_PTR>(GetCurrentThreadId());
 	}
 #endif

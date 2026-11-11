@@ -346,6 +346,7 @@ private:
 	static TNetChannelID       m_nextLocalChannelID;
 
 public:
+	static constexpr size_t InvalidFastLookupId = static_cast<size_t>(-1);
 	size_t m_fastLookupId;
 private:
 	CTimeValue  m_lastVoiceTransmission;

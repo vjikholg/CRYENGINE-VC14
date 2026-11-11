@@ -236,11 +236,15 @@ EMessageSendResult CUpdateMessage::SendMain( SHistorySyncContext& hsc, INetSende
 {
 	FUNCTION_PROFILER(gEnv->pSystem, PROFILE_NETWORK);
 
+	CNetContextState* context = m_pView->ContextState();
+	CryCrashBreadcrumbs::Record(CryCrashBreadcrumbs::NetworkDispatch, m_pView, context,
+		m_netID.id, m_netID.salt, pSender->nCurrentSeq);
+
 	SNetChannelEvent event;
 	event.event = eNCE_SentUpdate;
 	event.id = m_netID;
 	event.seq = pSender->nCurrentSeq;
-	m_pView->ContextState()->BroadcastChannelEvent( m_pView->Parent(), &event );
+	context->BroadcastChannelEvent( m_pView->Parent(), &event );
 
 	EMessageSendResult res = eMSR_SentOk;
 

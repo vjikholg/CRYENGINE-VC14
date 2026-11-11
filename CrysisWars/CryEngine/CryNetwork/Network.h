@@ -18,6 +18,7 @@
 
 #include <vector>
 #include <memory>
+#include <CryCrashBreadcrumbs.h>
 #include "TimeValue.h"
 #include "Protocol/StatsCollector.h"
 #include "Errors.h"
@@ -426,9 +427,13 @@ public:
 
 	static ILINE CMementoMemoryManager& Get()
 	{
+		if (!m_pMMM)
+			CryCrashBreadcrumbs::Record(CryCrashBreadcrumbs::NetworkMementoMissing, m_pMMM);
 		assert(m_pMMM);
 		return *m_pMMM;
 	}
+
+	static ILINE CMementoMemoryManager* Current() { return m_pMMM; }
 
 private:
 	CMementoMemoryRegion( const CMementoMemoryRegion& );
