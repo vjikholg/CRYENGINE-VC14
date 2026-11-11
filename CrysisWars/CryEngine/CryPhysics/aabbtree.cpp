@@ -1,4 +1,5 @@
 #include "StdAfx.h"
+#include <CryCrashBreadcrumbs.h>
 
 #include "utils.h"
 #include "primitives.h"
@@ -291,13 +292,35 @@ float CAABBTree::SplitPriority(const BV* pBV)
 }
 
 
+static inline bool IsInvalidAabbChildPair(unsigned child, int nodeCount)
+{
+	return nodeCount < 2 || child < 2 || (child & 1) || child >= static_cast<unsigned>(nodeCount) - 1;
+}
+
+inline unsigned CAABBTree::ReadSplitChild(const BV* parent, int caller, unsigned mode, int cursor, int capacity) const
+{
+	const int parentIndex = parent ? parent->iNode : -1;
+	const unsigned callerAndMode = (static_cast<unsigned>(caller) << 2) | mode;
+	if (!m_pNodes || parentIndex < 0 || parentIndex >= m_nNodes)
+		CryCrashBreadcrumbs::Record(CryCrashBreadcrumbs::AabbSplit, this, m_pNodes,
+			parentIndex, -1, m_nNodes, cursor, callerAndMode);
+
+	// Capture suspect inputs before the original access.
+	const unsigned child = m_pNodes[parent->iNode].ichild;
+	if (IsInvalidAabbChildPair(child, m_nNodes) || cursor < 0 || cursor > capacity - 2)
+		CryCrashBreadcrumbs::Record(CryCrashBreadcrumbs::AabbSplit, this, m_pNodes,
+			parentIndex, child, m_nNodes, cursor, callerAndMode);
+	return child;
+}
+
 void CAABBTree::GetNodeChildrenBVs(const Matrix33 &Rw,const Vec3 &offsw,float scalew, 
 																	 const BV *pBV_parent, BV *&pBV_child1,BV *&pBV_child2, int iCaller)
 {
 	BBox *bbox_parent=(BBox*)pBV_parent, *&bbox_child1=(BBox*&)pBV_child1, *&bbox_child2=(BBox*&)pBV_child2;
+	const unsigned child = ReadSplitChild(pBV_parent, iCaller, 0, g_BBoxBufPos, sizeof(g_BBoxBuf) / sizeof(g_BBoxBuf[0]));
 	bbox_child1 = g_BBoxBuf + g_BBoxBufPos++;
 	bbox_child2 = g_BBoxBuf + g_BBoxBufPos++;
-	bbox_child2->iNode = (bbox_child1->iNode = m_pNodes[bbox_parent->iNode].ichild)+1;
+	bbox_child2->iNode = (bbox_child1->iNode = child)+1;
 	bbox_child1->type = bbox_child2->type = box::type;
 	bbox_child1->abox.Basis = bbox_parent->abox.Basis; bbox_child2->abox.Basis = bbox_parent->abox.Basis;
 	bbox_child1->abox.bOriented = bbox_child2->abox.bOriented = 1;
@@ -327,9 +350,10 @@ void CAABBTree::GetNodeChildrenBVs(const Matrix33 &Rw,const Vec3 &offsw,float sc
 void CAABBTree::GetNodeChildrenBVs(const BV *pBV_parent, BV *&pBV_child1,BV *&pBV_child2, int iCaller)
 {
 	BBox *bbox_parent=(BBox*)pBV_parent, *&bbox_child1=(BBox*&)pBV_child1, *&bbox_child2=(BBox*&)pBV_child2;
+	const unsigned child = ReadSplitChild(pBV_parent, iCaller, 1, g_BBoxBufPos, sizeof(g_BBoxBuf) / sizeof(g_BBoxBuf[0]));
 	bbox_child1 = g_BBoxBuf + g_BBoxBufPos++;
 	bbox_child2 = g_BBoxBuf + g_BBoxBufPos++;
-	bbox_child2->iNode = (bbox_child1->iNode = m_pNodes[bbox_parent->iNode].ichild)+1;
+	bbox_child2->iNode = (bbox_child1->iNode = child)+1;
 	bbox_child1->type = bbox_child2->type = box::type;
 	if (bbox_child1->abox.bOriented = bbox_child2->abox.bOriented = bbox_parent->abox.bOriented) {
 		bbox_child1->abox.Basis = bbox_parent->abox.Basis; 
@@ -367,9 +391,10 @@ void CAABBTree::GetNodeChildrenBVs(const BV *pBV_parent, BV *&pBV_child1,BV *&pB
 void CAABBTree::GetNodeChildrenBVs(const BV *pBV_parent, const Vec3 &sweepdir,float sweepstep, BV *&pBV_child1,BV *&pBV_child2, int iCaller)
 {
 	BBoxExt *bbox_parent=(BBoxExt*)pBV_parent, *&bbox_child1=(BBoxExt*&)pBV_child1, *&bbox_child2=(BBoxExt*&)pBV_child2;
+	const unsigned child = ReadSplitChild(pBV_parent, iCaller, 2, g_BBoxExtBufPos, sizeof(g_BBoxExtBuf) / sizeof(g_BBoxExtBuf[0]));
 	bbox_child1 = g_BBoxExtBuf + g_BBoxExtBufPos++;
 	bbox_child2 = g_BBoxExtBuf + g_BBoxExtBufPos++;
-	bbox_child2->iNode = (bbox_child1->iNode = m_pNodes[bbox_parent->iNode].ichild)+1;
+	bbox_child2->iNode = (bbox_child1->iNode = child)+1;
 	bbox_child1->type = bbox_child2->type = box::type;
 	bbox_child1->aboxStatic.bOriented = bbox_child2->aboxStatic.bOriented = bbox_parent->aboxStatic.bOriented;
 	bbox_child1->aboxStatic.Basis = bbox_parent->aboxStatic.Basis; 
@@ -570,8 +595,22 @@ void CAABBTree::Load(CMemStream &stm, CGeometry *pGeom)
 	}
 	m_pTri2Node = new int[(m_pMesh->m_nTris-1>>5-m_nBitsLog)+1];
 	memset(m_pTri2Node,0,sizeof(int)*((m_pMesh->m_nTris-1>>5-m_nBitsLog)+1));
-	for(i=0;i<m_nNodes;i++) for(int j=0;j<(int)m_pNodes[i].ntris;j++)
-		m_pTri2Node[m_pNodes[i].ichild+j>>5-m_nBitsLog] |= i << ((m_pNodes[i].ichild+j&(1<<5-m_nBitsLog)-1)<<m_nBitsLog);
+	const unsigned triangleCount = static_cast<unsigned>(m_pMesh->m_nTris);
+	for (i = 0; i < m_nNodes; ++i)
+	{
+		const AABBnode& node = m_pNodes[i];
+		if (i != 1)
+		{
+			const bool invalidRange = node.ntris
+				? node.ichild >= triangleCount || node.ntris > triangleCount - node.ichild
+				: IsInvalidAabbChildPair(node.ichild, m_nNodes);
+			if (invalidRange)
+				CryCrashBreadcrumbs::Record(CryCrashBreadcrumbs::AabbLoad, this, m_pMesh, i,
+					node.ichild, m_nNodes, node.ntris, ver);
+		}
+		for (int j = 0; j < static_cast<int>(node.ntris); ++j)
+			m_pTri2Node[node.ichild+j>>5-m_nBitsLog] |= i << ((node.ichild+j&(1<<5-m_nBitsLog)-1)<<m_nBitsLog);
+	}
 
 	stm.Read(m_center);
 	stm.Read(m_size);

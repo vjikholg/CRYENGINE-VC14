@@ -11,6 +11,7 @@
 //////////////////////////////////////////////////////////////////////
 
 #include "StdAfx.h"
+#include <CryCrashBreadcrumbs.h>
 
 #include "bvtree.h"
 #include "geometry.h"
@@ -1701,6 +1702,10 @@ void CPhysicalWorld::DetachEntityGridThunks(CPhysicalPlaceholder *pobj)
 	if (pobj->m_iGThunk0) {
 		int ithunk,ithunk_next,ithunk_last,icell;
 		for(ithunk=pobj->m_iGThunk0; ithunk; ithunk=ithunk_next) {
+			if (ithunk == 25)
+				CryCrashBreadcrumbs::Record(CryCrashBreadcrumbs::GridUnlink25, this, m_gthunks,
+					m_gthunks[ithunk].bFirstInCell ? m_gthunks[ithunk].iprev : -1,
+					ithunk, m_gthunks[ithunk].inext, m_gthunks[ithunk].pent, m_thunkPoolSz);
 			ithunk_next = m_gthunks[ithunk].inextOwned;
 			m_gthunks[m_gthunks[ithunk].inext].iprev = m_gthunks[ithunk].iprev & -(int)m_gthunks[ithunk].inext>>31;
 			m_gthunks[m_gthunks[ithunk].inext].bFirstInCell = m_gthunks[ithunk].bFirstInCell;
@@ -1833,6 +1838,9 @@ int CPhysicalWorld::RepositionEntity(CPhysicalPlaceholder *pobj, int flags, Vec3
 					m_gthunks[ithunk].BBox[2] = igxInner[1] + (255-igxInner[1] & ix-igx[1]>>31);
 					m_gthunks[ithunk].BBox[3] = igyInner[1] + (255-igyInner[1] & iy-igy[1]>>31);
 					m_gthunks[ithunk].pent = pcurobj;
+					if (ithunk == 25)
+						CryCrashBreadcrumbs::Record(CryCrashBreadcrumbs::GridLink25, this, m_gthunks,
+							j, ithunk, m_gthunks[ithunk].inext, pcurobj, m_thunkPoolSz);
 				}
 				pcurobj->m_ig[0].x=igx[0]; pcurobj->m_ig[1].x=igx[1]; 
 				pcurobj->m_ig[0].y=igy[0]; pcurobj->m_ig[1].y=igy[1];
@@ -1945,12 +1953,23 @@ struct entity_grid_checker {
 			pWorld->m_idPODThread = -1;
 			ReadLockCond relock(pWorld->m_lockGrid,1); relock.SetActive(0);
 		}
-		thunk = pWorld->m_gthunks+(ithunk = pWorld->m_pEntGrid[pWorld->m_entgrid.getcell_safe(icell.x,icell.y)]);
+		const int gridCell = pWorld->m_entgrid.getcell_safe(icell.x, icell.y);
+		if (!pWorld->m_pEntGrid)
+			CryCrashBreadcrumbs::Record(CryCrashBreadcrumbs::GridRead, pWorld, pWorld->m_gthunks,
+				gridCell, -1, -1, 0, pWorld->m_thunkPoolSz);
+		thunk = pWorld->m_gthunks+(ithunk = pWorld->m_pEntGrid[gridCell]);
 		bNoThunkSubst = iszero_mask(pThunkSubst);
 		thunk = (pe_gridthunk*)((intptr_t)thunk + ((intptr_t)pThunkSubst-(intptr_t)thunk & ~bNoThunkSubst));
 
 		for(; ithunk; thunk=pWorld->m_gthunks+(ithunk=ithunk_next)) {
+			if (bNoThunkSubst && (!pWorld->m_gthunks || static_cast<unsigned>(ithunk) >= static_cast<unsigned>(pWorld->m_thunkPoolSz)))
+				CryCrashBreadcrumbs::Record(CryCrashBreadcrumbs::GridRead, pWorld, pWorld->m_gthunks,
+					gridCell, ithunk, -1, 0, pWorld->m_thunkPoolSz);
 			ithunk_next = thunk->inext;
+			if (bNoThunkSubst && (ithunk == 25 || !thunk->pent ||
+				static_cast<unsigned>(ithunk_next) >= static_cast<unsigned>(pWorld->m_thunkPoolSz)))
+				CryCrashBreadcrumbs::Record(CryCrashBreadcrumbs::GridRead, pWorld, pWorld->m_gthunks,
+					gridCell, ithunk, ithunk_next, thunk->pent, pWorld->m_thunkPoolSz);
 			if (objtypes & 1u<<thunk->iSimClass &&
 					(!(pWorld->m_entgrid.inrange(icell.x,icell.y)&-bNoThunkSubst) || 
 							ray_box_overlap2d(Vec2(0.5f-org2d.x,0.5f-org2d.y),dir2d,

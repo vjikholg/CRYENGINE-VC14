@@ -79,6 +79,9 @@ public:
 	int m_nMaxTrisPerNode,m_nMinTrisPerNode;
 	int m_nMaxTrisInNode;
 	float m_maxSkipDim;
+
+private:
+	unsigned ReadSplitChild(const BV* parent, int caller, unsigned mode, int cursor, int capacity) const;
 };
 
 #endif
