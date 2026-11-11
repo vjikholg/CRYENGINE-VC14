@@ -14,6 +14,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #include "StdAfx.h"
+#include <CryCrashBreadcrumbs.h>
 
 #ifdef SOUNDSYSTEM_USE_FMODEX400
 
@@ -486,6 +487,7 @@ CAudioDeviceFmodEx400::CAudioDeviceFmodEx400(void * hWnd)
   m_pHWnd = hWnd; 
 
 	m_ExResult = FMOD::EventSystem_Create(&m_pEventSystem);
+	CryCrashBreadcrumbs::Record(CryCrashBreadcrumbs::FmodRelease, this, m_pEventSystem, 0, m_ExResult);
 	if (IS_FMODERROR)
 	{
 		FmodErrorOutput("event system failed! ", IMiniLog::eError);
@@ -585,6 +587,7 @@ bool CAudioDeviceFmodEx400::InitDevice(CSoundSystem* pSoundSystem)
 	{
 		//m_CommandPlayer.LogCommand(CCommandPlayerFmodEx400::EVENTSYSTEM_CREATE, gEnv->pTimer->GetFrameStartTime().GetMilliSeconds());
 		m_ExResult = FMOD::EventSystem_Create(&m_pEventSystem);
+		CryCrashBreadcrumbs::Record(CryCrashBreadcrumbs::FmodRelease, this, m_pEventSystem, 0, m_ExResult);
 		if (IS_FMODERROR)
 		{
 			FmodErrorOutput("event system failed! ", IMiniLog::eError);
@@ -1213,14 +1216,19 @@ bool CAudioDeviceFmodEx400::ShutDownDevice(void)
 			}
 		}		
 		
-		m_ExResult = m_pEventSystem->unload();
+		FMOD::EventSystem* const events = m_pEventSystem;
+		CryCrashBreadcrumbs::Record(CryCrashBreadcrumbs::FmodRelease, this, events, 1, 0);
+		m_ExResult = events->unload();
 		if (IS_FMODERROR)
 		{
 			FmodErrorOutput("event system unload failed! ", IMiniLog::eWarning);
 			bTemp = false;
 		}
 
-		m_ExResult = m_pEventSystem->release();
+		FMOD::EventSystem* const releasing = m_pEventSystem;
+		CryCrashBreadcrumbs::Record(CryCrashBreadcrumbs::FmodRelease, this, releasing, 2, m_ExResult);
+		m_ExResult = releasing->release();
+		CryCrashBreadcrumbs::Record(CryCrashBreadcrumbs::FmodRelease, this, releasing, 3, m_ExResult);
 		if (IS_FMODERROR)
 		{
 			FmodErrorOutput("event system release failed! ", IMiniLog::eError);
@@ -1541,7 +1549,10 @@ bool CAudioDeviceFmodEx400::Update(void)
 					m_CommandPlayer.LogCommand(CCommandPlayerFmodEx400::EVENTSYSTEM_UPDATE, gEnv->pTimer->GetFrameStartTime().GetMilliSeconds());
 
 				FRAME_PROFILER( "FMOD-EventUpdate", GetISystem(), PROFILE_SOUND );	
-				m_ExResult = m_pEventSystem->update();
+				FMOD::EventSystem* events = m_pEventSystem;
+				CryCrashBreadcrumbs::Record(CryCrashBreadcrumbs::FmodUpdate, this, events, 1, 0, nUpdateLoops);
+				m_ExResult = events->update();
+				CryCrashBreadcrumbs::Record(CryCrashBreadcrumbs::FmodUpdate, this, events, 2, m_ExResult, nUpdateLoops);
 			}	
 
 			if (IS_FMODERROR) 

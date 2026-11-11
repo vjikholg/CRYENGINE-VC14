@@ -14,6 +14,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #include "StdAfx.h"
+#include <CryCrashBreadcrumbs.h>
 
 #ifdef SOUNDSYSTEM_USE_FMODEX400
 
@@ -34,6 +35,7 @@ tmapParameterNames CPlatformSoundFmodEx400Event::ParameterNames;
 
 FMOD_RESULT F_CALLBACK  CPlatformSoundFmodEx400Event::OnCallBack(FMOD_EVENT *  event, FMOD_EVENT_CALLBACKTYPE  type, void *  param1, 	void *  param2, void *  userdata)
 {
+	CryCrashBreadcrumbs::Record(CryCrashBreadcrumbs::FmodCallback, event, userdata, type, 1, 0);
 	if (!CSound::m_pSSys)
 		return FMOD_OK;
 
@@ -1549,7 +1551,10 @@ bool CPlatformSoundFmodEx400Event::FreeSoundHandle()
 
 		// deactivate callback for now
 		if (m_State != pssINFOONLY)
+		{
+			CryCrashBreadcrumbs::Record(CryCrashBreadcrumbs::FmodCallback, m_pEvent, INVALID_SOUNDID, 0, 2, 0);
 			m_ExResult = m_pEvent->setCallback(NULL, INVALID_SOUNDID); //OnCallBack
+		}
 
 		// TODO Generic approach to Playmodes (Play/Pause/Stop)
 		// Stopping a Stream does not stop the streaming itself !
@@ -1879,6 +1884,8 @@ bool CPlatformSoundFmodEx400Event::CreateSound(tAssetHandle AssetHandle, SSoundS
 					{
 						// activate callback for now
 						m_ExResult = m_pEvent->setCallback(OnCallBack, (void*)m_pSound->GetId());
+						CryCrashBreadcrumbs::Record(CryCrashBreadcrumbs::FmodCallback, m_pEvent,
+							m_pSound->GetId(), 0, 3, m_ExResult);
 					}
 
 					if (IS_FMODERROR)
