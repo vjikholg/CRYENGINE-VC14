@@ -1,4 +1,5 @@
 #include "StdAfx.h"
+#include <CryCrashBreadcrumbs.h>
 
 #include "FlashPlayerInstance.h"
 #include "../System.h"
@@ -1027,6 +1028,7 @@ CFlashPlayer::CFlashPlayer()
 
 CFlashPlayer::~CFlashPlayer()
 {
+	CryCrashBreadcrumbs::Record(CryCrashBreadcrumbs::FlashRelease, this, m_pMovieView.GetPtr(), m_pMovieDef.GetPtr(), 2);
 	Unlink();
 
 	// release ref counts of all shared resources
@@ -1046,6 +1048,7 @@ CFlashPlayer::~CFlashPlayer()
 
 void CFlashPlayer::Release()
 {
+	CryCrashBreadcrumbs::Record(CryCrashBreadcrumbs::FlashRelease, this, m_pMovieView.GetPtr(), m_pMovieDef.GetPtr(), 1);
 	if (m_rgEnabled)
 		CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_ERROR, "!Trying to release flash object \"%s\" in a guarded code section (callback, etc). Crashes are likely to occur!", m_filePath.c_str());
 
@@ -1109,6 +1112,14 @@ int CFlashPlayer::GetWarningLevel()
 }
 
 
+static uint32 HashCrashMoviePath(const char* path)
+{
+	uint32 hash = 2166136261u;
+	for (const unsigned char* p = reinterpret_cast<const unsigned char*>(path); p && *p; ++p)
+		hash = (hash ^ *p) * 16777619u;
+	return hash;
+}
+
 bool CFlashPlayer::Load(const char* pFilePath, unsigned int options)
 {
 	FUNCTION_PROFILER_FAST(GetISystem(), PROFILE_SYSTEM, g_bProfilerEnabled);
@@ -1118,6 +1129,9 @@ bool CFlashPlayer::Load(const char* pFilePath, unsigned int options)
 
 	// copy file path
 	m_filePath = pFilePath;
+	const uint32 pathHash = HashCrashMoviePath(pFilePath);
+	CryCrashBreadcrumbs::Record(CryCrashBreadcrumbs::FlashLoad, this, m_pMovieView.GetPtr(),
+		m_pMovieDef.GetPtr(), pathHash, 1);
 
 	SET_LOG_CONTEXT;
 
@@ -1163,6 +1177,8 @@ bool CFlashPlayer::Load(const char* pFilePath, unsigned int options)
 	// set movie definition and movie view
 	m_pMovieDef = pMovieDef;
 	m_pMovieView = pMovieView;
+	CryCrashBreadcrumbs::Record(CryCrashBreadcrumbs::FlashLoad, this, m_pMovieView.GetPtr(),
+		m_pMovieDef.GetPtr(), pathHash, 2);
 
 	// set action script verbosity
 	UpdateASVerbosity();
@@ -1306,6 +1322,7 @@ void CFlashPlayer::Advance(float deltaTime)
 		}
 
 		UpdateASVerbosity();
+		CryCrashBreadcrumbs::Record(CryCrashBreadcrumbs::FlashUse, this, m_pMovieView.GetPtr(), 1);
 		m_pMovieView->Advance(deltaTime);
 	}
 }
@@ -1325,6 +1342,7 @@ void CFlashPlayer::Render()
 		{
 			UpdateRenderFlags();
 			m_pRenderer->SetCompositingDepth(m_depth);
+			CryCrashBreadcrumbs::Record(CryCrashBreadcrumbs::FlashUse, this, m_pMovieView.GetPtr(), 2);
 			m_pMovieView->Display();
 		}
 
@@ -1447,6 +1465,7 @@ bool CFlashPlayer::GetVariable(const char* pPathToVar, SFlashVarValue* pValue) c
 	if (m_pMovieView && pValue)
 	{
 		GFxValue retVal;
+		CryCrashBreadcrumbs::Record(CryCrashBreadcrumbs::FlashUse, this, m_pMovieView.GetPtr(), 3);
 		res = m_pMovieView->GetVariable(&retVal, pPathToVar);
 		*pValue = ConvertValue(retVal);
 	}
@@ -1530,6 +1549,7 @@ bool CFlashPlayer::Invoke(const char* pMethodName, const SFlashVarValue* pArgs, 
 		if (pTranslatedArgs || !numArgs)
 		{
 			GFxValue retVal;
+			CryCrashBreadcrumbs::Record(CryCrashBreadcrumbs::FlashUse, this, m_pMovieView.GetPtr(), 4);
 			res = m_pMovieView->Invoke(pMethodName, &retVal, pTranslatedArgs, numArgs);
 			if (pResult)
 				*pResult = ConvertValue(retVal);
