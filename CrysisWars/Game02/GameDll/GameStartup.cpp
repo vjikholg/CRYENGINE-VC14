@@ -160,20 +160,20 @@ CGameStartup::~CGameStartup()
 void CGameStartup::InitRootDir()
 {
 #ifdef WIN32
-	WCHAR szExeFileName[_MAX_PATH];
+	WCHAR executablePath[_MAX_PATH];
+	const DWORD length = GetModuleFileNameW(NULL, executablePath, _countof(executablePath));
+	if (length == 0 || length >= _countof(executablePath) || !PathRemoveFileSpecW(executablePath))
+		return;
 
-	GetModuleFileNameW( GetModuleHandle(NULL), szExeFileName, sizeof(szExeFileName));
-	PathRemoveFileSpecW(szExeFileName);
+	const WCHAR* binaryDirectory = PathFindFileNameW(executablePath);
+	if (_wcsicmp(binaryDirectory, L"Bin32") == 0 ||
+		_wcsicmp(binaryDirectory, L"Bin64") == 0 ||
+		_wcsicmp(binaryDirectory, L"Bin64PTE") == 0)
+	{
+		PathRemoveFileSpecW(executablePath);
+	}
 
-	// Remove Bin32/Bin64 folder/
-	WCHAR *lpPath = StrStrIW(szExeFileName,L"\\Bin32");
-	if (lpPath)
-		*lpPath = 0;
-	lpPath = StrStrIW(szExeFileName,L"\\Bin64");
-	if (lpPath)
-		*lpPath = 0;
-
-	SetCurrentDirectoryW( szExeFileName );
+	SetCurrentDirectoryW(executablePath);
 #endif
 }
 
@@ -376,25 +376,26 @@ void CGameStartup::RequestLoadMod(IConsoleCmdArgs* pCmdArgs)
 #ifndef WIN32
 	assert(0 && "RequestLoadMod has Win32 specific code");	// !!! FIXME
 #else
+	if (!gEnv->pSystem->IsEditor() && !gEnv->pSystem->IsDedicated())
+	{
+		m_reqModName = pCmdArgs->GetArgCount() == 2 ? pCmdArgs->GetArg(1) : GAME_NAME;
+		// Let the launcher start the replacement before the engine can fast-exit.
+		PostQuitMessage(0);
+		return;
+	}
+
 	STARTUPINFO si;
 	ZeroMemory( &si, sizeof(si) );
 	si.cb = sizeof(si);
 	PROCESS_INFORMATION pi;
 
 	char pBuffer[512];
-	strcpy(pBuffer, " -modrestart");
+	strcpy(pBuffer, "Crysis.exe -modrestart");
 
 	if (pCmdArgs->GetArgCount() == 2)
 	{
-		m_reqModName = pCmdArgs->GetArg(1);
-		ISystem* pSystem = m_pFramework->GetISystem();
-
-		if (m_reqModName)
-		{
-			  
-			 strcat(pBuffer, " -mod ");
-			 strcat(pBuffer, m_reqModName);
-		}
+		strcat_s(pBuffer, " -mod ");
+		strcat_s(pBuffer, pCmdArgs->GetArg(1));
 	}
 
 	if(gEnv->pSystem->IsDevMode())

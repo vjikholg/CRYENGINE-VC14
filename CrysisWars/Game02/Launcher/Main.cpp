@@ -17,18 +17,21 @@ History:
 #include <CryLibrary.h>
 #include <IGameStartup.h>
 #include <IConsole.h>
+#include <ICmdLine.h>
 #include <platform_impl.h>
 #include <StringUtils.h>
+#include <algorithm>
+#include <string>
 
 #define SECUROM_INCLUDE_EXE_FUNCTIONS
 #include <CopyProtection.h>
 
 #define GAMEDLL_FILENAME "CryGame.dll"
 
-int RunGame(const char *commandLine)
+int RunGame(const char *commandLine, bool allowMultipleClients)
 {
-	HANDLE mutex = CreateMutex(NULL, TRUE, "CrytekApplication");
-	if (GetLastError() == ERROR_ALREADY_EXISTS)
+	HANDLE mutex = CreateMutex(NULL, TRUE, allowMultipleClients ? nullptr : "CrytekApplication");
+	if (!allowMultipleClients && GetLastError() == ERROR_ALREADY_EXISTS)
 	{
 		if (CryStringUtils::stristr(commandLine, "-devmode") == 0 && CryStringUtils::stristr(commandLine, "-modrestart") == 0)
 		{
@@ -40,10 +43,6 @@ int RunGame(const char *commandLine)
 			return 1;
 	}
 
-	//restart parameters
-	static const size_t MAX_RESTART_LEVEL_NAME = 256;
-	char fileName[MAX_RESTART_LEVEL_NAME];
-	strcpy(fileName, "");
 	static const char logFileName[] = "Game.log";
 
 	// load the game dll
@@ -92,7 +91,13 @@ int RunGame(const char *commandLine)
 
 	startupParams.hInstance = GetModuleHandle(0);
 	startupParams.sLogFileName = logFileName;
-	strcpy(startupParams.szSystemCmdLine, commandLine);
+	if (strlen(commandLine) >= sizeof(startupParams.szSystemCmdLine))
+	{
+		CryFreeLibrary(gameDll);
+		CloseHandle(mutex);
+		return 1;
+	}
+	strcpy_s(startupParams.szSystemCmdLine, commandLine);
 	//startupParams.pProtectedFunctions[0] = &TestProtectedFunction;
 
 #ifdef SECUROM_32
@@ -124,63 +129,62 @@ int RunGame(const char *commandLine)
 		if (!gEnv->pCryPak->IsFileExist("config/config.dat"))
 			return -1;
 
-		char * pRestartLevelName = NULL;
-		if (fileName[0])
-			pRestartLevelName = fileName;
+		const ICmdLine* args = startupParams.pSystem->GetICmdLine();
+		const ICmdLineArg* level = args->FindArg(eCLAT_Normal, "restart");
+		if (!level)
+			level = args->FindArg(eCLAT_Normal, "load");
+		pGameStartup->Run(level && *level->GetValue() ? level->GetValue() : NULL);
 
- 		char pBuffer[256];
- 		const char* substr = strstr(commandLine, "restart");
- 		if(substr != NULL)
- 		{
- 			int len = substr-commandLine;
- 			strncpy(pBuffer, commandLine, len);
- 			strcpy(pBuffer + len, commandLine + len + 7);
- 			pGameStartup->Run(pBuffer);	//restartLevel to be loaded
- 		}
- 		else
- 		{
- 			const char* loadstr = strstr(commandLine, "load");
- 			if(loadstr != NULL)
- 			{
- 				int len = loadstr - commandLine;
- 				strncpy(pBuffer, commandLine, len);
- 				strcpy(pBuffer + len, commandLine + len + 4);
- 				pGameStartup->Run(pBuffer);	//restartLevel to be loaded
- 			}
- 			else
- 				pGameStartup->Run(NULL);
-		}
-
-		bool isLevelRequested = pGameStartup->GetRestartLevel(&pRestartLevelName);
-		if (pRestartLevelName)
-		{
-			if (strlen(pRestartLevelName) < MAX_RESTART_LEVEL_NAME)
-				strcpy(fileName, pRestartLevelName);
-		}
-
+		char* pRestartLevelName = NULL;
+		bool isLevelRequested = pGameStartup->GetRestartLevel(&pRestartLevelName) && pRestartLevelName;
 		char pRestartMod[255];
 		bool isModRequested = pGameStartup->GetRestartMod(pRestartMod, 255);
 
 		if (isLevelRequested || isModRequested)
 		{
-			STARTUPINFO si;
-			ZeroMemory( &si, sizeof(si) );
-			si.cb = sizeof(si);
-			PROCESS_INFORMATION pi;
-
+			std::string restartArguments;
 			if (isLevelRequested)
-			{
-				strcpy(pBuffer, "restarting: restart ");
-				strcat(pBuffer, fileName);
-			}
+				restartArguments += std::string(" restart \"") + pRestartLevelName + "\"";
 
+			restartArguments += " -modrestart";
 			if (isModRequested)
+				restartArguments += std::string(" -mod \"") + pRestartMod + "\"";
+
+			const char* options[] = { "mod", "root", "mwll_user_root", "dx9", "dx10", "devmode", "multiclient" };
+			for (const char* option : options)
 			{
-				strcat(pBuffer, "restarting:  -mod ");
-				strcat(pBuffer, pRestartMod);
+				if (isModRequested && strcmp(option, "mod") == 0)
+					continue;
+
+				if (const ICmdLineArg* arg = args->FindArg(eCLAT_Pre, option))
+				{
+					restartArguments += std::string(" -") + option;
+					if (*arg->GetValue())
+						restartArguments += std::string(" \"") + arg->GetValue() + "\"";
+				}
 			}
-			
-			CreateProcess("bin32/crysis.exe", pBuffer, NULL, NULL, FALSE, /*flags*/ 0, NULL, NULL, &si, &pi);
+			char executablePath[_MAX_PATH];
+			const DWORD length = GetModuleFileNameA(NULL, executablePath, _countof(executablePath));
+			if (length > 0 && length < _countof(executablePath))
+			{
+				std::string restartCommand = std::string("\"") + executablePath + "\"" + restartArguments;
+				STARTUPINFOA startup = {};
+				startup.cb = sizeof(startup);
+				PROCESS_INFORMATION process = {};
+				if (CreateProcessA(executablePath, &restartCommand[0], NULL, NULL, FALSE, 0, NULL, NULL, &startup, &process))
+				{
+					CloseHandle(process.hThread);
+					CloseHandle(process.hProcess);
+				}
+				else
+				{
+					MessageBox(0, "Failed to restart Crysis.", "Error", MB_OK | MB_DEFAULT_DESKTOP_ONLY);
+				}
+			}
+			else
+			{
+				MessageBox(0, "Could not resolve the Crysis executable for restart.", "Error", MB_OK | MB_DEFAULT_DESKTOP_ONLY);
+			}
 		}
 		else
 		{
@@ -216,6 +220,7 @@ int RunGame(const char *commandLine)
 	}
 
 	CloseHandle(mutex);
+
 	return 0;
 }
 
@@ -251,23 +256,23 @@ bool ReLaunchMediaCenter()
 ///////////////////////////////////////////////
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 	{
+	const bool allowMultipleClients = std::any_of(__argv + 1, __argv + __argc, [](const char* arg)
+	{
+		return _stricmp(arg, "-multiclient") == 0;
+	});
+
 	// we need pass the full command line, including the filename
 	// lpCmdLine does not contain the filename.
 
-	//check for a restart
-	const char* pos = strstr(lpCmdLine, "restart");
-	if(pos != NULL)
-	{
+	const bool restarting = (__argc > 1 && _stricmp(__argv[1], "restart") == 0) ||
+		std::any_of(__argv + 1, __argv + __argc, [](const char* arg)
+		{
+			return _stricmp(arg, "-modrestart") == 0;
+		});
+	if (restarting)
 		Sleep(5000); //wait for old instance to be deleted
-		return RunGame(lpCmdLine);	//pass the restart level if restarting
-	}
-	else
-		pos = strstr(lpCmdLine, "load");// commandLine.find("load");
 
-	if(pos != NULL)
-		RunGame(lpCmdLine);
-
-	int nRes = RunGame(GetCommandLineA());
+	int nRes = RunGame(GetCommandLineA(), allowMultipleClients);
 
 	//////////////////////////////////////////////////////////////////////////
 	// Support relaunching for windows media center edition.
