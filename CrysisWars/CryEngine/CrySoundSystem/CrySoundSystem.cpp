@@ -8,6 +8,7 @@
 #include "DummySound.h"	
 #include "SoundSystem.h"
 #include "IAudioDevice.h"
+#include "ICmdLine.h"
 
 #ifdef SOUNDSYSTEM_USE_FMODEX400
 	#include "AudioDeviceFmodEx400.h"
@@ -45,6 +46,13 @@ static CSystemEventListner_Sound g_system_event_listener_sound;
 extern "C" ISoundSystem* CreateSoundSystem(struct ISystem* pISystem, void* pInitData)
 {
 	ModuleInitISystem(pISystem);
+
+	if (pISystem->GetICmdLine()->FindArg(eCLAT_Pre, "benchmarkheadless"))
+	{
+		CryLogAlways("Sound - benchmark client uses dummy audio");
+		pISystem->GetISystemEventDispatcher()->RegisterListener(&g_system_event_listener_sound);
+		return new CDummySoundSystem(pInitData);
+	}
 
 	CSoundSystem* pSoundSystem = NULL;
   IAudioDevice *pAudioDevice = NULL;
