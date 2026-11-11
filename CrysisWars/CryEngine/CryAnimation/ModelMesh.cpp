@@ -10,6 +10,7 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
+#include <CryCrashBreadcrumbs.h>
 #include <IRenderAuxGeom.h>
 #include "Model.h"
 #include "ModelMesh.h"
@@ -469,14 +470,24 @@ void CModelMesh::SkinningExtSW ( CCharInstance* pMaster, CAttachment* pAttachmen
 #ifdef DEFINE_PROFILER_FUNCTION
 	DEFINE_PROFILER_FUNCTION();
 #endif
+	const uint32 iActiveFrame = pMaster->m_iActiveFrame;
+	const size_t remapCount = pAttachment ? pAttachment->m_arrRemapTable.size() : 0;
+	const size_t jointCount = iActiveFrame < MAX_MOTIONBLUR_FRAMES ? pMaster->m_arrNewSkinQuat[iActiveFrame].size() : 0;
+	CryCrashBreadcrumbs::Record(CryCrashBreadcrumbs::Skinning, this, pMaster, pAttachment,
+		nLOD, iActiveFrame, remapCount, jointCount);
 	InitSkinningExtSW(&pMaster->m_Morphing,pMaster->m_arrShapeDeformValues,0,nLOD);
 
 	QuatTS arrNewSkinQuat[MAX_JOINT_AMOUNT+1];	//bone quaternions for skinning (entire skeleton)
-	uint32 iActiveFrame		=	pMaster->m_iActiveFrame;
 	if(pAttachment)
 	{
-		uint32 numRemapJoints	= pAttachment->m_arrRemapTable.size();
-		for (uint32 i=0; i<numRemapJoints; i++)	arrNewSkinQuat[i]=pMaster->m_arrNewSkinQuat[iActiveFrame][pAttachment->m_arrRemapTable[i]];
+		for (uint32 i = 0; i < remapCount; ++i)
+		{
+			const uint32 source = pAttachment->m_arrRemapTable[i];
+			if (i >= MAX_JOINT_AMOUNT + 1 || source >= jointCount)
+				CryCrashBreadcrumbs::Record(CryCrashBreadcrumbs::SkinningRemap, this, pMaster, pAttachment,
+					i, source, jointCount, MAX_JOINT_AMOUNT + 1);
+			arrNewSkinQuat[i] = pMaster->m_arrNewSkinQuat[iActiveFrame][source];
+		}
 	}
 	else
 	{
@@ -487,7 +498,8 @@ void CModelMesh::SkinningExtSW ( CCharInstance* pMaster, CAttachment* pAttachmen
 	}
 
 
-	uint32 numExtVertices = m_pModel->GetRenderMesh(nLOD)->GetVertCount();//m_arrTransformCache.size();	assert(numExtVertices);
+	IRenderMesh* renderMesh = m_pModel->GetRenderMesh(nLOD);
+	uint32 numExtVertices = renderMesh->GetVertCount();
 	uint32 numFacesTotal=0;
 
 	if (m_arrExtSkinnedStream.size() != numExtVertices)
@@ -495,6 +507,8 @@ void CModelMesh::SkinningExtSW ( CCharInstance* pMaster, CAttachment* pAttachmen
 
 
 	LockFullRenderMesh(nLOD);
+	CryCrashBreadcrumbs::Record(CryCrashBreadcrumbs::SkinningStreams, this, renderMesh, m_pPositions,
+		m_pSkinningInfo, m_pTangents, m_SkinStride, numExtVertices);
 
 	if (m_arrTangents.empty())
 		m_arrTangents.resize(numExtVertices);

@@ -11,6 +11,7 @@
 //////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
+#include <CryCrashBreadcrumbs.h>
 #include <CryHeaders.h>
 #include <StlContainerUtils.h>
 #include <CryCompiledFile.h>
@@ -898,6 +899,7 @@ bool GlobalAnimationHeader::UnpackAnimation()
 		return false;
 
 	size_t count = m_arrController.size();
+	TraceControllerCache(1);
 	m_arrControllerCache.resize(count);
 
 	size_t size(0);
@@ -994,35 +996,56 @@ bool GlobalAnimationHeader::UnpackAnimation()
 	}
 
 	std::sort(m_arrControllerCache.begin(),	m_arrControllerCache.end(), AnimCtrlSortPred()	);
+	TraceControllerCache(2);
 
 	return true;
 }
 
 void GlobalAnimationHeader::ClearCache()
 {
+	TraceControllerCache(3);
 	m_arrControllerCache.clear();
 	delete [] m_vCache;
   m_vCache = 0;
 }
 
+void GlobalAnimationHeader::TraceControllerCache(unsigned phase)
+{
+	CryCrashBreadcrumbs::Record(CryCrashBreadcrumbs::AnimationCache, this, m_arrController.data(),
+		m_arrController.size(), m_arrControllerCache.data(), m_arrControllerCache.size(), phase, GetCRCPathName());
+}
+
+void GlobalAnimationHeader::ClearControllers()
+{
+	if (!m_arrController.empty())
+		TraceControllerCache(4);
+	m_arrController.clear();
+}
+
+static IController* FindAnimationController(IController_AutoArray& controllers, uint32 id)
+{
+	const auto it = std::lower_bound(controllers.begin(), controllers.end(), id, AnimCtrlSortPred());
+	return it != controllers.end() && (*it)->GetID() == id ? it->get() : nullptr;
+}
+
 IController* GlobalAnimationHeader::GetControllerByJointID(uint32 nControllerID)
 {
-	/*
-	uint32 numController = m_arrController.size();
-	for (uint32 i=0; i<numController; i++) 
+	IController_AutoArray& controllers = m_arrControllerCache.empty() ? m_arrController : m_arrControllerCache;
+#if defined(_MSC_VER) && defined(_WIN64)
+	// Keep per-joint lookups out of the recorder unless the actual lookup faults.
+	const auto* data = controllers.data();
+	const size_t count = controllers.size();
+	const int pathCrc = GetCRCPathName();
+	__try
 	{
-	if ( m_arrController[i]->GetID()==nControllerID )
-	return m_arrController[i];
+		return FindAnimationController(controllers, nControllerID);
 	}
-	return NULL;
-	*/
-
-	IController_AutoArray & controllerArray = m_arrControllerCache.empty() ? m_arrController : m_arrControllerCache;
-
-	IController_AutoArray::iterator  it = std::lower_bound(controllerArray.begin(), controllerArray.end(), nControllerID, AnimCtrlSortPred());//, std::equal<uint32>());
-	if (it == controllerArray.end() || (*it)->GetID() != nControllerID)
-		return NULL;
-
-
-	return *it;
+	__except(CryCrashBreadcrumbs::Record(CryCrashBreadcrumbs::AnimationLookup, this, data, count,
+		nControllerID, pathCrc), EXCEPTION_CONTINUE_SEARCH)
+	{
+		return nullptr;
+	}
+#else
+	return FindAnimationController(controllers, nControllerID);
+#endif
 }

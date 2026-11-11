@@ -357,7 +357,7 @@ struct GlobalAnimationHeader : public CNameCRCHelper
 				else
 					assert ((*it)->NumRefs()==1); // only this object references the controllers now
 #endif
-			m_arrController.clear();		// nobody uses the controllers; clean them up. 
+			ClearControllers();			// nobody uses the controllers; clean them up.
 			m_arrBSAnimations.clear();	// nobody uses the blend-spaces; clean them up.
 			m_FootPlantBits.clear();			// nobody uses the foot-plants; clean them up.
 		}
@@ -389,9 +389,7 @@ struct GlobalAnimationHeader : public CNameCRCHelper
 		return m_arrController.size();
 	}
 
-	void ClearControllers() {
-		m_arrController.clear();
-	}
+	void ClearControllers();
 
 
 	void StartAnimation();
@@ -399,6 +397,7 @@ struct GlobalAnimationHeader : public CNameCRCHelper
 
 
 private:
+	void TraceControllerCache(unsigned phase);
 	// unpack animation in temporary memory
 	bool UnpackAnimation();
 	// 
