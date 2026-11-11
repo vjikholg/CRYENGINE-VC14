@@ -16,6 +16,7 @@
 #ifdef WIN32
 
 #include "System.h"
+#include "CrashBreadcrumbs.h"
 #include <windows.h>
 #include <tchar.h>
 #include "errorrep.h"
@@ -94,7 +95,14 @@ LONG WINAPI CryEngineExceptionFilterMiniDump( struct _EXCEPTION_POINTERS * pExce
 						mdumpValue= (MINIDUMP_TYPE)(g_cvars.sys_WER - 2);
 						
 
-					BOOL bOK = pDump( GetCurrentProcess(), GetCurrentProcessId(), hFile, mdumpValue , &ExInfo, NULL, NULL );
+					const char* breadcrumbs = nullptr;
+					MINIDUMP_USER_STREAM stream = {};
+					stream.Type = CommentStreamA;
+					stream.BufferSize = CryCaptureCrashBreadcrumbs(&breadcrumbs);
+					stream.Buffer = const_cast<char*>(breadcrumbs);
+					MINIDUMP_USER_STREAM_INFORMATION streams = {1, &stream};
+					BOOL bOK = pDump(GetCurrentProcess(), GetCurrentProcessId(), hFile, mdumpValue,
+						&ExInfo, stream.BufferSize ? &streams : nullptr, nullptr);
 					if (bOK)
 					{
 						sprintf( szScratch, "Saved dump file to '%s'", szDumpPath );
@@ -144,6 +152,7 @@ AutoSetCryEngineExceptionFilter g_AutoSetCryEngineExceptionFilter;
 //////////////////////////////////////////////////////////////////////////
 LONG WINAPI CryEngineExceptionFilterWER( struct _EXCEPTION_POINTERS * pExceptionPointers )
 {
+	WriteCrashBreadcrumbsSidecar();
 
 	if (g_cvars.sys_WER > 1)
 		return CryEngineExceptionFilterMiniDump(pExceptionPointers);

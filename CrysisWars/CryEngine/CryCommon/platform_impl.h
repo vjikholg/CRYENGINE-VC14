@@ -19,6 +19,7 @@
 
 #include <platform.h>
 #include <ISystem.h>
+#include <CryCrashBreadcrumbs.h>
 
 #if defined(_LIB) && !defined(_LAUNCHER)
 	extern CMTRand_int32 g_random_generator;
@@ -82,7 +83,10 @@ void ModuleInitISystem( ISystem *pSystem )
 	InitCRTHandlers();
 	gEnv = 0;
 	if (pSystem)
+	{
 		gEnv = pSystem->GetGlobalEnvironment();
+		CryCrashBreadcrumbs::Bind();
+	}
 }
 
 bool g_bProfilerEnabled = false;

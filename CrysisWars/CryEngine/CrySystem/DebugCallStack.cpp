@@ -14,6 +14,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #include "StdAfx.h"
+#include "CrashBreadcrumbs.h"
 #include "DebugCallStack.h"
 
 #ifdef WIN32
@@ -610,6 +611,8 @@ int	DebugCallStack::handleException( void *exception_pointer )
 		// Exception called more then once.
 		return EXCEPTION_EXECUTE_HANDLER;
 	}
+	firstTime = false;
+	WriteCrashBreadcrumbsSidecar();
 
 	// Print exception info:
 	{
@@ -637,8 +640,6 @@ int	DebugCallStack::handleException( void *exception_pointer )
 			}
 		}
 	}
-
-	firstTime = false;
 
 	assert(!hwndException);
 
