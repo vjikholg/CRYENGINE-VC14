@@ -169,15 +169,28 @@ public:
 			}
 		}
 	}
-	void UnqueueUpdate( CParticleContainer* pCont )
+	void UnqueueUpdate( CParticleContainer* pCont );
+
+	// Take this before any container lock and hold it through queue cancellation and destruction.
+	class CTeardownFence
 	{
-		if (m_pThreadTask)
-		{
-			// Erase from current and/or next queues.
-			m_UpdateQueue.Replace(pCont, 0);
-			m_NextQueue.Replace(pCont, 0);
-		}
-	}
+	public:
+		CTeardownFence(CPartManager& manager, const char* operation, bool needed = true);
+		~CTeardownFence();
+
+		CTeardownFence(const CTeardownFence&) = delete;
+		CTeardownFence& operator=(const CTeardownFence&) = delete;
+
+	private:
+		CPartManager* m_pManager;
+		const char* m_operation;
+		float m_waitMs = 0.f;
+		bool m_profileWait = false;
+	};
+
+#if defined(CRY_PARTICLE_TEARDOWN_REGRESSION)
+	void ObserveContainerDestruction(const CParticleContainer* pCont);
+#endif
 
 	void WakeParticleThread(bool force);
 
@@ -201,6 +214,12 @@ public:
 	}
 
 private:
+#if defined(CRY_PARTICLE_TEARDOWN_REGRESSION)
+	struct STeardownRegression;
+	STeardownRegression* m_pTeardownRegression = nullptr;
+	static void TestParticleTeardown(IConsoleCmdArgs* args);
+	bool RunTeardownRegression(unsigned int workerDelayMs);
+#endif
 
 	// Implements a basic auto-reset event class.
 	class Event

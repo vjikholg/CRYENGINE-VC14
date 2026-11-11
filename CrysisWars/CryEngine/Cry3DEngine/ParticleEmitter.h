@@ -244,6 +244,7 @@ public:
 	void Render( SRendParams const& RenParams, SPartRenderParams& PRParams );
 	void RenderGeometry( const SRendParams& RenParams, const SPartRenderParams& PRParams );
 	void UnqueueUpdate();
+	void UnqueueUpdates();
 	void ComputeVertices();
 	void OnThreadUpdate();
 	float GetFillRateCost( CCamera const& cam ) const;
@@ -731,6 +732,7 @@ protected:
 	float																	m_fStopAge;						// Age prematurely paused or deactivated, or fHUGE.
 	bool																	m_bActive;						// Allowed to live.
 
+	void ClearSubEmitters();
 	PtrArray<CParticleSubEmitter>					m_SubEmitters;
 };
 
@@ -739,6 +741,9 @@ protected:
 
 class CParticleEmitter : public IParticleEmitter, public CParticleLocEmitter
 {
+#if defined(CRY_PARTICLE_TEARDOWN_REGRESSION)
+	friend class CPartManager;
+#endif
 	typedef CParticleLocEmitter	TParent;
 
 public:
@@ -750,7 +755,7 @@ public:
 	// IRenderNode implementation.
 	//////////////////////////////////////////////////////////////////////////
 
-	virtual void ReleaseNode()													{ Register(false); }	
+	virtual void ReleaseNode();
 	virtual EERType GetRenderNodeType()									{ return eERType_ParticleEmitter; }
 	virtual char const* GetName() const									{ return GetEffect() ? GetEffect()->GetName() : "Emitter"; }
 	virtual char const* GetEntityClassName() const			{ return "ParticleEmitter"; }
@@ -814,6 +819,7 @@ public:
 	inline bool IsRegistered() const			{ return m_bRegistered; }
 
 	void Register( bool b );
+	void UnqueueUpdates();
 
 	void UpdateForce()																	
 	{ 

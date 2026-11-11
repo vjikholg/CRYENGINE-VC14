@@ -101,6 +101,7 @@ void CVars::Init()
 																										" s+ = log emitter and particle counts by effect (for 1 frame)\n"
 																										" e+ = log particle system timing info (for 1 frame)\n"
 																										" t+ = log particle texture usage\n"
+																										" w+ = log particle teardown fence wait times\n"
 																										" z+ = freeze particle system"
 																									);
 	INIT_CVAR_FLAGS(e_particles_thread,						1, VF_BITFIELD, "Enable particle threading");

@@ -179,6 +179,134 @@ EVENT_HANDLE m_hEvent;
 
 #endif //defined(PS3)
 
+#if defined(CRY_PARTICLE_TEARDOWN_REGRESSION)
+struct CPartManager::STeardownRegression
+{
+	CParticleContainer* pContainer;
+	HANDLE dequeued = CreateEvent(NULL, TRUE, FALSE, NULL);
+	HANDLE resume = CreateEvent(NULL, TRUE, FALSE, NULL);
+	volatile LONG workerFinished = 0;
+	unsigned int workerDelayMs;
+	bool destroyedWhileRunning = false;
+	bool destroyed = false;
+
+	STeardownRegression(CParticleContainer* pTarget, unsigned int delayMs)
+		: pContainer(pTarget), workerDelayMs(delayMs) {}
+
+	~STeardownRegression()
+	{
+		if (resume)
+			CloseHandle(resume);
+		if (dequeued)
+			CloseHandle(dequeued);
+	}
+};
+
+void CPartManager::TestParticleTeardown(IConsoleCmdArgs* args)
+{
+	const int delayMs = args->GetArgCount() > 1 ? atoi(args->GetArg(1)) : 0;
+	const bool passed = m_pPartManager && m_pPartManager->RunTeardownRegression(clamp_tpl(delayMs, 0, 100));
+	CryLogAlways("Particle teardown regression %s", passed ? "PASS" : "FAIL");
+}
+
+bool CPartManager::RunTeardownRegression(unsigned int workerDelayMs)
+{
+	if (!IsThreading())
+	{
+		CryLogAlways("Particle teardown regression requires e_particles_thread and at least two cores");
+		return false;
+	}
+	if (!m_pThreadTask)
+		m_pThreadTask = new CParticleThread(this);
+
+	ParticleParams params;
+	params.bEnabled = true;
+	CParticleEmitter* pEmitter = static_cast<CParticleEmitter*>(CreateEmitter(false, Matrix34(IDENTITY), nullptr, &params));
+	if (pEmitter->m_SubEmitters.size() != 1)
+	{
+		DeleteEmitter(pEmitter);
+		return false;
+	}
+
+	STeardownRegression test(&pEmitter->m_SubEmitters[0].GetContainer(), workerDelayMs);
+	if (!test.dequeued || !test.resume)
+	{
+		DeleteEmitter(pEmitter);
+		return false;
+	}
+
+	{
+		AUTO_LOCK(m_ThreadLock);
+		m_pTeardownRegression = &test;
+		QueueUpdate(test.pContainer, false);
+	}
+	WakeParticleThread(true);
+
+	const bool dequeued = WaitForSingleObject(test.dequeued, 5000) == WAIT_OBJECT_0;
+	if (!dequeued)
+		SetEvent(test.resume);
+	DeleteEmitter(pEmitter);
+	{
+		AUTO_LOCK(m_ThreadLock);
+		m_pTeardownRegression = nullptr;
+	}
+
+	CryLogAlways("Particle teardown regression dequeued=%d destroyed=%d early_destroy=%d delay_ms=%u",
+		dequeued, test.destroyed, test.destroyedWhileRunning, workerDelayMs);
+	return dequeued && test.destroyed && !test.destroyedWhileRunning;
+}
+
+void CPartManager::ObserveContainerDestruction(const CParticleContainer* pCont)
+{
+	if (m_pTeardownRegression && pCont == m_pTeardownRegression->pContainer)
+	{
+		m_pTeardownRegression->destroyed = true;
+		m_pTeardownRegression->destroyedWhileRunning =
+			InterlockedCompareExchange(&m_pTeardownRegression->workerFinished, 0, 0) == 0;
+		SetEvent(m_pTeardownRegression->resume);
+	}
+}
+#endif
+
+void CPartManager::UnqueueUpdate(CParticleContainer* pCont)
+{
+	if (m_pThreadTask)
+	{
+		m_UpdateQueue.Replace(pCont, 0);
+		m_NextQueue.Replace(pCont, 0);
+	}
+}
+
+CPartManager::CTeardownFence::CTeardownFence(CPartManager& manager, const char* operation, bool needed)
+	: m_pManager(needed ? &manager : nullptr), m_operation(operation)
+{
+	if (!m_pManager)
+		return;
+
+	m_profileWait = (GetCVars()->e_particles_debug & AlphaBit('w')) != 0;
+	if (manager.m_ThreadLock.TryLock())
+		return;
+
+	const CTimeValue start = m_profileWait ? GetTimer()->GetAsyncTime() : CTimeValue();
+#if defined(CRY_PARTICLE_TEARDOWN_REGRESSION)
+	if (manager.m_pTeardownRegression)
+		SetEvent(manager.m_pTeardownRegression->resume);
+#endif
+	manager.m_ThreadLock.Lock();
+	if (m_profileWait)
+		m_waitMs = (GetTimer()->GetAsyncTime() - start).GetMilliSeconds();
+}
+
+CPartManager::CTeardownFence::~CTeardownFence()
+{
+	if (!m_pManager)
+		return;
+
+	m_pManager->m_ThreadLock.Unlock();
+	if (m_profileWait)
+		CryLogAlways("Particle teardown fence %s wait_ms=%.4f", m_operation, m_waitMs);
+}
+
 void CPartManager::OnThreadUpdate()
 {
 	for (;;)
@@ -195,6 +323,20 @@ void CPartManager::OnThreadUpdate()
 				if (pCont == reinterpret_cast<CParticleContainer*>(1))
 					return;
 
+#if defined(CRY_PARTICLE_TEARDOWN_REGRESSION)
+				if (m_pTeardownRegression && pCont == m_pTeardownRegression->pContainer)
+				{
+					SetEvent(m_pTeardownRegression->dequeued);
+					if (WaitForSingleObject(m_pTeardownRegression->resume, 5000) == WAIT_OBJECT_0)
+					{
+						if (m_pTeardownRegression->workerDelayMs)
+							Sleep(m_pTeardownRegression->workerDelayMs);
+						InterlockedExchange(&m_pTeardownRegression->workerFinished, 1);
+					}
+					// The test observes premature destruction without dereferencing a freed container.
+					continue;
+				}
+#endif
 				if (pCont)
 					pCont->OnThreadUpdate();
 			}
@@ -246,10 +388,17 @@ CPartManager::CPartManager( )
 	GetPhysicalWorld()->AddEventClient(EventPhysAreaChange::id, &OnPhysAreaChange, 0);
 
 	gEnv->pConsole->AddCommand("e_list_particles", &ListParticles, 0, "writes all effects used and counts to TestResults/particle_list.csv");
+#if defined(CRY_PARTICLE_TEARDOWN_REGRESSION)
+	gEnv->pConsole->AddCommand("e_test_particle_teardown", &TestParticleTeardown, VF_CHEAT,
+		"Tests whether emitter deletion waits for a dequeued particle update. Optional worker delay in ms.");
+#endif
 }
 
 CPartManager::~CPartManager() 
 { 
+#if defined(CRY_PARTICLE_TEARDOWN_REGRESSION)
+	gEnv->pConsole->RemoveCommand("e_test_particle_teardown");
+#endif
 	if (Get3DEngine()->GetIVisAreaManager())
 		Get3DEngine()->GetIVisAreaManager()->RemoveListener(this);
 	GetPhysicalWorld()->RemoveEventClient(EventPhysAreaChange::id, &OnPhysAreaChange, 0);
@@ -341,6 +490,7 @@ void CPartManager::GetMemoryUsage(ICrySizer* pSizer)
 
 void CPartManager::Reset(bool bIndependentOnly)
 {
+	CTeardownFence fence(*this, "Reset");
 	m_bRuntime = false;
 
 	if (bIndependentOnly)
@@ -350,7 +500,10 @@ void CPartManager::Reset(bool bIndependentOnly)
 				i = DeleteEmitter(i);
 		}
 	else
+	{
+		for_all (m_allEmitters).UnqueueUpdates();
 		m_allEmitters.clear();
+	}
 
 	ReleaseLocks();
 }
@@ -358,6 +511,8 @@ void CPartManager::Reset(bool bIndependentOnly)
 //////////////////////////////////////////////////////////////////////////
 void CPartManager::ClearRenderResources( bool bForceClear )
 {
+	CTeardownFence fence(*this, "ClearRenderResources");
+	for_all (m_allEmitters).UnqueueUpdates();
 	m_allEmitters.clear();
 
 	if (!GetCVars()->e_particles_preload || bForceClear)
@@ -632,8 +787,13 @@ void CPartManager::OnFrameStart()
 	}
 	else
 	{
-		delete m_pThreadTask;
-		m_pThreadTask = 0;
+		if (m_pThreadTask)
+		{
+			delete m_pThreadTask;
+			m_pThreadTask = 0;
+			m_UpdateQueue.Clear();
+			m_NextQueue.Clear();
+		}
 	}
 }
 
@@ -728,6 +888,7 @@ void CPartManager::DeleteEmitter( IParticleEmitter *pEmitter)
 
 int CPartManager::DeleteEmitter( int i )
 {
+	CTeardownFence fence(*this, "DeleteEmitter");
 	m_allEmitters[i].Register(false);
 	return m_allEmitters.erase(i);
 }

@@ -113,6 +113,9 @@ CParticleContainer::CParticleContainer( CParticleContainer* pParent, CParticleSu
 
 CParticleContainer::~CParticleContainer()
 {
+#if defined(CRY_PARTICLE_TEARDOWN_REGRESSION)
+	m_pPartManager->ObserveContainerDestruction(this);
+#endif
 	{
 		AUTO_LOCK(m_Lock);
 		UnqueueUpdate();
@@ -381,6 +384,12 @@ void CParticleContainer::UnqueueUpdate()
 {
 	m_nQueuedFrame = -1;
 	m_pPartManager->UnqueueUpdate(this);
+}
+
+void CParticleContainer::UnqueueUpdates()
+{
+	UnqueueUpdate();
+	for_all (m_IndirectContainers).UnqueueUpdates();
 }
 
 void CParticleContainer::OnThreadUpdate()
@@ -1737,6 +1746,17 @@ CParticleLocEmitter::CParticleLocEmitter( CParticleEmitter* pMainEmitter, float 
 
 CParticleLocEmitter::~CParticleLocEmitter()
 {
+	ClearSubEmitters();
+	if (m_EmitGeom.m_pStatObj)
+		m_EmitGeom.m_pStatObj->Release();
+	if (m_EmitGeom.m_pChar)
+		m_EmitGeom.m_pChar->Release();
+	if (m_EmitGeom.m_pPhysEnt)
+		m_EmitGeom.m_pPhysEnt->Release();
+}
+
+void CParticleLocEmitter::ClearSubEmitters()
+{
 	// Clean up in reverse order, as some emitters will have earlier ones as parents.
 	for (int i = m_SubEmitters.size()-1; i >= 0; i--)
 	{
@@ -1745,12 +1765,7 @@ CParticleLocEmitter::~CParticleLocEmitter()
 		else
 			delete &m_SubEmitters[i];
 	}
-	if (m_EmitGeom.m_pStatObj)
-		m_EmitGeom.m_pStatObj->Release();
-	if (m_EmitGeom.m_pChar)
-		m_EmitGeom.m_pChar->Release();
-	if (m_EmitGeom.m_pPhysEnt)
-		m_EmitGeom.m_pPhysEnt->Release();
+	m_SubEmitters.clear();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1942,6 +1957,20 @@ void CParticleLocEmitter::SetLoc( QuatTS const& qp )
 
 void CParticleLocEmitter::ClearUnused()
 {
+	if (this == m_pMainEmitter)
+	{
+		for (int i = m_SubEmitters.size() - 1; i >= 0; --i)
+		{
+			CParticleSubEmitter& emitter = m_SubEmitters[i];
+			if (!emitter.GetContainer().IsUsed())
+			{
+				emitter.GetContainer().Reset();
+				delete &emitter;
+				m_SubEmitters.erase(i);
+			}
+		}
+	}
+
 	for_array (i, m_SubEmitters)
 	{
 		if (!m_SubEmitters[i].GetContainer().IsUsed())
@@ -1988,8 +2017,21 @@ CParticleEmitter::CParticleEmitter( bool bIndependent )
 //////////////////////////////////////////////////////////////////////////
 CParticleEmitter::~CParticleEmitter() 
 { 
+	CPartManager::CTeardownFence fence(*m_pPartManager, "EmitterDestructor", !m_SubEmitters.empty());
 	Reset();
   Get3DEngine()->FreeRenderNodeState(this); // Also does unregister entity.
+	ClearSubEmitters();
+}
+
+void CParticleEmitter::ReleaseNode()
+{
+	CPartManager::CTeardownFence fence(*m_pPartManager, "ReleaseNode");
+	Register(false);
+}
+
+void CParticleEmitter::UnqueueUpdates()
+{
+	for_all (m_SubEmitters).GetContainer().UnqueueUpdates();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1998,6 +2040,7 @@ void CParticleEmitter::Register(bool b)
 	m_bRegistered = b;
 	if (!b)
 	{
+		UnqueueUpdates();
 		Reset();
 		if (!m_WSBBox.IsReset())
 		{
@@ -2069,11 +2112,13 @@ void CParticleEmitter::SetEffect( IParticleEffect const* pEffect, ParticleParams
 {
   FUNCTION_PROFILER_SYS(PARTICLE);
 
+	CPartManager::CTeardownFence fence(*m_pPartManager, "SetEffect", !m_SubEmitters.empty());
 	if (m_pTopEffect != (CParticleEffect const *)pEffect)
 	{
 		// Clear any existing emitters only if changing effect.
+		Reset();
+		ClearSubEmitters();
 		m_pTopEffect = (CParticleEffect*)pEffect;
-		m_SubEmitters.clear();
 	}
 
 	// Create or update emitters to reflect effect tree. Works correctly in game or from editor changes.
