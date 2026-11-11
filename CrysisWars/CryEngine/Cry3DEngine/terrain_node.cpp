@@ -14,6 +14,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #include "StdAfx.h"
+#include <CryCrashBreadcrumbs.h>
 #include "terrain_sector.h"
 #include "terrain.h"
 #include "ObjMan.h"
@@ -356,6 +357,8 @@ CTerrainNode::CTerrainNode(int x1, int y1, int nNodeSize, CTerrainNode * pParent
   m_pCBRenderMesh(0)
 {
 	m_pGeomErrors = new float[GetTerrain()->m_nUnitsToSectorBitShift]; // TODO: fix duplicated reallocation
+	CryCrashBreadcrumbs::Record(CryCrashBreadcrumbs::TerrainErrors, this, m_pGeomErrors,
+		GetTerrain()->m_nUnitsToSectorBitShift, 1, -1);
   memset(m_pGeomErrors, 0, sizeof(float)*GetTerrain()->m_nUnitsToSectorBitShift);
 
 	m_pProcObjPoolPtr = NULL;
@@ -489,6 +492,7 @@ CTerrainNode::~CTerrainNode()
 	delete [] m_rangeInfo.pHMData;
 	m_rangeInfo.pHMData = NULL;
 
+	CryCrashBreadcrumbs::Record(CryCrashBreadcrumbs::TerrainErrors, this, m_pGeomErrors, -1, 2, -1);
 	delete [] m_pGeomErrors;
 	m_pGeomErrors = NULL;
 

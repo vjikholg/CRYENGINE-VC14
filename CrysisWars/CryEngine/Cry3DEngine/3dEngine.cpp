@@ -14,6 +14,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #include "StdAfx.h"
+#include <CryCrashBreadcrumbs.h>
 #include <ICryAnimation.h>
 
 #include "3dEngine.h"
@@ -828,7 +829,10 @@ bool C3DEngine::UnRegisterEntity( IRenderNode* pEnt )
 	pEnt->PhysicalizeFoliage(false);
 
 	if(pEnt->m_pOcNode)
+	{
+		CryCrashBreadcrumbs::Record(CryCrashBreadcrumbs::RenderNodeOwner, pEnt, pEnt->m_pOcNode, 1);
 		bFound = ((COctreeNode*)pEnt->m_pOcNode)->DeleteObject(pEnt);
+	}
 
   if(pEnt->m_dwRndFlags & ERF_RENDER_ALWAYS)
     m_lstAlwaysVisible.Delete(pEnt);

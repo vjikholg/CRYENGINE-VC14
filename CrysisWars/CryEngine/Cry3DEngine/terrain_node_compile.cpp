@@ -14,6 +14,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #include "StdAfx.h"
+#include <CryCrashBreadcrumbs.h>
 #include "terrain_sector.h"
 #include "terrain.h"
 #include "ObjMan.h"
@@ -59,8 +60,11 @@ int CTerrainNode::Load_T(T * & f, int & nDataSize)
   }
 
   // load LOD errors
+  CryCrashBreadcrumbs::Record(CryCrashBreadcrumbs::TerrainErrors, this, m_pGeomErrors, -1, 2, -1);
   delete [] m_pGeomErrors;
   m_pGeomErrors = new float[GetTerrain()->m_nUnitsToSectorBitShift];
+  CryCrashBreadcrumbs::Record(CryCrashBreadcrumbs::TerrainErrors, this, m_pGeomErrors,
+    GetTerrain()->m_nUnitsToSectorBitShift, 1, -1);
   //	float * pErrors = StepData<float>(pData, &nDataSize, GetTerrain()->m_nUnitsToSectorBitShift);
   //	memcpy(m_pGeomErrors, pErrors, GetTerrain()->m_nUnitsToSectorBitShift*sizeof(m_pGeomErrors[0]));
   if(!CTerrain::LoadDataFromFile(m_pGeomErrors, GetTerrain()->m_nUnitsToSectorBitShift, f, nDataSize))

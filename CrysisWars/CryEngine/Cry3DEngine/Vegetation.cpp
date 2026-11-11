@@ -14,6 +14,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #include "StdAfx.h"
+#include <CryCrashBreadcrumbs.h>
 
 #include "terrain.h"
 #include "StatObj.h"
@@ -645,6 +646,7 @@ void CVegetation::ShutDown()
 
 CVegetation::~CVegetation()
 {
+	CryCrashBreadcrumbs::Record(CryCrashBreadcrumbs::RenderNodeOwner, this, m_pOcNode, 2);
 	ShutDown();
 
 	GetInstCount(eERType_Vegetation)--;

@@ -14,6 +14,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #include "StdAfx.h"
+#include <CryCrashBreadcrumbs.h>
 #include "terrain_sector.h"
 #include "terrain.h"
 #include "ObjMan.h"
@@ -55,6 +56,9 @@ void CTerrainNode::SetLOD()
     float fAllowedError = ( m_fZoomFactor * GetCVars()->e_terrain_lod_ratio * fDist ) / 180.f * 2.5f;
 
 		int nGeomMML;
+		if (!m_pGeomErrors)
+			CryCrashBreadcrumbs::Record(CryCrashBreadcrumbs::TerrainErrors, this, m_pGeomErrors,
+				GetTerrain()->m_nUnitsToSectorBitShift, 3, GetTerrain()->m_nUnitsToSectorBitShift - 1);
     for( nGeomMML=GetTerrain()->m_nUnitsToSectorBitShift-1; nGeomMML>m_rangeInfo.nUnitBitShift; nGeomMML-- )
       if(m_pGeomErrors[nGeomMML] < fAllowedError)
         break;

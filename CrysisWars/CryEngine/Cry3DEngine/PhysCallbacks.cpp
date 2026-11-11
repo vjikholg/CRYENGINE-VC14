@@ -12,6 +12,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #include "StdAfx.h"
+#include <CryCrashBreadcrumbs.h>
 #include "PhysCallbacks.h"
 #include "RenderMeshUtils.h"
 #include "Brush.h"
@@ -489,7 +490,10 @@ int CPhysStreamer::CreatePhysicalEntity(void *pForeignData,int iForeignData,int 
 {
 	if (iForeignData==PHYS_FOREIGN_ID_STATIC) 
 		if (iForeignFlags & (PFF_BRUSH|PFF_VEGETATION))
+		{
+			CryCrashBreadcrumbs::Record(CryCrashBreadcrumbs::PhysicsStream, this, pForeignData, 1, iForeignData, iForeignFlags);
 			((IRenderNode*)pForeignData)->Physicalize(true);
+		}
 		else
 			return 0;
 	return 1;
@@ -498,15 +502,21 @@ int CPhysStreamer::CreatePhysicalEntity(void *pForeignData,int iForeignData,int 
 int CPhysStreamer::CreatePhysicalEntitiesInBox(const Vec3 &boxMin, const Vec3 &boxMax)
 {
 	FUNCTION_PROFILER( gEnv->pSystem, PROFILE_3DENGINE );
-	if (((C3DEngine*)gEnv->p3DEngine)->m_pObjectsTree)
-	((C3DEngine*)gEnv->p3DEngine)->m_pObjectsTree->PhysicalizeVegetationInBox(AABB(boxMin,boxMax));
+	if (COctreeNode* tree = ((C3DEngine*)gEnv->p3DEngine)->m_pObjectsTree)
+	{
+		CryCrashBreadcrumbs::Record(CryCrashBreadcrumbs::PhysicsStream, this, tree, 2);
+		tree->PhysicalizeVegetationInBox(AABB(boxMin,boxMax));
+	}
 	return 1;
 }
 
 int CPhysStreamer::DestroyPhysicalEntitiesInBox(const Vec3 &boxMin, const Vec3 &boxMax)
 {
 	FUNCTION_PROFILER( gEnv->pSystem, PROFILE_3DENGINE );
-	if (((C3DEngine*)gEnv->p3DEngine)->m_pObjectsTree)
-	((C3DEngine*)gEnv->p3DEngine)->m_pObjectsTree->DephysicalizeVegetationInBox(AABB(boxMin,boxMax));
+	if (COctreeNode* tree = ((C3DEngine*)gEnv->p3DEngine)->m_pObjectsTree)
+	{
+		CryCrashBreadcrumbs::Record(CryCrashBreadcrumbs::PhysicsStream, this, tree, 3);
+		tree->DephysicalizeVegetationInBox(AABB(boxMin,boxMax));
+	}
 	return 1;
 }

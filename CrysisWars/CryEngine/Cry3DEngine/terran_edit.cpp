@@ -14,6 +14,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #include "StdAfx.h"
+#include <CryCrashBreadcrumbs.h>
 
 #include "terrain.h"
 #include "terrain_sector.h"
@@ -277,7 +278,11 @@ void CTerrain::SetTerrainElevation(int X1, int Y1, int nSizeX, int nSizeY, float
 
 		// find error metrics
 		if(!pTerrainNode->m_pGeomErrors)
+		{
 			pTerrainNode->m_pGeomErrors = new float[m_nUnitsToSectorBitShift];
+			CryCrashBreadcrumbs::Record(CryCrashBreadcrumbs::TerrainErrors, pTerrainNode,
+				pTerrainNode->m_pGeomErrors, m_nUnitsToSectorBitShift, 1, -1);
+		}
 		BuildErrorsTableForArea(pTerrainNode->m_pGeomErrors, m_nUnitsToSectorBitShift, x1, y1, x2, y2, pTerrainBlock,
 			pSurfaceData, X1, Y1, nSizeX, nSizeY);
 		assert(pTerrainNode->m_pGeomErrors[0] == 0);

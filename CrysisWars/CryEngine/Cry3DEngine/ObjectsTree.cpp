@@ -1,4 +1,5 @@
 #include "StdAfx.h"
+#include <CryCrashBreadcrumbs.h>
 #include "CullBuffer.h"
 #include "RoadRenderNode.h"
 #include "VoxMan.h"
@@ -41,6 +42,7 @@ COctreeNode::COctreeNode(const AABB & box, CVisArea * pVisArea, COctreeNode * pP
 
 COctreeNode::~COctreeNode()
 {
+	CryCrashBreadcrumbs::Record(CryCrashBreadcrumbs::OctreeFree, this, m_pParent, m_lstObjects.m_pFirstNode);
   for(IRenderNode * pObj = m_lstObjects.m_pFirstNode, * pNext; pObj; pObj = pNext)
   {
     pNext = pObj->m_pNext;
@@ -108,6 +110,8 @@ void COctreeNode::InsertObject(IRenderNode * pObj, const AABB & objBox, const fl
 	LinkObject(pObj);
 
 	pObj->m_pOcNode = this;
+	CryCrashBreadcrumbs::Record(CryCrashBreadcrumbs::OctreeLink, this, pObj,
+		m_lstObjects.m_pFirstNode, m_lstObjects.m_pLastNode, this);
 
   if(eType != eERType_Light)
   	m_bCompiled = false;
@@ -134,6 +138,8 @@ void COctreeNode::LinkObject(IRenderNode * pObj)
 
 void COctreeNode::UnlinkObject(IRenderNode * pObj)
 {
+	CryCrashBreadcrumbs::Record(CryCrashBreadcrumbs::OctreeUnlink, this, pObj,
+		m_lstObjects.m_pFirstNode, m_lstObjects.m_pLastNode);
   assert(!m_lstObjects.m_pFirstNode || !m_lstObjects.m_pFirstNode->m_pPrev);
   assert(!m_lstObjects.m_pLastNode || !m_lstObjects.m_pLastNode->m_pNext);
 
@@ -946,48 +952,85 @@ void COctreeNode::DeleteObjectsByFlag(int nRndFlag)
 
 int COctreeNode::PhysicalizeVegetationInBox(const AABB &bbox)
 {
-	if(!Overlap::AABB_AABB(m_objectsBox, bbox))
-		return 0;	
-
 	int nCount=0;
-  for(IRenderNode * pObj = m_lstObjects.m_pFirstNode; pObj; pObj = pObj->m_pNext)
-	if(pObj->GetRenderNodeType()==eERType_Vegetation && !(pObj->GetRndFlags()&ERF_PROCEDURAL))
-  {
-    const AABB & objBox = pObj->GetBBox();
-    if(Overlap::AABB_AABB(bbox, objBox) && 
-      max(objBox.max.x-objBox.min.x, objBox.max.y-objBox.min.y) <= 
-      ((C3DEngine*)gEnv->p3DEngine)->GetCVars()->e_on_demand_maxsize)
-	  {
-		  if (!pObj->GetPhysics())
-			  pObj->Physicalize(true);
-		  if (pObj->GetPhysics())
-			  pObj->GetPhysics()->AddRef(), nCount++;
-	  }
-  }
+	IRenderNode* pObj = nullptr;
+#if defined(_MSC_VER) && defined(_WIN64)
+	__try
+	{
+#endif
+		if (!Overlap::AABB_AABB(m_objectsBox, bbox))
+			return 0;
 
-	for(int i=0; i<8; i++) if(m_arrChilds[i])
-		nCount += m_arrChilds[i]->PhysicalizeVegetationInBox(bbox);
+		for (pObj = m_lstObjects.m_pFirstNode; pObj; pObj = pObj->m_pNext)
+		{
+			if (pObj->GetRenderNodeType() != eERType_Vegetation || (pObj->GetRndFlags() & ERF_PROCEDURAL))
+				continue;
+			const AABB& objBox = pObj->GetBBox();
+			if (Overlap::AABB_AABB(bbox, objBox) &&
+				max(objBox.max.x - objBox.min.x, objBox.max.y - objBox.min.y) <=
+				((C3DEngine*)gEnv->p3DEngine)->GetCVars()->e_on_demand_maxsize)
+			{
+				if (!pObj->GetPhysics())
+					pObj->Physicalize(true);
+				if (pObj->GetPhysics())
+				{
+					pObj->GetPhysics()->AddRef();
+					++nCount;
+				}
+			}
+		}
+#if defined(_MSC_VER) && defined(_WIN64)
+	}
+	__except(CryCrashBreadcrumbs::Record(CryCrashBreadcrumbs::OctreeWalk, this, pObj, -1, 1),
+		EXCEPTION_CONTINUE_SEARCH)
+	{
+		return nCount;
+	}
+#endif
+
+	for(int i=0; i<8; i++) if(COctreeNode* child = m_arrChilds[i])
+	{
+		CryCrashBreadcrumbs::Record(CryCrashBreadcrumbs::OctreeWalk, this, child, i, 1);
+		nCount += child->PhysicalizeVegetationInBox(bbox);
+	}
 	return nCount;
 }
 
 int COctreeNode::DephysicalizeVegetationInBox(const AABB &bbox)
 {
-	if(!Overlap::AABB_AABB(m_objectsBox, bbox))
-		return 0;	
+	int nCount=0;
+	IRenderNode* pObj = nullptr;
+#if defined(_MSC_VER) && defined(_WIN64)
+	__try
+	{
+#endif
+		if (!Overlap::AABB_AABB(m_objectsBox, bbox))
+			return 0;
 
-  int nCount=0;
-  for(IRenderNode * pObj = m_lstObjects.m_pFirstNode; pObj; pObj = pObj->m_pNext)
-  if(pObj->GetRenderNodeType()==eERType_Vegetation && !(pObj->GetRndFlags()&ERF_PROCEDURAL))
-  {
-    const AABB & objBox = pObj->GetBBox();
-		if(Overlap::AABB_AABB(bbox, objBox) && 
-		  max(objBox.max.x-objBox.min.x, objBox.max.y-objBox.min.y) <=
-		  ((C3DEngine*)gEnv->p3DEngine)->GetCVars()->e_on_demand_maxsize)
-		pObj->Dephysicalize(true);
-  }
+		for (pObj = m_lstObjects.m_pFirstNode; pObj; pObj = pObj->m_pNext)
+		{
+			if (pObj->GetRenderNodeType() != eERType_Vegetation || (pObj->GetRndFlags() & ERF_PROCEDURAL))
+				continue;
+			const AABB& objBox = pObj->GetBBox();
+			if (Overlap::AABB_AABB(bbox, objBox) &&
+				max(objBox.max.x - objBox.min.x, objBox.max.y - objBox.min.y) <=
+				((C3DEngine*)gEnv->p3DEngine)->GetCVars()->e_on_demand_maxsize)
+				pObj->Dephysicalize(true);
+		}
+#if defined(_MSC_VER) && defined(_WIN64)
+	}
+	__except(CryCrashBreadcrumbs::Record(CryCrashBreadcrumbs::OctreeWalk, this, pObj, -1, 2),
+		EXCEPTION_CONTINUE_SEARCH)
+	{
+		return nCount;
+	}
+#endif
 
-	for(int i=0; i<8; i++) if(m_arrChilds[i])
-		nCount += m_arrChilds[i]->DephysicalizeVegetationInBox(bbox);
+	for(int i=0; i<8; i++) if(COctreeNode* child = m_arrChilds[i])
+	{
+		CryCrashBreadcrumbs::Record(CryCrashBreadcrumbs::OctreeWalk, this, child, i, 2);
+		nCount += child->DephysicalizeVegetationInBox(bbox);
+	}
 	return nCount;
 }
 
