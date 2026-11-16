@@ -2528,6 +2528,8 @@ int CRigidEntity::Step(float time_interval)
 
 	UpdatePosition(m_pWorld->RepositionEntity(this,1,m_BBoxNew));
 	pe_params_buoyancy pb[4];
+	// This event reports the integrated pose. Immediate listeners still see velocity
+	// before buoyancy, vehicle impulses, and the world contact solver.
 	int nBuoys = PostStepNotify(time_interval,pb,4);
 
 	Vec3 gravity = m_nColliders ? m_gravity : m_gravityFreefall;
