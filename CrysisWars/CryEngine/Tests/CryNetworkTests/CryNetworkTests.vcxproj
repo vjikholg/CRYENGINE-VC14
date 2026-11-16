@@ -58,7 +58,7 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>$(MSBuildProjectDirectory)\..\..\CryCommon;$(MSBuildProjectDirectory)\..\..\CryNetwork;$(MSBuildProjectDirectory)\..\CryCommonTests;$(MSBuildProjectDirectory)\..\..\..\SDKs;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_CONSOLE;NDEBUG;CRYNETWORK_RELEASEBUILD=1;NOT_USE_CRY_MEMORY_MANAGER;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;_WIN32_WINNT=0x0601;WINVER=0x0601;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CONSOLE;NDEBUG;CRYNETWORK_RELEASEBUILD=1;WIN32_LEAN_AND_MEAN;NOT_USE_CRY_MEMORY_MANAGER;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;_WIN32_WINNT=0x0601;WINVER=0x0601;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <WarningLevel>Level4</WarningLevel>
       <TreatWarningAsError>false</TreatWarningAsError>
       <SDLCheck>false</SDLCheck>
