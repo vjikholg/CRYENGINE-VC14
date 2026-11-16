@@ -982,17 +982,13 @@ int g_forcepedal = 0;*/
 
 void CWheeledVehicleEntity::AddAdditionalImpulses(float time_interval)
 {
-	int i,j,idx[NMAXWHEELS],nContacts,bAllSlip=1,iDriver[2],bContact[2],iside;//,i1,j1,nfr=0,nfr1,slide[16];
+	int i,j,bAllSlip=1,iDriver[2],bContact[2],iside;
 	float fN,friction,frictionLat,Npull,N,fpull,driving_torque=0,minfric,maxfric,wengine,wground,wground_avg[2],Npull_tot[2];
-	//quotient frmin[16],frmax[16];
-	//real buf[NMAXWHEELS*(NMAXWHEELS+2)];
-	Vec3 dP,Pexp,Lexp,ncontact,vdir,pulldir,ptc,axis,axisz,axisx,r,vel_slip;//,frdir[16];
+	Vec3 dP,Pexp,Lexp,pulldir,ptc,axis,axisz,vel_slip;
 	Matrix33 R = Matrix33(m_qNew), Ctmp;
 	pe_action_impulse ai;
 	ai.iSource = 3;
-	axisz = R*Vec3(0,0,1); axisx = R*Vec3(1,0,0);
-//	cur_power = m_enginePedal>0 ? m_enginePower : m_enginePowerBack;
-//if (g_forcepedal) m_enginePedal = 1;
+	axisz = R*Vec3(0,0,1);
 
 	for(i=0;i<m_nParts-m_nHullParts;i++) if (m_susp[i].bContact) {
 		AddCollider(m_susp[i].pent); 
@@ -1046,7 +1042,6 @@ void CWheeledVehicleEntity::AddAdditionalImpulses(float time_interval)
 	wengine = (bAllSlip ? m_engineMaxw : min(m_wengine,m_engineMaxw));
 	wengine /= max(0.01f,fabs_tpl(m_gears[m_iCurGear]))*sgnnz(m_gears[m_iCurGear]);
 
-	Pexp.zero(); Lexp.zero(); nContacts=0;
 	for(i=0;i<m_nParts-m_nHullParts;i++) {
 		m_susp[i].rworld = R*m_susp[i].pt+m_posNew-m_body.pos;
 		m_susp[i].vworld = (m_body.v+(m_body.w^m_susp[i].rworld))*axisz;
@@ -1056,52 +1051,8 @@ void CWheeledVehicleEntity::AddAdditionalImpulses(float time_interval)
 			if (m_susp[i].iBuddy>=0 && m_kStabilizer>0)
 				fN -= (m_susp[i].curlen-m_susp[m_susp[i].iBuddy].curlen)*m_susp[i].kStiffness*m_kStabilizer;
 			m_susp[i].PN = max(0.0f,fN*time_interval);
-			dP = axisz*m_susp[i].PN; Pexp += dP; Lexp += m_susp[i].rworld^dP;
-			idx[nContacts++] = i;
 		}
 	}
-
-	/*if (m_iIntegrationType) { // solve for (delta)v = (I-AK)^-1*(A*(Pexplicit - ks*v*dt^2 + Pexternal))
-		matrix I_AK(nContacts,nContacts,0,buf+nContacts*2);
-		vectorn delta_v_src(nContacts,buf),delta_v_dst(nContacts,buf+nContacts);
-		for(i=0;i<nContacts;i++) {
-			dP = axisz*(-m_susp[idx[i]].vworld*m_susp[idx[i]].kStiffness*sqr(time_interval));
-			if (m_susp[idx[i]].iBuddy && m_kStabilizer>0)
-				dP += axisz*((m_susp[m_susp[idx[i]].iBuddy].vworld-m_susp[idx[i]].vworld)*m_susp[idx[i]].kStiffness*m_kStabilizer*sqr(time_interval));
-			Pexp += dP; Lexp += m_susp[idx[i]].rworld^dP;
-		}
-
-		Pexp += (m_Ffriction+m_body.Fcollision)*time_interval; 
-		Pexp += (m_nColliders ? m_gravity : m_gravityFreefall)*(time_interval*m_body.M);
-		Lexp += (m_Tfriction+m_body.Tcollision-(m_body.w^m_body.L))*time_interval;
-		Pexp = Pexp*m_body.Minv+m_gravity*time_interval; Lexp = m_body.Iinv*Lexp;	// Pexp = body delta v, Lexp = body delta w
-
-		for(i=0;i<nContacts;i++) {
-			for(j=0;j<nContacts;j++) { // build I - A*(-ks*dt^2-kd*dt) matrix
-				float kStabilizer = m_kStabilizer*(isneg(m_susp[idx[j]].iBuddy)^1);
-				I_AK[i][j] = iszero(i-j) + (m_body.Minv - (m_susp[idx[i]].rworld^(m_body.Iinv*(m_susp[idx[j]].rworld^axisz)))*axisz)*
-					(m_susp[idx[j]].kStiffness*(1.0f+kStabilizer)*time_interval+m_susp[idx[j]].kDamping)*time_interval;
-				if (m_susp[idx[j]].iBuddy>=0 && m_kStabilizer>0)
-					I_AK[i][j] -= (m_body.Minv - (m_susp[idx[i]].rworld^(m_body.Iinv*(m_susp[m_susp[idx[j]].iBuddy].rworld^axisz)))*axisz)*
-						m_susp[idx[j]].kStiffness*m_kStabilizer*sqr(time_interval);
-			}
-			delta_v_src[i] = (Pexp+(Lexp^m_susp[idx[i]].rworld))*axisz; // compute delta v along each spring
-		}
-
-		I_AK.invert();
-		mul_vector_by_matrix(I_AK,delta_v_src.data,delta_v_dst.data);
-
-		// now compute normal impulses that correspond to the computed delta_v
-		for(i=0;i<nContacts;i++) {
-			m_susp[idx[i]].vworld += delta_v_dst[i];
-			fN = (m_susp[idx[i]].fullen-m_susp[idx[i]].curlen-m_susp[idx[i]].vworld*time_interval)*m_susp[i].kStiffness;
-			fN -= m_susp[idx[i]].vworld*m_susp[idx[i]].kDamping;
-			if (m_susp[i].iBuddy>=0 && m_kStabilizer>0)
-				fN -= (m_susp[i].curlen-m_susp[m_susp[i].iBuddy].curlen+(m_susp[idx[i]].vworld-m_susp[m_susp[idx[i]].iBuddy].vworld)*time_interval)*
-							m_susp[i].kStiffness*m_kStabilizer;
-			m_susp[idx[i]].PN = fN*time_interval;
-		}
-	}*/
 
 	Pexp.zero(); Lexp.zero();
 	wground_avg[0]=wground_avg[1] = 0; Npull_tot[0]=Npull_tot[1] = 0;
@@ -1150,18 +1101,6 @@ void CWheeledVehicleEntity::AddAdditionalImpulses(float time_interval)
 		}
 
 		if ((m_bHandBrake & m_susp[i].bCanBrake)|m_susp[i].bBlocked) {
-			/*if (m_susp[i].bSlip) { // the wheel slips, use rel. velocity direction as primary friction axis
-				vdir = m_susp[i].vrel - m_susp[i].ncontact*(m_susp[i].vrel*m_susp[i].ncontact);
-				frdir[nfr] = -vdir.normalized(); frmax[nfr] = N; idx[nfr++] = i;
-				frdir[nfr] = frdir[nfr-1]^m_susp[i].ncontact; frmax[nfr] = N*0.3f; idx[nfr++] = i;
-			} else {*/
-			/*frdir[nfr] = axisz^axis; frdir[nfr] *= -sgnnz(frdir[nfr]*m_susp[i].ncontact);
-			sina = pulldir*axisz;
-			cosa = sqrt_tpl(max(0.0f,1.0f-sina*sina));
-			calc_lateral_limits(cosa,sina, N*=0.85f,friction, frmin[nfr],frmax[nfr]);
-			idx[nfr] = i;
-			nfr += isneg(m_body.M*1E-6f*frmax[nfr].y-frmax[nfr].x);*/
-
 			if (m_susp[i].curlen>0)	{
 				m_susp[i].contact.C.SetIdentity();
 				m_susp[i].contact.C -= dotproduct_matrix(axisz,axisz, Ctmp);
@@ -1181,16 +1120,9 @@ void CWheeledVehicleEntity::AddAdditionalImpulses(float time_interval)
 					fpull *= isneg(wground*wengineLoc-sqr(wengineLoc)*0.9f);
 				} else
 					m_susp[i].w = wground;
-				//if (bAllSlip)
-				//	m_susp[i].w += (fpull-sgn(fpull)*Npull)*m_susp[i].r*m_susp[i].Iinv;
-				//if (m_susp[i].w*wground<0 || m_susp[i].w*m_susp[i].T<0 || fabs_tpl(wground)>fabs_tpl(m_susp[i].w))
-				//	m_susp[i].w = wground;
-				//wground = m_engineMaxw*(m_steer*m_susp[i].pt.x>0 ? fabs_tpl(max(-1.0f,1.0f-fabs_tpl(m_steer*m_kSteerToTrack))) : 1.0f);
-				//if (fabs_tpl(m_susp[i].w)*m_gears[m_iCurGear] > wground)
-        //  m_susp[i].w = sgnnz(m_susp[i].w)*wground/m_gears[m_iCurGear];
 			} else
 				m_susp[i].w = wground;
-			dP = pulldir*fpull; //dP = axisz^axis; dP *= (pulldir*dP)*fpull; 
+			dP = pulldir*fpull;
 			Pexp += dP; Lexp += ptc^dP;
 			N = sqrt_tpl(max(0.0f,sqr(N)-sqr(fpull)));
 
@@ -1222,13 +1154,6 @@ void CWheeledVehicleEntity::AddAdditionalImpulses(float time_interval)
 			m_susp[i].contact.ipart[0] = i+m_nHullParts;
 			m_susp[i].contact.ipart[1] = m_susp[i].ipart;
 		}
-		/*frdir[nfr] = axis; frdir[nfr] *= -sgnnz(frdir[nfr]*m_susp[i].ncontact);
-		cosa = axisz*m_susp[i].ncontact;
-		sina = sqrt_tpl(max(0.0f,1.0f-cosa*cosa));
-		calc_lateral_limits(cosa,sina, N,friction, frmin[nfr],frmax[nfr]);
-		idx[nfr] = i;
-		nfr += isneg(m_body.M*1E-6f*frmax[nfr].y-frmax[nfr].x);
-		m_susp[i].bSlip = 0;*/
 	} else if (bAllSlip)
 		m_susp[i].w += m_susp[i].T*m_susp[i].Iinv*time_interval;
 
@@ -1240,120 +1165,6 @@ void CWheeledVehicleEntity::AddAdditionalImpulses(float time_interval)
 	m_body.v = (m_body.P+=Pexp)*m_body.Minv; 
 	m_body.w = m_body.Iinv*(m_body.L+=Lexp);
 	m_Ffriction.zero(); m_Tfriction.zero();
-
-	/*if (nfr>0) {
-		matrix A(nfr,nfr,mtx_PSD | mtx_symmetric,buf);
-		vectorn v(nfr,buf+nfr*nfr),p(nfr,buf+nfr*(nfr+1)),v1(nfr,buf+nfr*(nfr+2)),p1(nfr,buf+nfr*(nfr+3)),
-			dv(nfr,buf+nfr*(nfr+5)),dp(nfr,buf+nfr*(nfr+6));
-		float sign; int d,prev_j,bSliding=0;
-		quotient s,s1,sd;	real sval;
-		float Ebefore=CalcEnergy(0),Eafter,damping;
-		Vec3 Pbefore,Lbefore;
-		int iter;
-
-		for(i=0;i<nfr;i++) {
-			r = m_susp[idx[i]].ptcontact-m_body.pos; 
-			v[i] = (m_body.v + (m_body.w^r) - m_susp[idx[i]].pbody->v - 
-				(m_susp[idx[i]].pbody->w^m_susp[idx[i]].ptcontact-m_susp[idx[i]].pbody->pos))*frdir[i];
-			v[i] += ((m_body.Fcollision*m_body.Minv+(m_body.Iinv*m_body.Tcollision^r))*frdir[i])*time_interval;
-			for(j=i;j<nfr;j++)
-				A[i][j] = A[j][i] = frdir[i]*(frdir[j]*m_body.Minv + (m_body.Iinv*(m_susp[idx[j]].ptcontact-m_body.pos^frdir[j])^r));
-			v1[i] = -v[i]; slide[i] = 0; 
-			if (frmax[i].x*frmin[i].x>0 && frmax[i].y*frmin[i].y>1E-6) {
-				p[i] = (frmax[i]+frmin[i]).val()*0.5; bSliding = 1;
-			} else p[i] = 0;
-		}
-		if (bSliding)
-			v += A*p;
-
-		// first, try to drive all relative velocities to zero and see if we exceed friction limits
-		p1.zero(); A.conjugate_gradient(p1,v1,0,0.0001);
-		for(i=bSliding=0;i<nfr;i++) bSliding += isneg(frmax[i]-fabs_tpl(p1[i]));
-		if (!bSliding) {
-			for(i=0;i<nfr;i++) p[i] = p1[i];
-			d = nfr;
-		} else // .. invoke LCP solver otherwise
-		for(d=iter=0;d<nfr;d++) if (!slide[d]) {
-			prev_j=-1; do {
-			for(i=nfr1=0;i<d;i++) nfr1 += iszero(slide[i]);
-			sign = -sgn(v[d]); dp.zero();
-			if (nfr1>0) {
-				matrix A1(nfr1,nfr1,mtx_PSD | mtx_symmetric,buf+nfr*(nfr+7));
-				for(i=i1=0;i<d;i++) if (!slide[i]) {
-					v1[i1] = -sign*A[i][d];
-					for(j=j1=0;j<d;j++) if (!slide[j])
-						A1[i1][j1++] = A[i][j];
-					i1++;
-				} p1.zero();
-				A1.conjugate_gradient(p1,v1);
-				for(i=i1=0;i<d;i++) if (!slide[i])
-					dp[i] = p1[i1++];
-			}
-			dp[d] = sign;
-			dv = A*dp;
-			s.set(1,1E-20); j=-1;
-			if (v[d]*dv[d]<0) 
-			{	j=d; sd = s.set(-v[d],dv[d]).fixsign(); }
-			for(i=0;i<=d;i++) if (
-				slide[i]==0 && (s1.set(frmax[i]-p[i],dp[i]).fixsign()>=0 && s1<s || s1.set(frmin[i]-p[i],dp[i]).fixsign()>=0 && s1<s) ||
-				slide[i]==1 && (v[i]!=0 || p[i]*dv[i]<0) && (s1.set(-v[i],dv[i]).fixsign()>=0 && s1<s))
-			{ s=s1; j=i; }
-			if (j==-1)
-				break;
-			sval = s.val(); p += dp*sval; v += dv*sval;
-			if (j==d) {
-				if (s!=sd) 
-					slide[d]=1; 
-				break;
-			}
-			v[j]=0;	slide[j] = slide[j]^1;
-			if (slide[j] && isneg(s.x-1E-8*s.y) && prev_j==j)
-				break;
-			prev_j=j;
-		} while(++iter<1000); }
-
-		for(i=0;i<d;i++) {
-			dP = frdir[i]*p[i]; m_Ffriction += dP; m_Tfriction += m_susp[idx[i]].ptcontact-m_body.pos^dP;
-		}
-		Eafter = (m_body.P+m_Ffriction).len2()*m_body.Minv + (m_body.Iinv*(m_body.L+m_Tfriction))*(m_body.L+m_Tfriction);
-		if (Eafter>Ebefore*1.1f)
-			damping = sqrt_tpl(Ebefore/Eafter);
-		else 
-			damping = 1.0f;
-
-		for(i=0;i<d;i++) {
-			m_susp[idx[i]].bSlip = slide[i];
-			//dP = frdir[i]*p[i]; m_Ffriction += dP; m_Tfriction += m_susp[idx[i]].ptcontact-m_body.pos^dP;
-			if (m_susp[idx[i]].pent->GetRigidBody(m_susp[idx[i]].ipart)->Minv<m_body.Minv*10.0f) {
-				ai.point = m_susp[idx[i]].ptcontact;
-				ai.impulse = -frdir[i]*(p[i]*damping);
-				ai.ipart = m_susp[idx[i]].ipart;
-				m_susp[idx[i]].pent->Action(&ai);
-			}
-		}
-		Pbefore = m_body.P; Lbefore = m_body.L;
-		(m_body.P+=m_Ffriction)*=damping; (m_body.L+=m_Tfriction)*=damping;
-		m_Ffriction = m_body.P-Pbefore; m_Tfriction = m_body.L-Lbefore;
-
-#ifdef _DEBUG
-#ifdef WIN64
-		assert(m_Ffriction.len2()>=0);
-#else
-		if (!(m_Ffriction.len2()>=0))
-			DEBUG_BREAK;
-#endif
-		m_body.UpdateState();
-		for(i=0;i<d;i++) {
-			r = m_susp[idx[i]].ptcontact-m_body.pos;
-			v[i] = (m_body.v + (m_body.w^r) - m_susp[idx[i]].pbody->v - 
-				(m_susp[idx[i]].pbody->w^m_susp[idx[i]].ptcontact-m_susp[idx[i]].pbody->pos))*frdir[i];
-			v[i] += ((m_body.Fcollision*m_body.Minv+(m_body.Iinv*m_body.Tcollision^r))*frdir[i])*time_interval;
-		}
-#endif
-
-		time_interval = 1.0f/time_interval;
-		m_Ffriction*=time_interval; m_Tfriction*=time_interval;
-	}*/
 }
 
 int CWheeledVehicleEntity::RegisterContacts(float time_interval,int nMaxPlaneContacts)
