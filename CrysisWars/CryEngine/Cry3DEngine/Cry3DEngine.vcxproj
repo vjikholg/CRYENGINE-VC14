@@ -696,6 +696,11 @@
       <TargetMachine>MachineX64</TargetMachine>
     </Link>
   </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)' == 'Debug' Or '$(Configuration)' == 'Profile'">
+    <ClCompile>
+      <PreprocessorDefinitions>CRY_PARTICLE_TEARDOWN_REGRESSION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="3dEngine.cpp" />
     <ClCompile Include="3dEngineLight.cpp" />

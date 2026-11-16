@@ -772,6 +772,7 @@
       <XMLDocumentationFileName Condition="'$(Configuration)|$(Platform)'=='SP_DEMO|x64'">$(IntDir)%(Filename)1.xdc</XMLDocumentationFileName>
     </ClCompile>
     <ClCompile Include="AllocatorFailureReporter.cpp" />
+    <ClCompile Include="CrashBreadcrumbs.cpp" />
     <ClCompile Include="CryMemoryManager.cpp" />
     <ClCompile Include="CryPak.cpp" />
     <ClCompile Include="CrySizerImpl.cpp" />
@@ -1225,6 +1226,7 @@
     <ClInclude Include="ConsoleBatchFile.h" />
     <ClInclude Include="CPUDetect.h" />
     <ClInclude Include="CritSection.h" />
+    <ClInclude Include="CrashBreadcrumbs.h" />
     <ClInclude Include="CryAllocationHeader.h" />
     <ClInclude Include="CryPak.h" />
     <ClInclude Include="CrySizerImpl.h" />

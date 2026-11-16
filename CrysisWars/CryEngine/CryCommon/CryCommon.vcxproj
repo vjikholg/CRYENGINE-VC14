@@ -292,6 +292,7 @@
     <ClInclude Include="CryString.h" />
     <ClInclude Include="CryStructPack.h" />
     <ClInclude Include="CryThread.h" />
+    <ClInclude Include="CryCrashBreadcrumbs.h" />
     <ClInclude Include="CryThreadImpl.h" />
     <ClInclude Include="CryThreadImpl_pthreads.h" />
     <ClInclude Include="CryThreadImpl_windows.h" />

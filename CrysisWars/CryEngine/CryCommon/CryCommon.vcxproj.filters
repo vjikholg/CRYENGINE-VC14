@@ -375,6 +375,9 @@
     <ClInclude Include="CryStructPack.h">
       <Filter>Common_h</Filter>
     </ClInclude>
+    <ClInclude Include="CryCrashBreadcrumbs.h">
+      <Filter>Common_h</Filter>
+    </ClInclude>
     <ClInclude Include="CryThread.h">
       <Filter>Common_h</Filter>
     </ClInclude>
