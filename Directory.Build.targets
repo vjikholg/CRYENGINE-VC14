@@ -2,6 +2,7 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(CryRuntimeProject)' == 'true' And '$(Platform)' == 'x64'">
     <OutDir>$(MSBuildThisFileDirectory)CrysisWars\Bin64\</OutDir>
+    <OutDir Condition="'$(CryPteRuntimeDir)' != ''">$(CryPteRuntimeDir)\</OutDir>
     <IntDir>$(MSBuildThisFileDirectory)CrysisWars\BinTemp\$(Platform)\$(Configuration)\$(MSBuildProjectName)\</IntDir>
   </PropertyGroup>
 
