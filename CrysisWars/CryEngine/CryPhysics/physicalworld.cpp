@@ -1212,9 +1212,10 @@ int CPhysicalWorld::ResolveGroupContacts(int i, int nAnimatedObjects)
 
 		Ebefore = max(m_pGroupMass[i]*sqr(0.005f),Ebefore);
 		
+		// Entity steps have already applied their local impulses, including wheel suspension.
+		// Resolve the registered contacts before applying group damping in Update.
 		InvokeContactSolver(m_groupTimeStep, &m_vars, Ebefore);
 
-		//if (nAnimatedObjects==0) 
 		damping = 1.0f-m_groupTimeStep*m_vars.groupDamping*isneg(m_vars.nGroupDamping-1-max(nEnts,g_nBodies));
 		for(pent=m_pTmpEntList1[i],bGroupFinished=1; pent; pent=pent->m_next_coll) {
 			Eafter += pent->CalcEnergy(0);	
