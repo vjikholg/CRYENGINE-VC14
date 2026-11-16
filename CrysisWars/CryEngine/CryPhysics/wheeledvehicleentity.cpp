@@ -980,16 +980,16 @@ int g_iwhist=0,g_checksum[NH],g_ncompare=0,g_bstartcompare=0,g_histinit=0,g_iwhi
 int g_forcepedal = 0;*/
 
 
-void CWheeledVehicleEntity::AddAdditionalImpulses(float time_interval)
+void CWheeledVehicleEntity::AddAdditionalImpulses(float timeStep)
 {
-	int i,j,bAllSlip=1,iDriver[2],bContact[2],iside;
-	float fN,friction,frictionLat,Npull,N,fpull,driving_torque=0,minfric,maxfric,wengine,wground,wground_avg[2],Npull_tot[2];
-	Vec3 dP,Pexp,Lexp,pulldir,ptc,axis,axisz,vel_slip;
-	Matrix33 R = Matrix33(m_qNew), Ctmp;
-	pe_action_impulse ai;
-	ai.iSource = 3;
-	axisz = R*Vec3(0,0,1);
+	int i;
+	int allDrivenWheelsSlipping = 1;
+	const Matrix33 vehicleRotation(m_qNew);
+	const Vec3 vehicleUp = vehicleRotation * Vec3(0, 0, 1);
+	pe_action_impulse reactionImpulse;
+	reactionImpulse.iSource = 3;
 
+	// Refresh the set of colliders from wheel contacts.
 	for(i=0;i<m_nParts-m_nHullParts;i++) if (m_susp[i].bContact) {
 		AddCollider(m_susp[i].pent); 
 		if (!(m_susp[i].pent->m_bProcessed & 1))
@@ -1004,27 +1004,27 @@ void CWheeledVehicleEntity::AddAdditionalImpulses(float time_interval)
 		AtomicAdd(&m_susp[i].pent->m_bProcessed, -1);
 
 	m_nContacts = 0;
-	driving_torque = ComputeDrivingTorque(time_interval);
+	const float driveTorque = ComputeDrivingTorque(timeStep);
 
-	// evolve wheels
+	// Update wheel torque and rotation from the engine, brakes, and track steering.
 	for(i=0;i<m_nParts-m_nHullParts;i++) {
 		m_susp[i].T = -sgn(m_susp[i].w)*m_axleFriction;
 		if (m_enginePedal*sgn(m_iCurGear-1)<=0)    
       m_susp[i].T += m_brakeTorque*m_enginePedal;    
 		if (m_enginePedal*m_susp[i].bDriving==0) {
-			quotientf T0(-m_susp[i].w*m_susp[i].prevTdt*0.7f,(m_susp[i].w-m_susp[i].prevw)*time_interval);
+			quotientf T0(-m_susp[i].w*m_susp[i].prevTdt*0.7f,(m_susp[i].w-m_susp[i].prevw)*timeStep);
 			if (T0.x*T0.y*m_susp[i].T>0 && fabsf(m_susp[i].T*T0.y)>fabsf(T0.x))
 				m_susp[i].T = T0.val();
 		}
-		m_susp[i].prevTdt = m_susp[i].T*time_interval;
+		m_susp[i].prevTdt = m_susp[i].T*timeStep;
 		m_susp[i].prevw = m_susp[i].w;
 		if (m_susp[i].bDriving)
     {      
-      float t = driving_torque;
+      float t = driveTorque;
       if (m_kSteerToTrack!=0 && fabs_tpl(m_steer)>0.01f && m_steer*m_susp[i].pt.x>0)
       {
         if (m_susp[i].w*m_enginePedal>=0) // for 'braking' use max(brakingTorque,drivingTorque) 
-          t = sgnnz(driving_torque)*max(m_brakeTorque,abs(driving_torque));
+          t = sgnnz(driveTorque)*max(m_brakeTorque,abs(driveTorque));
 
         t *= max(-1.0f,1.0f-fabs_tpl(m_steer*m_kSteerToTrack));
         t *= sgn(m_engineMaxw-m_wengine); // correct sign for negative torque due to rpm>max                 
@@ -1033,108 +1033,123 @@ void CWheeledVehicleEntity::AddAdditionalImpulses(float time_interval)
     }
 		if ((m_bHandBrake & m_susp[i].bCanBrake)|m_susp[i].bBlocked) 
 			m_susp[i].w = 0;
-		bAllSlip &= m_susp[i].bSlipPull|m_susp[i].bDriving^1;
+		allDrivenWheelsSlipping &= m_susp[i].bSlipPull|m_susp[i].bDriving^1;
 		m_susp[i].bSlipPull = m_susp[i].bContact^1;
-		m_susp[i].rot += m_susp[i].w*time_interval;
+		m_susp[i].rot += m_susp[i].w*timeStep;
 		if (m_susp[i].rot>2*g_PI) m_susp[i].rot-=2*g_PI;
 		if (m_susp[i].rot<-2*g_PI) m_susp[i].rot+=2*g_PI;
 	}
-	wengine = (bAllSlip ? m_engineMaxw : min(m_wengine,m_engineMaxw));
-	wengine /= max(0.01f,fabs_tpl(m_gears[m_iCurGear]))*sgnnz(m_gears[m_iCurGear]);
+	float driveAngularSpeed = allDrivenWheelsSlipping ? m_engineMaxw : min(m_wengine, m_engineMaxw);
+	driveAngularSpeed /= max(0.01f,fabs_tpl(m_gears[m_iCurGear]))*sgnnz(m_gears[m_iCurGear]);
 
+	// Calculate each contacting wheel's suspension impulse.
 	for(i=0;i<m_nParts-m_nHullParts;i++) {
-		m_susp[i].rworld = R*m_susp[i].pt+m_posNew-m_body.pos;
-		m_susp[i].vworld = (m_body.v+(m_body.w^m_susp[i].rworld))*axisz;
+		m_susp[i].rworld = vehicleRotation*m_susp[i].pt+m_posNew-m_body.pos;
+		m_susp[i].vworld = (m_body.v+(m_body.w^m_susp[i].rworld))*vehicleUp;
 		if (m_susp[i].bContact && m_susp[i].iAxle>=0) {
-			fN = (m_susp[i].fullen-m_susp[i].curlen)*m_susp[i].kStiffness;
-			fN -= m_susp[i].vworld*m_susp[i].kDamping;
+			float suspensionForce = (m_susp[i].fullen-m_susp[i].curlen)*m_susp[i].kStiffness;
+			suspensionForce -= m_susp[i].vworld*m_susp[i].kDamping;
 			if (m_susp[i].iBuddy>=0 && m_kStabilizer>0)
-				fN -= (m_susp[i].curlen-m_susp[m_susp[i].iBuddy].curlen)*m_susp[i].kStiffness*m_kStabilizer;
-			m_susp[i].PN = max(0.0f,fN*time_interval);
+				suspensionForce -= (m_susp[i].curlen-m_susp[m_susp[i].iBuddy].curlen)*m_susp[i].kStiffness*m_kStabilizer;
+			m_susp[i].PN = max(0.0f,suspensionForce*timeStep);
 		}
 	}
 
-	Pexp.zero(); Lexp.zero();
-	wground_avg[0]=wground_avg[1] = 0; Npull_tot[0]=Npull_tot[1] = 0;
-	bContact[0]=bContact[1] = 0; iDriver[0]=iDriver[1] = 0;
+	// Apply suspension and traction impulses, and prepare wheel constraints for the contact solver.
+	Vec3 accumulatedLinearImpulse(ZERO);
+	Vec3 accumulatedAngularImpulse(ZERO);
+	float trackGroundAngularSpeedSum[2] = { 0.0f, 0.0f };
+	float trackTractionImpulseSum[2] = { 0.0f, 0.0f };
+	int trackContactCount[2] = { 0, 0 };
+	int driveWheelByTrackSide[2];
+	int trackSide;
+	// Keep the friction state across iterations for tracked drive wheels without a contact.
+	float friction, frictionImpulseLimit; driveWheelByTrackSide[0]=driveWheelByTrackSide[1] = 0;
 
-	for(i=iside=0;i<m_nParts-m_nHullParts;i++) 
-	if ((m_kSteerToTrack!=0 && bContact[iside=isneg(m_susp[i].pt.x)] && m_susp[i].bDriving || m_susp[i].bContact) && m_susp[i].iAxle>=0) {
-		axis = R*Vec3(cos_tpl(m_susp[i].steer),-sin_tpl(m_susp[i].steer),0);
-		iDriver[iside] |= i & -m_susp[i].bDriving;
+	for(i=trackSide=0;i<m_nParts-m_nHullParts;i++)
+	if ((m_kSteerToTrack!=0 && trackContactCount[trackSide=isneg(m_susp[i].pt.x)] && m_susp[i].bDriving || m_susp[i].bContact) && m_susp[i].iAxle>=0) {
+		const Vec3 wheelAxle = vehicleRotation * Vec3(cos_tpl(m_susp[i].steer), -sin_tpl(m_susp[i].steer), 0);
+		float lateralFriction;
+		float tractionImpulseLimit, groundAngularSpeed;
+		Vec3 tractionDirection;
+		Matrix33 contactMatrixScratch;
+		driveWheelByTrackSide[trackSide] |= i & -m_susp[i].bDriving;
 
 		if (m_susp[i].bContact) {
-			dP = axisz*m_susp[i].PN; Pexp += dP; Lexp += m_susp[i].rworld^dP;
-			j = (m_bHandBrake & m_susp[i].bCanBrake)|m_susp[i].bBlocked;
-			maxfric = m_maxBrakingFriction*j + (j^1)*10.0f;
-      minfric = m_minBrakingFriction*j - (j^1)*10.0f;
+			const Vec3 wheelImpulse = vehicleUp * m_susp[i].PN;
+			accumulatedLinearImpulse += wheelImpulse;
+			accumulatedAngularImpulse += m_susp[i].rworld ^ wheelImpulse;
+			const int wheelLocked = (m_bHandBrake & m_susp[i].bCanBrake)|m_susp[i].bBlocked;
+			const float maxFriction = m_maxBrakingFriction*wheelLocked + (wheelLocked^1)*10.0f;
+			const float minFriction = m_minBrakingFriction*wheelLocked - (wheelLocked^1)*10.0f;
 			friction = min(m_susp[i].maxFriction, max(m_susp[i].minFriction, 
 				m_pWorld->GetFriction(m_susp[i].surface_idx[0], m_susp[i].surface_idx[1])));
-			friction = max(minfric, min(maxfric,friction));
+			friction = max(minFriction, min(maxFriction,friction));
 
-			pulldir = (m_susp[i].ncontact^axis).normalize();
-			wground = (m_susp[i].vrel*pulldir)*m_susp[i].rinv;
-			vel_slip = m_susp[i].vrel-pulldir*(m_susp[i].w*m_susp[i].r);
-			if (m_susp[i].bSlip = vel_slip.len2()>sqr(m_slipThreshold))
+			tractionDirection = (m_susp[i].ncontact^wheelAxle).normalize();
+			groundAngularSpeed = (m_susp[i].vrel*tractionDirection)*m_susp[i].rinv;
+			const Vec3 slipVelocity = m_susp[i].vrel-tractionDirection*(m_susp[i].w*m_susp[i].r);
+			if (m_susp[i].bSlip = slipVelocity.len2()>sqr(m_slipThreshold))
 				friction *= m_kDynFriction;
-			Npull = N = (m_susp[i].PN+iszero(m_susp[i].fullen)*m_susp[i].contact.Pspare)*friction;			
+			tractionImpulseLimit = frictionImpulseLimit = (m_susp[i].PN+iszero(m_susp[i].fullen)*m_susp[i].contact.Pspare)*friction;
       if (m_susp[i].bSlip && m_kSteerToTrack==0)
-				Npull *= fabs_tpl(vel_slip.normalized()*pulldir);
+				tractionImpulseLimit *= fabs_tpl(slipVelocity.normalized()*tractionDirection);
 			if (m_kSteerToTrack!=0)	if (!m_susp[i].bDriving) {
-				bContact[iside]++; wground_avg[iside] += wground; Npull_tot[iside] += Npull;
+				trackContactCount[trackSide]++; trackGroundAngularSpeedSum[trackSide] += groundAngularSpeed; trackTractionImpulseSum[trackSide] += tractionImpulseLimit;
 			} else {
-				wground = wground_avg[iside]/max(1,bContact[iside]);
-				Npull = max(Npull, Npull_tot[iside]);
-				pulldir = R*(m_enginePedal>=0 ? Vec3(0,cos_tpl(m_pullTilt),-sin_tpl(m_pullTilt)) : Vec3(0,1,0));      
+				groundAngularSpeed = trackGroundAngularSpeedSum[trackSide]/max(1,trackContactCount[trackSide]);
+				tractionImpulseLimit = max(tractionImpulseLimit, trackTractionImpulseSum[trackSide]);
+				tractionDirection = vehicleRotation*(m_enginePedal>=0 ? Vec3(0,cos_tpl(m_pullTilt),-sin_tpl(m_pullTilt)) : Vec3(0,1,0));
 			}
 
 			if (m_susp[i].pent->GetRigidBody(m_susp[i].ipart)->Minv<m_body.Minv*10.0f) {
-				ai.point = m_susp[i].ptcontact;
-				ai.impulse = -dP;
-				ai.ipart = m_susp[i].ipart;
-				m_susp[i].pent->Action(&ai);
+				reactionImpulse.point = m_susp[i].ptcontact;
+				reactionImpulse.impulse = -wheelImpulse;
+				reactionImpulse.ipart = m_susp[i].ipart;
+				m_susp[i].pent->Action(&reactionImpulse);
 			}
 		}	else {
-			wground = wground_avg[iside]/max(1,bContact[iside]);
-			Npull = Npull_tot[iside];			
-      pulldir = R*(m_enginePedal>=0 ? Vec3(0,cos_tpl(m_pullTilt),-sin_tpl(m_pullTilt)) : Vec3(0,1,0));      
+			groundAngularSpeed = trackGroundAngularSpeedSum[trackSide]/max(1,trackContactCount[trackSide]);
+			tractionImpulseLimit = trackTractionImpulseSum[trackSide];
+      tractionDirection = vehicleRotation*(m_enginePedal>=0 ? Vec3(0,cos_tpl(m_pullTilt),-sin_tpl(m_pullTilt)) : Vec3(0,1,0));
 		}
 
 		if ((m_bHandBrake & m_susp[i].bCanBrake)|m_susp[i].bBlocked) {
 			if (m_susp[i].curlen>0)	{
 				m_susp[i].contact.C.SetIdentity();
-				m_susp[i].contact.C -= dotproduct_matrix(axisz,axisz, Ctmp);
+				m_susp[i].contact.C -= dotproduct_matrix(vehicleUp,vehicleUp, contactMatrixScratch);
 				m_susp[i].contact.flags = contact_wheel|contact_use_C;
 			}	else
 				m_susp[i].contact.flags = 0;
-			frictionLat = friction;
+			lateralFriction = friction;
 		} else {
-			ptc = R*(m_susp[i].ptc0-Vec3(0,0,m_susp[i].curlen-m_susp[i].len0))+m_posNew - m_body.pos;
-			fpull = m_susp[i].T*m_susp[i].rinv*time_interval;
-			if (isneg(fabs_tpl(Npull)-fabs_tpl(fpull)) & m_susp[i].bDriving) {
+			const Vec3 tractionLeverArm = vehicleRotation*(m_susp[i].ptc0-Vec3(0,0,m_susp[i].curlen-m_susp[i].len0))+m_posNew - m_body.pos;
+			float tractionImpulse = m_susp[i].T*m_susp[i].rinv*timeStep;
+			if (isneg(fabs_tpl(tractionImpulseLimit)-fabs_tpl(tractionImpulse)) & m_susp[i].bDriving) {
 				m_susp[i].bSlipPull = 1;
-				fpull = sgn(fpull)*Npull;
+				tractionImpulse = sgn(tractionImpulse)*tractionImpulseLimit;
 				if (m_gears[m_iCurGear]*m_enginePedal>0) {
-					float wengineLoc = wengine*(m_steer*m_susp[i].pt.x>0 ? fabs_tpl(max(-1.0f,1.0f-fabs_tpl(m_steer*m_kSteerToTrack))) : 1.0f);
-					m_susp[i].w = m_susp[i].w*(1-time_interval*4)+wengineLoc*time_interval*4;
-					fpull *= isneg(wground*wengineLoc-sqr(wengineLoc)*0.9f);
+					float wheelDriveAngularSpeed = driveAngularSpeed*(m_steer*m_susp[i].pt.x>0 ? fabs_tpl(max(-1.0f,1.0f-fabs_tpl(m_steer*m_kSteerToTrack))) : 1.0f);
+					m_susp[i].w = m_susp[i].w*(1-timeStep*4)+wheelDriveAngularSpeed*timeStep*4;
+					tractionImpulse *= isneg(groundAngularSpeed*wheelDriveAngularSpeed-sqr(wheelDriveAngularSpeed)*0.9f);
 				} else
-					m_susp[i].w = wground;
+					m_susp[i].w = groundAngularSpeed;
 			} else
-				m_susp[i].w = wground;
-			dP = pulldir*fpull;
-			Pexp += dP; Lexp += ptc^dP;
-			N = sqrt_tpl(max(0.0f,sqr(N)-sqr(fpull)));
+				m_susp[i].w = groundAngularSpeed;
+			const Vec3 wheelImpulse = tractionDirection * tractionImpulse;
+			accumulatedLinearImpulse += wheelImpulse;
+			accumulatedAngularImpulse += tractionLeverArm ^ wheelImpulse;
+			frictionImpulseLimit = sqrt_tpl(max(0.0f,sqr(frictionImpulseLimit)-sqr(tractionImpulse)));
 
 			if (m_susp[i].curlen*m_susp[i].fullen>0)	{
-				dotproduct_matrix(axis,axis, m_susp[i].contact.C);
+				dotproduct_matrix(wheelAxle,wheelAxle, m_susp[i].contact.C);
 				m_susp[i].contact.flags = contact_wheel|contact_use_C;
 			} else {
 				m_susp[i].contact.C.SetIdentity();
-				m_susp[i].contact.C -= dotproduct_matrix(pulldir,pulldir, Ctmp);
+				m_susp[i].contact.C -= dotproduct_matrix(tractionDirection,tractionDirection, contactMatrixScratch);
 				m_susp[i].contact.flags = contact_use_C;
 			}
-			frictionLat = friction*m_susp[i].kLatFriction;
+			lateralFriction = friction*m_susp[i].kLatFriction;
 		}
 
 		if (m_susp[i].bContact) {
@@ -1144,8 +1159,8 @@ void CWheeledVehicleEntity::AddAdditionalImpulses(float time_interval)
 			m_susp[i].contact.K.SetZero();
 			GetContactMatrix(m_susp[i].ptcontact, m_nHullParts+i, m_susp[i].contact.K);
 			m_susp[i].pent->GetContactMatrix(m_susp[i].ptcontact, m_susp[i].ipart, m_susp[i].contact.K);
-			m_susp[i].contact.friction = frictionLat;
-			m_susp[i].contact.Pspare = m_susp[i].kLatFriction*max(0.0f,(axisz*m_susp[i].ncontact)*N);
+			m_susp[i].contact.friction = lateralFriction;
+			m_susp[i].contact.Pspare = m_susp[i].kLatFriction*max(0.0f,(vehicleUp*m_susp[i].ncontact)*frictionImpulseLimit);
 			// vreq is filled in CheckAdditionalGeometry
 			m_susp[i].contact.pbody[0] = &m_body;
 			m_susp[i].contact.pbody[1] = m_susp[i].pbody;
@@ -1154,16 +1169,19 @@ void CWheeledVehicleEntity::AddAdditionalImpulses(float time_interval)
 			m_susp[i].contact.ipart[0] = i+m_nHullParts;
 			m_susp[i].contact.ipart[1] = m_susp[i].ipart;
 		}
-	} else if (bAllSlip)
-		m_susp[i].w += m_susp[i].T*m_susp[i].Iinv*time_interval;
+	} else if (allDrivenWheelsSlipping)
+		m_susp[i].w += m_susp[i].T*m_susp[i].Iinv*timeStep;
 
 	if (m_kSteerToTrack!=0) for(i=0;i<m_nParts-m_nHullParts;i++) {
-		m_susp[i].w = m_susp[iDriver[iside = isneg(m_susp[i].pt.x)]].w;
-		m_susp[i].bSlipPull = m_susp[iDriver[iside]].bSlipPull;
+		m_susp[i].w = m_susp[driveWheelByTrackSide[trackSide = isneg(m_susp[i].pt.x)]].w;
+		m_susp[i].bSlipPull = m_susp[driveWheelByTrackSide[trackSide]].bSlipPull;
 	}
 
-	m_body.v = (m_body.P+=Pexp)*m_body.Minv; 
-	m_body.w = m_body.Iinv*(m_body.L+=Lexp);
+	// Commit the wheel impulses to the chassis before the world solves its contacts.
+	m_body.P += accumulatedLinearImpulse;
+	m_body.v = m_body.P * m_body.Minv;
+	m_body.L += accumulatedAngularImpulse;
+	m_body.w = m_body.Iinv * m_body.L;
 	m_Ffriction.zero(); m_Tfriction.zero();
 }
 
