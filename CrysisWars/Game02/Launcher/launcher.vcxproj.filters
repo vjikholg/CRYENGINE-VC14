@@ -18,6 +18,9 @@
     <Image Include="Wars.ico">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="MWLL.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <None Include="Cursor_Amber.cur">

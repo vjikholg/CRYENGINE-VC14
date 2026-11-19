@@ -9,6 +9,7 @@
 #define IDC_CRYSISCURSOR_GREEN          105
 #define IDC_CRYSISCURSOR_RED            106
 #define IDC_CRYSISCURSOR_WHITE          107
+#define IDI_MWLL_WINDOW                 108
 
 // Next default values for new objects
 // 

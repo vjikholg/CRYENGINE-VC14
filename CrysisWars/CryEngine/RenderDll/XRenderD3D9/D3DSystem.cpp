@@ -12,6 +12,8 @@
 #include "IDirectBee.h"			// connection to D3D9 wrapper
 
 #ifdef WIN32
+	#include "ICmdLine.h"
+	#include "../../../Game02/Launcher/resource.h"
 	#include "../Common/ATI/atimgpud.h"					// ATI multicpu detection
 	#include "../Common/NVAPI/nvapi.h"					// NVAPI multicpu support api
   #pragma message (">>> include lib: NVAPI")
@@ -1190,7 +1192,22 @@ bool CD3D9Renderer::SetWindow(int width, int height, bool fullscreen, WIN_HWND h
   {
     if (!hWnd)
     {
-      m_hWnd = CreateWindowEx(exstyle,"CryENGINE",m_WinTitle,style,x,y,wdt,hgt, NULL, NULL, m_hInst, NULL);
+      const ICmdLineArg* mod = iSystem->GetICmdLine()->FindArg(eCLAT_Pre, "mod");
+      const bool isMwll = mod && stricmp(mod->GetValue(), "MWLL") == 0;
+      const char* title = isMwll ? "MechWarrior: Living Legends" : m_WinTitle;
+      if (isMwll)
+        style &= ~WS_VISIBLE;
+
+      m_hWnd = CreateWindowEx(exstyle, "CryENGINE", title, style, x, y, wdt, hgt, NULL, NULL, m_hInst, NULL);
+      if (isMwll && m_hWnd)
+      {
+        // LoadIcon returns a shared handle owned by Windows.
+        if (HICON icon = LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_MWLL_WINDOW)))
+        {
+          SendMessage(m_hWnd, WM_SETICON, ICON_BIG, reinterpret_cast<LPARAM>(icon));
+          SendMessage(m_hWnd, WM_SETICON, ICON_SMALL, reinterpret_cast<LPARAM>(icon));
+        }
+      }
     }
     else
       m_hWnd = (HWND)hWnd;

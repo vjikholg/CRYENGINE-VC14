@@ -583,6 +583,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <Image Include="Wars.ico" />
+    <Image Include="MWLL.ico" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Cursor_Amber.cur" />
