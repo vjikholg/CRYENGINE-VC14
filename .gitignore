@@ -16,3 +16,12 @@ CRYENGINE-VC14.vcxproj.filters
 /CrysisWars/CryEngine/CryEntitySystem/Release/CryEntitySystem.pdb
 /CrysisWars/CryEngine/Bin64
 /CrysisWars/CryEngine/BinTemp/x64/Profile/XRenderD3D10
+
+# Generated build output and runtime logs
+*.log
+*.binlog
+*.tlog
+LogBackups/
+/x64/
+/CrysisWars/CryEngine/RenderDll/XRenderNULL/x64/
+/CrysisWars/Game02/DedicatedLauncher/x64/
