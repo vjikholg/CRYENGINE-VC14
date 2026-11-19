@@ -735,7 +735,11 @@ void CMultiPlayerMenu::SCreateGame::StartDedicated(const char* params)
 {
   if(gEnv->pGame->GetIGameFramework()->SaveServerConfig("%USER%/config/server.cfg"))
 	{
+#if defined(_WIN64)
+		string cmd = "Bin64/CrysisWarsDedicatedServer.exe";
+#else
 		string cmd = "Bin32/CrysisWarsDedicatedServer.exe";
+#endif
 		if(gEnv->pSystem->IsDevMode())
 		{
 			cmd.append(" -devmode");
