@@ -754,7 +754,7 @@ void C3DEngine::LoadParticleEffects( XmlNodeRef &levelDataRoot )
 
 	if (!m_bEditorMode)
 	{
-		m_pPartManager->LoadLibrary( "Level", GetLevelFilePath(PARTICLES_FILE), true );
+		m_pPartManager->LoadLevelLibrary(GetLevelFilePath(PARTICLES_FILE));
 
 		//if (IsPreloadEnabled())
 		if (GetCVars()->e_particles_preload)

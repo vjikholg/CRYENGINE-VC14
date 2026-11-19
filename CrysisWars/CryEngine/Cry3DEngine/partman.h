@@ -81,6 +81,7 @@ public:
 	void RemoveEffect( IParticleEffect *pEffect );
 	IParticleEffect* FindEffect( const char* sEffectName, const char* sCallerType = "", const char* sCallerName = "", bool bLoad = true );
 
+	bool LoadLevelLibrary(const char* libraryFile);
 	bool LoadLibrary( const char* sParticlesLibrary, const char* sParticlesLibraryFile=NULL, bool bLoadResources = false );
 
 	// Whether params are selected for current config.
@@ -214,6 +215,8 @@ public:
 	}
 
 private:
+	void ClearLevelLibrary();
+
 #if defined(CRY_PARTICLE_TEARDOWN_REGRESSION)
 	struct STeardownRegression;
 	STeardownRegression* m_pTeardownRegression = nullptr;

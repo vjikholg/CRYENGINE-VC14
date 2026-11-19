@@ -24,6 +24,9 @@
 #define EFFECTS_FOLDER "Libs/Particles"
 #define bUSE_CRY_THREAD	1
 
+static constexpr char LEVEL_PARTICLE_LIBRARY[] = "Level";
+static constexpr char LEVEL_PARTICLE_EFFECT_PREFIX[] = "Level.";
+
 /*
 	Particle threading strategy:
 
@@ -521,6 +524,10 @@ void CPartManager::ClearRenderResources( bool bForceClear )
 		m_effects.clear();
 		m_loadedLibs.clear();
 	}
+	else if (!m_pSystem->IsEditor())
+	{
+		ClearLevelLibrary();
+	}
 	m_bRuntime = false;
 	ReleaseLocks();
 }
@@ -957,6 +964,35 @@ void CPartManager::ReleaseLocks()
 }
 
 //////////////////////////////////////////////////////////////////////////
+bool CPartManager::LoadLevelLibrary(const char* libraryFile)
+{
+	{
+		CTeardownFence fence(*this, "LoadLevelLibrary");
+		ClearLevelLibrary();
+	}
+	return LoadLibrary(LEVEL_PARTICLE_LIBRARY, libraryFile, true);
+}
+
+void CPartManager::ClearLevelLibrary()
+{
+	m_loadedLibs.erase(LEVEL_PARTICLE_LIBRARY);
+
+	// This also clears cached misses for names from the outgoing level.
+	auto entry = m_effectsMap.lower_bound(LEVEL_PARTICLE_EFFECT_PREFIX);
+	while (entry != m_effectsMap.end() &&
+		strnicmp(entry->first.c_str(), LEVEL_PARTICLE_EFFECT_PREFIX, sizeof(LEVEL_PARTICLE_EFFECT_PREFIX) - 1) == 0)
+	{
+		entry = m_effectsMap.erase(entry);
+	}
+
+	const auto isLevelEffect = [](const _smart_ptr<CParticleEffect>& effect)
+	{
+		return strnicmp(effect->GetName(), LEVEL_PARTICLE_EFFECT_PREFIX, sizeof(LEVEL_PARTICLE_EFFECT_PREFIX) - 1) == 0;
+	};
+	m_effects.erase(std::remove_if(m_effects.begin(), m_effects.end(), isLevelEffect), m_effects.end());
+}
+
+//////////////////////////////////////////////////////////////////////////
 bool CPartManager::LoadLibrary( const char *sParticlesLibrary, const char *sParticlesLibraryFile, bool bLoadResources )
 {
 	if (strchr(sParticlesLibrary, '*'))
@@ -1000,7 +1036,11 @@ bool CPartManager::LoadLibrary( const char *sParticlesLibrary, const char *sPart
 		return nCount > 0;
 	}
 
-	if (!m_loadedLibs.insert(sParticlesLibrary).second)
+	// The runtime Level library belongs to the active map and has an explicit path.
+	if (!sParticlesLibraryFile && stricmp(sParticlesLibrary, LEVEL_PARTICLE_LIBRARY) == 0 && !m_pSystem->IsEditor())
+		return false;
+
+	if (m_loadedLibs.find(sParticlesLibrary) != m_loadedLibs.end())
 	{
 		// Already loaded.
 		if (bLoadResources)
@@ -1030,6 +1070,7 @@ bool CPartManager::LoadLibrary( const char *sParticlesLibrary, const char *sPart
 	if (!libNode)
 		return false;
 
+	m_loadedLibs.insert(sParticlesLibrary);
 	gEnv->pLog->LogToFile( "Loading Particle Library: %s",sParticlesLibrary );	// to file only so console is cleaner
 	gEnv->pLog->UpdateLoadingScreen(0);
 
