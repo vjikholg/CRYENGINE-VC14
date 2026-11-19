@@ -25,3 +25,23 @@ LogBackups/
 /x64/
 /CrysisWars/CryEngine/RenderDll/XRenderNULL/x64/
 /CrysisWars/Game02/DedicatedLauncher/x64/
+
+# Local startup and run scripts
+/[Ss]tart*.ps1
+/[Ss]tart*.bat
+/[Ss]tart*.cmd
+/[Ll]aunch*.ps1
+/[Ll]aunch*.bat
+/[Ll]aunch*.cmd
+/[Rr]un*.ps1
+/[Rr]un*.bat
+/[Rr]un*.cmd
+/CrysisWars/[Ss]tart*.ps1
+/CrysisWars/[Ss]tart*.bat
+/CrysisWars/[Ss]tart*.cmd
+/CrysisWars/[Ll]aunch*.ps1
+/CrysisWars/[Ll]aunch*.bat
+/CrysisWars/[Ll]aunch*.cmd
+/CrysisWars/[Rr]un*.ps1
+/CrysisWars/[Rr]un*.bat
+/CrysisWars/[Rr]un*.cmd
