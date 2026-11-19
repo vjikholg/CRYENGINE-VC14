@@ -1038,7 +1038,11 @@ int CPhysicalEntity::AddGeometry(phys_geometry *pgeom, pe_geomparams* params, in
 		(m_parts[m_nParts].pLattice = (CTetrLattice*)params->pLattice)->SetMesh((CTriMesh*)pgeom->pGeom);
 	else m_parts[m_nParts].pLattice = 0;
 	if (params->pMatMapping)
-		memcpy(m_parts[m_nParts].pMatMapping = new int[params->nMats], params->pMatMapping, (m_parts[m_nParts].nMats=params->nMats)*sizeof(int));
+	{
+		m_parts[m_nParts].nMats = params->nMats;
+		m_parts[m_nParts].pMatMapping = new int[params->nMats];
+		memcpy(m_parts[m_nParts].pMatMapping, params->pMatMapping, params->nMats * sizeof(int));
+	}
 	else {
 		m_parts[m_nParts].pMatMapping = pgeom->pMatMapping;
 		m_parts[m_nParts].nMats = pgeom->nMats;

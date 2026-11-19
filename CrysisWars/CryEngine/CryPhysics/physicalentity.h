@@ -52,7 +52,7 @@ struct geom {
 	float minContactDist;
 	int surface_idx : 10;
 	int idmatBreakable : 14;
-	int nMats : 8;
+	int nMats;
 	CTetrLattice *pLattice;
 	int *pMatMapping;
 	coord_block_BBox *pNewCoords;
