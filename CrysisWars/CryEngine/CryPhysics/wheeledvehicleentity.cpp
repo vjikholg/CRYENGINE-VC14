@@ -991,6 +991,12 @@ void CWheeledVehicleEntity::AddAdditionalImpulses(float timeStep)
 
 	// Refresh the set of colliders from wheel contacts.
 	for(i=0;i<m_nParts-m_nHullParts;i++) if (m_susp[i].bContact) {
+		suspension_point& wheel = m_susp[i];
+		const Vec3& point = wheel.ptcontact;
+		const RigidBody& targetBody = *wheel.pbody;
+		// Capture impact speeds before the suspension applies its impulses.
+		wheel.impactNormalSpeed[0] = (m_body.v + (m_body.w ^ (point - m_body.pos))) * wheel.ncontact;
+		wheel.impactNormalSpeed[1] = (targetBody.v + (targetBody.w ^ (point - targetBody.pos))) * wheel.ncontact;
 		AddCollider(m_susp[i].pent); 
 		if (!(m_susp[i].pent->m_bProcessed & 1))
 			AtomicAdd(&m_susp[i].pent->m_bProcessed, 1);
@@ -1064,7 +1070,8 @@ void CWheeledVehicleEntity::AddAdditionalImpulses(float timeStep)
 	int driveWheelByTrackSide[2];
 	int trackSide;
 	// Keep the friction state across iterations for tracked drive wheels without a contact.
-	float friction, frictionImpulseLimit; driveWheelByTrackSide[0]=driveWheelByTrackSide[1] = 0;
+	float friction, frictionImpulseLimit;
+	driveWheelByTrackSide[0]=driveWheelByTrackSide[1] = -1;
 
 	for(i=trackSide=0;i<m_nParts-m_nHullParts;i++)
 	if ((m_kSteerToTrack!=0 && trackContactCount[trackSide=isneg(m_susp[i].pt.x)] && m_susp[i].bDriving || m_susp[i].bContact) && m_susp[i].iAxle>=0) {
@@ -1073,7 +1080,8 @@ void CWheeledVehicleEntity::AddAdditionalImpulses(float timeStep)
 		float tractionImpulseLimit, groundAngularSpeed;
 		Vec3 tractionDirection;
 		Matrix33 contactMatrixScratch;
-		driveWheelByTrackSide[trackSide] |= i & -m_susp[i].bDriving;
+		if (m_susp[i].bDriving)
+			driveWheelByTrackSide[trackSide] = i;
 
 		if (m_susp[i].bContact) {
 			const Vec3 wheelImpulse = vehicleUp * m_susp[i].PN;
@@ -1172,9 +1180,16 @@ void CWheeledVehicleEntity::AddAdditionalImpulses(float timeStep)
 	} else if (allDrivenWheelsSlipping)
 		m_susp[i].w += m_susp[i].T*m_susp[i].Iinv*timeStep;
 
-	if (m_kSteerToTrack!=0) for(i=0;i<m_nParts-m_nHullParts;i++) {
-		m_susp[i].w = m_susp[driveWheelByTrackSide[trackSide = isneg(m_susp[i].pt.x)]].w;
-		m_susp[i].bSlipPull = m_susp[driveWheelByTrackSide[trackSide]].bSlipPull;
+	if (m_kSteerToTrack != 0)
+	{
+		for (i = 0; i < m_nParts - m_nHullParts; ++i)
+		{
+			const int driver = driveWheelByTrackSide[isneg(m_susp[i].pt.x)];
+			if (driver < 0)
+				continue;
+			m_susp[i].w = m_susp[driver].w;
+			m_susp[i].bSlipPull = m_susp[driver].bSlipPull;
+		}
 	}
 
 	// Commit the wheel impulses to the chassis before the world solves its contacts.
@@ -1187,34 +1202,51 @@ void CWheeledVehicleEntity::AddAdditionalImpulses(float timeStep)
 
 int CWheeledVehicleEntity::RegisterContacts(float time_interval,int nMaxPlaneContacts)
 {
-	EventPhysCollision epc;
-	epc.pEntity[0]=this; epc.pForeignData[0]=m_pForeignData; epc.iForeignData[0]=m_iForeignData;
-	epc.mass[0]=m_body.M;	epc.mass[1]=0; epc.vloc[1].zero();
-	epc.penetration=epc.radius = 0;
+	for (int i = 0; i < m_nParts - m_nHullParts; ++i)
+	{
+		suspension_point& wheel = m_susp[i];
+		wheel.pCollEvent = 0;
+		if (!wheel.bContact)
+			continue;
 
-	for(int i=0;i<m_nParts-m_nHullParts;i++) {
-		m_susp[i].pCollEvent = 0;
-		if (m_susp[i].bContact) {
-			if (m_susp[i].iAxle>=0)
-				RegisterContact(&m_susp[i].contact);
-			if (m_susp[i].pent->m_parts[m_susp[i].ipart].flags & geom_manually_breakable || m_susp[i].curlen<=0) {
-				epc.pEntity[1]=m_susp[i].pent; 
-				epc.pForeignData[1]=m_susp[i].pent->m_pForeignData; epc.iForeignData[1]=m_susp[i].pent->m_iForeignData;
-				epc.pt = m_susp[i].ptcontact;
-				epc.n = m_susp[i].ncontact;
-				epc.idCollider = m_pWorld->GetPhysicalEntityId(m_susp[i].pent);
-				epc.vloc[0] = m_susp[i].ncontact*(-m_susp[i].PN/m_susp[i].Mpt);
-				epc.partid[0] = m_parts[m_nHullParts+i].id;
-				epc.idmat[0] = m_susp[i].surface_idx[0];
-				epc.idmat[1] = m_susp[i].surface_idx[1];
-				epc.normImpulse = m_susp[i].PN;
-				if (m_susp[i].curlen<=0) {
-					epc.vloc[0] += epc.n*(epc.n*(m_body.v+(m_body.w^m_susp[i].ptcontact-m_body.pos)));
-					m_pWorld->OnEvent(pef_log_collisions,&epc, &m_susp[i].pCollEvent);
-				}	else
-					m_pWorld->OnEvent(pef_log_collisions,&epc);
-			}
-		}
+		if (wheel.iAxle >= 0)
+			RegisterContact(&wheel.contact);
+
+		CPhysicalEntity* target = wheel.pent;
+		const geom& targetPart = target->m_parts[wheel.ipart];
+		const bool bottomedOut = wheel.curlen <= 0;
+		if (!(targetPart.flags & geom_manually_breakable) && !bottomedOut)
+			continue;
+
+		EventPhysCollision event;
+		event.pEntity[0] = this;
+		event.pEntity[1] = target;
+		event.pForeignData[0] = m_pForeignData;
+		event.pForeignData[1] = target->m_pForeignData;
+		event.iForeignData[0] = m_iForeignData;
+		event.iForeignData[1] = target->m_iForeignData;
+		event.idCollider = m_pWorld->GetPhysicalEntityId(target);
+		event.pt = wheel.ptcontact;
+		event.n = wheel.ncontact;
+		event.partid[0] = m_parts[m_nHullParts + i].id;
+		event.partid[1] = targetPart.id;
+		event.idmat[0] = wheel.surface_idx[0];
+		event.idmat[1] = wheel.surface_idx[1];
+		event.mass[0] = m_body.M;
+		event.mass[1] = wheel.pbody->M;
+		event.penetration = event.radius = 0;
+		event.normImpulse = wheel.iAxle >= 0 ? wheel.PN : 0.0f;
+
+		// Keep reporting the contact, but exclude suspension settling and sliding
+		// from the velocity used for damage and breakage.
+		constexpr float minImpactClosingSpeed = 1.0f; // m/s along the contact normal
+		const float sourceSpeed = wheel.impactNormalSpeed[0];
+		const float targetSpeed = wheel.impactNormalSpeed[1];
+		const bool impact = targetSpeed - sourceSpeed >= minImpactClosingSpeed;
+		event.vloc[0] = impact ? event.n * sourceSpeed : Vec3(ZERO);
+		event.vloc[1] = impact ? event.n * targetSpeed : Vec3(ZERO);
+
+		m_pWorld->OnEvent(pef_log_collisions, &event, bottomedOut && wheel.iAxle >= 0 ? &wheel.pCollEvent : nullptr);
 	}
 	g_bUsePreCG = false;
 

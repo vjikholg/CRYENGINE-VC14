@@ -57,6 +57,7 @@ struct suspension_point {
 	int bContact;
 	int surface_idx[2];
 	Vec3 vrel;
+	float impactNormalSpeed[2];
 	Vec3 rworld;
 	float vworld;
 	float PN;
