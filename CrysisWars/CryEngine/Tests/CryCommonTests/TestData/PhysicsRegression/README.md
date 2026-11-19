@@ -11,7 +11,7 @@ From the `CrysisWars` directory, run the test binary that matches the runtime
 configuration:
 
 ```text
-Bin64\Tests\Debug\CryCommonTests.exe --physics-regression Bin64 .
+Bin64\Tests\Debug\CryCommonTests.exe --physics-regression Bin64_Debug .
 ```
 
 An optional fourth argument selects the TSV report path. Each scenario runs in

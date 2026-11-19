@@ -1,15 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(CryRuntimeProject)' == 'true' And '$(Platform)' == 'x64'">
-    <OutDir>$(MSBuildThisFileDirectory)CrysisWars\Bin64\</OutDir>
+    <OutDir>$(MSBuildThisFileDirectory)CrysisWars\Bin64_$(Configuration)\</OutDir>
     <OutDir Condition="'$(CryPteRuntimeDir)' != ''">$(CryPteRuntimeDir)\</OutDir>
-    <TargetPath Condition="'$(CryPteRuntimeDir)' != ''">$(OutDir)$(TargetName)$(TargetExt)</TargetPath>
+    <TargetPath>$(OutDir)$(TargetName)$(TargetExt)</TargetPath>
     <IntDir>$(MSBuildThisFileDirectory)CrysisWars\BinTemp\$(Platform)\$(Configuration)\$(MSBuildProjectName)\</IntDir>
   </PropertyGroup>
 
   <ItemDefinitionGroup Condition="'$(CryRuntimeProject)' == 'true' And '$(Platform)' == 'x64'">
     <ClCompile>
       <MinimalRebuild>false</MinimalRebuild>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
+    <Link>
+      <OutputFile>$(TargetPath)</OutputFile>
+      <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
+      <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
+      <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
+      <MapFileName>$(OutDir)$(TargetName).map</MapFileName>
+    </Link>
+  </ItemDefinitionGroup>
+
+  <ItemDefinitionGroup Condition="'$(CryRuntimeProject)' == 'true' And '$(Platform)' == 'x64' And
+                                  ('$(Configuration)' == 'Profile' Or '$(Configuration)' == 'Release')">
+    <Link>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+    </Link>
   </ItemDefinitionGroup>
 </Project>

@@ -8,6 +8,7 @@ $runnerLane = if ($Asan) { 'AsanRunner' } else { 'Profile' }
 $stage = Join-Path $root "Bin64/Tests/CryActionRegression/$lane"
 $runner = if ($Asan) { Join-Path $root "Bin64/Tests/CryActionRegression/$runnerLane" } else { Join-Path $root 'Bin64/Tests/Profile' }
 $logs = Join-Path $root 'BinTemp'
+$profileRuntime = Join-Path $root 'Bin64_Profile'
 if ($Family -and $Family -notmatch '^[A-Z]{2,3}[0-9]{2}$') { throw 'Invalid family name; use a plan identifier such as AN04.' }
 $reportLane = if ($Family) { "$lane-$Family" } else { $lane }
 $msbuild = Join-Path ${env:ProgramFiles} 'Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin/MSBuild.exe'
@@ -40,11 +41,11 @@ function Invoke-ProjectBuild([string]$Project, [string[]]$Properties, [string]$L
     if ($process.ExitCode) { throw "Build failed ($($process.ExitCode)): $Log" }
 }
 
-$production = Join-Path $root 'Bin64/CryAction.dll'
+$production = Join-Path $profileRuntime 'CryAction.dll'
 $before = (Get-FileHash -LiteralPath $production -Algorithm SHA256).Hash
-$systemProduction = Join-Path $root 'Bin64/CrySystem.dll'
+$systemProduction = Join-Path $profileRuntime 'CrySystem.dll'
 $systemBefore = (Get-FileHash -LiteralPath $systemProduction -Algorithm SHA256).Hash
-$physicsProduction = Join-Path $root 'Bin64/CryPhysics.dll'
+$physicsProduction = Join-Path $profileRuntime 'CryPhysics.dll'
 $physicsBefore = (Get-FileHash -LiteralPath $physicsProduction -Algorithm SHA256).Hash
 New-Item -ItemType Directory -Force -Path $stage, $runner, $logs | Out-Null
 $evidencePath = Join-Path $logs "CryAction-regression-$reportLane-evidence.json"
@@ -85,7 +86,7 @@ if ($Asan) {
 }
 Invoke-ProjectBuild 'CryEngine/Tests/CryCommonTests/CryCommonTests.vcxproj' ($runnerProperties + $asanProperty) `
     (Join-Path $logs "CryAction-regression-$lane-runner-build.log")
-foreach ($file in Get-ChildItem -LiteralPath (Join-Path $root 'Bin64') -File) {
+foreach ($file in Get-ChildItem -LiteralPath $profileRuntime -File) {
     if (($file.Extension -eq '.dll' -or $file.Name.EndsWith('.manifest')) -and !$file.Name.StartsWith('CryActionRegression')) {
         Copy-Item -LiteralPath $file.FullName -Destination $stage -Force
     }
@@ -111,8 +112,8 @@ if ($Asan) {
     Copy-Item -LiteralPath $runtime.FullName -Destination $stage -Force
     Copy-Item -LiteralPath $runtime.FullName -Destination $runner -Force
     # Instrument the allocation owner too: pooled reuse must reset ASan shadow
-    # left by annotated STL containers in CryAction. Normal Bin64 is untouched.
-    Copy-Item -LiteralPath (Join-Path $root 'BinTemp/x64/Profile/pdcurses/pdcurses.lib') -Destination $stage -Force
+    # left by annotated STL containers in CryAction. The Profile output is untouched.
+    Copy-Item -LiteralPath (Join-Path $profileRuntime 'pdcurses.lib') -Destination $stage -Force
     Invoke-ProjectBuild 'CryEngine/CrySystem/CrySystem.vcxproj' @(
         '/p:EnableASAN=true', '/p:CryActionAsanRuntime=true', "/p:OutDir=$stage\",
         "/p:IntDir=$root\BinTemp\x64\Profile\CrySystemActionAsan\") `
