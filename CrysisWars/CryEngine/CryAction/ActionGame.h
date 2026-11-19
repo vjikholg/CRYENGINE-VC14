@@ -243,6 +243,7 @@ private:
 	bool ProcessHitpoints(const Vec3 &pt, IPhysicalEntity *pent,int partid, ISurfaceType *pMat, int iDamage=1);
 	SBreakEvent &RegisterBreakEvent(const EventPhysCollision *pColl, float energy);
 	int ReuseBrokenTrees( const EventPhysCollision *pCEvent, float size, int flags );
+	bool RetryTrackedVehicleTreeCut(const EventPhysCollision& collision, const pe_status_pos& treePart, float size, int flags, SBreakEvent& breakEvent);
 	EntityId UpdateEntityIdForBrokenPart(EntityId idSrc);
 	EntityId UpdateEntityIdForVegetationBreak(IRenderNode *pVeg);
 	void RegisterEntsForBreakageReuse(IPhysicalEntity *pPhysEnt,int partid, IPhysicalEntity *pPhysEntNew, float h,float size);

@@ -1211,6 +1211,41 @@ void CActionGame::PerformPlaneBreak( const EventPhysCollision& epc, SBreakEvent 
 	}
 }
 
+bool CActionGame::RetryTrackedVehicleTreeCut(const EventPhysCollision& collision, const pe_status_pos& treePart, float size, int flags, SBreakEvent& breakEvent)
+{
+	IPhysicalEntity* vehicle = collision.pEntity[0];
+	if (m_bLoading || collision.mass[0] < 1500.0f || !vehicle || vehicle->GetType() != PE_WHEELEDVEHICLE ||
+		collision.iForeignData[1] != PHYS_FOREIGN_ID_STATIC || !collision.pForeignData[1] ||
+		static_cast<IRenderNode*>(collision.pForeignData[1])->GetRenderNodeType() != eERType_Vegetation)
+		return false;
+
+	pe_params_car car;
+	Vec3 direction(collision.vloc[0].x, collision.vloc[0].y, 0.0f);
+	if (!vehicle->GetParams(&car) || car.steerTrackNeutralTurn <= 0.0f || direction.GetLengthSquared() < sqr(5.0f))
+		return false;
+
+	primitives::box bounds;
+	treePart.pGeom->GetBBox(&bounds);
+	const int longestAxis = idxmax3(&bounds.size.x);
+	Vec3 trunkAxis = treePart.q * bounds.Basis.GetRow(longestAxis);
+	if (trunkAxis.z < 0.0f)
+		trunkAxis.Flip();
+	if (trunkAxis.z <= 0.7f)
+		return false;
+
+	// Retry a missed edge cut through the lower trunk using the vehicle's approach direction.
+	direction.Normalize();
+	const Vec3 center = treePart.pos + treePart.q * (bounds.center * treePart.scale);
+	const Vec3 cut = center - trunkAxis * (bounds.size[longestAxis] * treePart.scale * 0.65f);
+	LogDeformPhysicalEntity("SERVER", collision.pEntity[1], cut, direction, size);
+	if (!m_pPhysicalWorld->DeformPhysicalEntity(collision.pEntity[1], cut, direction, size, flags))
+		return false;
+
+	breakEvent.pt = cut;
+	breakEvent.n = -direction;
+	return true;
+}
+
 void CActionGame::OnCollisionLogged_Breakable( const EventPhys * pEvent )
 {
 	FUNCTION_PROFILER(GetISystem(), PROFILE_GAME);
@@ -1303,7 +1338,13 @@ void CActionGame::OnCollisionLogged_Breakable( const EventPhys * pEvent )
 						if (sp.pGeom->GetForeignData(DATA_MESHUPDATE) || !s_this->ReuseBrokenTrees(pCEvent,energy,flags))
 						{
 							LogDeformPhysicalEntity( "SERVER", pCEvent->pEntity[1], pCEvent->pt, -pCEvent->n, energy );
-							if (s_this->m_pPhysicalWorld->DeformPhysicalEntity(pCEvent->pEntity[1],pCEvent->pt,-pCEvent->n,energy,flags))
+							bool deformed = s_this->m_pPhysicalWorld->DeformPhysicalEntity(pCEvent->pEntity[1], pCEvent->pt, -pCEvent->n, energy, flags) != 0;
+							if (!deformed && s_this->RetryTrackedVehicleTreeCut(*pCEvent, sp, energy, flags, be))
+							{
+								s_this->m_breakEvents.back() = be;
+								deformed = true;
+							}
+							if (deformed)
 							{
 								if (g_tree_cut_reuse_dist>0 && !gEnv->bMultiplayer)
 									s_this->RemoveEntFromBreakageReuse(pCEvent->pEntity[1], 0);
