@@ -165,6 +165,9 @@
     <ClCompile Include="AllocatorFailureReporter.cpp">
       <Filter>MemoryManager</Filter>
     </ClCompile>
+    <ClCompile Include="CrashBreadcrumbs.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="CryMemoryManager.cpp">
       <Filter>MemoryManager</Filter>
     </ClCompile>
@@ -555,6 +558,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="CryWaterMark.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CrashBreadcrumbs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="DebugCallStack.h">
